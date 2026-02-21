@@ -1,0 +1,1105 @@
+{
+  "$id": "Operator.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "properties": {
+        "operator": {
+          "const": "additional_columns_empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "additional_columns_not_empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "conformant_value_data_type",
+          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the types in the row match the VLM types specified in the define.xml\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "conformant_value_length",
+          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the lengths in the row match the VLM lengths specified in the define.xml\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains",
+          "markdownDescription": "\nWill return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.\n\nThe operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']\n  operator: \"contains\"\n  value: \"GRADE\" # True if 'GRADE' is an element in the list\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains_all",
+          "markdownDescription": "\nTrue if all values in `value` are contained within the variable `name`.\n\n> All of ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment') in ACTARM\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"contains_all\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n\nThe operator also supports lists:\n\n```yaml\n- name: \"$spec_codelist\"\n  operator: \"contains_all\"\n  value: \"$ppspec_value\"\n```\n\nWhere:\n\n| $spec_codelist              |   $ppspec_value    |\n| :-------------------------- | :----------------: |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE1\", \"CODE2\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE2\", \"CODE3\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] |     [\"CODE1\"]      |\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains_case_insensitive",
+          "markdownDescription": "\nTrue if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['Grade', 'Severity', 'Onset']\n  operator: \"contains_case_insensitive\"\n  value: \"grade\" # True if 'Grade'/'GRADE'/'grade' exists in the list\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_equal_to",
+          "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.\n\nThe `date_component` parameter accepts: `\"year\"`, `\"month\"`, `\"day\"`, `\"hour\"`, `\"minute\"`, `\"second\"`, `\"microsecond\"`, or `\"auto\"`.\n\nWhen `date_component: \"auto\"` is used, the operator automatically detects the precision of both dates and compares at the common (less precise) level.\n\n```yaml\n- name: \"AESTDTC\"\n  operator: \"date_equal_to\"\n  value: \"RFSTDTC\"\n  date_component: \"auto\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_greater_than",
+          "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> Year part of BRTHDTC > 2021\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"date_greater_than\"\n  date_component: \"year\"\n  value: \"2021\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_greater_than_or_equal_to",
+          "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> Year part of BRTHDTC >= 2021\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"date_greater_than_or_equal_to\"\n  date_component: \"year\"\n  value: \"2021\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_less_than",
+          "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> AEENDTC < AESTDTC\n\n```yaml\n- name: \"AEENDTC\"\n  operator: \"date_less_than\"\n  value: \"AESTDTC\"\n```\n\n> SSDTC < all DS.DSSTDTC when SSSTRESC = \"DEAD\"\n\n```yaml\nCheck:\n  all:\n    - name: \"SSSTRESC\"\n      operator: \"equal_to\"\n      value: \"DEAD\"\n    - name: \"SSDTC\"\n      operator: \"date_less_than\"\n      value: \"$max_ds_dsstdtc\"\nOperations:\n  - operator: \"max_date\"\n    domain: \"DS\"\n    name: \"DSSTDTC\"\n    id: \"$max_ds_dsstdtc\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_less_than_or_equal_to",
+          "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> AEENDTC <= AESTDTC\n\n```yaml\n- name: \"AEENDTC\"\n  operator: \"date_less_than_or_equal_to\"\n  value: \"AESTDTC\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_not_equal_to",
+          "markdownDescription": "\nComplement of `date_equal_to`\n\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_contain",
+          "markdownDescription": "\nComplement of `contains`. Returns True when the value is NOT contained within the target collection.\n\n```yaml\n- name: \"--TOXGR\"\n  operator: \"does_not_contain\"\n  value: \"GRADE\" # True if 'GRADE' is NOT an element in the list\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_contain_case_insensitive",
+          "markdownDescription": "\nComplement of `contains_case_insensitive`. Returns True when the value is NOT contained within the target collection (case-insensitive).\n\nExample:\n\n```yaml\n- name: \"--TOXGR\"\n  operator: \"does_not_contain_case_insensitive\"\n  value: \"grade\" # True if no case variation of 'grade' exists in the list\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_equal_string_part",
+          "markdownDescription": "\nComplement of `equals_string_part`\n"
+        }
+      },
+      "required": ["operator", "value", "regex"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_have_next_corresponding_record",
+          "markdownDescription": "\nComplement of `has_next_corresponding_record`\n"
+        }
+      },
+      "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_reference_correct_codelist",
+          "markdownDescription": "\nComplement of `references_correct_codelist`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "empty",
+          "markdownDescription": "\nValue presence\n\n> --OCCUR = null\n\n```yaml\n- name: --OCCUR\n  operator: empty\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "empty_within_except_last_row",
+          "markdownDescription": "\n> SEENDTC is not empty when it is not the last record, grouped by USUBJID, sorted by SESTDTC\n\n```yaml\n- name: SEENDTC\n  operator: empty_within_except_last_row\n  ordering: SESTDTC\n  value: USUBJID\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "ends_with",
+          "markdownDescription": "\nSubstring matching\n\n> DOMAIN ending with 'FOOBAR'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"ends_with\"\n  value: \"FOOBAR\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equal_to",
+          "markdownDescription": "\nValue comparison. Works for both string and number.\nHas optional parameter:\n\n- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.\n- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.\n- 'round_values' when true, both the target and value will be rounded to the nearest integer\n\n> --OCCUR = N\n\n```yaml\n- name: --OCCUR\n  operator: equal_to\n  value: \"N\"\n```\n\n> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).\n\n```yaml\n- name: IDVARVAL\n  operator: equal_to\n  value: \"IDVAR\"\n  value_is_reference: true\n  type_insensitive: true\n```\n\n> --STRESC = --STRESN with rounded values and ignoring the char/num type differences\n> between the two columns\n\n```yaml\n- name: --STRESC\n  operator: equal_to\n  type_insensitive: true\n  value: --STRESN\n  round_values: true\n```\n\n> EXDOSE EQ 0\n\n```yaml\n- name: EXDOSE\n  operator: equal_to\n  value: 0\n```\n"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equal_to_case_insensitive",
+          "markdownDescription": "\nCase insensitive `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n\n> DSTERM is \"Informed consent obtained\"\n\n```yaml\n- name: DSTERM\n  operator: equal_to_case_insensitive\n  value: Informed consent obtained\n```\n"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equals_string_part",
+          "markdownDescription": "\nChecks that the values in the target column equal the result of parsing the value in the comparison column with a regex\n\n> RDOMAIN equals characters 5 and 6 of SUPP dataset name\n\n```yaml\n- name: RDOMAIN\n  operator: equals_string_part\n  value: dataset_name\n  regex: \".{4}(..).*\"\n```\n"
+        }
+      },
+      "required": ["operator", "value", "regex"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "exists",
+          "markdownDescription": "\nTrue if the column exists in the current dataframe. (Works for datasets and variables)\n\n> --OCCUR is present in dataset\n\n```yaml\n- name: \"--OCCUR\"\n  operator: \"exists\"\n```\n\n> Domain SJ exists\n\n```yaml\nRule Type: Domain Presence Check\nCheck:\n  all:\n    - name: \"SJ\"\n      operator: \"exists\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "greater_than",
+          "markdownDescription": "\nValue comparison\n\n> TSVAL > 0\n\n```yaml\n- name: TSVAL\n  operator: greater_than\n  value: 0\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "greater_than_or_equal_to",
+          "markdownDescription": "\nValue comparison\n\n> TSVAL >= 0\n\n```yaml\n- name: TSVAL\n  operator: greater_than_or_equal_to\n  value: 1\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_different_values",
+          "markdownDescription": "\nComplement of `has_same_values`\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_equal_length",
+          "markdownDescription": "\nLength comparison\n\n> Check whether variable values has equal length of another variable.\n\n```yaml\n- name: SEENDTC\n  operator: has_equal_length\n  value: SESTDTC\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_next_corresponding_record",
+          "markdownDescription": "\nEnsures that a value of a variable `name` in one record is equal to the value of another variable `value` in the next corresponding record. The rows are grouped by `within` and ordered by `ordering`.\n\n> SEENDTC is equal to the SESTDTC of the next record within a USUBJID. Ordered by SESEQ\n\n```yaml\n- name: SEENDTC\n  operator: has_next_corresponding_record\n  value: SESTDTC\n  within: USUBJID\n  ordering: SESEQ\n```\n"
+        }
+      },
+      "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_not_equal_length",
+          "markdownDescription": "\nComplement of `has_equal_length`\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_same_values",
+          "markdownDescription": "\nTrue if all values in `name` are the same\n\n> Condition: MHCAT ^= null\n> Rule: MHCAT ^= the same value for all records\n\n```yaml\nCheck:\n  all:\n    - name: MHCAT\n      operator: non_empty\n    - name: MHCAT\n      operator: has_same_values\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "invalid_duration",
+          "markdownDescription": "\nDuration ISO-8601 check, returns True if a duration is not in ISO-8601 format. The negative parameter must be specified to indicate if negative durations are either allowed (True) or disallowed (False)\n\n> DURVAR is invalid (negative durations disallowed)\n\n```yaml\n- name: \"DURVAR\"\n  operator: \"invalid_duration\"\n  negative: False\n```\n"
+        }
+      },
+      "required": ["operator", "negative"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "invalid_date",
+          "markdownDescription": "\nThe operator performs date validation against complete and partial dates with uncertainty in the following order:\n\n1. Attempts to parse using [dateutil.parser.isoparse()](https://dateutil.readthedocs.io/en/stable/parser.html)\n2. If parsing fails and the string contains uncertainty indicators (`/`, `--`, `-:`), validates against an extended ISO 8601 dates regex pattern\n3. If parsing succeeds, dates are still validated against the regex pattern.\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"invalid_date\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_complete_date",
+          "markdownDescription": "\nDate check\n\n> DM.RFSTDTC = complete date\n\n```yaml\n- name: \"RFSTDTC\"\n  operator: \"is_complete_date\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_contained_by",
+          "markdownDescription": "\nValue in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.\n\nThis operator behaves similarly to `contains`. The key distinction: `contains` checks if comparator \u2208 target, while `is_contained_by` checks if target \u2208 comparator.\n\n> ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"is_contained_by\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_contained_by_case_insensitive",
+          "markdownDescription": "\nValue in `name` case insensitive compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.\n\n> ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"is_contained_by_case_insensitive\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_incomplete_date",
+          "markdownDescription": "\nComplement of `is_complete_date`\n\nDate check\n\n> DM.RFSTDTC ^= complete date\n\n```yaml\n- name: \"RFSTDTC\"\n  operator: \"is_incomplete_date\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_contained_by",
+          "markdownDescription": "\nComplement of `is_contained_by`\n\n> ARM not in ('Screen Failure', 'Not Assigned')\n\n```yaml\n- name: \"ARM\"\n  operator: \"is_not_contained_by\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_contained_by_case_insensitive",
+          "markdownDescription": "\nComplement of `is_contained_by_case_insensitive`\n\n> ARM not in ('Screen Failure', 'Not Assigned')\n\n```yaml\n- name: \"ARM\"\n  operator: \"is_not_contained_by_case_insensitive\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_by",
+          "markdownDescription": "\nComplement of `is_ordered_by`\n"
+        }
+      },
+      "required": ["operator", "order"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_set"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_unique_relationship",
+          "markdownDescription": "\nComplement of `is_unique_relationship`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_unique_set",
+          "markdownDescription": "\nComplement of `is_unique_set`.\n\n> --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD\n\n```yaml\n- name: \"--SEQ\"\n  operator: is_not_unique_set\n  value:\n    - \"DOMAIN\"\n    - \"USUBJID\"\n    - \"--TESTCD\"\n```\n\n> `name` can be a variable containing a list of columns and `value` does not need to be present\n\n```yaml\nRule Type: Dataset Contents Check against Define XML\nCheck:\n  all:\n    - name: define_dataset_key_sequence # contains list of dataset key columns\n      operator: is_not_unique_set\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_by",
+          "markdownDescription": "\nTrue if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_by\n      order: asc\n```\n"
+        }
+      },
+      "required": ["operator", "order"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_set",
+          "markdownDescription": "\nTrue if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value: USUBJID\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_unique_relationship",
+          "markdownDescription": "\nRelationship Integrity Check looking for a 1-1 relationship between name and value. Ensures uniqueness of both name and value.\n\n> AETERM and AEDECOD has a 1-to-1 relationship\n\n```yaml\n- name: AETERM\n  operator: is_unique_relationship\n  value: AEDECOD\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_inconsistent_across_dataset",
+          "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_unique_set",
+          "markdownDescription": "\nRelationship Integrity Check\n\n> --SEQ is unique within DOMAIN, USUBJID, and --TESTCD\n\n```yaml\n- name: \"--SEQ\"\n  operator: is_unique_set\n  value:\n    - \"DOMAIN\"\n    - \"USUBJID\"\n    - \"--TESTCD\"\n```\n\n> `name` can be a variable containing a list of columns and `value` does not need to be present\n\n> The `regex` parameter allows you to extract portions of values using a regex pattern before checking uniqueness.\n\n> Compare date only (YYYY-MM-DD) for uniqueness\n\n```yaml\n- name: \"--REPNUM\"\n  operator: is_not_unique_set\n  value:\n    - \"USUBJID\"\n    - \"--TESTCD\"\n    - \"$TIMING_VARIABLES\"\n  regex: '^\\d{4}-\\d{2}-\\d{2}'\n```\n\n> Compare by first N characters of a string\n\n```yaml\n- name: \"ITEM_ID\"\n  operator: is_not_unique_set\n  value:\n    - \"USUBJID\"\n    - \"CATEGORY\"\n  regex: \"^.{2}\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "less_than",
+          "markdownDescription": "\nValue comparison\n\n> TSVAL < 1\n\n```yaml\n- name: TSVAL\n  operator: less_than\n  value: 1\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "less_than_or_equal_to",
+          "markdownDescription": "\nValue comparison\n\n> TSVAL <= 1\n\n```yaml\n- name: TSVAL\n  operator: less_than_or_equal_to\n  value: 1\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "longer_than",
+          "markdownDescription": "\nLength comparison\n\n> SETCD value length > 8\n\n```yaml\n- name: \"SETCD\"\n  operator: \"longer_than\"\n  value: 8\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "longer_than_or_equal_to",
+          "markdownDescription": "\nLength comparison\n\n> TSVAL value length >= 201\n\n```yaml\n- name: \"TSVAL\"\n  operator: \"longer_than_or_equal_to\"\n  value: 201\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "matches_regex",
+          "markdownDescription": "\nRegular Expression value matching\n\n- Determine if each string starts with a match of a regular expression. Refer to this pandas documentation: https://pandas.pydata.org/docs/reference/api/pandas.Series.str.match.html\n- To \"search\" for a regex within the entire text, prefix the regex with `.*` and do not use anchors `^` , `$`\n- To do a \"fullmatch\" of a regex with the entire text, suffix the regex with an anchor `$` and do not prefix the regex with `.*`\n- For syntax guide, refer to this Python documentation: [Regular Expression HOWTO](https://docs.python.org/3/howto/regex.html).\n- Suggestion for an on-line regular expression logic. tester: https://regex101.com, choose the Python dialect.\n- For regex token visualization, try https://www.debuggex.com.\n\n> --DOSTXT value is non-numeric\n\n```yaml\n- name: --DOSTXT\n  operator: matches_regex\n  value: ^\\d*\\.?\\d*$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_conformant_value_data_type",
+          "markdownDescription": "\nComplement of `conformant_value_data_type`\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_conformant_value_length",
+          "markdownDescription": "\nComplement of `conformant_value_length`\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_empty",
+          "markdownDescription": "\nComplement of `empty`\n\n> --OCCUR ^= null\n\n```yaml\n- name: --OCCUR\n  operator: non_empty\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_empty_within_except_last_row",
+          "markdownDescription": "\nComplement of `empty_within_except_last_row`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_contains_all",
+          "markdownDescription": "\nComplement of `contains_all`\n\n> All of ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment') not in ACTARM\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"not_contains_all\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n\nThe operator also supports lists:\n\n```yaml\n- name: \"$spec_codelist\"\n  operator: \"not_contains_all\"\n  value: \"$ppspec_value\"\n```\n\nWhere:\n\n| $spec_codelist              |   $ppspec_value    |\n| :-------------------------- | :----------------: |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE1\", \"CODE2\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE2\", \"CODE3\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] |     [\"CODE1\"]      |\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_equal_to",
+          "markdownDescription": "\nComplement of `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n\n> --OCCUR ^= Y\n\n```yaml\n- name: --OCCUR\n  operator: not_equal_to\n  value: \"Y\"\n```\n"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_equal_to_case_insensitive",
+          "markdownDescription": "\nComplement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_exists",
+          "markdownDescription": "\nComplement of `exists`\n\n> AEOCCUR not present in dataset\n\n```yaml\n- name: \"AEOCCUR\"\n  operator: \"not_exists\"\n```\n\n> Domain SJ does not exist\n\n```yaml\nRule Type: Domain Presence Check\nCheck:\n  all:\n    - name: \"SJ\"\n      operator: \"not_exists\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_matches_regex",
+          "markdownDescription": "\nComplement of `matches_regex`\n\n> --TESTCD <= 8 chars and contains only letters, numbers, and underscores and can not start with a number\n\n```yaml\n- name: --TESTCD\n  operator: not_matches_regex\n  value: ^[A-Z_][A-Z0-9_]{0,7}$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_prefix_matches_regex",
+          "markdownDescription": "\nComplement of `prefix_matches_regex`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_present_on_multiple_rows_within",
+          "markdownDescription": "\nComplement of `present_on_multiple_rows_within`\n\n```yaml\n- operator: \"not_present_on_multiple_rows_within\"\n  name: \"RELID\"\n  value: 4 (optional)\n  within: \"USUBJID\"\n```\n"
+        }
+      },
+      "required": ["operator", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_suffix_matches_regex",
+          "markdownDescription": "\nComplement of `suffix_matches_regex`\n\n> QNAM does not end with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"not_suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_contained_by",
+          "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match one of the strings in the list in `value`\n\n> Check if a variable's domain identifier exists in the study\n\n```yaml\n- name: variable_name\n  operator: prefix_is_contained_by\n  prefix: 2\n  value: $study_domains\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_equal_to",
+          "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match the string in `value`\n\n```yaml\n- name: dataset_name\n  operator: prefix_equal_to\n  prefix: 2\n  value: DOMAIN\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_not_contained_by",
+          "markdownDescription": "\nComplement of `prefix_is_contained_by`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_matches_regex",
+          "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match a regular expression in `value`\n\n```yaml\n- name: DOMAIN\n  operator: prefix_matches_regex\n  prefix: 2\n  value: (AP|ap)\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_not_equal_to",
+          "markdownDescription": "\nComplement of `prefix_equal_to`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "present_on_multiple_rows_within",
+          "markdownDescription": "\nTrue if the same value of `name` is present on multiple rows, grouped by `within`. A maximum allowed number of occurrences can be specified in the value attribute. In this instance the value: 4 means that an error will be flagged if the same value appears more than 4 times within a USUBJID. By default the operator will flag any time a value appears more than once.\n\n```yaml\n- operator: \"present_on_multiple_rows_within\"\n  name: \"RELID\"\n  value: 4 (optional)\n  within: \"USUBJID\"\n```\n"
+        }
+      },
+      "required": ["operator", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "references_correct_codelist",
+          "markdownDescription": "\nTrue if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_at_least_one_element_with",
+          "markdownDescription": "\nWill raise an issue if at least one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_exactly_one_element_with",
+          "markdownDescription": "\nWill raise an issue if exactly one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_no_elements_with",
+          "markdownDescription": "\nWill raise an issue if the values in `name` do not share any of the values in `value`\n\n> Check if $dataset_variables shares no elements with $timing_variables\n\n```yaml\nRule Type: Dataset Metadata Check # One record per dataset\nCheck:\n  - all:\n      name: $dataset_variables\n      operator: shares_no_elements_with\n      value: $timing_variables\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shorter_than",
+          "markdownDescription": "\nLength comparison\n\n> SETCD value length < 9\n\n```yaml\n- name: \"SETCD\"\n  operator: \"shorter_than\"\n  value: 9\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shorter_than_or_equal_to",
+          "markdownDescription": "\nLength comparison\n\n> TSVAL value length <= 200\n\n```yaml\n- name: \"TSVAL\"\n  operator: \"shorter_than_or_equal_to\"\n  value: 201\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "split_parts_have_equal_length",
+          "markdownDescription": "\nSplits a string by a separator and checks if both parts have equal length. Generic operator for validating paired data formats where both parts must have the same level of detail or precision.\n\nParameters:\n\n- `separator`: The delimiter to split on (default: \"/\")\n\n> Check that string parts separated by a delimiter have equal length\n\n```yaml\n- name: --DTC\n  operator: split_parts_have_equal_length\n  separator: \"/\"\n```\n\nUse cases:\n\n- **Date/time intervals**: `2003-12-15T10:00/2003-12-15T10:30` \u2192 True (both 16 characters)\n- **Date ranges**: `2003-12-01/2003-12-10` \u2192 True (both 10 characters)\n- **Version ranges**: `1.2.3/2.0.0` \u2192 True (both 5 characters)\n- **Product codes**: `ABC-123/XYZ-789` \u2192 True (both 7 characters)\n\nInvalid example:\n\n- `2003-12-15T10:00/2003-12-15T10:30:15` \u2192 False (16 vs 19 characters - different precision)\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "split_parts_have_unequal_length",
+          "markdownDescription": "\nComplement of `split_parts_have_equal_length`. Returns True when parts have unequal lengths (indicates a violation).\n\n```yaml\n- name: --DTC\n  operator: split_parts_have_unequal_length\n  separator: \"/\"\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "starts_with",
+          "markdownDescription": "\nSubstring matching\n\n> DOMAIN beginning with 'AP'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"starts_with\"\n  value: \"AP\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_equal_to",
+          "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match the string in `value`\n\n```yaml\n- name: dataset_name\n  operator: suffix_equal_to\n  prefix: 2\n  value: DOMAIN\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_contained_by",
+          "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match one of the strings in the list in `value`\n\n> Check if a supp's parent domain exists in the study\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_contained_by\n  prefix: 2\n  value: $study_domains\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_not_contained_by",
+          "markdownDescription": "\nComplement of `suffix_is_contained_by`\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_matches_regex",
+          "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match a regular expression in `value`\n\n> QNAM ends with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_not_equal_to",
+          "markdownDescription": "\nComplement of `suffix_equal_to`\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "target_is_not_sorted_by",
+          "markdownDescription": "\nComplement of `target_is_sorted_by`\n"
+        }
+      },
+      "required": ["operator", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "target_is_sorted_by",
+          "markdownDescription": "\nTrue if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n"
+        }
+      },
+      "required": ["operator", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "value_does_not_have_multiple_references",
+          "markdownDescription": "\nComplement of `value_has_multiple_references`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "value_has_multiple_references",
+          "markdownDescription": "\nTrue if the value in `name` has more than one count in the dictionary defined in `value`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "inconsistent_enumerated_columns",
+          "markdownDescription": "\nChecks for inconsistencies in enumerated columns of a DataFrame. Starting with the smallest/largest enumeration of the given variable, returns True if VARIABLE(N+1) is populated but VARIABLE(N) is not populated. Repeats for all variables belonging to the enumeration. Note that the initial variable will not have an index (VARIABLE) and the next enumerated variable has index 1 (VARIABLE1).\n\nex: Check if there are inconsistencies in the TSVAL columns (TSVAL, TSVAL1, TSVAL2, etc.)\n\n```yaml\nCheck:\n  all:\n    - name: \"TSVAL\"\n      operator: \"inconsistent_enumerated_columns\"\n```\n"
+        }
+      },
+      "required": ["operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_subset_of",
+          "markdownDescription": "\nChecks if elements in the target list appear in the same relative order in the comparator list.\n\n> Check if dataset column order is a correctly ordered subset of library column order\n\n```yaml\n- name: $column_order_from_dataset\n  operator: is_ordered_subset_of\n  value: $column_order_from_library\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_subset_of",
+          "markdownDescription": "\nComplement of `is_ordered_subset_of`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "comparator": {
+      "type": ["number", "string"]
+    },
+    "context": {
+      "type": "string"
+    },
+    "date_component": {
+      "enum": [
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+        "auto"
+      ],
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "Operations.json#/properties/id"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "$ref": "Operations.json#/properties/id"
+        },
+        {
+          "$ref": "MetaVariables.json"
+        },
+        {
+          "$ref": "CORE-base.json#/$defs/VariableName"
+        }
+      ]
+    },
+    "negative": {
+      "type": "boolean"
+    },
+    "codelistcheck": {
+      "enum": ["code", "value"],
+      "type": "string"
+    },
+    "codelistlevel": {
+      "enum": ["term", "codelist"],
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    },
+    "order": {
+      "enum": ["asc", "dsc"],
+      "type": "string"
+    },
+    "ordering": {
+      "$ref": "CORE-base.json#/$defs/VariableName"
+    },
+    "prefix": {
+      "type": "integer"
+    },
+    "suffix": {
+      "type": "integer"
+    },
+    "separator": {
+      "type": "string"
+    },
+    "value": {
+      "oneOf": [
+        {
+          "type": ["boolean", "number", "string"]
+        },
+        {
+          "items": {
+            "type": ["number"]
+          },
+          "type": "array"
+        },
+        {
+          "items": {
+            "type": ["string"]
+          },
+          "type": "array"
+        },
+        {
+          "items": {
+            "properties": {
+              "name": {
+                "$ref": "Operator.json#/properties/name"
+              },
+              "null_position": {
+                "enum": ["first", "last"],
+                "type": "string"
+              },
+              "order": {
+                "$ref": "Operator.json#/properties/order"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "value_is_literal": {
+      "const": true
+    },
+    "value_is_reference": {
+      "type": "boolean"
+    },
+    "type_insensitive": {
+      "type": "boolean"
+    },
+    "round_values": {
+      "type": "boolean"
+    },
+    "within": {
+      "oneOf": [
+        {
+          "$ref": "CORE-base.json#/$defs/VariableName"
+        },
+        {
+          "items": {
+            "$ref": "CORE-base.json#/$defs/VariableName"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      ]
+    },
+    "regex": {
+      "type": "string"
+    }
+  },
+  "required": ["operator"],
+  "type": "object"
+}

@@ -1,0 +1,33 @@
+name: Merge Schema with Markdown Descriptions
+
+on:
+  workflow_dispatch: 
+  push:
+    paths:
+      - 'resources/schema/rule/**'
+
+jobs:
+  merge-schema-markdown:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Run schema markdown merge script
+        run: |
+          python scripts/merge_schema_markdown.py
+
+      - name: Commit and push the merged schema files to the current branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@cdisc.org
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Update merged schema files with markdown descriptions"
+          git push
