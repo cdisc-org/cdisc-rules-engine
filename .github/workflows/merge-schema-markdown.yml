@@ -2,14 +2,9 @@ name: Merge Schema with Markdown Descriptions
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "resources/schema/rule/**"
   push:
     paths:
       - "resources/schema/rule/**"
-    branches:
-      - main
 
 jobs:
   merge-schema-markdown:
@@ -17,14 +12,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout repo (PR)
-        uses: actions/checkout@v6
-        if: github.event_name == 'pull_request'
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-      - name: Checkout repo (branch)
-        uses: actions/checkout@v6
-        if: github.event_name != 'pull_request'
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
