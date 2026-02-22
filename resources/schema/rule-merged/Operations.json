@@ -346,7 +346,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_define_external_dictionary_version"
+          "const": "valid_define_external_dictionary_version",
+          "markdownDescription": "\nReturns true if the version of an external dictionary provided in the define.xml file matches the version parsed from the dictionary files.\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_define_external_dictionary_version\n    id: $is_valid_loinc_version\n    external_dictionary_type: loinc\n```\n\nOutput:\n\n```\n[true, true, true, true]\n```\n"
         }
       },
       "required": ["id", "operator", "external_dictionary_type"],
@@ -355,7 +356,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_external_dictionary_value"
+          "const": "valid_external_dictionary_value",
+          "markdownDescription": "\nReturns true if the target variable contains a valid external dictionary value, otherwise false\n\nCan be case insensitive by setting case_sensitive attribute to false. It is true by default.\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_value\n    name: --DECOD\n    id: $is_valid_decod_value\n    external_dictionary_type: meddra\n    dictionary_term_type: PT\n    case_sensitive: false\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
         }
       },
       "required": [
@@ -370,7 +372,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_external_dictionary_code"
+          "const": "valid_external_dictionary_code",
+          "markdownDescription": "\nReturns true if the target variable contains a valid external dictionary code, otherwise false\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_code\n    name: --COD\n    id: $is_valid_cod_code\n    external_dictionary_type: meddra\n    dictionary_term_type: PT\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
         }
       },
       "required": [
@@ -385,7 +388,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_external_dictionary_code_term_pair"
+          "const": "valid_external_dictionary_code_term_pair",
+          "markdownDescription": "\nReturns true if the row in the dataset contains a matching pair of code and term, otherwise false\n\nFor this operator, the name parameter should contain the name of the variable containing the code, and the external_dictionary_term_variable parameter should contain the name of the variable containing the term Input:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_code_term_pair\n    name: --COD\n    id: $is_valid_loinc_code_term_pair\n    external_dictionary_type: loinc\n    external_dictionary_term_variable: --DECOD\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
         }
       },
       "required": [
@@ -400,7 +404,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_meddra_code_references"
+          "const": "valid_meddra_code_references",
+          "markdownDescription": "\nDetermines whether the values are valid in the following variables:\n\n- --SOCCD (System Organ Class Code)\n- --HLGTCD (High Level Group Term Code)\n- --HLTCD (High Level Term Code)\n- --PTCD (Preferred Term Code)\n- --LLTCD (Lowest Level Term Code)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_codes\n    operator: valid_meddra_code_references\n```\n\nOutput:\n\n```\n[true, false, true, true]\n```\n"
         }
       },
       "required": ["id", "operator"],
@@ -409,7 +414,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_meddra_code_term_pairs"
+          "const": "valid_meddra_code_term_pairs",
+          "markdownDescription": "\nDetermines whether the values are valid in the following variable pairs:\n\n- --SOCCD, --SOC (System Organ Class Code and Term)\n- --HLGTCD, --HLGT (High Level Group Term Code and Term)\n- --HLTCD, --HLT (High Level Term Code and Term)\n- --PTCD, --DECOD (Preferred Term Code and Dictionary-Derived Term)\n- --LLTCD, --LLT (Lowest Level Term Code and Term)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_pairs\n    operator: valid_meddra_code_term_pairs\n```\n\nOutput:\n\n```\n[true, true, false, true, true]\n```\n"
         }
       },
       "required": ["id", "operator"],
@@ -418,7 +424,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_meddra_term_references"
+          "const": "valid_meddra_term_references",
+          "markdownDescription": "\nDetermines whether the values are valid in the following variables:\n\n- --SOC (System Organ Class)\n- --HLGT (High Level Group Term)\n- --HLT (High Level Term)\n- --DECOD (Dictionary-Derived Term)\n- --LLT (Lowest Level Term)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_terms\n    operator: valid_meddra_term_references\n```\n\nOutput:\n\n```\n[true, true, false, true, true]\n```\n"
         }
       },
       "required": ["id", "operator"],
@@ -427,7 +434,8 @@
     {
       "properties": {
         "operator": {
-          "const": "valid_whodrug_references"
+          "const": "valid_whodrug_references",
+          "markdownDescription": "\nChecks if a reference to whodrug term in name points to the existing code in Atc Text (INA) file.\n\nInput:\n\n```yaml\nOperations:\n  - id: $whodrug_refs_valid\n    operator: valid_whodrug_references\n```\n\nOutput:\n\n```\n[true, false, true, true]\n```\n"
         }
       },
       "required": ["id", "operator", "name"],
@@ -486,7 +494,8 @@
     {
       "properties": {
         "operator": {
-          "const": "whodrug_code_hierarchy"
+          "const": "whodrug_code_hierarchy",
+          "markdownDescription": "\nDetermines whether the values are valid and in the correct hierarchical structure in the following variables:\n\n- --DECOD\n- --CLAS\n- --CLASCD\n\nInput:\n\n```yaml\nOperations:\n  - id: $valid_whodrug_codes\n    operator: whodrug_code_hierarchy\n```\n"
         }
       },
       "required": ["id", "operator"],
