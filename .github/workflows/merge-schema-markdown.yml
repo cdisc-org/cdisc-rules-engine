@@ -31,6 +31,6 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@cdisc.org
-          git add .
+          git add resources/schema/rule-merged
           git diff-index --quiet HEAD || git commit -m "Update merged schema files with markdown descriptions"
           git push
