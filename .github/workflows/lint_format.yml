@@ -42,3 +42,8 @@ jobs:
       - name: Run black
         run: |
           black --check ${{needs.get_changed_files.outputs.py}}
+      - uses: actions/setup-node@v6
+      - name: Run prettier
+        run: |
+          npm i prettier
+          npx prettier --check ${{needs.get_changed_files.outputs.py}}
