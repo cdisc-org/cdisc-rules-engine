@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       py: ${{ steps.changes.outputs.py }}
+      pretty: ${{ steps.changes.outputs.pretty }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,6 +18,7 @@ jobs:
         id: changes
         run: |
           echo "py=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)" >> $GITHUB_OUTPUT
+          echo "pretty=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .{json,md,yaml,yml}$ | xargs)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
@@ -46,4 +48,4 @@ jobs:
       - name: Run prettier
         run: |
           npm i prettier
-          npx prettier --check ${{needs.get_changed_files.outputs.py}}
+          npx prettier --check ${{needs.get_changed_files.outputs.pretty}}
