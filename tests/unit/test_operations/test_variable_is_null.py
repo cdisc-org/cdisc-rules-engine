@@ -102,3 +102,23 @@ def test_variable_is_null_evaluation_dataset_level(mock_data_service, operation_
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
         assert val is True
+
+
+def test_variable_is_null_raises_value_error_for_row_level_submission(
+    mock_data_service, operation_params
+):
+    data = PandasDataset.from_dict({"VAR1": ["A", "B", "C"], "VAR2": [1, 2, 3]})
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    operation_params.dataframe = data
+    operation_params.target = "VAR1"
+    operation_params.domain = "AE"
+    operation_params.source = "submission"
+    operation_params.level = "row"
+    mock_data_service.get_dataset.return_value = data
+    mock_data_service.dataset_implementation = PandasDataset
+
+    with pytest.raises(
+        ValueError, match="level: row may only be used with source: evaluation"
+    ):
+        VariableIsNull(operation_params, data, cache, mock_data_service).execute()
