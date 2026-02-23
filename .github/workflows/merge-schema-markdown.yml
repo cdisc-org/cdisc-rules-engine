@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - "resources/schema/rule/**"
+    branches:
+      - main
 
 jobs:
   merge-schema-markdown:
