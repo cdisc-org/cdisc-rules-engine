@@ -18,7 +18,7 @@ jobs:
         id: changes
         run: |
           echo "py=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)" >> $GITHUB_OUTPUT
-          echo "pretty=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .{json,md,yaml,yml}$ | xargs)" >> $GITHUB_OUTPUT
+          echo "pretty=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep -E '\.(json|md|yaml|yml)$' | xargs)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
