@@ -1,5 +1,3 @@
-## Dataset Contents Check against Define XML and Library Metadata
-
 #### Columns
 
 Columns are the columns within the original dataset
