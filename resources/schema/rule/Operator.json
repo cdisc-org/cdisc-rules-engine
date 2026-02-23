@@ -525,6 +525,16 @@
       "properties": { "operator": { "const": "is_not_ordered_subset_of" } },
       "required": ["operator", "value"],
       "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "is_title_case" } },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "is_not_title_case" } },
+      "required": ["operator"],
+      "type": "object"
     }
   ],
   "properties": {
