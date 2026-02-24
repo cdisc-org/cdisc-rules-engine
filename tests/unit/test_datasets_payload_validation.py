@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
@@ -39,7 +40,9 @@ def _get_testrule_module():
 class TestValidateDatasetsPayload:
     """Test validate_datasets_payload raises clear, actionable errors."""
 
-    def test_missing_label_raises_bad_request_with_coping_guidance(self):
+    def test_missing_required_properties_raises_bad_request_with_datasets_guidance(
+        self,
+    ):
         testrule = _get_testrule_module()
         datasets = [
             {
@@ -52,12 +55,12 @@ class TestValidateDatasetsPayload:
         with pytest.raises(testrule.BadRequestError) as exc_info:
             testrule.validate_datasets_payload(datasets)
         msg = str(exc_info.value)
-        assert "label" in msg
+        assert "missing required dataset properties" in msg
         assert "Datasets" in msg
         assert "case-sensitive" in msg
         assert "Filename" in msg or "Label" in msg
 
-    def test_missing_multiple_keys_includes_all_in_message(self):
+    def test_missing_multiple_required_properties_raises_with_datasets_guidance(self):
         testrule = _get_testrule_module()
         datasets = [
             {
@@ -67,11 +70,10 @@ class TestValidateDatasetsPayload:
         with pytest.raises(testrule.BadRequestError) as exc_info:
             testrule.validate_datasets_payload(datasets)
         msg = str(exc_info.value)
-        assert "label" in msg
-        assert "domain" in msg
-        assert "records" in msg
-        assert "variables" in msg
+        assert "missing required dataset properties" in msg
+        assert "Datasets" in msg
         assert "case-sensitive" in msg
+        assert "Filename" in msg or "Label" in msg
 
     def test_valid_payload_passes(self):
         testrule = _get_testrule_module()
@@ -108,7 +110,7 @@ class TestHandleException:
     def test_bad_request_error_returns_400_with_message(self):
         testrule = _get_testrule_module()
         e = testrule.BadRequestError(
-            "Test data is missing required dataset properties: ['label']. "
+            "Test data is missing required dataset properties. "
             "Make sure there is a 'Datasets' tab (case-sensitive)."
         )
         response = testrule.handle_exception(e)
@@ -149,6 +151,19 @@ class TestHandleException:
         assert body["error"] == "LibraryMetadataNotFoundError"
         assert "sdtmig" in body["message"]
         assert "3.4" in body["message"] or "version" in body["message"]
+
+    def test_ct_package_not_found_error_returns_400_with_message(self):
+        testrule = _get_testrule_module()
+        e = CTPackageNotFoundError(
+            "Controlled terminology package(s) not found: bad-ct-pkg. "
+            "Check Library tab or request codelist names."
+        )
+        response = testrule.handle_exception(e)
+        assert response.status_code == 400
+        body = json.loads(response.get_body().decode())
+        assert body["error"] == "CTPackageNotFoundError"
+        assert "not found" in body["message"]
+        assert "bad-ct-pkg" in body["message"]
 
     def test_other_exception_returns_400_unknown_exception(self):
         testrule = _get_testrule_module()

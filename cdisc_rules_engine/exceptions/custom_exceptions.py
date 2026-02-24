@@ -97,6 +97,17 @@ class ExcelTestDataError(EngineError):
     )
 
 
+CT_PACKAGE_NOT_FOUND_PREFIX = "Controlled terminology package(s) not found"
+
+
+class CTPackageNotFoundError(EngineError):
+    code = 400
+    description = (
+        f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache. "
+        "Check package names and run 'core.py update-cache' if needed."
+    )
+
+
 class NumberOfAttemptsExceeded(EngineError):
     pass
 

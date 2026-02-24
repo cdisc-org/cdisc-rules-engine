@@ -28,6 +28,8 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CTPackageNotFoundError,
+    CT_PACKAGE_NOT_FOUND_PREFIX,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
@@ -129,6 +131,20 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
+    if args.controlled_terminology_package:
+        requested = set(args.controlled_terminology_package)
+        missing = requested - published_ct_packages
+        if missing:
+            sorted_missing = sorted(
+                missing, key=lambda x: (x is None, str(x) if x is not None else "")
+            )
+            available = ", ".join(sorted(published_ct_packages)) or "(none)"
+            raise CTPackageNotFoundError(
+                f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache: "
+                f"{', '.join(str(c) for c in sorted_missing)}. "
+                f"Available packages: {available}. "
+                "Run 'core.py update-cache' to refresh the cache."
+            )
     if args.define_xml_path and define_version.model_package == "define_2_1":
         (
             standards,

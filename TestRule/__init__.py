@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
@@ -24,11 +25,6 @@ class BadRequestError(Exception):
     pass
 
 
-_DATASETS_TAB_GUIDANCE = (
-    "Make sure there is a 'Datasets' tab in your test data workbook (name is "
-    "case-sensitive). The 'Datasets' tab must have column headers: 'Filename', "
-    "'Label', and 'Dataset Name' (also case-sensitive)."
-)
 _REQUIRED_DATASET_KEYS = {"filename", "label", "domain", "records", "variables"}
 
 
@@ -46,11 +42,13 @@ def validate_datasets_payload(datasets):
                 )
 
     if missing_keys:
-        missing_list = sorted(missing_keys)
         raise BadRequestError(
-            f"Test data is missing required dataset properties: {missing_list}. "
-            f"This usually means the 'Datasets' sheet in your Excel file is missing "
-            f"or has incorrect column headers. {_DATASETS_TAB_GUIDANCE}"
+            "Test data is missing required dataset properties. "
+            "This usually means the 'Datasets' sheet in your Excel file is missing "
+            "or has incorrect column headers. "
+            "Make sure there is a 'Datasets' tab in your test data workbook (name is "
+            "case-sensitive). The 'Datasets' tab must have column headers: 'Filename', "
+            "'Label', and 'Dataset Name' (also case-sensitive)."
         )
 
 
@@ -69,6 +67,12 @@ def handle_exception(e: Exception):
                     "message": msg,
                 }
             ),
+            status_code=400,
+        )
+    if isinstance(e, CTPackageNotFoundError):
+        msg = getattr(e, "message", None) or getattr(e, "description", None) or str(e)
+        return func.HttpResponse(
+            json.dumps({"error": "CTPackageNotFoundError", "message": msg}),
             status_code=400,
         )
     if isinstance(e, KeyError):
