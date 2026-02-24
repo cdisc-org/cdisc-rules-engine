@@ -65,6 +65,7 @@ class COREActions(BaseActions):
         )
         if "domain presence" in self.rule.get("rule_type", "").lower():
             error_object.dataset = DomainPresenceValues.DATASET.value
+            error_object.domain = DomainPresenceValues.DOMAIN.value
             for error in error_object.errors:
                 error.dataset = DomainPresenceValues.DATASET.value
                 error.row = DomainPresenceValues.RECORD.value
@@ -174,6 +175,10 @@ class COREActions(BaseActions):
                 )
             ]
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
+            errors_list = self._generate_errors_by_target_presence(
+                data, targets_not_in_dataset, all_targets_missing, errors_df
+            )
+        elif self.rule.get("sensitivity") == Sensitivity.STUDY.value:
             errors_list = self._generate_errors_by_target_presence(
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )

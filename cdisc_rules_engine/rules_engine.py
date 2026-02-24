@@ -1,6 +1,8 @@
 from copy import deepcopy
 from typing import Iterable, List, Union
 from dateutil.parser._parser import ParserError
+import traceback
+
 from business_rules import export_rule_data
 from business_rules.engine import run
 from cdisc_rules_engine.config import config as default_config
@@ -58,7 +60,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-import traceback
+from cdisc_rules_engine.enums.sensitivity import Sensitivity
 
 
 class RulesEngine:
@@ -174,6 +176,8 @@ class RulesEngine:
                     )
                     if limit_reached:
                         break
+        if rule.get("sensitivity") == Sensitivity.STUDY.value:
+            results = self._collapse_to_study_result(results)
         return results
 
     def _update_total_errors_and_check_limit(
@@ -671,3 +675,15 @@ class RulesEngine:
             message=message,
             status=ExecutionStatus.EXECUTION_ERROR.value,
         )
+
+    def _collapse_to_study_result(self, results: dict) -> dict:
+        """
+        For study sensitivity rules, collapse all per-dataset results into a single
+        study-level result using the first non-skipped result as the representative.
+        """
+        for key, dataset_results in results.items():
+            for result in dataset_results:
+                if result.get("executionStatus") != ExecutionStatus.SKIPPED.value:
+                    return {"study": [result]}
+        first_key = next(iter(results))
+        return {"study": results[first_key]}

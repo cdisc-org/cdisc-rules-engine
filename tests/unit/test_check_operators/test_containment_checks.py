@@ -34,14 +34,20 @@ def test_contains(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
-            {"target": ["Ctt", "Btt", "A"], "VAR2": ["a", "btt", "lll"]},
+            {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
             [True, True, False],
         ),
         (
-            {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
-            "l",
+            {
+                "target": [
+                    ["A", "B", "C"],
+                    ["A", "left hind limb", "L"],
+                    ["L", "NON-ULCERATED left hind limb", "R"],
+                ]
+            },
+            "LEFT HIND LIMB",
             PandasDataset,
             [False, True, True],
         ),
@@ -86,7 +92,7 @@ def test_does_not_contain(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
-            {"target": ["Ctt", "Btt", "A"], "VAR2": ["a", "btt", "lll"]},
+            {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
             [False, False, True],
@@ -259,45 +265,85 @@ def test_not_contains_all(data, comparator, dataset_type, expected_result):
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type, expected_result",
+    "data, comparator, dataset_type, column_prefix_map, value_is_literal, expected_result",
     [
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             ["Ctt", "B", "A"],
             PandasDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             ["Ctt", "B", "A"],
             DaskDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": ["A", "B", "C"]},
             ["C", "Z", "A"],
             DaskDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
             "VAR2",
             PandasDataset,
+            {},
+            False,
             [True, False, True],
         ),
         (
             {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
             "VAR2",
             DaskDataset,
+            {},
+            False,
             [True, False, True],
+        ),
+        (
+            {
+                "target": ["TSPARM", "TSORRESU", "AGEU", "TSDOSU"],
+                "DOMAIN": ["TS", "TS", "DM", "TS"],
+            },
+            ["--ORRESU", "--STRESU", "--DOSU", "--TEST", "QLABEL", "--PARM"],
+            PandasDataset,
+            {"--": "TS"},
+            True,
+            [True, True, False, True],
+        ),
+        (
+            {
+                "target": ["TSPARM", "TSORRESU", "AGEU", "TSDOSU"],
+                "DOMAIN": ["TS", "TS", "DM", "TS"],
+            },
+            ["--ORRESU", "--STRESU", "--DOSU", "--TEST", "QLABEL", "--PARM"],
+            DaskDataset,
+            {"--": "TS"},
+            True,
+            [True, True, False, True],
         ),
     ],
 )
-def test_is_contained_by(data, comparator, dataset_type, expected_result):
+def test_is_contained_by(
+    data, comparator, dataset_type, column_prefix_map, value_is_literal, expected_result
+):
     df = dataset_type.from_dict(data)
-    dataframe_operator = DataframeType({"value": df})
+    dataframe_operator = DataframeType(
+        {"value": df, "column_prefix_map": column_prefix_map}
+    )
     result = dataframe_operator.is_contained_by(
-        {"target": "target", "comparator": comparator}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
@@ -560,3 +606,39 @@ def test_is_column_of_iterables(column_data, expected):
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.is_column_of_iterables(df["col"])
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "data,target_col,comparator_col,dataset_type,expected_result",
+    [
+        (
+            {
+                "PMSTRESC": [
+                    "2.0",
+                    "2.0",
+                    "NON-ULCERATED left hind limb",
+                    "LEFT LEG",
+                ],
+                "PMLOC": [
+                    "LEFT HIND LIMB ",
+                    "LEFT HIND LIMB ",
+                    "LEFT HIND LIMB",
+                    "left leg",
+                ],
+            },
+            "PMSTRESC",
+            "PMLOC",
+            PandasDataset,
+            [False, False, True, True],
+        ),
+    ],
+)
+def test_contains_case_insensitive_column_vs_column(
+    data, target_col, comparator_col, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.contains_case_insensitive(
+        {"target": target_col, "comparator": comparator_col}
+    )
+    assert result.equals(df.convert_to_series(expected_result))

@@ -5,3 +5,4 @@ class Sensitivity(BaseEnum):
     DATASET = "Dataset"
     RECORD = "Record"
     GROUP = "Group"
+    STUDY = "Study"
