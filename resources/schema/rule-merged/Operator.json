@@ -472,7 +472,7 @@
       "properties": {
         "operator": {
           "const": "is_ordered_set",
-          "markdownDescription": "\nTrue if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value: USUBJID\n```\n"
+          "markdownDescription": "\nTrue if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`. Value can either be a single column or multiple.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value: USUBJID\n```\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value:\n        - USUBJID\n        - \"--TESTCD\"\n```\n"
         }
       },
       "required": ["operator", "value"],
@@ -910,7 +910,7 @@
       "properties": {
         "operator": {
           "const": "target_is_sorted_by",
-          "markdownDescription": "\nTrue if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n"
+          "markdownDescription": "\nTrue if the values in `name` are ordered according to the values specified by `value` in ascending/descending order, grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 'YYYY-MM-DD' format\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n```\n"
         }
       },
       "required": ["operator", "value", "within"],
@@ -964,6 +964,26 @@
         }
       },
       "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_title_case",
+          "markdownDescription": "\nValidates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.  \nNOTE: The titlecase library may produce false positives or false negatives in syntactic edge cases (e.g. hyphenated words, slash-separated terms, uncommon prepositions).\n\n> Check that AELABEL values are in proper title case\n\n```yaml\n- name: AELABEL\n  operator: is_title_case\n```\n"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_title_case",
+          "markdownDescription": "\nComplement of `is_title_case`. Returns True when values are NOT in proper title case.\n\n> Flag AELABEL values that violate title case rules\n\n```yaml\n- name: AELABEL\n  operator: is_not_title_case\n```\n"
+        }
+      },
+      "required": ["operator"],
       "type": "object"
     }
   ],
@@ -1055,10 +1075,6 @@
             "properties": {
               "name": {
                 "$ref": "Operator.json#/properties/name"
-              },
-              "null_position": {
-                "enum": ["first", "last"],
-                "type": "string"
               },
               "order": {
                 "$ref": "Operator.json#/properties/order"
