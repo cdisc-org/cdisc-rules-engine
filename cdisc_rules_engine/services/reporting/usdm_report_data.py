@@ -268,9 +268,9 @@ class USDMReportData(BaseReportData):
                 "version": "1",
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "message": validation_result.message,
-                "status": ExecutionStatus(
-                    validation_result.execution_status
-                ).value.upper(),
+                "status": ExecutionStatus(validation_result.execution_status)
+                .value.upper()
+                .replace("_", " "),
             }
             rules_report.append(rules_item)
 

@@ -365,9 +365,9 @@ class SDTMReportData(BaseReportData):
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
                 "message": validation_result.message,
-                "status": ExecutionStatus(
-                    validation_result.execution_status
-                ).value.upper(),
+                "status": ExecutionStatus(validation_result.execution_status)
+                .value.upper()
+                .replace("_", " "),
             }
             rules_report.append(rules_item)
         return sorted(
