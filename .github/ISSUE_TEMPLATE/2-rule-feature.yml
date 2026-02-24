@@ -20,8 +20,6 @@ body:
         - FDA BR SDTM
         - FDA BR SDTMIG
         - FDA BR SEND
-        - FDA VR SDTMIG
-        - FDA VR SENDIG
         - Custom
   - type: input
     id: reference_rule_id
@@ -39,9 +37,6 @@ body:
     attributes:
       label: JIRA Ticket
       value: https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
-  - type: markdown
-    attributes:
-      value: "In the next fields, please provide a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)."
   - type: textarea
     id: rule
     validations:
