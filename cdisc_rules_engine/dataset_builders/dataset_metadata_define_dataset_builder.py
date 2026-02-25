@@ -96,18 +96,17 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
                     logger.error(
                         f"Error extracting metadata for {dataset_name}: {str(e)}"
                     )
-                    basic_metadata["define_dataset_variables"] = None
-                    basic_metadata["define_dataset_variable_order"] = None
-                    basic_metadata["define_dataset_key_sequence"] = None
-                    basic_metadata["define_dataset_has_no_data"] = None
+                    self._ensure_define_metadata_keys(basic_metadata, define_col_order)
                     enriched_metadata.append(basic_metadata)
             else:
-                basic_metadata["define_dataset_variables"] = None
-                basic_metadata["define_dataset_variable_order"] = None
-                basic_metadata["define_dataset_key_sequence"] = None
-                basic_metadata["define_dataset_has_no_data"] = None
+                self._ensure_define_metadata_keys(basic_metadata, define_col_order)
                 enriched_metadata.append(basic_metadata)
         return self.dataset_implementation.from_records(enriched_metadata)
+
+    def _ensure_define_metadata_keys(self, metadata: dict, col_order: list) -> None:
+        for key in col_order:
+            if key not in metadata:
+                metadata[key] = None
 
     def _ensure_required_columns(self, dataset_df, dataset_col_order):
         if "dataset_size" not in dataset_df.columns:
