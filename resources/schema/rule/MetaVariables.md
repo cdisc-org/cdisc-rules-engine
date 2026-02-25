@@ -238,6 +238,10 @@ Variable format
 
 True/False value indicating whether a variable has any empty values
 
+## variable_is_empty
+
+True/False value indicating whether a variable is completely empty
+
 ## variable_label
 
 Variable long label
