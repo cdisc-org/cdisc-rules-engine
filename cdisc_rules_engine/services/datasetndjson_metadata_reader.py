@@ -7,6 +7,7 @@ import pandas as pd
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DatasetNDJSONMetadataReader:
@@ -15,23 +16,33 @@ class DatasetNDJSONMetadataReader:
     from .ndjson file.
     """
 
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+    ):
         self._metadata_container = {}
         self._file_path = file_path
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
         Extracts metadata from .ndjson file.
         """
         # Load Dataset-NDJSON Schema
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
 
-        with open(self._file_path, "r") as file:
-            lines = file.readlines()
+        encoding = self.encoding or DEFAULT_ENCODING
+        try:
+            with open(self._file_path, "r", encoding=encoding) as file:
+                lines = file.readlines()
+        except (UnicodeDecodeError, UnicodeError) as e:
+            raise ValueError(
+                f"Could not decode NDJSON file {self._file_path} with {encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
+            )
 
         metadatandjson = json.loads(lines[0])
 

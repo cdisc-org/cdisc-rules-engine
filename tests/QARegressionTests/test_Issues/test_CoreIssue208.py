@@ -44,7 +44,7 @@ class JSONSearchTestCase(unittest.TestCase):
             "-v",
             "3.4",
             "-dp",
-            os.path.join("tests", "resources", "datasets", "ae.xpt"),
+            os.path.join("resources", "datasets", "ae.xpt"),
             "-of",
             "JSON",
         ]

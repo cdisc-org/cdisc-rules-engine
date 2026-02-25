@@ -16,16 +16,23 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetNDJSONReader(DataReaderInterface):
+
     def get_schema(self) -> dict:
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
         return schema
 
     def read_json_file(self, file_path: str) -> dict:
-        with open(file_path, "r") as file:
-            lines = file.readlines()
-        return json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
+        try:
+            with open(file_path, "r", encoding=self.encoding) as file:
+                lines = file.readlines()
+            return json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
+        except (UnicodeDecodeError, UnicodeError) as e:
+            raise ValueError(
+                f"Could not decode NDJSON file {file_path} with {self.encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
+            )
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema

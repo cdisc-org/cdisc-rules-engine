@@ -846,6 +846,16 @@ Output
 }
 ```
 
+### get_library_class_domains
+
+Returns the list of domain for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS", "INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:
+
+```yaml
+- operator: get_library_class_domains
+  id: $trial_design_domains
+  domain_class: "TRIAL DESIGN"
+```
+
 ## Define.XML Metadata Operations
 
 Operations for working with Define.XML metadata and variable references.
@@ -1003,7 +1013,7 @@ Operations:
 
 ### record_count
 
-If no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.
+If no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. Filter can have a wildcard `&` that when added to the end of the filter value will look for all instances of that prefix (see 4th example below). If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.
 
 If both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
@@ -1048,7 +1058,7 @@ Example: return the number of records where QNAM starts with "RACE" (matches RAC
 - operation: record_count
   id: $race_records_in_dataset
   filter:
-    QNAM: "RACE%"
+    QNAM: "RACE&"
   group:
     - "USUBJID"
 ```
@@ -1281,7 +1291,7 @@ Match Datasets:
 
 ### variable_exists
 
-Flag an error if MIDS is in the dataset currently being evaluated and the TM domain is not present in the study
+Operation operates only on original submission datasets regardless of rule type. Flags an error if a column exists is in the submission dataset currently being evaluated.
 
 Rule Type: Domain Presence Check
 
@@ -1302,13 +1312,18 @@ Operations:
 ### variable_is_null
 
 Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.
-The operation can work with both direct variable names and define metadata references (variables starting with "define_variable").
+The operation supports two sources via the `source` parameter:
+
+- **`submission`** : checks against the raw submission dataset
+- **`evaluation`** (default): checks against the evaluation dataset built based on the rule type
 
 ```yaml
+# Dataset level check - is this variable entirely null/missing from the source data?
 Operations:
   - operator: variable_is_null
     name: USUBJID
-    id: $aeterm_is_null
+    id: $usubjid_is_null
+    source: submission
 ```
 
 ### get_xhtml_errors

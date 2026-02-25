@@ -3,6 +3,7 @@ import pyreadstat
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 import os
 
 
@@ -14,7 +15,9 @@ class DatasetXPTMetadataReader:
 
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+    ):
         file_size = os.path.getsize(file_path)
         if file_size > config.get_dataset_size_threshold():
             self._estimate_dataset_length = True
@@ -26,16 +29,18 @@ class DatasetXPTMetadataReader:
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
         self._file_path = file_path
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
         Extracts metadata from binary contents of .xpt file.
         """
+        encoding = self.encoding or DEFAULT_ENCODING
         try:
             dataset, metadata = pyreadstat.read_xport(
-                self._file_path, row_limit=self.row_limit
+                self._file_path, encoding=encoding, row_limit=self.row_limit
             )
-        except pyreadstat.ReadstatError:
+        except (pyreadstat.ReadstatError, UnicodeDecodeError):
             return {
                 "variable_labels": [],
                 "variable_names": [],
@@ -94,7 +99,10 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        encoding = self.encoding or DEFAULT_ENCODING
+        _, meta = pyreadstat.read_xport(
+            self._file_path, encoding=encoding, metadataonly=True
+        )
         row_size = sum(meta.variable_storage_width.values())
         total_size = os.path.getsize(self._file_path)
         start = self._read_header(self._file_path)

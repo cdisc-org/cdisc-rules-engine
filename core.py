@@ -4,6 +4,7 @@ CLI entrypoint for the CDISC Rules Engine.
 """
 
 import asyncio
+import codecs
 import json
 import logging
 import os
@@ -35,7 +36,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
-from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE
+from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE, DEFAULT_ENCODING
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 from version import __version__
@@ -43,6 +44,19 @@ from version import __version__
 DEFAULT_CACHE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
+
+
+def validate_encoding(ctx, param, value):
+    if value is None:
+        return DEFAULT_ENCODING
+    try:
+        codecs.lookup(value)
+        return value
+    except LookupError:
+        raise click.BadParameter(
+            f"Invalid encoding '{value}'. Please provide a valid encoding name "
+            f"(e.g., utf-8, utf-16, utf-32, cp1252, latin-1)."
+        )
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
@@ -379,6 +393,18 @@ def _validate_no_arguments(logger) -> None:
         "If true, limits reported issues per dataset per rule."
     ),
 )
+@click.option(
+    "-e",
+    "--encoding",
+    default=DEFAULT_ENCODING,
+    required=False,
+    callback=validate_encoding,
+    help=(
+        f"File encoding for reading datasets. "
+        f"Defaults to {DEFAULT_ENCODING}. "
+        f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
+    ),
+)
 @click.pass_context
 def validate(  # noqa
     ctx,
@@ -416,6 +442,7 @@ def validate(  # noqa
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
+    encoding: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -428,8 +455,10 @@ def validate(  # noqa
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-
     validate_dataset_files_exist(dataset_path, logger, ctx)
+
+    if not custom_standard:
+        standard = standard.lower()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -444,7 +473,7 @@ def validate(  # noqa
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
-    if standard.lower() == "tig":
+    if standard == "tig":
         if not substandard or not use_case:
             logger.error(
                 "Standard 'tig' requires both --substandard and --use-case to be specified."
@@ -494,9 +523,9 @@ def validate(  # noqa
             version,
             substandard,
             use_case,
-            set(controlled_terminology_package),  # avoiding duplicates
+            set(controlled_terminology_package),
             output,
-            set(output_format),  # avoiding duplicates
+            set(output_format),
             raw_report,
             define_version,
             external_dictionaries,
@@ -510,6 +539,7 @@ def validate(  # noqa
             jsonata_custom_functions,
             max_report_rows,
             max_errors_per_rule,
+            encoding,
         )
     )
 
@@ -827,9 +857,13 @@ def list_ct(cache_path: str, subsets: set[str]):
 @click.command()
 @click.argument("filetype", type=click.Choice(["json", "xpt"], case_sensitive=False))
 def test_validate(filetype):
-    """**Release Test** validate command for executable."""
+    """
+    Verify CORE with a test validation.
+    Requires FILETYPE argument: 'json' or 'xpt'.
+    Report file is confirmed and automatically cleaned up. For actual validation, use 'validate' command.
+    """
     try:
-        base_path = os.path.join("tests", "resources", "datasets")
+        base_path = os.path.join("resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")
             output_name = "json_validation_output"
@@ -877,6 +911,7 @@ def test_validate(filetype):
                     (),
                     None,
                     max_report_errors,
+                    None,
                 )
             )
             print(f"{filetype.upper()} validation completed successfully!")

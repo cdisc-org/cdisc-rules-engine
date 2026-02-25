@@ -15,6 +15,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
@@ -42,7 +43,12 @@ class DummyDataService(BaseDataService):
     ):
         return cls(
             cache_service=cache_service,
-            reader_factory=DataReaderFactory(),
+            reader_factory=DataReaderFactory(
+                dataset_implementation=kwargs.get(
+                    "dataset_implementation", PandasDataset
+                ),
+                encoding=kwargs.get("encoding"),
+            ),
             config=config,
             **kwargs,
         )
@@ -177,17 +183,21 @@ class DummyDataService(BaseDataService):
         return self.data
 
     @staticmethod
-    def get_data(dataset_paths: Sequence[str]):
-        json = JSONReader().from_file(dataset_paths[0])
+    def get_data(dataset_paths: Sequence[str], encoding: str = DEFAULT_ENCODING):
+        json = JSONReader(encoding=encoding or DEFAULT_ENCODING).from_file(
+            dataset_paths[0]
+        )
         return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod
-    def is_valid_data(dataset_paths: Sequence[str]):
+    def is_valid_data(dataset_paths: Sequence[str], encoding: str = DEFAULT_ENCODING):
         if (
             dataset_paths
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            json = JSONReader().from_file(dataset_paths[0])
+            json = JSONReader(encoding=encoding or DEFAULT_ENCODING).from_file(
+                dataset_paths[0]
+            )
             return "datasets" in json
         return False

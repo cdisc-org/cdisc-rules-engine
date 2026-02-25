@@ -585,6 +585,9 @@ class DatasetPreprocessor:
                         right_dataset_domain_details.get("join_type", "inner")
                     ),
                 )
+            except KeyError as e:
+                # Handle with COLUMN_NOT_FOUND_IN_DATA in rules_engine
+                raise e
             except Exception as e:
                 raise PreprocessingError(
                     f"Failed to merge datasets. "

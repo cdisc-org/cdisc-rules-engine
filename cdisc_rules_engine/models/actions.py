@@ -11,6 +11,7 @@ from cdisc_rules_engine.constants.metadata_columns import (
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.enums.rule_types import RuleTypes
+from cdisc_rules_engine.enums.domain_presence_values import DomainPresenceValues
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
@@ -63,6 +64,12 @@ class COREActions(BaseActions):
         error_object = self.generate_targeted_error_object(
             target_names, rows_with_error, message
         )
+        if "domain presence" in self.rule.get("rule_type", "").lower():
+            error_object.dataset = DomainPresenceValues.DATASET.value
+            error_object.domain = DomainPresenceValues.DOMAIN.value
+            for error in error_object.errors:
+                error.dataset = DomainPresenceValues.DATASET.value
+                error.row = DomainPresenceValues.RECORD.value
         self.output_container.append(error_object.to_representation())
 
     @rule_action(params={"message": FIELD_TEXT})
@@ -185,6 +192,10 @@ class COREActions(BaseActions):
                 )
             ]
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
+            errors_list = self._generate_errors_by_target_presence(
+                data, targets_not_in_dataset, all_targets_missing, errors_df
+            )
+        elif self.rule.get("sensitivity") == Sensitivity.STUDY.value:
             errors_list = self._generate_errors_by_target_presence(
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )

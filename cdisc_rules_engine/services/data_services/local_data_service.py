@@ -28,6 +28,7 @@ from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.services import logger
 import re
 
 
@@ -45,6 +46,7 @@ class LocalDataService(BaseDataService):
             cache_service, reader_factory, config, **kwargs
         )
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
+        self.encoding: str = kwargs.get("encoding")
 
     @classmethod
     def get_instance(
@@ -53,13 +55,22 @@ class LocalDataService(BaseDataService):
         config: ConfigInterface = None,
         **kwargs,
     ):
-        if cls._instance is None:
+        """
+        Return the singleton instance. Reset the instance when encoding is
+        explicitly requested and differs from the cached one (e.g., validation
+        runs multiple times with different encodings in the same process).
+        """
+        encoding = kwargs.get("encoding")
+        if cls._instance is None or (
+            encoding is not None and cls._instance.encoding != encoding
+        ):
             service = cls(
                 cache_service=cache_service,
                 reader_factory=DataReaderFactory(
                     dataset_implementation=kwargs.get(
                         "dataset_implementation", PandasDataset
-                    )
+                    ),
+                    encoding=encoding,
                 ),
                 config=config,
                 **kwargs,
@@ -195,7 +206,7 @@ class LocalDataService(BaseDataService):
             )
 
         contents_metadata = _metadata_reader_map[file_extension](
-            file_metadata["path"], file_name
+            file_metadata["path"], file_name, encoding=self.encoding
         ).read()
         return {
             "file_metadata": file_metadata,
@@ -226,10 +237,35 @@ class LocalDataService(BaseDataService):
         return reader.to_parquet(file_path)
 
     def get_datasets(self) -> List[dict]:
-        datasets = [
-            self.get_raw_dataset_metadata(dataset_name=dataset_path)
-            for dataset_path in self.dataset_paths
-        ]
+        datasets = []
+        for dataset_path in self.dataset_paths:
+            try:
+                dataset_metadata = self.get_raw_dataset_metadata(
+                    dataset_name=dataset_path
+                )
+                datasets.append(dataset_metadata)
+            except Exception as e:
+                logger.error(
+                    f"Failed to read metadata for dataset {dataset_path}. "
+                    f"Error: {type(e).__name__}: {e}. Skipping this dataset."
+                )
+                file_name = extract_file_name_from_path_string(dataset_path)
+                datasets.append(
+                    SDTMDatasetMetadata(
+                        name=(
+                            file_name.split(".")[0].upper()
+                            if "." in file_name
+                            else file_name.upper()
+                        ),
+                        first_record={},
+                        label="",
+                        modification_date="",
+                        filename=file_name,
+                        full_path=dataset_path,
+                        file_size=0,
+                        record_count=0,
+                    )
+                )
         return datasets
 
     @staticmethod
