@@ -13,6 +13,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_size
         variable_data_type
         variable_has_empty_values
+        variable_is_empty
         library_variable_name,
         library_variable_label,
         library_variable_data_type,
@@ -57,18 +58,20 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             right_on="library_variable_name",
         ).fillna("")
 
-        data["variable_has_empty_values"] = data.apply(
-            lambda row: self.variable_has_null_values(
+        data[["variable_has_empty_values", "variable_is_empty"]] = data.apply(
+            lambda row: self.get_variable_null_stats(
                 row["variable_name"], dataset_contents
             ),
             axis=1,
+            result_type="expand",
         )
+
         return data
 
-    def variable_has_null_values(
+    def get_variable_null_stats(
         self, variable: str, content: DatasetInterface
-    ) -> bool:
+    ) -> tuple[bool, bool]:
         if variable not in content:
-            return True
-        series = content[variable]
-        return series.mask(series == "").isnull().any()
+            return True, True
+        series = content[variable].mask(content[variable] == "")
+        return series.isnull().any(), series.isnull().all()

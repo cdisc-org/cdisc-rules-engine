@@ -394,6 +394,7 @@ class RuleProcessor:
                 subtract=operation.get("subtract"),
                 regex=operation.get("regex"),
                 returntype=operation.get("returntype"),
+                source=operation.get("source"),
                 standard=standard,
                 standard_substandard=standard_substandard,
                 standard_version=standard_version,
