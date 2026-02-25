@@ -31,6 +31,8 @@ from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.services import logger
 import re
 
+from ..data_readers.csv_reader import DatasetCSVMetadataReader
+
 
 class LocalDataService(BaseDataService):
     _instance = None
@@ -194,6 +196,7 @@ class LocalDataService(BaseDataService):
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
             DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
+            DataFormatTypes.CSV.value: DatasetCSVMetadataReader,
         }
 
         file_extension = file_name.split(".")[1].upper()

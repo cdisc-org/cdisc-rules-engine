@@ -65,6 +65,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
         DataFormatTypes.JSON.value,
         DataFormatTypes.NDJSON.value,
         DataFormatTypes.XLSX.value,
+        DataFormatTypes.CSV.value,
     ]
     found_formats = set()
     file_list = []
