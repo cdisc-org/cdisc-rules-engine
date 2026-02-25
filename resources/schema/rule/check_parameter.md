@@ -1,4 +1,3 @@
-
 ## Overview
 
 Check parameters are configuration elements that define how validation rules are applied within the CDISC rules engine. These parameters control the behavior, scope, and criteria for data validation checks across clinical trial datasets. Each parameter serves a specific purpose in customizing rule logic to ensure data integrity and compliance with CDISC standards.
@@ -278,6 +277,17 @@ Terminology term value used in controlled terminology operations for value-based
 ### version
 
 Version parameter used in codelist operations that require version-specific processing or validation.
+
+### subtract
+
+Reference to another operation result, used as the second operand in operations that take two inputs. For example, in the `minus` operation, `name` references the minuend (first list) and `subtract` references the subtrahend (second list); the operation returns elements in the first list that are not in the second.
+
+```yaml
+- id: $expected_minus_dataset
+  name: $expected_variables
+  operator: minus
+  subtract: $dataset_variables
+```
 
 ### within
 
