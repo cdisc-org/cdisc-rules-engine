@@ -1,5 +1,3 @@
-# Check Parameters
-
 ## Overview
 
 Check parameters are configuration elements that define how validation rules are applied within the CDISC rules engine. These parameters control the behavior, scope, and criteria for data validation checks across clinical trial datasets. Each parameter serves a specific purpose in customizing rule logic to ensure data integrity and compliance with CDISC standards.
@@ -267,6 +265,17 @@ Expected return type for operation results. Valid values are "code" (for NCI cod
 
 Either "submission" or "evaluation" for which dataset to check the variable_is_null from. Evaluation is the dataset constructed by
 the rule type while submission is the raw dataset submitted that is being evaluated.
+
+### subtract
+
+Reference to another operation result, used as the second operand in operations that take two inputs. For example, in the `minus` operation, `name` references the minuend (first list) and `subtract` references the subtrahend (second list); the operation returns elements in the first list that are not in the second.
+
+```yaml
+- id: $expected_minus_dataset
+  name: $expected_variables
+  operator: minus
+  subtract: $dataset_variables
+```
 
 ### term_code
 
