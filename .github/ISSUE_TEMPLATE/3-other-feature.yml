@@ -1,0 +1,9 @@
+name: Non-rule-related Feature Request
+description: A request for a new feature or enhancement not related to a specific rule
+projects:
+  - cdisc-org/19
+type: Feature
+body:
+  - type: textarea
+    attributes:
+      label: Feature Description

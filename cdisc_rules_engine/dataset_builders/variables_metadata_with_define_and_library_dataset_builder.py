@@ -13,6 +13,8 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
         variable_label
         variable_size
         variable_data_type
+        variable_is_empty
+        variable_has_empty_values
         define_variable_name,
         define_variable_label,
         define_variable_data_type,
@@ -29,7 +31,6 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
         define_variable_codelist_coded_values,
         define_variable_codelist_coded_codes,
         define_variable_mandatory,
-        variable_has_empty_values
         library_variable_name,
         library_variable_label,
         library_variable_data_type,
@@ -82,24 +83,22 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
             right_on="library_variable_name",
         ).fillna("")
 
-        final_dataframe["variable_has_empty_values"] = final_dataframe.apply(
-            lambda row: self.variable_has_null_values(
-                (
-                    row["variable_name"]
-                    if row["variable_name"] != ""
-                    else row["library_variable_name"]
+        final_dataframe[["variable_has_empty_values", "variable_is_empty"]] = (
+            final_dataframe.apply(
+                lambda row: self.get_variable_null_stats(
+                    row["variable_name"], dataset_contents
                 ),
-                dataset_contents,
-            ),
-            axis=1,
+                axis=1,
+                result_type="expand",
+            )
         )
 
         return final_dataframe
 
-    def variable_has_null_values(
+    def get_variable_null_stats(
         self, variable: str, content: DatasetInterface
-    ) -> bool:
+    ) -> tuple[bool, bool]:
         if variable not in content:
-            return True
-        series = content[variable]
-        return series.mask(series == "").isnull().any()
+            return True, True
+        series = content[variable].mask(content[variable] == "")
+        return series.isnull().any(), series.isnull().all()

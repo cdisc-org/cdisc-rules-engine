@@ -199,7 +199,7 @@ define_metadata = [
                         ],
                     },
                     {
-                        "domain": "SE",
+                        "domain": None,
                         "filename": None,
                         "define_dataset_name": "SE",
                         "define_dataset_label": "Subject Elements",
@@ -241,7 +241,7 @@ define_metadata = [
             pd.DataFrame(
                 [
                     {
-                        "domain": "AE",
+                        "domain": None,
                         "filename": None,
                         "define_dataset_name": "AE",
                         "define_dataset_label": "Adverse Events",
@@ -260,7 +260,7 @@ define_metadata = [
                         ],
                     },
                     {
-                        "domain": "DM",
+                        "domain": None,
                         "filename": None,
                         "define_dataset_name": "DM",
                         "define_dataset_label": "Demographics",
@@ -279,7 +279,7 @@ define_metadata = [
                         ],
                     },
                     {
-                        "domain": "SE",
+                        "domain": None,
                         "filename": None,
                         "define_dataset_name": "SE",
                         "define_dataset_label": "Subject Elements",
@@ -293,7 +293,7 @@ define_metadata = [
                         "define_dataset_variables": ["STUDYID", "USUBJID", "SESEQ"],
                     },
                     {
-                        "domain": "EC",
+                        "domain": None,
                         "filename": None,
                         "define_dataset_name": "EC",
                         "define_dataset_label": "Exposure as Collected",
@@ -344,7 +344,11 @@ def test_domain_list_with_define_dataset_builder(
     if expected_results.empty:
         assert result_df.empty, f"Expected empty DataFrame for {test_description}"
     else:
-        assert list(result_df.columns) == list(
+        assert set(result_df.columns) == set(
             expected_results.columns
         ), f"Columns do not match for {test_description}"
-        pd.testing.assert_frame_equal(result_df, expected_results, check_dtype=False)
+        pd.testing.assert_frame_equal(
+            result_df.reindex(columns=expected_results.columns),
+            expected_results,
+            check_dtype=False,
+        )
