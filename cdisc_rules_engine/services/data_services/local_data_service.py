@@ -24,10 +24,7 @@ from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import (
-    INVALID_DATASET_FORMAT_REASON,
-    InvalidDatasetFormat,
-)
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -251,8 +248,7 @@ class LocalDataService(BaseDataService):
                 raise
             except Exception as e:
                 raise InvalidDatasetFormat(
-                    f"Your data file could not be read: {dataset_path}. "
-                    f"It {INVALID_DATASET_FORMAT_REASON} Underlying error: {e}"
+                    f"Your data file could not be read: {dataset_path}."
                 ) from e
         return datasets
 

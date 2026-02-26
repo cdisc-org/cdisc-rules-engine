@@ -40,25 +40,19 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
-LIBRARY_METADATA_NOT_FOUND_HINT = (
-    "Check your standard/version (CLI) or Library tab values (editor)."
-)
-
-
 def library_metadata_not_found_message(standard, version, substandard=None):
     version_display = (version or "").replace("-", ".")
     sub_part = f" substandard {substandard}" if substandard else ""
     return (
         f"No library metadata found for standard '{standard}' "
-        f"version '{version_display}'{sub_part}. {LIBRARY_METADATA_NOT_FOUND_HINT}"
+        f"version '{version_display}'{sub_part}."
     )
 
 
 class LibraryMetadataNotFoundError(EngineError):
     code = 400
     description = (
-        "Library metadata not found for the provided standard and version combination. "
-        f"{LIBRARY_METADATA_NOT_FOUND_HINT}"
+        "Library metadata not found for the provided standard and version combination."
     )
 
 
@@ -79,11 +73,6 @@ class InvalidDatasetFormat(EngineError):
     description = "Dataset data is malformed."
 
 
-INVALID_DATASET_FORMAT_REASON = (
-    "may be corrupted, incorrectly formatted, or encoded with an unexpected encoding."
-)
-
-
 class InvalidJSONFormat(EngineError):
     code = 400
     description = "JSON data is malformed."
@@ -102,10 +91,7 @@ CT_PACKAGE_NOT_FOUND_PREFIX = "Controlled terminology package(s) not found"
 
 class CTPackageNotFoundError(EngineError):
     code = 400
-    description = (
-        f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache. "
-        "Check package names and run 'core.py update-cache' if needed."
-    )
+    description = f"{CT_PACKAGE_NOT_FOUND_PREFIX}."
 
 
 class NumberOfAttemptsExceeded(EngineError):

@@ -21,9 +21,6 @@ from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     CT_PACKAGE_NOT_FOUND_PREFIX,
     CTPackageNotFoundError,
-    EngineError,
-    InvalidDatasetFormat,
-    INVALID_DATASET_FORMAT_REASON,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
@@ -52,8 +49,9 @@ from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,
-    get_rules,
     get_max_dataset_size,
+    get_rules,
+    _get_datasets_or_raise,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
@@ -130,18 +128,6 @@ def initialize_logger(disabled, log_level):
     else:
         engine_logger.disabled = False
         engine_logger.setLevel(log_level)
-
-
-def _get_datasets_or_raise(data_service):
-    try:
-        return data_service.get_datasets()
-    except EngineError:
-        raise
-    except Exception as e:
-        raise InvalidDatasetFormat(
-            f"Your data files could not be read. They {INVALID_DATASET_FORMAT_REASON} "
-            f"Underlying error: {e}"
-        ) from e
 
 
 def _convert_datasets_to_parquet_if_needed(
@@ -308,8 +294,7 @@ def run_single_rule_validation(
             )
             raise CTPackageNotFoundError(
                 f"{CT_PACKAGE_NOT_FOUND_PREFIX}: "
-                f"{', '.join(str(c) for c in sorted_missing)}. "
-                "Check Library tab or request codelist names."
+                f"{', '.join(str(c) for c in sorted_missing)}."
             )
 
     library_metadata = LibraryMetadataContainer(

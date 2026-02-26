@@ -30,9 +30,20 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     CTPackageNotFoundError,
     CT_PACKAGE_NOT_FOUND_PREFIX,
+    EngineError,
+    InvalidDatasetFormat,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
+
+
+def _get_datasets_or_raise(data_service):
+    try:
+        return data_service.get_datasets()
+    except EngineError:
+        raise
+    except Exception as e:
+        raise InvalidDatasetFormat("Your data files could not be read.") from e
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
@@ -118,6 +129,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         variables_metadata = data.get(cache_key)
 
     ct_package_data = {}
+    define_referenced_ct = set()
     cache_files = next(os.walk(args.cache), (None, None, []))[2]
     ct_files = [file_name for file_name in cache_files if "ct-" in file_name]
     published_ct_packages = set()
@@ -131,20 +143,6 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-    if args.controlled_terminology_package:
-        requested = set(args.controlled_terminology_package)
-        missing = requested - published_ct_packages
-        if missing:
-            sorted_missing = sorted(
-                missing, key=lambda x: (x is None, str(x) if x is not None else "")
-            )
-            available = ", ".join(sorted(published_ct_packages)) or "(none)"
-            raise CTPackageNotFoundError(
-                f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache: "
-                f"{', '.join(str(c) for c in sorted_missing)}. "
-                f"Available packages: {available}. "
-                "Run 'core.py update-cache' to refresh the cache."
-            )
     if args.define_xml_path and define_version.model_package == "define_2_1":
         (
             standards,
@@ -152,6 +150,10 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             extensible,
             merged_flag,
         ) = define_xml_reader.get_ct_standards_metadata()
+        define_referenced_ct = {
+            f"{standard.publishing_set.lower()}ct-{standard.version}"
+            for standard in standards
+        }
         for standard in standards:
             pickle_filename = (
                 f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
@@ -169,6 +171,18 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     if args.define_xml_path:
         extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
         ct_package_data["extensible"] = extensible_terms
+    requested_ct = set(args.controlled_terminology_package or [])
+    if args.define_xml_path and define_version.model_package == "define_2_1":
+        requested_ct |= define_referenced_ct
+    missing_ct = requested_ct - published_ct_packages
+    if missing_ct:
+        sorted_missing = sorted(
+            missing_ct, key=lambda x: (x is None, str(x) if x is not None else "")
+        )
+        raise CTPackageNotFoundError(
+            f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache: "
+            f"{', '.join(str(c) for c in sorted_missing)}."
+        )
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         standard_schema_definition=standard_schema_definition,

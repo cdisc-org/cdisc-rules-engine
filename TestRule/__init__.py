@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CT_PACKAGE_NOT_FOUND_PREFIX,
     CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
@@ -42,14 +43,7 @@ def validate_datasets_payload(datasets):
                 )
 
     if missing_keys:
-        raise BadRequestError(
-            "Test data is missing required dataset properties. "
-            "This usually means the 'Datasets' sheet in your Excel file is missing "
-            "or has incorrect column headers. "
-            "Make sure there is a 'Datasets' tab in your test data workbook (name is "
-            "case-sensitive). The 'Datasets' tab must have column headers: 'Filename', "
-            "'Label', and 'Dataset Name' (also case-sensitive)."
-        )
+        raise BadRequestError("Test data is incorrect and missing required formatting.")
 
 
 def handle_exception(e: Exception):
@@ -146,7 +140,13 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
                             standard, standard_version, standard_substandard
                         )
                     )
-            asyncio.run(cache_populator.load_codelists(codelists))
+            try:
+                asyncio.run(cache_populator.load_codelists(codelists or []))
+            except LibraryResourceNotFoundException:
+                raise CTPackageNotFoundError(
+                    f"{CT_PACKAGE_NOT_FOUND_PREFIX}: "
+                    f"{', '.join(str(c) for c in (codelists or []))}."
+                )
         if not rule:
             raise KeyError("'rule' required in request")
         datasets = json_data.get("datasets")

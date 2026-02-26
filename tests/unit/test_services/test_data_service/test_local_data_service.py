@@ -99,7 +99,3 @@ def test_get_datasets_raises_invalid_dataset_format_when_file_cannot_be_read():
         data_service.get_datasets()
     assert "Your data file could not be read" in str(exc_info.value)
     assert "/bad/path.xpt" in str(exc_info.value)
-    assert (
-        "corrupted" in str(exc_info.value).lower()
-        or "formatted" in str(exc_info.value).lower()
-    )

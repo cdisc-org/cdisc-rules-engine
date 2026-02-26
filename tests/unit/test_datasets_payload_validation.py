@@ -55,10 +55,7 @@ class TestValidateDatasetsPayload:
         with pytest.raises(testrule.BadRequestError) as exc_info:
             testrule.validate_datasets_payload(datasets)
         msg = str(exc_info.value)
-        assert "missing required dataset properties" in msg
-        assert "Datasets" in msg
-        assert "case-sensitive" in msg
-        assert "Filename" in msg or "Label" in msg
+        assert "Test data is incorrect and missing required formatting" in msg
 
     def test_missing_multiple_required_properties_raises_with_datasets_guidance(self):
         testrule = _get_testrule_module()
@@ -70,10 +67,7 @@ class TestValidateDatasetsPayload:
         with pytest.raises(testrule.BadRequestError) as exc_info:
             testrule.validate_datasets_payload(datasets)
         msg = str(exc_info.value)
-        assert "missing required dataset properties" in msg
-        assert "Datasets" in msg
-        assert "case-sensitive" in msg
-        assert "Filename" in msg or "Label" in msg
+        assert "Test data is incorrect and missing required formatting" in msg
 
     def test_valid_payload_passes(self):
         testrule = _get_testrule_module()
@@ -110,16 +104,16 @@ class TestHandleException:
     def test_bad_request_error_returns_400_with_message(self):
         testrule = _get_testrule_module()
         e = testrule.BadRequestError(
-            "Test data is missing required dataset properties. "
-            "Make sure there is a 'Datasets' tab (case-sensitive)."
+            "Test data is incorrect and missing required formatting."
         )
         response = testrule.handle_exception(e)
         assert response.status_code == 400
         body = json.loads(response.get_body().decode())
         assert body["error"] == "BadRequestError"
         assert "message" in body
-        assert "Datasets" in body["message"]
-        assert "case-sensitive" in body["message"]
+        assert (
+            "Test data is incorrect and missing required formatting" in body["message"]
+        )
 
     def test_key_error_for_rule_returns_400_with_bad_request_error_type(self):
         testrule = _get_testrule_module()
@@ -155,8 +149,7 @@ class TestHandleException:
     def test_ct_package_not_found_error_returns_400_with_message(self):
         testrule = _get_testrule_module()
         e = CTPackageNotFoundError(
-            "Controlled terminology package(s) not found: bad-ct-pkg. "
-            "Check Library tab or request codelist names."
+            "Controlled terminology package(s) not found: bad-ct-pkg."
         )
         response = testrule.handle_exception(e)
         assert response.status_code == 400
