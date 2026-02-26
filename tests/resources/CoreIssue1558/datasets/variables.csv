@@ -1,0 +1,13 @@
+dataset,variable,label,type,length
+dm.xpt,STUDYID,Study Identifier,Char,200
+dm.xpt,DOMAIN,Domain Abbreviation,Char,2
+dm.xpt,USUBJID,Unique Subject Identifier,Char,200
+dm.xpt,SUBJID,Subject Identifier for the Study,Char,40
+dm.xpt,RFSTDTC,Subject Reference Start Date/Time,Char,20
+pp.xpt,STUDYID,Study Identifier,Char,200
+pp.xpt,DOMAIN,Domain Abbreviation,Char,2
+pp.xpt,USUBJID,Unique Subject Identifier,Char,200
+pp.xpt,PPSEQ,Sequence Number,Num,8
+pp.xpt,PPGRPID,Group ID,Char,40
+pp.xpt,PPTESTCD,Parameter Short Name,Char,8
+pp.xpt,PPTEST,Parameter Name,Char,40
