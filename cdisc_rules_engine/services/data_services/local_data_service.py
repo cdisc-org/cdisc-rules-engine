@@ -20,6 +20,7 @@ from cdisc_rules_engine.services.datasetjson_metadata_reader import (
 from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
     DatasetNDJSONMetadataReader,
 )
+from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
@@ -30,8 +31,6 @@ from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.services import logger
 import re
-
-from ..data_readers.csv_reader import DatasetCSVMetadataReader
 
 
 class LocalDataService(BaseDataService):
