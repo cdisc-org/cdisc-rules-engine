@@ -168,6 +168,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "library_variable_has_codelist",
         "library_variable_order_number",
         "variable_has_empty_values",
+        "variable_is_empty",
     ]
     assert result["library_variable_name"].tolist() == [
         "STUDYID",
@@ -177,6 +178,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     ]
     assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", "AESEQ"]
     assert result["variable_has_empty_values"].tolist() == [False, True, True, False]
+    assert result["variable_is_empty"].tolist() == [False, False, False, False]
 
 
 @patch(
@@ -391,6 +393,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "library_variable_ccode",
             "library_variable_has_codelist",
             "variable_has_empty_values",
+            "variable_is_empty",
         ]
     )
     assert result["library_variable_name"].tolist() == [
@@ -409,5 +412,11 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         False,
         True,
         True,
+        False,
+    ]
+    assert result["variable_is_empty"].tolist() == [
+        False,
+        False,
+        False,
         False,
     ]
