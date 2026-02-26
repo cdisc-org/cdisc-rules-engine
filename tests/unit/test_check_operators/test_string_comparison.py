@@ -34,6 +34,59 @@ def test_equals_string_part(data, comparator, regex, dataset_type, expected_resu
 
 
 @pytest.mark.parametrize(
+    "data,comparator,regex,dataset_type,value_is_literal,expected_result",
+    [
+        (
+            {"VAR2": ["blaAtt", "yyyBtt", "aaaCtt"], "target": ["A", "B", "D"]},
+            "VAR2",
+            ".{3}(.).*",
+            PandasDataset,
+            False,
+            [True, True, False],
+        ),
+        (
+            {"VAR2": ["blaAtt", "yyyBtt", "aaaCtt"], "target": ["A", "B", "D"]},
+            "VAR2",
+            ".{3}(.).*",
+            DaskDataset,
+            False,
+            [True, True, False],
+        ),
+        (
+            {"target": ["A", "B", "C"]},
+            "blaAtt",
+            ".{3}(.).*",
+            PandasDataset,
+            True,
+            [True, False, False],
+        ),
+        (
+            {"target": ["A", "B", "C"]},
+            "blaAtt",
+            ".{3}(.).*",
+            DaskDataset,
+            True,
+            [True, False, False],
+        ),
+    ],
+)
+def test_equals_string_part_literal(
+    data, comparator, regex, dataset_type, value_is_literal, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.equals_string_part(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "regex": regex,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
     "data,comparator,dataset_type,expected_result",
     [
         (
