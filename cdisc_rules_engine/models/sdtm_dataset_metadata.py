@@ -12,7 +12,7 @@ class SDTMDatasetMetadata(DatasetMetadata):
 
     """
     Examples
-    | name     | unsplit_name | is_supp | domain | rdomain | is_ap | ap_suffix | dataset_is_custom | related_domain	| related_domain_is_custom |
+    | name     | unsplit_name | is_supp | domain | rdomain | is_ap | ap_suffix | domain_is_custom | related_domain	| related_domain_is_custom |
     | -------- | ------------ | ------- | ------ | ------- | ----- | --------- | ----------------- | -------------- | ------------------------ |
     | QS       | QS           | False   | QS     | None    | False |           | False             |                |                          |
     | QSX      | QS           | False   | QS     | None    | False |           | False             |                |                          |
