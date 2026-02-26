@@ -4,20 +4,20 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  lint_format:
-    uses: ./.github/workflows/lint_format.yml
-  test_unit:
-    uses: ./.github/workflows/test_unit.yml
-  rule_tester:
+  lint-format:
+    uses: ./.github/workflows/lint-format.yml
+  test-unit:
+    uses: ./.github/workflows/test-unit.yml
+  rule-tester:
     if: github.event.action == 'opened'
     uses: ./.github/workflows/rule-tester.yml
     secrets: inherit
     with:
       environment: DEV
-  test_rule_editor_preview:
+  test-rule-editor-preview:
     if: github.event.action == 'opened'
-    needs: rule_tester
-    uses: ./.github/workflows/test_rule_editor_preview.yml
+    needs: rule-tester
+    uses: ./.github/workflows/test-rule-editor-preview.yml
     secrets: inherit
     with:
       pr_ref: ${{ github.event.pull_request.head.sha }}
