@@ -330,8 +330,14 @@ The rules report tab displays the run status of each rule selected for validatio
 
 The possible rule run statuses are:
 
-- `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
-- `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
+- `SUCCESS` - The rule ran, data was validated, and no issues were reported.
+- `SKIPPED` - The rule was unable to be run for one of the following reasons:
+  - Column not found in data
+  - Domain not found
+  - Schema validation is off
+  - Outside scope
+- `ISSUE REPORTED` - The rule ran, data was validated, and issues were reported
+- `EXECUTION ERROR` - The validation failed for an unknown reason caused by rule evaluation or execution. Error details are found in the `Issue Details` tab.
 
 #### Setting DATASET_SIZE_THRESHOLD for Large Datasets
 
