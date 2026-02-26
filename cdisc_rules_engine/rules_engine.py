@@ -344,31 +344,7 @@ class RulesEngine:
             kwargs["codelist_term_maps"] = (
                 self.library_metadata.get_all_ct_package_metadata()
             )
-        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
-            if self.library_metadata:
-                kwargs["variable_codelist_map"] = (
-                    self.library_metadata.variable_codelist_map
-                )
-                kwargs["codelist_term_maps"] = (
-                    self.library_metadata.get_all_ct_package_metadata()
-                )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            self.rule_processor.add_comparator_to_rule_conditions(
-                rule, comparator=None, target_prefix="define_"
-            )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_metadata.full_path, dataset_metadata.unsplit_name
-            )
-            kwargs["value_level_metadata"] = value_level_metadata
-
-        elif rule.get("rule_type") == RuleTypes.JSONATA.value:
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
                 rule, dataset, self.jsonata_custom_functions
             )

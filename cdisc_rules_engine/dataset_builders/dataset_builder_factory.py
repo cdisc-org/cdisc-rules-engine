@@ -8,9 +8,6 @@ from cdisc_rules_engine.dataset_builders.jsonata_dataset_builder import (
     JSONataDatasetBuilder,
 )
 from cdisc_rules_engine.interfaces import FactoryInterface
-from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
-    ContentsDatasetBuilder,
-)
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
     ContentsDefineDatasetBuilder,
 )
@@ -73,7 +70,6 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: DomainListWithDefineDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
-        RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDatasetBuilder,
         RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
@@ -105,7 +101,11 @@ class DatasetBuilderFactory(FactoryInterface):
         """
         Get instance of dataset builder by name.
         """
-        builder = self._builders_map.get(name, ContentsDatasetBuilder)(
+        builder_class = self._builders_map.get(name)
+        if builder_class is None:
+            raise ValueError(f"Invalid Rule Type Entered: '{name}'")
+
+        return builder_class(
             kwargs.get("rule"),
             kwargs.get("data_service"),
             kwargs.get("cache_service"),
@@ -120,4 +120,3 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("standard_substandard", None),
             kwargs.get("library_metadata"),
         )
-        return builder

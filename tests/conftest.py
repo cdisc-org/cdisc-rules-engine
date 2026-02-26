@@ -827,42 +827,6 @@ def define_xml_variable_validation_rule() -> dict:
 
 
 @pytest.fixture
-def define_xml_value_level_metadata_validation_rule() -> dict:
-    """
-    Rule that validates Define XML variable metadata against dataset metadata.
-    """
-    return {
-        "core_id": "TEST1",
-        "severity": "Error",
-        "standards": [],
-        "domains": {"Include": [ALL_KEYWORD]},
-        "rule_type": RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value,
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "non_conformant_value_length",
-                        "value": {},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {
-                    "message": (
-                        "Variable data does not match length "
-                        "specified by value level metadata in define.xml"
-                    ),
-                },
-            }
-        ],
-    }
-
-
-@pytest.fixture
 def dataset_rule_record_in_parent_domain_equal_to() -> dict:
     """
     A sample rule that can be used to check values in several datasets.

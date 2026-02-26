@@ -10,9 +10,6 @@ class RuleTypes(BaseEnum):
     DOMAIN_PRESENCE_CHECK = "Domain Presence Check"
     DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE = "Domain Presence Check against Define XML"
     JSONATA = "JSONata"
-    VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE = (
-        "Value Level Metadata Check against Define XML"
-    )
     VARIABLE_METADATA_CHECK = "Variable Metadata Check"
     VARIABLE_METADATA_CHECK_AGAINST_DEFINE = (
         "Variable Metadata Check against Define XML"

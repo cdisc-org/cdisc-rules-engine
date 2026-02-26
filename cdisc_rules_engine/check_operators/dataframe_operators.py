@@ -1368,48 +1368,6 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def non_conformant_value_data_type(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and not vlm["type_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results.values)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def non_conformant_value_length(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and not vlm["length_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def conformant_value_data_type(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["type_check"](row),
-                axis=1,
-                meta=pd.Series([True, False], dtype=bool),
-            ).fillna(False)
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def conformant_value_length(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["length_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
     def has_next_corresponding_record(self, other_value: dict):
         """
         The operator ensures that value of target in current row
@@ -1528,21 +1486,6 @@ class DataframeType(BaseType):
             return False
 
         return df.apply(check_inconsistency, axis=1)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def references_correct_codelist(self, other_value: dict):
-        target = other_value.get("target")
-        comparator = other_value.get("comparator")
-        result = self.value.apply(
-            lambda row: self.valid_codelist_reference(row[target], row[comparator]),
-            axis=1,
-        )
-        return result
-
-    @type_operator(FIELD_DATAFRAME)
-    def does_not_reference_correct_codelist(self, other_value: dict):
-        return ~self.references_correct_codelist(other_value)
 
     def next_column_exists_and_previous_is_null(self, row) -> bool:
         row.reset_index(drop=True, inplace=True)
