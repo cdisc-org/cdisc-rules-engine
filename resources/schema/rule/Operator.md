@@ -446,6 +446,29 @@ Complement of `split_parts_have_equal_length`. Returns True when parts have uneq
   separator: "/"
 ```
 
+### is_title_case
+
+Validates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.  
+NOTE: The titlecase library may produce false positives or false negatives in syntactic edge cases (e.g. hyphenated words, slash-separated terms, uncommon prepositions).
+
+> Check that AELABEL values are in proper title case
+
+```yaml
+- name: AELABEL
+  operator: is_title_case
+```
+
+### is_not_title_case
+
+Complement of `is_title_case`. Returns True when values are NOT in proper title case.
+
+> Flag AELABEL values that violate title case rules
+
+```yaml
+- name: AELABEL
+  operator: is_not_title_case
+```
+
 ## Date
 
 Date and time specific operations for comparing dates, validating date completeness, checking date formats, and validating ISO-8601 durations.
@@ -1059,7 +1082,7 @@ Complement of `has_next_corresponding_record`
 
 ### is_ordered_set
 
-True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`
+True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`. Value can either be a single column or multiple.
 
 ```yaml
 Check:
@@ -1067,6 +1090,16 @@ Check:
     - name: --SEQ
       operator: is_ordered_set
       value: USUBJID
+```
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_ordered_set
+      value:
+        - USUBJID
+        - "--TESTCD"
 ```
 
 ### is_ordered_by
@@ -1087,7 +1120,7 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
+True if the values in `name` are ordered according to the values specified by `value` in ascending/descending order, grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 'YYYY-MM-DD' format
 
 ```yaml
 Check:
@@ -1100,7 +1133,6 @@ Check:
       value:
         - name: --STDTC
           sort_order: asc
-          null_position: last
 ```
 
 ### target_is_not_sorted_by

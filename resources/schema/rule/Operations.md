@@ -750,6 +750,22 @@ Operations:
     operator: get_column_order_from_dataset
 ```
 
+### minus
+
+Computes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
+
+```yaml
+Operations:
+  - id: $expected_variables
+    operator: expected_variables
+  - id: $dataset_variables
+    operator: get_column_order_from_dataset
+  - id: $expected_minus_dataset
+    name: $expected_variables
+    operator: minus
+    subtract: $dataset_variables
+```
+
 ### label_referenced_variable_metadata
 
 Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.
@@ -1013,7 +1029,7 @@ Operations:
 
 ### record_count
 
-If no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.
+If no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. Filter can have a wildcard `&` that when added to the end of the filter value will look for all instances of that prefix (see 4th example below). If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.
 
 If both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
@@ -1058,7 +1074,7 @@ Example: return the number of records where QNAM starts with "RACE" (matches RAC
 - operation: record_count
   id: $race_records_in_dataset
   filter:
-    QNAM: "RACE%"
+    QNAM: "RACE&"
   group:
     - "USUBJID"
 ```
@@ -1291,7 +1307,7 @@ Match Datasets:
 
 ### variable_exists
 
-Flag an error if MIDS is in the dataset currently being evaluated and the TM domain is not present in the study
+Operation operates only on original submission datasets regardless of rule type. Flags an error if a column exists is in the submission dataset currently being evaluated.
 
 Rule Type: Domain Presence Check
 
@@ -1312,13 +1328,18 @@ Operations:
 ### variable_is_null
 
 Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.
-The operation can work with both direct variable names and define metadata references (variables starting with "define_variable").
+The operation supports two sources via the `source` parameter:
+
+- **`submission`** : checks against the raw submission dataset
+- **`evaluation`** (default): checks against the evaluation dataset built based on the rule type
 
 ```yaml
+# Dataset level check - is this variable entirely null/missing from the source data?
 Operations:
   - operator: variable_is_null
     name: USUBJID
-    id: $aeterm_is_null
+    id: $usubjid_is_null
+    source: submission
 ```
 
 ### get_xhtml_errors
