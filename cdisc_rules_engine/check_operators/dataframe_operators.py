@@ -1725,6 +1725,7 @@ class DataframeType(BaseType):
         """
         is_valid = pd.Series(True, index=group.index)
         is_numeric_comparator = pd.api.types.is_numeric_dtype(group[comparator])
+        is_numeric_target = pd.api.types.is_numeric_dtype(group[target])
 
         null_mask = group[comparator].isna() | (
             group[comparator].astype(str).str.strip() == ""
@@ -1749,7 +1750,7 @@ class DataframeType(BaseType):
             elif pd.isna(actual) or pd.isna(expected_val):
                 is_valid.loc[non_null_indices[i]] = False
             elif (
-                not is_numeric_comparator
+                not is_numeric_target
                 and is_valid_date(actual)
                 and is_valid_date(expected_val)
             ):
