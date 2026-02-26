@@ -455,8 +455,10 @@ def validate(  # noqa
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-
     validate_dataset_files_exist(dataset_path, logger, ctx)
+
+    if not custom_standard:
+        standard = standard.lower()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -471,7 +473,7 @@ def validate(  # noqa
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
-    if standard.lower() == "tig":
+    if standard == "tig":
         if not substandard or not use_case:
             logger.error(
                 "Standard 'tig' requires both --substandard and --use-case to be specified."
@@ -521,9 +523,9 @@ def validate(  # noqa
             version,
             substandard,
             use_case,
-            set(controlled_terminology_package),  # avoiding duplicates
+            set(controlled_terminology_package),
             output,
-            set(output_format),  # avoiding duplicates
+            set(output_format),
             raw_report,
             define_version,
             external_dictionaries,
@@ -855,9 +857,13 @@ def list_ct(cache_path: str, subsets: set[str]):
 @click.command()
 @click.argument("filetype", type=click.Choice(["json", "xpt"], case_sensitive=False))
 def test_validate(filetype):
-    """**Release Test** validate command for executable."""
+    """
+    Verify CORE with a test validation.
+    Requires FILETYPE argument: 'json' or 'xpt'.
+    Report file is confirmed and automatically cleaned up. For actual validation, use 'validate' command.
+    """
     try:
-        base_path = os.path.join("tests", "resources", "datasets")
+        base_path = os.path.join("resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")
             output_name = "json_validation_output"

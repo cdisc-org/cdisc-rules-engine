@@ -21,32 +21,64 @@ Open source offering of the CDISC Rules Engine, a tool designed for validating c
 1. Download the latest executable for your operating system from [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
 2. Unzip the downloaded file
 3. Open a terminal in the unzipped directory
-4. Run validation using the commands for your OS as suggested below:
+4. **Verify the installation** (optional but recommended):
 
-**Windows (PowerShell):**
+   **Windows (PowerShell):**
+
 ```bash
-.\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
+   .\core.exe --help
 ```
 
-> **Note for Windows users:** The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+**Linux/Mac:**
+
+```bash
+   # First, make it executable (one-time setup)
+   chmod +x ./core
+
+   # Then verify
+   ./core --help
+```
+
+This displays all available commands and confirms the executable is working properly.
+
+**Mac users:** If you encounter security warnings, you may need to remove the quarantine attribute first:
+
+```bash
+   xattr -rd com.apple.quarantine .
+```
+
+5. **Run a test validation** (optional):
+
+   CORE includes built-in test commands to verify core functionality:
+
+```bash
+   # Windows
+   .\core.exe test-validate json
+
+   # Linux/Mac
+   ./core test-validate json
+```
+
+This confirms the executable is working correctly. Test results are automatically cleaned up after completion and cannot be accessed by the user.
+
+6. **Run your first validation:**
+
+   **Windows (PowerShell):**
+
+```bash
+   .\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
+```
 
 **Linux:**
-```bash
-# First, make it executable (one-time setup)
-chmod +x ./core
 
-# Then run validation
-./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```bash
+   ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 **Mac:**
-```bash
-# First, remove quarantine and make executable (one-time setup)
-xattr -rd com.apple.quarantine .
-chmod +x ./core
 
-# Then run validation
-./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```bash
+   ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 ---
@@ -58,12 +90,14 @@ chmod +x ./core
 **Prerequisites:** Python 3.12 installed on your system.
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/cdisc-org/cdisc-rules-engine.git
    cd cdisc-rules-engine
    ```
 
 2. Install dependencies:
+
    ```bash
    python -m pip install -r requirements-dev.txt
    ```
@@ -78,6 +112,7 @@ chmod +x ./core
 ## Command-line Interface
 
 All examples below use `python core.py` for source code users. **If you're using the executable**, replace `python core.py` with:
+
 - **Windows:** `.\core.exe`
 - **Linux/Mac:** `./core`
 
