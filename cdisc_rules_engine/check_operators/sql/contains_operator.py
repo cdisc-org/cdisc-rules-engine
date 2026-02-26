@@ -8,7 +8,7 @@ class ContainsOperator(BaseSqlOperator):
         super().__init__(data)
         self.case_insensitive = case_insensitive
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks if the comparator value is a substring of the target column values.
         Also handles cases where the target is a collection operation variable.
@@ -28,18 +28,17 @@ class ContainsOperator(BaseSqlOperator):
         elif isinstance(comparator, list):
             return self._handle_list_comparator(target_column, comparator)
         elif value_is_literal:
-            return self._handle_literal_value(target_column, comparator, value_is_literal)
+            return self._handle_literal_value(target_column, comparator)
         elif isinstance(comparator, str) and self._exists(comparator):
             return self._handle_column_comparator(target_column, comparator)
         elif isinstance(comparator, str):
             # String literals when not explicitly marked as literal
-            return self._handle_literal_value(target_column, comparator, True)
+            return self._handle_literal_value(target_column, comparator)
         else:
             return self._handle_invalid_comparator(target_column, comparator)
 
     def _handle_list_comparator(self, target_column, comparator):
         """Handle when comparator is a list."""
-        cache_key = f"{target_column}_contains_list_{self.case_insensitive}"
 
         def sql():
             target_sql = self._column_sql(target_column, lowercase=self.case_insensitive)
@@ -51,24 +50,23 @@ class ContainsOperator(BaseSqlOperator):
                           AND {target_sql} LIKE '%' || list_values.value || '%'
                       )"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_operation_variable_comparator(self, target_column, comparator):
         """Handle when comparator is an operation variable."""
         variable = self.operation_variables[comparator]
-        cache_key = f"{target_column}_contains_opvar_{comparator}_{self.case_insensitive}"
 
         if variable.type == "constant":
-            return self._handle_constant_variable(target_column, comparator, cache_key)
+            return self._handle_constant_variable(target_column, comparator)
         elif variable.type == "collection":
-            return self._handle_collection_variable(target_column, comparator, cache_key)
+            return self._handle_collection_variable(target_column, comparator)
         else:
             raise ValueError(
                 f"Unsupported operation variable type: {variable.type} "
                 f"for variable {comparator}. Expected 'collection' or 'constant'."
             )
 
-    def _handle_collection_variable(self, target_column, comparator, cache_key):
+    def _handle_collection_variable(self, target_column, comparator):
         """Handle collection type operation variable."""
 
         def sql():
@@ -81,9 +79,9 @@ class ContainsOperator(BaseSqlOperator):
                           AND {target_sql} LIKE '%' || collection_values.value || '%'
                       )"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
-    def _handle_constant_variable(self, target_column, comparator, cache_key):
+    def _handle_constant_variable(self, target_column, comparator):
         """Handle constant type operation variable."""
 
         def sql():
@@ -93,25 +91,23 @@ class ContainsOperator(BaseSqlOperator):
                       AND {comparator_sql} != ''
                       AND {target_sql} LIKE '%' || {comparator_sql} || '%'"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_column_comparator(self, target_column, comparator):
         """Handle when comparator is a column name."""
         comparator_column = self.replace_prefix(comparator)
-        cache_key = f"{target_column}_contains_{comparator_column}_{self.case_insensitive}"
 
         def sql():
-            comparator_sql = self._column_sql(comparator, lowercase=self.case_insensitive)
+            comparator_sql = self._column_sql(comparator_column, lowercase=self.case_insensitive)
             target_sql = self._column_sql(target_column, lowercase=self.case_insensitive)
             return f"""NOT ({self._is_empty_sql(target_column)})
-                      AND NOT ({self._is_empty_sql(comparator)})
+                      AND NOT ({self._is_empty_sql(comparator_column)})
                       AND {target_sql} LIKE '%' || {comparator_sql} || '%'"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
-    def _handle_literal_value(self, target_column, comparator, value_is_literal):
+    def _handle_literal_value(self, target_column, comparator):
         """Handle single literal value case."""
-        cache_key = f"{target_column}_contains_literal_{comparator}_{value_is_literal}_{self.case_insensitive}"
 
         def sql():
             comparator_sql = self._constant_sql(comparator, lowercase=self.case_insensitive)
@@ -120,7 +116,7 @@ class ContainsOperator(BaseSqlOperator):
                       AND {comparator_sql} != ''
                       AND {target_sql} LIKE '%' || {comparator_sql} || '%'"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_invalid_comparator(self, target_column, comparator):
         """Handle invalid comparator types."""
@@ -131,7 +127,6 @@ class ContainsOperator(BaseSqlOperator):
 
     def _handle_target_is_collection(self, target_variable, comparator, value_is_literal):
         """Handle when the target is a collection operation variable and we check if it contains a value."""
-        cache_key = f"collection_{target_variable}_contains_{comparator}_{value_is_literal}_{self.case_insensitive}"
 
         def sql():
             collection_sql = self._collection_sql(target_variable, lowercase=self.case_insensitive)
@@ -142,7 +137,4 @@ class ContainsOperator(BaseSqlOperator):
                         WHERE collection_values.value = {comparator_sql}
                     )"""
 
-        return self._do_check_operator(cache_key, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

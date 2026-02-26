@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class EmptyWithinExceptLastRowOperator(BaseSqlOperator):
     """Operator for checking if values are empty within group except last row."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Returns a boolean for each row indicating if that row's target value is empty
         within its group (last row in each group always returns false).
@@ -60,6 +60,3 @@ class EmptyWithinExceptLastRowOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(cache_key, sql)
-
-    def get_result_for_missing_columns(self):
-        return "TRUE"

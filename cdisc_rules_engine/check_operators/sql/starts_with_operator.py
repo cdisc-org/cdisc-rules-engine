@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class StartsWithOperator(BaseSqlOperator):
     """Operator for checking if target starts with comparator."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
 
         target_column = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
@@ -18,7 +18,6 @@ class StartsWithOperator(BaseSqlOperator):
 
     def _handle_comparator(self, target_column, comparator, value_is_literal):
         """Handle any type of comparator (column, literal, tuple, or operation variable)."""
-        cache_key = f"{target_column}_starts_with_{str(comparator).replace(' ', '_')}_{value_is_literal}"
 
         def sql():
             target_sql = self._column_sql(target_column)
@@ -49,7 +48,4 @@ class StartsWithOperator(BaseSqlOperator):
                           AND {target_sql} LIKE values_table.value || '%'
                       )"""
 
-        return self._do_check_operator(cache_key, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

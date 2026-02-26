@@ -104,28 +104,11 @@ class BaseSqlOperator:
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
         self.dataset_metadata: BaseDatasetMetadata = data.get("dataset_metadata", None)
 
+    @abstractmethod
     def execute_operator(self, other_value: Dict[str, Any]):
         """
         Execute the operator logic.
         If the required columns are missing, it will return a default sql result specific to the operator.
-        """
-        try:
-            return self._execute_operator_impl(other_value)
-        except ColumnNotFoundError as e:
-            result_sql = self.get_result_for_missing_columns()
-            cache_key = f"{e.column_name}_missing_column_default"
-            return self._do_check_operator(cache_key, lambda: result_sql)
-
-    @abstractmethod
-    def _execute_operator_impl(self, other_value: Dict[str, Any]):
-        """Execute the specific operator logic. Must be implemented by each operator."""
-        pass
-
-    @abstractmethod
-    def get_result_for_missing_columns(self) -> str:
-        """
-        Return the SQL result value when required columns are missing.
-        Must be implemented by each operator.
         """
         pass
 
@@ -192,22 +175,19 @@ class BaseSqlOperator:
 
         return return_series
 
-    def _do_check_operator(self, new_column: str, sql_subquery_fn):
-        # Handles simple checks by creating a column and updating it with a scalar subquery.
-        new_column = self._resolve_operation_variables_in_cache_key(new_column)
+    def _do_check_operator(self, sql_subquery_fn):
+        subquery = sql_subquery_fn()
+        full_query = (
+            f"SELECT id, ({subquery}) as data FROM "
+            f"{self._table_sql()} AS {CHECK_OPERATOR_TABLE_ALIAS} ORDER BY id ASC;"
+        )
 
-        exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
-        if not exists:
-            self.sql_data_service.pgi.add_column(
-                table=self.table_id, schema=SqlColumnSchema.generated(new_column, "Bool")
-            )
+        self.sql_data_service.pgi.execute_sql(full_query)
+        sql_results = self.sql_data_service.pgi.fetch_all()
 
-            subquery = sql_subquery_fn()
-            query = f"""UPDATE
-                {self._table_sql()} AS {CHECK_OPERATOR_TABLE_ALIAS}
-                SET {self._column_sql(new_column, alias=False)} = ({subquery});"""
-            self.sql_data_service.pgi.execute_sql(query)
-        return self._fetch_for_venmo(new_column)
+        return_series = pd.Series(data={item["id"] - 1: item["data"] for item in sql_results})
+
+        return return_series
 
     def _do_complex_check_operator(self, new_column: str, sql_full_query_fn):
         # Handles complex checks by creating a column and populating it with a full custom query.
@@ -215,9 +195,7 @@ class BaseSqlOperator:
 
         exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
         if not exists:
-            self.sql_data_service.pgi.add_column(
-                table=self.table_id, schema=SqlColumnSchema.generated(new_column, "Bool")
-            )
+            self.sql_data_service.pgi.add_column(table=self.table_id, schema=SqlColumnSchema.check_operator(new_column))
             query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
             self.sql_data_service.pgi.execute_sql(query)
         return self._fetch_for_venmo(new_column)

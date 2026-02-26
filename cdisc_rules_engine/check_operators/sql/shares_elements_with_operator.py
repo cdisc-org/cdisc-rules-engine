@@ -14,7 +14,7 @@ class SharesElementsWithOperator(BaseSqlOperator):
         super().__init__(data)
         self.operation_type = operation_type
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks if values share elements according to the operation type.
 
@@ -52,12 +52,10 @@ class SharesElementsWithOperator(BaseSqlOperator):
         target = self.replace_prefix(target) if isinstance(target, str) else target
         comparator = self.replace_prefix(comparator) if isinstance(comparator, str) else comparator
 
-        cache_key = f"{target}_shares_elements_{self.operation_type}_{comparator}"
-
         def sql():
             return self._build_shares_elements_query(target, comparator)
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _is_collection_variable(self, value):
         """Check if a value is a collection-type operation variable."""
@@ -339,6 +337,3 @@ class SharesElementsWithOperator(BaseSqlOperator):
                 AND collection_values.value = {column_sql}
             ) = 1
             """
-
-    def get_result_for_missing_columns(self):
-        return "TRUE" if self.operation_type == "no_elements" else "FALSE"

@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class PresentOnMultipleRowsWithinOperator(BaseSqlOperator):
     """Operator for checking if a value appears on multiple rows within groups."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Verifies if a value in the 'target' column appears on multiple rows
         within groups defined by the 'within' column.
@@ -34,6 +34,3 @@ class PresentOnMultipleRowsWithinOperator(BaseSqlOperator):
         result_series = self._do_complex_check_operator(op_name, generate_update_query)
 
         return result_series
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"

@@ -57,7 +57,12 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
 
         # build UNPIVOT SQL query with variable metadata (postgresql doesn't have UNPIVOT so we use UNION ALL)
         columns_list = source_schema.get_columns()
-        column_names = [name for name, _ in columns_list if name != "id"]  # skip id column
+        column_names = [
+            name
+            for name, schema in columns_list
+            if name.lower() not in ["id", "source_ds", "source_row_number"]
+            if schema.origin != "co"
+        ]
         source_table_hash = self.data_service.pgi.schema.get_table_hash(source_table_id)
 
         if column_names:

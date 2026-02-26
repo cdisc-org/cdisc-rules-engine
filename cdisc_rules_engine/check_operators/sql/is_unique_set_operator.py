@@ -11,7 +11,7 @@ class IsUniqueSetOperator(BaseSqlOperator):
     Each unique combination should appear at most once.
     """
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
 
@@ -59,6 +59,3 @@ class IsUniqueSetOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(op_name, generate_update_query)
-
-    def get_result_for_missing_columns(self):
-        return "TRUE"  # vacuously unique (no duplicates)

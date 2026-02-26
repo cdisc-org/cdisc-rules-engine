@@ -2,16 +2,24 @@ from typing import Any
 
 from cdisc_rules_engine.data_service.util import generate_hash
 from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
-from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
+from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES, ORIGIN_COLUMN_TYPES
 
 
 class SqlColumnSchema:
     """Stores the schema for a single SQL column."""
 
-    def __init__(self, name: str, hash: str, type: DATASET_COLUMN_TYPES, alias: bool = False):
+    def __init__(
+        self,
+        name: str,
+        hash: str,
+        type: DATASET_COLUMN_TYPES,
+        alias: bool = False,
+        origin: ORIGIN_COLUMN_TYPES = "data",
+    ):
         self.name = name
         self.hash = hash
         self.type = type
+        self.origin = origin
         self.alias = alias
 
     @staticmethod
@@ -39,6 +47,12 @@ class SqlColumnSchema:
         """Create a SqlColumnSchema with a generated hash."""
         hash = generate_hash(column.lower())
         return cls(name=column.lower(), hash=hash, type=type)
+
+    @classmethod
+    def check_operator(cls, column: str) -> "SqlColumnSchema":
+        """Create a SqlColumnSchema with the check operator origin."""
+        hash = generate_hash(column.lower())
+        return cls(name=column.lower(), hash=hash, type="Bool", origin="co")
 
     @classmethod
     def alias(cls, column: str, schema: "SqlColumnSchema") -> "SqlColumnSchema":

@@ -9,7 +9,7 @@ class IsContainedByOperator(BaseSqlOperator):
         super().__init__(data)
         self.case_insensitive = case_insensitive
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks if the target column values are contained within the comparator.
 
@@ -29,10 +29,6 @@ class IsContainedByOperator(BaseSqlOperator):
         suffix = other_value.get("suffix", None)
 
         column = self._column_sql(target_column, lowercase=self.case_insensitive, prefix=prefix, suffix=suffix)
-
-        cache_key = (
-            f"{target_column}_contained_by_{comparator}_{value_is_literal}_{self.case_insensitive}_{prefix}_{suffix}"
-        )
 
         if isinstance(comparator, list) or (isinstance(comparator, str) and comparator in self.operation_variables):
 
@@ -60,7 +56,4 @@ class IsContainedByOperator(BaseSqlOperator):
                 }
             )
 
-        return self._do_check_operator(cache_key, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

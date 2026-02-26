@@ -10,16 +10,12 @@ class IsOrderedSetOperator(BaseSqlOperator):
         super().__init__(data)
         self.invert = invert
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         name = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
         value_is_literal = other_value.get("value_is_literal", False)
         if not value_is_literal:
             value = self.replace_prefix(value)
-        if self.invert:
-            operator_name = f"{name}_is_not_ordered_set_within_{value}"
-        else:
-            operator_name = f"{name}_is_ordered_set_within_{value}"
 
         def sql():
             table_hash = self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
@@ -58,7 +54,4 @@ class IsOrderedSetOperator(BaseSqlOperator):
                 END
                 """
 
-        return self._do_check_operator(operator_name, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

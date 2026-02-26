@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class IsNotUniqueRelationshipOperator(BaseSqlOperator):
     """Operator for checking non-unique relationships between columns."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Validates one-to-one relationship between
         two columns (target and comparator) against a dataset.
@@ -83,6 +83,3 @@ class IsNotUniqueRelationshipOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(op_name, generate_update_query)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"

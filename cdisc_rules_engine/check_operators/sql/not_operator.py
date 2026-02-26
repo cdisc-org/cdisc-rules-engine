@@ -8,7 +8,7 @@ class NotOperator(BaseSqlOperator):
         super().__init__(data)
         self.wrapped_operator = wrapped_operator(data)
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         wrapped_result = self.wrapped_operator.execute_operator(other_value)
         if wrapped_result is not None:
             return ~wrapped_result

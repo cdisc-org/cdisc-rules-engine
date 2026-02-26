@@ -8,16 +8,11 @@ class PrefixMatchesRegexOperator(BaseSqlOperator):
         super().__init__(data)
         self.invert = invert
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target")).lower()
         target_column = self._column_sql(target)
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
-
-        if self.invert:
-            operator_name = f"{target_column}_not_prefix_matches_regex"
-        else:
-            operator_name = f"{target_column}_prefix_matches_regex"
 
         def sql():
             prefix_expr = f"LEFT({target_column}::text, {prefix})"
@@ -35,7 +30,4 @@ class PrefixMatchesRegexOperator(BaseSqlOperator):
                         ELSE FALSE
                         END"""
 
-        return self._do_check_operator(operator_name, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

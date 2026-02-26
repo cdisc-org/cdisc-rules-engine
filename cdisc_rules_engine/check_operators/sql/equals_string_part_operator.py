@@ -8,7 +8,7 @@ class EqualsStringPartOperator(BaseSqlOperator):
         super().__init__(data)
         self.invert = invert
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks that the values in the target column
         equal the result of parsing the value in the comparison
@@ -26,11 +26,6 @@ class EqualsStringPartOperator(BaseSqlOperator):
         comparator_column = (
             self._column_sql(comparator) if not value_is_literal else self._sql(comparator, value_is_literal=True)
         )
-
-        if self.invert:
-            operator_name = f"{target}_does_not_equal_string_part_{comparator}_{regex}"
-        else:
-            operator_name = f"{target}_equals_string_part_{comparator}_{regex}"
 
         def sql():
             extracted_part = f"(regexp_match({comparator_column}::text, '{regex}'))[1]"
@@ -52,7 +47,4 @@ class EqualsStringPartOperator(BaseSqlOperator):
                         ELSE {equality_check}
                         END"""
 
-        return self._do_check_operator(operator_name, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

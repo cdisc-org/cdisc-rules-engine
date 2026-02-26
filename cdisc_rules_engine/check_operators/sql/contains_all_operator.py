@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class ContainsAllOperator(BaseSqlOperator):
     """Operator for checking if value contains all expected elements."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks if the target column contains all values from the comparator.
 
@@ -27,13 +27,11 @@ class ContainsAllOperator(BaseSqlOperator):
     def _handle_list_comparator(self, target_column, comparator):
         """Handle when comparator is a list."""
         if len(comparator) == 0:
-            cache_key = f"{target_column}_contains_all_empty_list"
 
             def sql():
                 return "true"
 
         else:
-            cache_key = f"{target_column}_contains_all_list"
 
             def sql():
                 values_clause = ", ".join(f"({self._constant_sql(v)})" for v in comparator)
@@ -50,24 +48,23 @@ class ContainsAllOperator(BaseSqlOperator):
                           ELSE false
                           END"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_operation_variable_comparator(self, target_column, comparator):
         """Handle when comparator is an operation variable."""
         variable = self.operation_variables[comparator]
-        cache_key = f"{target_column}_contains_all_opvar_{comparator}"
 
         if variable.type == "collection":
-            return self._handle_collection_variable(target_column, comparator, cache_key)
+            return self._handle_collection_variable(target_column, comparator)
         elif variable.type == "constant":
-            return self._handle_constant_variable(target_column, comparator, cache_key)
+            return self._handle_constant_variable(target_column, comparator)
         else:
             raise ValueError(
                 f"Unsupported operation variable type '{variable.type}' for contains_all operation "
                 f"on column '{target_column}'. Expected 'collection' or 'constant'."
             )
 
-    def _handle_collection_variable(self, target_column, comparator, cache_key):
+    def _handle_collection_variable(self, target_column, comparator):
         """Handle collection type operation variable."""
         collection_sql = self._collection_sql(comparator)
 
@@ -92,9 +89,9 @@ class ContainsAllOperator(BaseSqlOperator):
                       ELSE false
                       END"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
-    def _handle_constant_variable(self, target_column, comparator, cache_key):
+    def _handle_constant_variable(self, target_column, comparator):
         """Handle constant type operation variable."""
         constant_sql = self._constant_sql(comparator)
 
@@ -108,13 +105,12 @@ class ContainsAllOperator(BaseSqlOperator):
                       ELSE false
                       END"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_column_comparator(self, target_column, comparator):
         """Handle when comparator is a column name."""
         # Column name provided - check if all values from comparator column exist in target column
         comparator_column = self.replace_prefix(comparator).lower()
-        cache_key = f"{target_column}_contains_all_{comparator_column}"
 
         def sql():
             return f"""CASE WHEN (
@@ -135,7 +131,7 @@ class ContainsAllOperator(BaseSqlOperator):
                       ELSE false
                       END"""
 
-        return self._do_check_operator(cache_key, sql)
+        return self._do_check_operator(sql)
 
     def _handle_invalid_comparator(self, target_column):
         """Handle invalid comparator types."""
@@ -143,6 +139,3 @@ class ContainsAllOperator(BaseSqlOperator):
             f"Invalid comparator type for contains_all operation on column '{target_column}'. "
             "Expected list, column name, or operation variable."
         )
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"

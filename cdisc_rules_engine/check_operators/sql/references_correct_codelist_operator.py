@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class ReferencesCorrectCodelistOperator(BaseSqlOperator):
     """Operator for checking if value references correct codelist."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """target: str = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
         result = self.validation_df.apply(
@@ -12,7 +12,4 @@ class ReferencesCorrectCodelistOperator(BaseSqlOperator):
             axis=1,
         )
         return result"""
-        raise NotImplementedError("references_correct_codelist check_operator not implemented")
-
-    def get_result_for_missing_columns(self):
         raise NotImplementedError("references_correct_codelist check_operator not implemented")

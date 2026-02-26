@@ -6,7 +6,7 @@ from .base_sql_operator import BaseSqlOperator
 class PrefixSuffixEqualToOperator(BaseSqlOperator):
     """Operator for checking if prefix or suffix equals to expected value."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         if "prefix" in other_value:
             mode = "prefix"
         elif "suffix" in other_value:
@@ -30,7 +30,6 @@ class PrefixSuffixEqualToOperator(BaseSqlOperator):
 
     def _handle_comparator(self, target_column, comparator, value_is_literal, length, mode):
         """Handle any type of comparator (column, literal, list, tuple, or operation variable)."""
-        cache_key = f"{target_column}_{mode}_equal_to_{str(comparator).replace(' ', '_')}_{value_is_literal}_{length}"
 
         def sql():
 
@@ -70,7 +69,4 @@ class PrefixSuffixEqualToOperator(BaseSqlOperator):
                           WHERE LOWER({target_sql}) = LOWER(values_table.value)
                       )"""
 
-        return self._do_check_operator(cache_key, sql)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

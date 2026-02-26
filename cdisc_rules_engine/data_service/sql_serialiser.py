@@ -54,11 +54,11 @@ class SQLSerialiser:
 
         if len(column_definitions) > 0:
             columns_sql = ",\n    ".join(column_definitions)
-            return f"""CREATE TABLE IF NOT EXISTS {schema.hash} (
+            return f"""CREATE UNLOGGED TABLE IF NOT EXISTS {schema.hash} (
                     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
                 );"""
         else:
-            return f"""CREATE TABLE IF NOT EXISTS {schema.hash} (
+            return f"""CREATE UNLOGGED TABLE IF NOT EXISTS {schema.hash} (
                         id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
                     );"""
 

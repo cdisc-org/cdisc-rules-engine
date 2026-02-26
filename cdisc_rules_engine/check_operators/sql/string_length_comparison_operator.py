@@ -8,7 +8,7 @@ class StringLengthComparisonOperator(BaseSqlOperator):
         super().__init__(data)
         self.operator = operator
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         target_column = self.replace_prefix(other_value.get("target")).lower()
         comparator = other_value.get("comparator")
         value_is_literal = other_value.get("value_is_literal", False)
@@ -25,9 +25,4 @@ class StringLengthComparisonOperator(BaseSqlOperator):
                            WHEN {target_length} {self.operator} {comparator_expr} THEN TRUE
                            ELSE FALSE END"""
 
-        return self._do_check_operator(
-            f"{target_column}_length_{self.operator}_{str(comparator).replace(' ', '_')}", sql
-        )
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

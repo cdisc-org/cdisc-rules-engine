@@ -122,9 +122,8 @@ class InvalidDateOperator(BaseSqlOperator):
             END
         """
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        op_name = f"{target}_is_invalid_date"
 
         def sql():
             return f"""
@@ -160,7 +159,4 @@ class InvalidDateOperator(BaseSqlOperator):
             END
             """
 
-        return self._do_check_operator(op_name, sql)
-
-    def get_result_for_missing_columns(self):
-        return "TRUE"
+        return self._do_check_operator(sql)

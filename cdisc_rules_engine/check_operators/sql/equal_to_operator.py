@@ -23,7 +23,7 @@ class EqualToOperator(BaseSqlOperator):
         self.invert = invert
         self.case_insensitive = case_insensitive
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
@@ -93,9 +93,7 @@ class EqualToOperator(BaseSqlOperator):
                         ELSE {target} = {comparator}
                     END"""
 
-        return self._do_check_operator(
-            f"{original_target}={original_comparator}_{invert}_{case_insensitive}_{type_insensitive}", sql
-        )
+        return self._do_check_operator(sql)
 
     def _check_equality_reference(
         self,
@@ -162,9 +160,4 @@ class EqualToOperator(BaseSqlOperator):
                 sql = "CASE WHEN 1=1 THEN FALSE END"
             return sql
 
-        return self._do_check_operator(
-            f"{original_target}_ref=_{pivot_column}_{invert}_{case_insensitive}_{type_insensitive}", sql
-        )
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
+        return self._do_check_operator(sql)

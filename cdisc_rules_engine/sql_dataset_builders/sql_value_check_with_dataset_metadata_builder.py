@@ -32,7 +32,12 @@ class SqlValueCheckWithDatasetMetadataBuilder(SqlBaseDatasetBuilder):
             raise ValueError(f"Source table {source_table_id} not found")
 
         columns_list = source_schema.get_columns()
-        column_names = [name for name, _ in columns_list if name != "id"]  # skip the id column
+        column_names = [
+            name
+            for name, schema in columns_list
+            if name.lower() not in ["id", "source_ds", "source_row_number"]
+            if schema.origin != "co"
+        ]
 
         source_table_hash = self.data_service.pgi.schema.get_table_hash(source_table_id)
         count_query = f"SELECT COUNT(*) as count FROM {source_table_hash};"

@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class IsOrderedByOperator(BaseSqlOperator):
     """Operator for checking if data is ordered by specified columns."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checking validity based on target order.
         """
@@ -18,7 +18,4 @@ class IsOrderedByOperator(BaseSqlOperator):
             .eq(self.validation_df[target].sort_values(ascending=sort_order_bool, ignore_index=True))
             .astype(bool)
         )"""
-        raise NotImplementedError("is_ordered_by check_operator not implemented")
-
-    def get_result_for_missing_columns(self):
         raise NotImplementedError("is_ordered_by check_operator not implemented")

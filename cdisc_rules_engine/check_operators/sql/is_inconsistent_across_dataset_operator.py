@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
     """Operator for checking if values are inconsistent across dataset."""
 
-    def _execute_operator_impl(self, other_value):
+    def execute_operator(self, other_value):
         """
         Checks if values in the target column are inconsistent across groups defined by comparator column(s).
 
@@ -111,6 +111,3 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(cache_key, generate_update_query)
-
-    def get_result_for_missing_columns(self):
-        return "FALSE"
