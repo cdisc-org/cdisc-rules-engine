@@ -20,8 +20,6 @@ body:
         - FDA BR SDTM
         - FDA BR SDTMIG
         - FDA BR SEND
-        - FDA VR SDTMIG
-        - FDA VR SENDIG
         - Custom
   - type: input
     id: reference_rule_id
@@ -41,7 +39,14 @@ body:
       value: https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
   - type: markdown
     attributes:
-      value: "In the next fields, please provide a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)."
+      value: "\nIn the next fields, please provide a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)."
+  - type: input
+    id: cli_command
+    validations:
+      required: true
+    attributes:
+      label: CLI Command Used (if applicable)
+      value: python core.py -s SDTM -v 3.4 -d /path/to/datasets
   - type: textarea
     id: rule
     validations:

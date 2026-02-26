@@ -1,3 +1,4 @@
+blank_issues_enabled: false
 contact_links:
   - name: CORE Discussion Forum
     url: https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/general

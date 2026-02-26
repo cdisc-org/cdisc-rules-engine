@@ -476,7 +476,7 @@ def test_operation_result_grouping_record_count(operation_params: OperationParam
                     "operation_id": [3, 3, 3, 3, 3],
                 }
             ),
-            {"QNAM": "RACE%"},
+            {"QNAM": "RACE&"},
         ),
         (
             PandasDataset.from_dict(
@@ -496,7 +496,7 @@ def test_operation_result_grouping_record_count(operation_params: OperationParam
                     "operation_id": [0, 0, 0],
                 }
             ),
-            {"QNAM": "VITAL%"},
+            {"QNAM": "VITAL&"},
         ),
         (
             PandasDataset.from_dict(
@@ -568,7 +568,7 @@ def test_wildcard_filtered_record_count(
                     "operation_id": [2, 2, 2, 2, 2, 2],
                 }
             ),
-            {"QNAM": "RACE%"},
+            {"QNAM": "RACE&"},
             ["USUBJID"],
         ),
         (
@@ -589,7 +589,7 @@ def test_wildcard_filtered_record_count(
                     "operation_id": [2, 2, 1, 0],
                 }
             ),
-            {"QNAM": "RACE%"},
+            {"QNAM": "RACE&"},
             ["USUBJID"],
         ),
     ],
