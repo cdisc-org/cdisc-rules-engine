@@ -8,6 +8,9 @@ from cdisc_rules_engine.dataset_builders.jsonata_dataset_builder import (
     JSONataDatasetBuilder,
 )
 from cdisc_rules_engine.interfaces import FactoryInterface
+from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
+    ContentsDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
     ContentsDefineDatasetBuilder,
 )
@@ -62,6 +65,7 @@ from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 class DatasetBuilderFactory(FactoryInterface):
     _builders_map = {
+        RuleTypes.RECORD_CHECK.value: ContentsDatasetBuilder,
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK.value: ContentMetadataDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: DatasetMetadataDefineDatasetBuilder,

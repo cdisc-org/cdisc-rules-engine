@@ -2,6 +2,7 @@ from cdisc_rules_engine.enums.base_enum import BaseEnum
 
 
 class RuleTypes(BaseEnum):
+    RECORD_CHECK = "Record Data"
     DATASET_CONTENTS_CHECK_AGAINST_DEFINE = "Dataset Contents Check against Define XML"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
