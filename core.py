@@ -104,6 +104,44 @@ def cli():
     pass
 
 
+def __filter_dataset_paths(
+    dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
+) -> list[str]:
+    """
+    Filters dataset paths based on tables.csv content (if exists).
+
+    Keeps only datasets listed in tables.csv (Filename column).
+    Always excludes tables.csv and variables.csv from result.
+    """
+    import pandas as pd
+
+    paths = [Path(p) for p in dataset_paths]
+    tables_path = next((p for p in paths if p.name.lower() == "tables.csv"), None)
+
+    dataset_files = [
+        p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
+    ]
+
+    if not tables_path:
+        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+
+    tables_df = pd.read_csv(tables_path, encoding=encoding)
+
+    if "Filename" not in tables_df.columns:
+        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+
+    allowed_datasets = {
+        Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
+    }
+
+    filtered = [
+        str(p)
+        for p in dataset_files
+        if p.suffix.lower() == ".csv" and p.stem.lower() in allowed_datasets
+    ]
+    return filtered
+
+
 def _validate_data_directory(
     data: str, logger, filetype: str = None
 ) -> tuple[list, set]:
@@ -127,7 +165,8 @@ def _validate_data_directory(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
-
+    elif DataFormatTypes.CSV.value in found_formats:
+        dataset_paths = __filter_dataset_paths(dataset_paths)
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
