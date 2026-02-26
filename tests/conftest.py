@@ -822,6 +822,7 @@ def define_xml_variable_validation_rule() -> dict:
                         "operator": "not_equal_to",
                         "value": {
                             "target": "variable_size",
+                            "comparator": "define_variable_size",
                         },
                     }
                 ]

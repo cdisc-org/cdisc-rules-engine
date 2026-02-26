@@ -1003,6 +1003,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
                 ]
             }
         ),
+        "rule_type": "Record Data",
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
