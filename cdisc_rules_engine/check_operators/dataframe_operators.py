@@ -1655,7 +1655,7 @@ class DataframeType(BaseType):
             first_null = min(index_order.index(i) for i in null_indices)
             if first_null < last_non_null:
                 is_valid[null_mask] = False
-        else:  # first
+        else:
             last_null = max(index_order.index(i) for i in null_indices)
             first_non_null = min(index_order.index(i) for i in non_null_indices)
             if last_null > first_non_null:
@@ -1699,7 +1699,6 @@ class DataframeType(BaseType):
                 ),
                 None,
             )
-
             if not is_numeric_comparator and not is_valid_date(str(curr)):
                 continue
 
@@ -1734,12 +1733,20 @@ class DataframeType(BaseType):
 
         is_valid = self._mark_invalid_null_positions(is_valid, group, null_mask, na_pos)
 
-        # Compare only non-null rows positionally
-        non_null_sorted = non_null_rows.sort_values(by=comparator, ascending=ascending)
+        # Exclude rows involved in date overlaps from positional check —
+        # their sort position is ambiguous and date_overlap_check handles flagging them
+        overlap_check = self.check_date_overlaps(group, target, comparator)
+        overlap_invalid_mask = ~overlap_check
+        non_null_rows_for_order_check = non_null_rows[
+            ~overlap_invalid_mask[non_null_rows.index]
+        ]
 
-        actual_target = non_null_rows[target].tolist()
+        non_null_sorted = non_null_rows_for_order_check.sort_values(
+            by=comparator, ascending=ascending
+        )
+        actual_target = non_null_rows_for_order_check[target].tolist()
         expected_target = non_null_sorted[target].tolist()
-        non_null_indices = non_null_rows.index.tolist()
+        non_null_indices = non_null_rows_for_order_check.index.tolist()
 
         for i in range(len(actual_target)):
             actual = actual_target[i]
@@ -1761,9 +1768,11 @@ class DataframeType(BaseType):
             else:
                 if actual != expected_val:
                     is_valid.loc[non_null_indices[i]] = False
+
+        non_null_target_sorted = non_null_rows.sort_values(by=target, ascending=True)
         is_valid = self._verify_neighbor_consistency(
             is_valid,
-            non_null_rows,
+            non_null_target_sorted,
             target,
             comparator,
             ascending,
@@ -1772,12 +1781,6 @@ class DataframeType(BaseType):
         return is_valid
 
     def check_date_overlaps(self, group, target, comparator):
-        """
-        Check for date overlaps in comparator column.
-        When dates have different precisions and overlap, mark them as invalid.
-        Only applies to date columns - returns all True for numeric columns.
-        Skips null comparator values.
-        """
         comparator_values = group[comparator].tolist()
         is_valid = pd.Series(True, index=group.index)
         is_numeric = pd.api.types.is_numeric_dtype(group[comparator])
@@ -1785,7 +1788,6 @@ class DataframeType(BaseType):
         if is_numeric:
             return is_valid
 
-        # Only check non-null comparator values
         valid_positions = [
             i
             for i in range(len(comparator_values))
@@ -1794,21 +1796,25 @@ class DataframeType(BaseType):
             )
         ]
 
-        for i in range(len(valid_positions) - 1):
+        for i in range(len(valid_positions)):
             curr_pos = valid_positions[i]
-            next_pos = valid_positions[i + 1]
             current = comparator_values[curr_pos]
-            next_val = comparator_values[next_pos]
-
-            if is_valid_date(current) and is_valid_date(next_val):
-                date1, prec1 = parse_date(current)
-                date2, prec2 = parse_date(next_val)
-
+            if not is_valid_date(current):
+                continue
+            _, prec1 = parse_date(current)
+            for j in range(len(valid_positions)):
+                if i == j:
+                    continue
+                other_pos = valid_positions[j]
+                other = comparator_values[other_pos]
+                if not is_valid_date(other):
+                    continue
+                _, prec2 = parse_date(other)
                 if prec1 != prec2:
-                    overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
+                    overlaps, _ = dates_overlap(current, prec1, other, prec2)
                     if overlaps:
                         is_valid.iloc[curr_pos] = False
-                        is_valid.iloc[next_pos] = False
+                        is_valid.iloc[other_pos] = False
 
         return is_valid
 
@@ -1886,7 +1892,6 @@ class DataframeType(BaseType):
                 ),
             )
 
-            # Check 2: No date overlaps in comparator (only for date columns)
             date_overlap_check = grouped_df.apply(
                 lambda x: self.check_date_overlaps(x, target, comparator)
             )
@@ -1898,10 +1903,7 @@ class DataframeType(BaseType):
                 lambda group: self.check_date_overlaps(group, target, comparator),
             )
 
-            # Combine both checks
             combined_check = target_check & date_overlap_check
-
-            # Map results back to original dataframe order
             result = result & combined_check.reindex(self.value.index, fill_value=True)
 
             if isinstance(result, (pd.DataFrame, dd.DataFrame)):

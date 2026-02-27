@@ -784,7 +784,33 @@ def test_target_is_sorted_by_dates(dataset_class):
     result = DataframeType(
         {"value": df_invalid, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(pd.Series([True, False, False, False, False]))
+    assert result.equals(pd.Series([False, False, False, False, False]))
+
+    df_partial = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+            ],
+            "SESEQ": [1, 2, 3, 4, 5, 6],
+            "SESTDTC": [
+                "2006-05-01",
+                "2006-06-01",
+                "2006-06-03",
+                "2006-06",
+                "2006-06-05",
+                "2006-06-07",
+            ],
+        }
+    )
+    result = DataframeType(
+        {"value": df_partial, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(pd.Series([True, False, False, False, False, False]))
 
     df_desc = dataset_class.from_dict(
         {
