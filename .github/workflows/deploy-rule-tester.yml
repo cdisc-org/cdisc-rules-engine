@@ -23,7 +23,7 @@ env:
 jobs:
   deploy_rule_tester:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.pull_request && 'DEV' || inputs.environment || 'PROD' }}
+    environment: ${{ github.event_name == 'pull_request' && 'DEV' || inputs.environment || 'PROD' }}
     steps:
       - uses: actions/checkout@v6
       - uses: azure/login@v2
@@ -48,6 +48,4 @@ jobs:
     needs: deploy_rule_tester
     uses: ./.github/workflows/test-rule-editor-preview.yml
     secrets: inherit
-    if: github.event.pull_request
-    with:
-      pr_ref: ${{ github.event.pull_request.head.sha }}
+    if: contains(fromJSON('["push", "pull_request"]'), github.event_name)

@@ -2,11 +2,6 @@ name: Run Tests on Preview Deployment
 
 on:
   workflow_call:
-    inputs:
-      pr_ref:
-        description: "Git reference to checkout (for PRs)"
-        required: false
-        type: string
   workflow_dispatch:
     inputs:
       pr_number:
@@ -22,7 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.ref }}
+          ref: ${{ (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v6

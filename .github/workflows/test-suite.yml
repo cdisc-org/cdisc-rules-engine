@@ -1,11 +1,5 @@
 name: CORE Test Suite Validation
 on:
-  workflow_call:
-    inputs:
-      pr_ref:
-        description: "Git reference to checkout (for PRs)"
-        required: false
-        type: string
   workflow_dispatch:
     inputs:
       pr_number:
@@ -23,7 +17,7 @@ jobs:
       - name: Get Engine Changes
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
+          ref: ${{ (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
       - name: Get Test Suite Repository
         uses: actions/checkout@v6
         with:
