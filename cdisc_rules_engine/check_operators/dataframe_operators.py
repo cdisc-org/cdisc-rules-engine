@@ -1732,9 +1732,6 @@ class DataframeType(BaseType):
         non_null_rows = group[~null_mask]
 
         is_valid = self._mark_invalid_null_positions(is_valid, group, null_mask, na_pos)
-
-        # Exclude rows involved in date overlaps from positional check —
-        # their sort position is ambiguous and date_overlap_check handles flagging them
         overlap_check = self.check_date_overlaps(group, target, comparator)
         overlap_invalid_mask = ~overlap_check
         non_null_rows_for_order_check = non_null_rows[
