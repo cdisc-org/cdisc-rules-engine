@@ -41,6 +41,7 @@ from cdisc_rules_engine.operations.meddra_term_references_validator import (
     MedDRATermReferencesValidator,
 )
 from cdisc_rules_engine.operations.min_date import MinDate
+from cdisc_rules_engine.operations.minus import Minus
 from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.record_count import RecordCount
 from cdisc_rules_engine.operations.split_by import SplitBy
@@ -109,6 +110,7 @@ class OperationsFactory(FactoryInterface):
         "mean": Mean,
         "min": Minimum,
         "min_date": MinDate,
+        "minus": Minus,
         "record_count": RecordCount,
         "valid_meddra_code_references": MedDRACodeReferencesValidator,
         "valid_whodrug_references": WhodrugReferencesValidator,

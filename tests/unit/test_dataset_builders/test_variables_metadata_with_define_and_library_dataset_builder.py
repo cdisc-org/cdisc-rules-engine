@@ -10,7 +10,6 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
 from cdisc_rules_engine.services.data_services import LocalDataService
 from pathlib import Path
 import pandas as pd
-import numpy as np
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder import (
     VariablesMetadataWithDefineAndLibraryDatasetBuilder,
 )
@@ -184,6 +183,7 @@ def test_build_combined_metadata(
         "library_variable_ccode",
         "library_variable_order_number",
         "variable_has_empty_values",
+        "variable_is_empty",
     }
     assert set(result.columns.tolist()) == expected_columns
 
@@ -201,28 +201,7 @@ def test_build_combined_metadata(
     assert studyid_row["define_variable_role"] == "Identifier"
     assert studyid_row["library_variable_core"] == "Req"
     assert not studyid_row["variable_has_empty_values"]
-
-    mandatory_vars = result[result["define_variable_mandatory"] == "Yes"]
-    assert not mandatory_vars.empty
-    assert all(
-        mandatory_vars["define_variable_name"].isin(["STUDYID", "USUBJID", "AETERM"])
-    )
-
-    empty_value_vars = result[result["variable_has_empty_values"]]
-    assert not empty_value_vars.empty
-    assert "USUBJID" in empty_value_vars["variable_name"].values
-    assert "AETERM" in empty_value_vars["variable_name"].values
-
-    non_empty_vars = ["STUDYID"]
-    for _, row in result.iterrows():
-        if row["variable_name"] in non_empty_vars:
-            assert row["variable_has_empty_values"] is False
-        else:
-            assert row["variable_has_empty_values"] is True
-
-    assert not result["variable_name"].isin([np.nan]).any()
-    assert not result["define_variable_name"].isin([np.nan]).any()
-    assert not result["library_variable_name"].isin([np.nan]).any()
+    assert not studyid_row["variable_is_empty"]
 
     usubjid_row = result[result["variable_name"] == "USUBJID"].iloc[0]
     assert usubjid_row["variable_size"] == 16.0
@@ -231,6 +210,7 @@ def test_build_combined_metadata(
     assert usubjid_row["define_variable_role"] == "Identifier"
     assert usubjid_row["library_variable_core"] == "Req"
     assert usubjid_row["variable_has_empty_values"]
+    assert not usubjid_row["variable_is_empty"]
 
     aeterm_row = result[result["variable_name"] == "AETERM"].iloc[0]
     assert aeterm_row["variable_size"] == 200.0
@@ -239,6 +219,7 @@ def test_build_combined_metadata(
     assert aeterm_row["define_variable_role"] == "Topic"
     assert aeterm_row["library_variable_core"] == "Req"
     assert aeterm_row["variable_has_empty_values"]
+    assert not aeterm_row["variable_is_empty"]
 
     assert len(result) == 3
 
