@@ -8,8 +8,6 @@ on:
         default: DEV
         type: environment
   pull_request:
-    types:
-      - opened
   push:
     branches:
       - main
@@ -37,7 +35,6 @@ jobs:
           app-name: ${{ env.functionAppName }}
           mask-inputs: false
           app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}' # wait for this step to complete before the webapps-deploy step
-
           general-settings-json: '{"linuxFxVersion": "PYTHON|${{ env.PYTHON_VERSION }}"}'
           slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
 
@@ -46,6 +43,7 @@ jobs:
         with:
           app-name: ${{ env.functionAppName }}
           slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
+
   test_rule_editor_preview:
     needs: deploy_rule_tester
     uses: ./.github/workflows/test-rule-editor-preview.yml
