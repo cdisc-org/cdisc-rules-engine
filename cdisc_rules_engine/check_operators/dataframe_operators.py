@@ -1849,10 +1849,6 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
-        """
-        Check if target is in ascending order when rows are sorted by comparator.
-
-        """
         target = other_value.get("target")
         within_columns = self._normalize_grouping_columns(other_value.get("within"))
         columns = other_value["comparator"]
@@ -1868,7 +1864,6 @@ class DataframeType(BaseType):
                 dict.fromkeys([target, comparator, *within_columns])
             )
 
-            # Sort by within columns (always ASC) and comparator in specified order
             sorted_df = self.value[selected_columns].sort_values(
                 by=[*within_columns, target],
                 ascending=[True] * (len(within_columns) + 1),
@@ -1876,7 +1871,6 @@ class DataframeType(BaseType):
 
             grouped_df = sorted_df.groupby(within_columns, sort=False)
 
-            # Check 1: Target order matches expected comparator order
             target_check = grouped_df.apply(
                 lambda x: self.check_target_ascending_in_sorted_group(
                     x, target, comparator, ascending, na_pos

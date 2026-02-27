@@ -776,7 +776,7 @@ def test_target_is_sorted_by_dates(dataset_class):
                 "2006-06-02",
                 "2006-06-04",
                 "2006-06-01",
-                "2006-06-05",
+                "2006-06",
                 "2006-06-03",
             ],
         }
@@ -784,7 +784,7 @@ def test_target_is_sorted_by_dates(dataset_class):
     result = DataframeType(
         {"value": df_invalid, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(pd.Series([True, False, False, True, True]))
+    assert result.equals(pd.Series([True, False, False, False, False]))
 
     df_desc = dataset_class.from_dict(
         {
