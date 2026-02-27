@@ -7,7 +7,10 @@ on:
         required: false
         type: string
   pull_request_target:
-    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
 jobs:
