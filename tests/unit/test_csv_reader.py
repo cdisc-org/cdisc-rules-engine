@@ -1,30 +1,43 @@
+import logging
+import tempfile
+import textwrap
+from datetime import datetime
+from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
+from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
+from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
 from core import _filter_dataset_paths
 
 DEFAULT_ENCODING = "utf-8"
 
 
+def norm(paths):
+    """Normalize path separators for cross-platform comparison."""
+    return [Path(p) for p in paths]
+
+
 class TestNoTablesCsv:
+
+    # Then in each affected test:
+    def test_excludes_non_csv_files(self):
+        paths = ["/data/dm.csv", "/data/readme.txt", "/data/report.xlsx"]
+        assert norm(_filter_dataset_paths(paths)) == norm(["/data/dm.csv"])
+
+    def test_variables_csv_excluded_without_tables_csv(self):
+        paths = ["/data/variables.csv", "/data/dm.csv"]
+        assert norm(_filter_dataset_paths(paths)) == norm(["/data/dm.csv"])
+
     def test_returns_all_csv_files(self):
         paths = ["/data/dm.csv", "/data/customers.csv"]
         result = _filter_dataset_paths(paths)
-        assert sorted(result) == sorted(paths)
-
-    def test_excludes_non_csv_files(self):
-        paths = ["/data/dm.csv", "/data/readme.txt", "/data/report.xlsx"]
-        assert _filter_dataset_paths(paths) == ["/data/dm.csv"]
+        assert sorted(norm(result)) == sorted(norm(paths))
 
     def test_only_non_csv_returns_empty(self):
         assert _filter_dataset_paths(["/data/readme.txt", "/data/image.png"]) == []
-
-    def test_variables_csv_excluded_without_tables_csv(self):
-        paths = ["/data/dm.csv", "/data/variables.csv"]
-        result = _filter_dataset_paths(paths)
-        assert result == ["/data/dm.csv"]
-        assert "/data/variables.csv" not in result
 
 
 class TestTablesCsvMissingFilenameColumn:
@@ -176,3 +189,294 @@ class TestEdgeCases:
         paths = [str(tables_csv), str(dm), str(dm)]
         result = _filter_dataset_paths(paths)
         assert result.count(str(dm)) == 1
+
+
+VARIABLES_CSV = textwrap.dedent(
+    """\
+    dataset,variable,label,type,length
+    patients.csv,id,Patient ID,integer,10
+    patients.csv,name,Patient Name,string,50
+    patients.csv,age,Patient Age,integer,3
+"""
+)
+
+DATA_CSV = textwrap.dedent(
+    """\
+    id,name,age
+    1,Alice,30
+    2,Bob,25
+    3,Carol,40
+"""
+)
+
+TABLES_CSV = textwrap.dedent(
+    """\
+    Filename,Label
+    patients.csv,Patient Dataset
+"""
+)
+
+
+def _write(path: Path, content: str) -> None:
+    path.write_text(content, encoding="utf-8")
+
+
+class TestDatasetCSVMetadataReaderRead:
+    """Tests for DatasetCSVMetadataReader.read()"""
+
+    def setup_method(self):
+        self.tmpdir = tempfile.mkdtemp()
+        self.data_path = Path(self.tmpdir) / "patients.csv"
+        _write(self.data_path, DATA_CSV)
+
+    def _variables_path(self):
+        return Path(self.tmpdir) / "variables.csv"
+
+    def test_returns_dict_with_expected_keys(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        result = reader.read()
+
+        expected_keys = {
+            "dataset_name",
+            "variable_names",
+            "variable_labels",
+            "variable_formats",
+            "variable_name_to_label_map",
+            "variable_name_to_data_type_map",
+            "variable_name_to_size_map",
+            "number_of_variables",
+            "dataset_modification_date",
+            "adam_info",
+            "dataset_length",
+            "first_record",
+        }
+        assert expected_keys.issubset(result.keys())
+
+    def test_variable_names_and_labels(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        result = reader.read()
+        assert result["variable_names"] == ["id", "name", "age"]
+        assert result["variable_labels"] == [
+            "Patient ID",
+            "Patient Name",
+            "Patient Age",
+        ]
+
+    def test_number_of_variables(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        assert reader.read()["number_of_variables"] == 3
+
+    def test_variable_formats_are_empty_strings(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        result = reader.read()
+        assert all(fmt == "" for fmt in result["variable_formats"])
+
+    def test_dataset_length_equals_data_rows(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        # DATA_CSV has 3 data rows (+ 1 header)
+        assert reader.read()["dataset_length"] == 3
+
+    def test_first_record_matches_first_data_row(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        first = reader.read()["first_record"]
+        assert first == {"id": "1", "name": "Alice", "age": "30"}
+
+    def test_modification_date_is_iso_string(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        mod_date = reader.read()["dataset_modification_date"]
+        # Should parse without raising
+        datetime.fromisoformat(mod_date)
+
+    def test_adam_info_structure(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        adam = reader.read()["adam_info"]
+        assert adam == {
+            "categorization_scheme": {},
+            "w_indexes": {},
+            "period": {},
+            "selection_algorithm": {},
+        }
+
+    def test_variable_name_to_label_map(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        m = reader.read()["variable_name_to_label_map"]
+        assert m == {"id": "Patient ID", "name": "Patient Name", "age": "Patient Age"}
+
+    def test_variable_name_to_size_map_with_values(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        sizes = reader.read()["variable_name_to_size_map"]
+        assert sizes == {"id": 10, "name": 50, "age": 3}
+
+    def test_variable_name_to_size_map_with_nan_length(self):
+        variables_with_nan = textwrap.dedent(
+            """\
+            dataset,variable,label,type,length
+            patients.csv,id,Patient ID,integer,
+        """
+        )
+        _write(self._variables_path(), variables_with_nan)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        sizes = reader.read()["variable_name_to_size_map"]
+        assert sizes["id"] is None
+
+    def test_dataset_name_lookup_is_case_insensitive(self):
+        """File name with mixed case should still match variables.csv entry."""
+        variables_upper = VARIABLES_CSV.replace("patients.csv", "PATIENTS.CSV")
+        _write(self._variables_path(), variables_upper)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "PATIENTS.CSV")
+        result = reader.read()
+        assert result["dataset_name"] == "PATIENTS"
+
+    def test_returns_empty_dict_when_no_variables_file(self, caplog):
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        with caplog.at_level(logging.WARNING, logger="validator"):
+            result = reader.read()
+        assert result == {}
+        assert "No variables file found" in caplog.text
+
+    def test_raises_value_error_when_dataset_not_in_variables(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "unknown_dataset.csv")
+        with pytest.raises(
+            ValueError, match="No metadata found for dataset 'unknown_dataset'"
+        ):
+            reader.read()
+
+    def test_dataset_label_added_when_tables_csv_present(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        _write(Path(self.tmpdir) / "tables.csv", TABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        result = reader.read()
+        assert result.get("dataset_label") == "Patient Dataset"
+
+    def test_no_dataset_label_when_tables_csv_absent(self):
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
+        result = reader.read()
+        assert "dataset_label" not in result
+
+    def test_empty_data_file_returns_empty_first_record(self):
+        empty_data = Path(self.tmpdir) / "patients.csv"
+        _write(empty_data, "id,name,age\n")  # header only
+        _write(self._variables_path(), VARIABLES_CSV)
+        reader = DatasetCSVMetadataReader(str(empty_data), "patients.csv")
+        result = reader.read()
+        assert result["dataset_length"] == 0
+        assert result["first_record"] == {}
+
+
+class TestCSVReaderFromFile:
+    """Tests for CSVReader.from_file()"""
+
+    def setup_method(self):
+        self.tmpdir = tempfile.mkdtemp()
+        self.csv_path = Path(self.tmpdir) / "data.csv"
+        _write(self.csv_path, DATA_CSV)
+
+    def test_returns_dataframe(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert isinstance(df, pd.DataFrame)
+
+    def test_correct_number_of_rows(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert len(df) == 3
+
+    def test_correct_column_names(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert list(df.columns) == ["id", "name", "age"]
+
+    def test_correct_values(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert df.iloc[0]["name"] == "Alice"
+        assert df.iloc[1]["age"] == 25
+
+    def test_no_index_column(self):
+        """index_col=False means the DataFrame index should be the default RangeIndex."""
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert list(df.index) == [0, 1, 2]
+
+    def test_empty_csv_returns_empty_dataframe(self):
+        empty_path = Path(self.tmpdir) / "empty.csv"
+        _write(empty_path, "id,name,age\n")
+        reader = CSVReader()
+        df = reader.from_file(str(empty_path))
+        assert df.empty
+        assert list(df.columns) == ["id", "name", "age"]
+
+
+class TestCSVReaderToParquet:
+
+    def setup_method(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def _write_csv(self, name: str, content: str) -> str:
+        p = Path(self.tmpdir) / name
+        _write(p, content)
+        return str(p)
+
+    def test_returns_tuple_of_int_and_string(self):
+        path = self._write_csv("data.csv", DATA_CSV)
+        reader = CSVReader()
+        result = reader.to_parquet(path)
+        assert isinstance(result, tuple)
+        num_rows, parquet_path = result
+        assert isinstance(num_rows, int)
+        assert isinstance(parquet_path, str)
+
+    def test_row_count_matches_csv(self):
+        path = self._write_csv("data.csv", DATA_CSV)
+        reader = CSVReader()
+        num_rows, _ = reader.to_parquet(path)
+        assert num_rows == 3
+
+    def test_parquet_file_is_created(self):
+        path = self._write_csv("data.csv", DATA_CSV)
+        reader = CSVReader()
+        _, parquet_path = reader.to_parquet(path)
+        assert Path(parquet_path).exists()
+
+    def test_parquet_content_matches_source(self):
+        path = self._write_csv("data.csv", DATA_CSV)
+        reader = CSVReader()
+        _, parquet_path = reader.to_parquet(path)
+        df = pd.read_parquet(parquet_path)
+        assert list(df.columns) == ["id", "name", "age"]
+        assert len(df) == 3
+
+    def test_large_file_chunked_row_count(self):
+        """Simulate a file larger than the 20 000-row chunk boundary."""
+        rows = "\n".join(f"{i},Name{i},{20 + i % 50}" for i in range(1, 25_001))
+        content = "id,name,age\n" + rows
+        path = self._write_csv("large.csv", content)
+        reader = CSVReader()
+        num_rows, parquet_path = reader.to_parquet(path)
+        assert num_rows == 25_000
+        df = pd.read_parquet(parquet_path)
+        assert len(df) == 25_000
+
+    def test_parquet_suffix(self):
+        path = self._write_csv("data.csv", DATA_CSV)
+        reader = CSVReader()
+        _, parquet_path = reader.to_parquet(path)
+        assert parquet_path.endswith(".parquet")
+
+    def test_empty_csv_returns_zero_rows(self):
+        path = self._write_csv("empty.csv", "id,name,age\n")
+        reader = CSVReader()
+        num_rows, parquet_path = reader.to_parquet(path)
+        assert num_rows == 0
