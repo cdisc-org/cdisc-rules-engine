@@ -17,14 +17,37 @@ class DatasetCSVMetadataReader:
 
     def read(self) -> dict:
         dataset_name = Path(self.file_name).stem.lower()
-
         variables_file_path = Path(self.file_path).parent / "variables.csv"
 
         if not variables_file_path.exists():
             logger = logging.getLogger("validator")
-            logger.warning("No variables file found")
-            return {}
+            logger.info("No variables file found for %s", dataset_name)
+            variables_meta = {}
+        else:
+            variables_meta = self.__get_variable_metadata(
+                dataset_name, variables_file_path
+            )
 
+        metadata = {
+            "dataset_name": dataset_name.upper(),
+            "dataset_modification_date": datetime.fromtimestamp(
+                Path(self.file_path).stat().st_mtime
+            ).isoformat(),
+            "adam_info": {
+                "categorization_scheme": {},
+                "w_indexes": {},
+                "period": {},
+                "selection_algorithm": {},
+            },
+        }
+        metadata.update(variables_meta)
+        metadata.update(self.__data_meta())
+        metadata.update(self.__dataset_label())
+        return metadata
+
+    def __get_variable_metadata(
+        self, dataset_name: str, variables_file_path: Path
+    ) -> dict:
         meta_df = pd.read_csv(variables_file_path, encoding=self.encoding)
 
         meta_df["dataset"] = meta_df["dataset"].apply(
@@ -34,7 +57,9 @@ class DatasetCSVMetadataReader:
         dataset_meta_df = meta_df[meta_df["dataset"] == dataset_name]
 
         if dataset_meta_df.empty:
-            raise ValueError(f"No metadata found for dataset '{dataset_name}'")
+            logger = logging.getLogger("validator")
+            logger.info("No dataset metadata found for %s", dataset_name)
+            return {}
 
         variable_names = dataset_meta_df["variable"].tolist()
         variable_labels = dataset_meta_df["label"].tolist()
@@ -47,9 +72,7 @@ class DatasetCSVMetadataReader:
             var: (int(length) if pd.notna(length) else None)
             for var, length in zip(variable_names, dataset_meta_df["length"])
         }
-
-        metadata = {
-            "dataset_name": dataset_name.upper(),
+        return {
             "variable_names": variable_names,
             "variable_labels": variable_labels,
             "variable_formats": [""] * len(variable_names),
@@ -57,19 +80,7 @@ class DatasetCSVMetadataReader:
             "variable_name_to_data_type_map": variable_name_to_data_type_map,
             "variable_name_to_size_map": variable_name_to_size_map,
             "number_of_variables": len(variable_names),
-            "dataset_modification_date": datetime.fromtimestamp(
-                Path(self.file_path).stat().st_mtime
-            ).isoformat(),
-            "adam_info": {
-                "categorization_scheme": {},
-                "w_indexes": {},
-                "period": {},
-                "selection_algorithm": {},
-            },
         }
-        metadata.update(self.__data_meta())
-        metadata.update(self.__dataset_label())
-        return metadata
 
     def __dataset_label(self) -> dict:
         tables_file_path = Path(self.file_path).parent / "tables.csv"

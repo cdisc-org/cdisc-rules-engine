@@ -6,7 +6,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
-import pytest
 
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
@@ -337,20 +336,19 @@ class TestDatasetCSVMetadataReaderRead:
         result = reader.read()
         assert result["dataset_name"] == "PATIENTS"
 
-    def test_returns_empty_dict_when_no_variables_file(self, caplog):
+    def test_returns_partial_meta_when_no_variables_file(self, caplog):
         reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
-        with caplog.at_level(logging.WARNING, logger="validator"):
+        with caplog.at_level(logging.INFO, logger="validator"):
             result = reader.read()
-        assert result == {}
+        assert {
+            "dataset_name",
+            "dataset_modification_date",
+            "adam_info",
+            "dataset_length",
+            "first_record",
+        }.issubset(set(result.keys()))
+        assert result["first_record"] == {"age": "30", "id": "1", "name": "Alice"}
         assert "No variables file found" in caplog.text
-
-    def test_raises_value_error_when_dataset_not_in_variables(self):
-        _write(self._variables_path(), VARIABLES_CSV)
-        reader = DatasetCSVMetadataReader(str(self.data_path), "unknown_dataset.csv")
-        with pytest.raises(
-            ValueError, match="No metadata found for dataset 'unknown_dataset'"
-        ):
-            reader.read()
 
     def test_dataset_label_added_when_tables_csv_present(self):
         _write(self._variables_path(), VARIABLES_CSV)
