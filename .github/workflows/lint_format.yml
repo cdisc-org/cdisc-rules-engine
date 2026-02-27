@@ -2,6 +2,8 @@ name: Check Lint and Format
 on:
   # Can't be workflow_dispatch because it uses github.event.pull_request.base.sha
   workflow_call:
+permissions:
+  contents: read
 
 jobs:
   get_changed_files:
