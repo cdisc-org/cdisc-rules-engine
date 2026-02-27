@@ -10,7 +10,7 @@ jobs:
   get_changed_files:
     runs-on: ubuntu-latest
     outputs:
-      py: ${{ steps.changes.outputs.all_changed_files }}
+      py: ${{ steps.changes.outputs.py_all_changed_files }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,7 +20,9 @@ jobs:
         id: changes
         uses: tj-actions/changed-files@7dee1b0c1557f278e5c7dc244927139d78c0e22a # v47.0.4
         with:
-          files: "**.py"
+          files_yaml: |
+            py: 
+              - '**.py'
           separator: " "
 
   lint:
