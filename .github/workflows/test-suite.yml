@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: "PR number to test (leave empty for current branch)"
+        description: "PR number to test (for forked repositories) (leave empty for current branch)"
         required: false
         type: string
   pull_request_target:
@@ -21,18 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get Engine Changes
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
       - name: Get Test Suite Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: cdisc-org/CORE_Test_Suite
           path: CORE_Test_Suite
           token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -218,7 +218,7 @@ jobs:
       #######################
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: comparison-results
           path: |

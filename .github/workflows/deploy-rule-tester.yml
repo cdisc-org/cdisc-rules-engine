@@ -1,19 +1,15 @@
 name: Deploy Rule Tester Endpoint
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
-
   workflow_dispatch:
     inputs:
       environment:
         required: true
         default: DEV
         type: environment
-
+  pull_request:
+    types:
+      - opened
   push:
     branches:
       - main
@@ -26,9 +22,9 @@ env:
 jobs:
   deploy_rule_tester:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'PROD' }}
+    environment: ${{ github.event.pull_request && 'DEV' || inputs.environment || 'PROD' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
@@ -47,3 +43,10 @@ jobs:
         with:
           app-name: ${{ env.functionAppName }}
           slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
+  test_rule_editor_preview:
+    needs: deploy_rule_tester
+    uses: ./.github/workflows/test-rule-editor-preview.yml
+    secrets: inherit
+    if: github.event.pull_request
+    with:
+      pr_ref: ${{ github.event.pull_request.head.sha }}
