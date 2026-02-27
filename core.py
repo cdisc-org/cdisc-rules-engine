@@ -104,7 +104,7 @@ def cli():
     pass
 
 
-def __filter_dataset_paths(
+def _filter_dataset_paths(
     dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
 ) -> list[str]:
     """
@@ -134,12 +134,12 @@ def __filter_dataset_paths(
         Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
     }
 
-    filtered = [
+    filtered = {
         str(p)
         for p in dataset_files
         if p.suffix.lower() == ".csv" and p.stem.lower() in allowed_datasets
-    ]
-    return filtered
+    }
+    return list(filtered)
 
 
 def _validate_data_directory(
@@ -166,7 +166,7 @@ def _validate_data_directory(
         )
         return [], set()
     elif DataFormatTypes.CSV.value in found_formats:
-        dataset_paths = __filter_dataset_paths(dataset_paths)
+        dataset_paths = _filter_dataset_paths(dataset_paths)
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
