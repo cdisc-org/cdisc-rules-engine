@@ -24,7 +24,6 @@ The combination of data in each rule type.
 | **Domain**            | [Domain Presence Check](#domain-presence-check)                                                                                       |
 |                       | [Domain Presence Check against Define XML](#domain-presence-check-against-define-xml)                                                 |
 | **Define XML**        | [Define Item Group Metadata Check](#define-item-group-metadata-check)                                                                 |
-|                       | [Define Item Metadata Check](#define-item-metadata-check)                                                                             |
 |                       | [Define Item Metadata Check against Library Metadata](#define-item-metadata-check-against-library-metadata)                           |
 | **Value Check**       | [Value Check with Dataset Metadata](#value-check-with-dataset-metadata)                                                               |
 |                       | [Value Check with Variable Metadata](#value-check-with-variable-metadata)                                                             |
@@ -263,30 +262,6 @@ all:
 #### Rule Macro
 
 Checks dataset-level (ItemGroup) metadata sourced from Define-XML. Each row represents one ItemGroup/dataset definition in the Define-XML.
-
-## Define Item Metadata Check
-
-#### Columns
-
-- `define_variable_name`
-- `define_variable_label`
-- `define_variable_data_type`
-- `define_variable_role`
-- `define_variable_size`
-- `define_variable_ccode`
-- `define_variable_format`
-- `define_variable_allowed_terms`
-- `define_variable_origin_type`
-- `define_variable_is_collected`
-- `define_variable_has_no_data`
-- `define_variable_order_number`
-- `define_variable_has_codelist`
-- `define_variable_codelist_coded_values`
-- `define_variable_has_comment`
-
-#### Rule Macro
-
-Checks variable-level metadata sourced from Define-XML with variable codelist and codelist terms.
 
 ## Define Item Metadata Check against Library Metadata
 

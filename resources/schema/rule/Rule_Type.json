@@ -19,10 +19,6 @@
       "title": "Define xml metadata at dataset level"
     },
     {
-      "const": "Define Item Metadata Check",
-      "title": "Define xml metadata at variable level"
-    },
-    {
       "const": "Define Item Metadata Check against Library Metadata",
       "title": "Define xml metadata at variable level and corresponding library variable metadata"
     },
