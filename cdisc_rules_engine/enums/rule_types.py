@@ -6,7 +6,6 @@ class RuleTypes(BaseEnum):
     DATASET_CONTENTS_CHECK_AGAINST_DEFINE = "Dataset Contents Check against Define XML"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
-    DEFINE_ITEM_GROUP_METADATA_CHECK = "Define Item Group Metadata Check"
     DOMAIN_PRESENCE_CHECK = "Domain Presence Check"
     DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE = "Domain Presence Check against Define XML"
     JSONATA = "JSONata"

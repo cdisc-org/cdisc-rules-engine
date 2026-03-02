@@ -20,11 +20,9 @@ The combination of data in each rule type.
 |                       | [Dataset Metadata Check](#dataset-metadata-check)                                                                                     |
 |                       | [Dataset Metadata Check against Define XML](#dataset-metadata-check-against-define-xml)                                               |
 |                       | [Dataset Contents Check against Define XML](#dataset-contents-check-against-define-xml)                                               |
-|                       | [Value Level Metadata Check against Define XML](#value-level-metadata-check-against-define-xml)                                       |
 | **Domain**            | [Domain Presence Check](#domain-presence-check)                                                                                       |
 |                       | [Domain Presence Check against Define XML](#domain-presence-check-against-define-xml)                                                 |
-| **Define XML**        | [Define Item Group Metadata Check](#define-item-group-metadata-check)                                                                 |
-|                       | [Define Item Metadata Check against Library Metadata](#define-item-metadata-check-against-library-metadata)                           |
+| **Define XML**        | [Define Item Metadata Check against Library Metadata](#define-item-metadata-check-against-library-metadata)                           |
 | **Value Check**       | [Value Check with Dataset Metadata](#value-check-with-dataset-metadata)                                                               |
 |                       | [Value Check with Variable Metadata](#value-check-with-variable-metadata)                                                             |
 |                       | [Value Check against Define XML Variable](#value-check-against-define-xml-variable)                                                   |
@@ -33,6 +31,7 @@ The combination of data in each rule type.
 |                       | [Variable Metadata Check against Define XML](#variable-metadata-check-against-define-xml)                                             |
 |                       | [Variable Metadata Check against Library Metadata](#variable-metadata-check-against-library-metadata)                                 |
 |                       | [Variables Metadata Check against Define XML and Library Metadata](#variables-metadata-check-against-define-xml-and-library-metadata) |
+|                       | [Define Item Metadata Check against Library Metadata](#define-item-metadata-check-against-library-metadata)                           |
 | **JSON**              | [JSONata](#jsonata)                                                                                                                   |
 |                       | [JSON Schema Check](#json-schema-check)                                                                                               |
 
@@ -243,25 +242,6 @@ all:
 ```
 
 # Define XML Rule Types
-
-## Define Item Group Metadata Check
-
-#### Columns
-
-- `define_dataset_class`
-- `define_dataset_domain`
-- `define_dataset_has_no_data`
-- `define_dataset_is_non_standard`
-- `define_dataset_key_sequence`
-- `define_dataset_label`
-- `define_dataset_location`
-- `define_dataset_name`
-- `define_dataset_structure`
-- `define_dataset_variables`
-
-#### Rule Macro
-
-Checks dataset-level (ItemGroup) metadata sourced from Define-XML. Each row represents one ItemGroup/dataset definition in the Define-XML.
 
 ## Define Item Metadata Check against Library Metadata
 

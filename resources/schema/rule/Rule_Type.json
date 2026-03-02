@@ -15,10 +15,6 @@
       "title": "Content metadata at dataset level and define xml metadata at dataset level"
     },
     {
-      "const": "Define Item Group Metadata Check",
-      "title": "Define xml metadata at dataset level"
-    },
-    {
       "const": "Define Item Metadata Check against Library Metadata",
       "title": "Define xml metadata at variable level and corresponding library variable metadata"
     },
@@ -49,10 +45,6 @@
     {
       "const": "Value Check against Define XML VLM",
       "title": "Content data at value level and define xml metadata at value level"
-    },
-    {
-      "const": "Value Level Metadata Check against Define XML",
-      "title": "Content data at record level and define xml metadata at value level"
     },
     {
       "const": "Variable Metadata Check",
