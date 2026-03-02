@@ -146,9 +146,22 @@ def _validate_data_directory(
     return dataset_paths, found_formats
 
 
-def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
+def _validate_dataset_paths(
+    dataset_path: tuple[str], logger, filetype: None
+) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+    if filetype:
+        pattern = f"*.{filetype}"
+        dataset_paths, found_formats = valid_data_file(
+            [
+                str(p)
+                for p in dataset_path
+                if Path(p).match(pattern)
+                if Path(p).is_file()
+            ]
+        )
+    else:
+        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -505,7 +518,9 @@ def validate(  # noqa
         if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
-        dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
+        dataset_paths, found_formats = _validate_dataset_paths(
+            dataset_path, logger, filetype
+        )
         if not dataset_paths:
             ctx.exit(2)
     else:
