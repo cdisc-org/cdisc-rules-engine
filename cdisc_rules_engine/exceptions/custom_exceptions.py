@@ -40,6 +40,22 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
+def library_metadata_not_found_message(standard, version, substandard=None):
+    version_display = (version or "").replace("-", ".")
+    sub_part = f" substandard {substandard}" if substandard else ""
+    return (
+        f"No library metadata found for standard '{standard}' "
+        f"version '{version_display}'{sub_part}."
+    )
+
+
+class LibraryMetadataNotFoundError(EngineError):
+    code = 400
+    description = (
+        "Library metadata not found for the provided standard and version combination."
+    )
+
+
 class DomainNotFoundError(EngineError):
     """Raised when a required domain is not found in the dataset"""
 
@@ -60,6 +76,22 @@ class InvalidDatasetFormat(EngineError):
 class InvalidJSONFormat(EngineError):
     code = 400
     description = "JSON data is malformed."
+
+
+class ExcelTestDataError(EngineError):
+    code = 400
+    description = (
+        "Excel test data file is missing required sheets or column headers. "
+        "Sheet and column names are case-sensitive."
+    )
+
+
+CT_PACKAGE_NOT_FOUND_PREFIX = "Controlled terminology package(s) not found"
+
+
+class CTPackageNotFoundError(EngineError):
+    code = 400
+    description = f"{CT_PACKAGE_NOT_FOUND_PREFIX}."
 
 
 class NumberOfAttemptsExceeded(EngineError):

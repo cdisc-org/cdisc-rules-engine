@@ -23,6 +23,7 @@ from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.enums.standard_types import StandardTypes
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -459,6 +460,15 @@ def validate(  # noqa
 
     if not custom_standard:
         standard = standard.lower()
+        supported_standards = StandardTypes.values()
+        if standard not in supported_standards:
+            supported_list = ", ".join(sorted(supported_standards))
+            logger.error(
+                f"Standard '{standard}' is not a supported standard. "
+                f"Supported standards: {supported_list}. "
+                f"Use --custom-standard flag for custom standards."
+            )
+            ctx.exit(2)
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
