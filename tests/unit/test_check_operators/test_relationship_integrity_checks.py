@@ -776,7 +776,7 @@ def test_target_is_sorted_by_dates(dataset_class):
                 "2006-06-02",
                 "2006-06-04",
                 "2006-06-01",
-                "2006-06-05",
+                "2006-06",
                 "2006-06-03",
             ],
         }
@@ -784,7 +784,33 @@ def test_target_is_sorted_by_dates(dataset_class):
     result = DataframeType(
         {"value": df_invalid, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(pd.Series([True, False, False, True, True]))
+    assert result.equals(pd.Series([False, False, False, False, False]))
+
+    df_partial = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+            ],
+            "SESEQ": [1, 2, 3, 4, 5, 6],
+            "SESTDTC": [
+                "2006-05-01",
+                "2006-06-01",
+                "2006-06-03",
+                "2006-06",
+                "2006-06-05",
+                "2006-06-07",
+            ],
+        }
+    )
+    result = DataframeType(
+        {"value": df_partial, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(pd.Series([True, False, False, False, False, False]))
 
     df_desc = dataset_class.from_dict(
         {
@@ -958,26 +984,59 @@ def test_target_is_sorted_by_multiple_within_numeric(dataset_class):
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_target_is_sorted_by_with_nulls(dataset_class):
-    """Test target_is_sorted_by handles null values correctly.
-    Null in either target or comparator marks that row as False,
-    but does not affect the ordering check of surrounding non-null rows.
-    """
-    df = dataset_class.from_dict(
+    df_null_last = dataset_class.from_dict(
         {
-            "USUBJID": [123, 456, 456, 123, 123],
-            "SESEQ": [1, 2, 1, None, None],
-            "SESTDTC": ["2006-06-02", None, "2006-06-01", None, "2006-06-03"],
+            "USUBJID": ["001", "001", "001", "001", "002", "002", "002"],
+            "SESEQ": [1, 2, 3, 4, 1, 2, 3],
+            "SESTDTC": [
+                "2006-01-01",
+                "2006-01-02",
+                "",
+                "2006-01-04",
+                "2006-01-01",
+                "",
+                "2006-01-03",
+            ],
         }
     )
-    other_value = {
+    other_value_last = {
         "target": "--SEQ",
         "within": "USUBJID",
-        "comparator": [{"name": "--STDTC", "sort_order": "ASC"}],
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
     }
     result = DataframeType(
-        {"value": df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(pd.Series([True, False, True, False, False]))
+        {"value": df_null_last, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value_last)
+    assert result.equals(pd.Series([True, True, False, True, True, False, True]))
+
+    df_null_first = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001", "001", "002", "002", "002"],
+            "SESEQ": [1, 2, 3, 4, 1, 2, 3],
+            "SESTDTC": [
+                "",
+                "2006-01-01",
+                "2006-01-02",
+                "2006-01-03",
+                "2006-01-01",
+                "",
+                "2006-01-03",
+            ],
+        }
+    )
+    other_value_first = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "first"}
+        ],
+    }
+    result = DataframeType(
+        {"value": df_null_first, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value_first)
+    assert result.equals(pd.Series([True, True, True, True, True, False, True]))
 
 
 @pytest.mark.parametrize(
