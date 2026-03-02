@@ -1,4 +1,3 @@
-# flake8: noqa
 from typing import Type
 
 from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
@@ -23,14 +22,8 @@ from cdisc_rules_engine.dataset_builders.variables_metadata_dataset_builder impo
 from cdisc_rules_engine.dataset_builders.domain_list_dataset_builder import (
     DomainListDatasetBuilder,
 )
-from cdisc_rules_engine.dataset_builders.define_variables_dataset_builder import (
-    DefineVariablesDatasetBuilder,
-)
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_dataset_builder import (
     VariablesMetadataWithDefineDatasetBuilder,
-)
-from cdisc_rules_engine.dataset_builders.define_item_group_dataset_builder import (
-    DefineItemGroupDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (
     ContentsDefineVariablesDatasetBuilder,
@@ -73,7 +66,6 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: DomainListDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: DomainListWithDefineDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
-        RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
