@@ -1,7 +1,10 @@
 name: Check Lint and Format
 on:
-  # Can't be workflow_dispatch because it uses github.event.pull_request.base.sha
-  workflow_call:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
 permissions:
   contents: read
 
@@ -9,18 +12,26 @@ jobs:
   get_changed_files:
     runs-on: ubuntu-latest
     outputs:
-      py: ${{ steps.changes.outputs.py }}
-      pretty: ${{ steps.changes.outputs.pretty }}
+      py: ${{ steps.changes.outputs.py_all_changed_files }}
+      pretty: ${{ steps.changes.outputs.pretty_all_changed_files }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: "0"
+          fetch-depth: 0
       - name: Get changed files
         id: changes
-        run: |
-          echo "py=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)" >> $GITHUB_OUTPUT
-          echo "pretty=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep -E '\.(json|md|yaml|yml)$' | xargs)" >> $GITHUB_OUTPUT
+        uses: tj-actions/changed-files@7dee1b0c1557f278e5c7dc244927139d78c0e22a # v47.0.4
+        with:
+          files_yaml: |
+            py: 
+              - '**.py'
+            pretty: 
+              - '**.json'
+              - '**.md'
+              - '**.yaml'
+              - '**.yml'
+          separator: " "
 
   check_python_files:
     runs-on: ubuntu-latest
@@ -29,11 +40,11 @@ jobs:
     if: ${{needs.get_changed_files.outputs.py}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: "0"
+          fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install linters
@@ -54,9 +65,9 @@ jobs:
     if: ${{needs.get_changed_files.outputs.pretty}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: "0"
+          fetch-depth: 0
       - uses: actions/setup-node@v6
       - name: Run prettier
         run: |
