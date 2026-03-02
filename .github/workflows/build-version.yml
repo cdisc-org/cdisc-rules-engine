@@ -8,12 +8,12 @@ jobs:
   custom-executable-build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: cdisc-org/cdisc-rules-engine
           ref: main
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -48,7 +48,7 @@ jobs:
           mv core cdisc-core-$(date +%Y%m%d)
           echo "Executable ready: $(ls cdisc-core-*)"
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cdisc-core-ubuntu-22.04
           path: dist/output/core-ubuntu-22.04/core/
@@ -62,12 +62,12 @@ jobs:
 #   custom-executable-build-windows:
 #     runs-on: windows-latest
 #     steps:
-#       - uses: actions/checkout@v4
+#       - uses: actions/checkout@v6
 #         with:
 #           repository: cdisc-org/cdisc-rules-engine
 #           ref: main
 #       - name: Set up Python
-#         uses: actions/setup-python@v5
+#         uses: actions/setup-python@v6
 #         with:
 #           python-version: "3.12"
 #       - name: Install dependencies
@@ -91,7 +91,7 @@ jobs:
 #           Rename-Item core.exe "cdisc-core-$date.exe"
 #           Write-Output "Executable ready: $(Get-ChildItem cdisc-core-*)"
 #       - name: Upload Artifact
-#         uses: actions/upload-artifact@v4
+#         uses: actions/upload-artifact@v6
 #         with:
 #           name: cdisc-core-windows
 #           path: dist/output/core-windows/core/
@@ -106,12 +106,12 @@ jobs:
 #   custom-executable-build-macos:
 #     runs-on: macos-latest
 #     steps:
-#       - uses: actions/checkout@v4
+#       - uses: actions/checkout@v6
 #         with:
 #           repository: cdisc-org/cdisc-rules-engine
 #           ref: main
 #       - name: Set up Python
-#         uses: actions/setup-python@v5
+#         uses: actions/setup-python@v6
 #         with:
 #           python-version: "3.12"
 #       - name: Install dependencies
@@ -146,7 +146,7 @@ jobs:
 #           mv core cdisc-core-$(date +%Y%m%d)
 #           echo "Executable ready: $(ls cdisc-core-*)"
 #       - name: Upload Artifact
-#         uses: actions/upload-artifact@v4
+#         uses: actions/upload-artifact@v6
 #         with:
 #           name: cdisc-core-macos
 #           path: dist/output/core-macos/core/
