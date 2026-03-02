@@ -31,7 +31,7 @@ jobs:
       contents: write
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
       - name: Create release zip files
@@ -61,7 +61,7 @@ jobs:
         with:
           name: core-ubuntu-22.04-tar
       - name: Upload Ubuntu 22.04 tar.gz
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: core-ubuntu-22.04-tarball
           path: core-ubuntu-22.04.tar.gz
@@ -78,7 +78,7 @@ jobs:
 
       # Upload zips as artifact for the PyPI job
       - name: Upload Release Assets for PyPI
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-artifacts
           path: |
@@ -94,9 +94,9 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -118,7 +118,7 @@ jobs:
 
   build-and-push-docker:
     needs: [create-release-assets, deploy-PyPi]
-    uses: ./.github/workflows/docker_release.yml
+    uses: ./.github/workflows/docker-release.yml
     with:
       version: ${{ github.event.release.tag_name }}
     secrets: inherit
