@@ -194,7 +194,9 @@ class SDTMReportData(BaseReportData):
             {
                 "filename": dataset.name,
                 "label": dataset.label,
-                "path": str(Path(dataset.full_path or "").parent),
+                "path": str(
+                    Path(dataset.original_path or dataset.full_path or "").parent
+                ),
                 "modification_date": dataset.modification_date,
                 "size_kb": (dataset.file_size or 0) / 1000,
                 "length": dataset.record_count,
