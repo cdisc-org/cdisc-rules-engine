@@ -242,7 +242,7 @@ This will show the list of validation options.
                                   78%"is printed.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
-  -ft, --filetype TEXT            File extension to filter datasets. Has higher priority then --dataset-path parameter.
+  -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
   --help                          Show this message and exit.
 ```
 

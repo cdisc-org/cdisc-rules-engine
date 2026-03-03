@@ -147,7 +147,7 @@ def _validate_data_directory(
 
 
 def _validate_dataset_paths(
-    dataset_path: tuple[str], logger, filetype: None
+    dataset_path: tuple[str], logger, filetype: str
 ) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
     if filetype:
@@ -179,6 +179,12 @@ def _validate_dataset_paths(
                 f"Excel format (XLSX) validation only supports single files.\n"
                 f"Please provide either a single XLSX file or use other supported formats: "
                 f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        elif filetype:
+            logger.error(
+                f"Provided dataset path does not match the specified file type.\n"
+                f"Specified format: {filetype}\n"
+                f"Please ensure the file extension matches the selected format."
             )
         else:
             logger.error(
