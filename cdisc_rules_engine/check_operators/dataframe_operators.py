@@ -15,7 +15,7 @@ from cdisc_rules_engine.check_operators.helpers import (
     apply_rounding,
     is_in,
 )
-
+from cdisc_rules_engine.enums.dataset_title_case import DatasetTitleCase
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 import numpy as np
@@ -23,6 +23,7 @@ import dask.dataframe as dd
 import pandas as pd
 import re
 import operator
+from titlecase import titlecase
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -813,7 +814,9 @@ class DataframeType(BaseType):
         parsed_id = str(uuid4())
         self.value[parsed_id] = parsed_data
         return self.value.apply(
-            lambda row: self._check_equality(row, target, parsed_id, value_is_literal),
+            lambda row: self._check_equality(
+                row, target, parsed_id, value_is_literal=False
+            ),
             axis=1,
         )
 
@@ -1073,7 +1076,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def invalid_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = ~vectorized_is_valid(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1140,7 +1143,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = vectorized_is_complete_date(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1357,14 +1360,16 @@ class DataframeType(BaseType):
     def is_ordered_set(self, other_value):
         target = other_value.get("target")
         value = other_value.get("comparator")
-        if not isinstance(value, str):
-            raise Exception("Comparator must be a single String value")
+        if not isinstance(value, (str, list)):
+            raise Exception("Comparator must be a String or list of Strings")
+        if isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise Exception("All comparator values must be Strings")
         return self.value.is_column_sorted_within(value, target)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_set(self, other_value):
-        return not self.is_ordered_set(other_value)
+        return ~self.is_ordered_set(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1637,47 +1642,178 @@ class DataframeType(BaseType):
     def value_does_not_have_multiple_references(self, other_value: dict):
         return ~self.value_has_multiple_references(other_value)
 
-    def check_basic_sort_order(self, group, target, comparator, ascending):
-        target_values = group[target].tolist()
-        comparator_values = group[comparator].tolist()
-        is_sorted = pd.Series(True, index=group.index)
+    def _mark_invalid_null_positions(self, is_valid, group, null_mask, na_pos):
+        null_indices = group[null_mask].index.tolist()
+        non_null_indices = group[~null_mask].index.tolist()
+        index_order = group.index.tolist()
 
-        def safe_compare(x, index):
-            if pd.isna(x):
-                is_sorted.loc[index] = False
-                return "9999-12-31" if ascending else "0001-01-01"
-            return x
+        if not null_indices or not non_null_indices:
+            return is_valid
 
-        expected_order = sorted(
-            range(len(comparator_values)),
-            key=lambda k: safe_compare(comparator_values[k], group.index[k]),
-            reverse=not ascending,
+        if na_pos == "last":
+            last_non_null = max(index_order.index(i) for i in non_null_indices)
+            first_null = min(index_order.index(i) for i in null_indices)
+            if first_null < last_non_null:
+                is_valid[null_mask] = False
+        else:
+            last_null = max(index_order.index(i) for i in null_indices)
+            first_non_null = min(index_order.index(i) for i in non_null_indices)
+            if last_null > first_non_null:
+                is_valid[null_mask] = False
+
+        return is_valid
+
+    def _verify_neighbor_consistency(
+        self,
+        is_valid,
+        non_null_rows,
+        target,
+        comparator,
+        ascending,
+        is_numeric_comparator,
+    ):
+        indices = non_null_rows.index.tolist()
+        comparator_vals = non_null_rows[comparator].tolist()
+
+        for i, idx in enumerate(indices):
+            if not is_valid.loc[idx]:
+                continue
+
+            curr = comparator_vals[i]
+            if self._is_null_or_empty(curr):
+                continue
+
+            prev = next(
+                (
+                    comparator_vals[j]
+                    for j in range(i - 1, -1, -1)
+                    if not self._is_null_or_empty(comparator_vals[j])
+                ),
+                None,
+            )
+            nxt = next(
+                (
+                    comparator_vals[j]
+                    for j in range(i + 1, len(comparator_vals))
+                    if not self._is_null_or_empty(comparator_vals[j])
+                ),
+                None,
+            )
+            if not is_numeric_comparator and not is_valid_date(str(curr)):
+                continue
+
+            if ascending:
+                if prev is not None and curr < prev:
+                    is_valid.loc[idx] = False
+                elif nxt is not None and curr > nxt:
+                    is_valid.loc[idx] = False
+            else:
+                if prev is not None and curr > prev:
+                    is_valid.loc[idx] = False
+                elif nxt is not None and curr < nxt:
+                    is_valid.loc[idx] = False
+
+        return is_valid
+
+    def check_target_ascending_in_sorted_group(
+        self, group, target, comparator, ascending, na_pos
+    ):
+        """
+        Check if target values are in ascending order within a group
+        already sorted by comparator.
+        """
+        is_valid = pd.Series(True, index=group.index)
+        is_numeric_comparator = pd.api.types.is_numeric_dtype(group[comparator])
+        is_numeric_target = pd.api.types.is_numeric_dtype(group[target])
+
+        null_mask = group[comparator].isna() | (
+            group[comparator].astype(str).str.strip() == ""
         )
-        actual_order = sorted(range(len(target_values)), key=lambda k: target_values[k])
+        non_null_rows = group[~null_mask]
 
-        mismatches = np.array(expected_order) != np.array(actual_order)
-        is_sorted.iloc[mismatches] = False
+        is_valid = self._mark_invalid_null_positions(is_valid, group, null_mask, na_pos)
+        overlap_check = self.check_date_overlaps(group, target, comparator)
+        overlap_invalid_mask = ~overlap_check
+        non_null_rows_for_order_check = non_null_rows[
+            ~overlap_invalid_mask[non_null_rows.index]
+        ]
 
-        return is_sorted
+        non_null_sorted = non_null_rows_for_order_check.sort_values(
+            by=comparator, ascending=ascending
+        )
+        actual_target = non_null_rows_for_order_check[target].tolist()
+        expected_target = non_null_sorted[target].tolist()
+        non_null_indices = non_null_rows_for_order_check.index.tolist()
+
+        for i in range(len(actual_target)):
+            actual = actual_target[i]
+            expected_val = expected_target[i]
+
+            if pd.isna(actual) and pd.isna(expected_val):
+                continue
+            elif pd.isna(actual) or pd.isna(expected_val):
+                is_valid.loc[non_null_indices[i]] = False
+            elif (
+                not is_numeric_target
+                and is_valid_date(actual)
+                and is_valid_date(expected_val)
+            ):
+                date1, _ = parse_date(actual)
+                date2, _ = parse_date(expected_val)
+                if date1 != date2:
+                    is_valid.loc[non_null_indices[i]] = False
+            else:
+                if actual != expected_val:
+                    is_valid.loc[non_null_indices[i]] = False
+
+        non_null_target_sorted = non_null_rows.sort_values(by=target, ascending=True)
+        is_valid = self._verify_neighbor_consistency(
+            is_valid,
+            non_null_target_sorted,
+            target,
+            comparator,
+            ascending,
+            is_numeric_comparator,
+        )
+        return is_valid
 
     def check_date_overlaps(self, group, target, comparator):
         comparator_values = group[comparator].tolist()
-        is_sorted = pd.Series(True, index=group.index)
+        is_valid = pd.Series(True, index=group.index)
+        is_numeric = pd.api.types.is_numeric_dtype(group[comparator])
 
-        for i in range(len(comparator_values) - 1):
-            if is_valid_date(comparator_values[i]) and is_valid_date(
-                comparator_values[i + 1]
-            ):
-                date1, prec1 = parse_date(comparator_values[i])
-                date2, prec2 = parse_date(comparator_values[i + 1])
+        if is_numeric:
+            return is_valid
+
+        valid_positions = [
+            i
+            for i in range(len(comparator_values))
+            if not (
+                pd.isna(comparator_values[i]) or str(comparator_values[i]).strip() == ""
+            )
+        ]
+
+        for i in range(len(valid_positions)):
+            curr_pos = valid_positions[i]
+            current = comparator_values[curr_pos]
+            if not is_valid_date(current):
+                continue
+            _, prec1 = parse_date(current)
+            for j in range(len(valid_positions)):
+                if i == j:
+                    continue
+                other_pos = valid_positions[j]
+                other = comparator_values[other_pos]
+                if not is_valid_date(other):
+                    continue
+                _, prec2 = parse_date(other)
                 if prec1 != prec2:
-                    overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
-                    if overlaps and date1.startswith(less_precise):
-                        is_sorted.iloc[i] = False
-                    elif overlaps and date2.startswith(less_precise):
-                        is_sorted.iloc[i + 1] = False
+                    overlaps, _ = dates_overlap(current, prec1, other, prec2)
+                    if overlaps:
+                        is_valid.iloc[curr_pos] = False
+                        is_valid.iloc[other_pos] = False
 
-        return is_sorted
+        return is_valid
 
     def _process_grouped_result(
         self,
@@ -1716,36 +1852,40 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
-        """
-        Checking the sort order based on comparators, including date overlap checks
-        """
         target = other_value.get("target")
         within_columns = self._normalize_grouping_columns(other_value.get("within"))
         columns = other_value["comparator"]
+
         result = pd.Series([True] * len(self.value), index=self.value.index)
+
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
-            na_pos: str = col["null_position"]
+            na_pos: str = col.get("null_position", "last")
+
             selected_columns = list(
                 dict.fromkeys([target, comparator, *within_columns])
             )
+
             sorted_df = self.value[selected_columns].sort_values(
-                by=[*within_columns, comparator],
-                ascending=ascending,
-                na_position=na_pos,
+                by=[*within_columns, target],
+                ascending=[True] * (len(within_columns) + 1),
             )
-            grouped_df = sorted_df.groupby(within_columns)
-            basic_sort_check = grouped_df.apply(
-                lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
+
+            grouped_df = sorted_df.groupby(within_columns, sort=False)
+
+            target_check = grouped_df.apply(
+                lambda x: self.check_target_ascending_in_sorted_group(
+                    x, target, comparator, ascending, na_pos
+                )
             )
-            basic_sort_check = self._process_grouped_result(
-                basic_sort_check,
+            target_check = self._process_grouped_result(
+                target_check,
                 grouped_df,
                 within_columns,
                 sorted_df,
-                lambda group: self.check_basic_sort_order(
-                    group, target, comparator, ascending
+                lambda group: self.check_target_ascending_in_sorted_group(
+                    group, target, comparator, ascending, na_pos
                 ),
             )
 
@@ -1759,15 +1899,15 @@ class DataframeType(BaseType):
                 sorted_df,
                 lambda group: self.check_date_overlaps(group, target, comparator),
             )
-            combined_check = basic_sort_check & date_overlap_check
-            result = result.reindex(sorted_df.index, fill_value=True)
-            result = result & combined_check
-            result = result.reindex(self.value.index, fill_value=True)
+
+            combined_check = target_check & date_overlap_check
+            result = result & combined_check.reindex(self.value.index, fill_value=True)
 
             if isinstance(result, (pd.DataFrame, dd.DataFrame)):
                 if isinstance(result, dd.DataFrame):
                     result = result.compute()
                 result = result.squeeze()
+
         return result
 
     @log_operator_execution
@@ -1873,3 +2013,39 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_subset_of(self, other_value: dict):
         return ~self.is_ordered_subset_of(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_title_case(self, other_value: dict):
+        """
+        Checks if target column values are in proper title case.
+        """
+        target = other_value.get("target")
+        acronyms = DatasetTitleCase.Acronyms.value
+        lowercase_exceptions = DatasetTitleCase.Lowercase_Exceptions.value
+
+        def acronym_callback(word, **kwargs):
+            if word.lower() in lowercase_exceptions:
+                return word.lower()
+            if any(word.upper() == acr.upper() for acr in acronyms):
+                return word.upper()
+            return None
+
+        def check_title_case(value):
+            if pd.isna(value) or value == "" or value in NULL_FLAVORS:
+                return True
+            str_value = str(value).strip()
+            expected = titlecase(str_value, callback=acronym_callback)
+            expected = expected[0].upper() + expected[1:]
+            return str_value == expected
+
+        results = self.value[target].apply(check_title_case)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_title_case(self, other_value: dict):
+        """
+        Checks if target column values are NOT in proper title case.
+        """
+        return ~self.is_title_case(other_value)
