@@ -136,11 +136,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             for item in items:
                 if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
                     extended_values.append(item.CodedValue)
-            if (
-                extended_values
-                and hasattr(codelist, "Alias")
-                and codelist.Alias is not None
-            ):
+            if extended_values and hasattr(codelist, "Alias") and codelist.Alias:
                 mappings[codelist.Name] = {
                     "codelist": codelist.Alias[0].Name,
                     "extended_values": extended_values,
