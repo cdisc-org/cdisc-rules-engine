@@ -11,33 +11,26 @@ from cdisc_rules_engine.exceptions import UnsupportedXptFormatError
 
 
 class XPTReader(DataReaderInterface):
-    def read(self, data):
+    def _read_sas(self, source, **kwargs):
         try:
-            df = pd.read_sas(BytesIO(data), format="xport", encoding=self.encoding)
+            return pd.read_sas(source, encoding=self.encoding, **kwargs)
         except Exception as exc:
             raise UnsupportedXptFormatError(
                 f"Unsupported XPT (SAS Transport) format. Only Transport v5 is supported. Original error: {exc}"
             ) from exc
+
+    def read(self, data):
+        df = self._read_sas(BytesIO(data), format="xport")
         df = self._format_floats(df)
         return df
 
     def _read_pandas(self, file_path):
-        try:
-            data = pd.read_sas(file_path, format="xport", encoding=self.encoding)
-        except Exception as exc:
-            raise UnsupportedXptFormatError(
-                f"Unsupported XPT (SAS Transport) format. Only Transport v5 is supported. Original error: {exc}"
-            ) from exc
+        data = self._read_sas(file_path, format="xport")
         return PandasDataset(self._format_floats(data))
 
-    def to_parquet(self, file_path: str) -> str:
+    def to_parquet(self, file_path: str) -> tuple[int, str]:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
-        try:
-            dataset = pd.read_sas(file_path, chunksize=20000, encoding=self.encoding)
-        except Exception as exc:
-            raise UnsupportedXptFormatError(
-                f"Unsupported XPT (SAS Transport) format. Only Transport v5 is supported. Original error: {exc}"
-            ) from exc
+        dataset = self._read_sas(file_path, chunksize=20000)
         created = False
         num_rows = 0
         for chunk in dataset:
