@@ -22,6 +22,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
     DefineXMLReader20,
 )
+from unittest.mock import MagicMock
 
 resources_path: Path = Path(__file__).parent.parent.joinpath("resources")
 test_define_2_0_file_path: Path = resources_path.joinpath("test_defineV20-SDTM.xml")
@@ -434,3 +435,68 @@ def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
         # Check that at least one expected variable is present
         for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
             assert v in domain_metadata["define_dataset_variables"]
+
+
+class TestGetExtensibleCodelistMappings:
+    @staticmethod
+    def _make_codelist(name, coded_values_extended, alias_list):
+        """Helper to build a mock CodeList object."""
+        codelist = MagicMock()
+        codelist.Name = name
+
+        items = []
+        for value, is_extended in coded_values_extended:
+            item = MagicMock()
+            item.CodedValue = value
+            item.ExtendedValue = "Yes" if is_extended else "No"
+            items.append(item)
+        codelist.CodeListItem = items
+        codelist.Alias = alias_list
+
+        return codelist
+
+    @staticmethod
+    def _make_instance(codelists):
+        """Create a minimal object with the method under test and mock loader."""
+        instance = MagicMock()
+        instance._odm_loader.MetaDataVersion.return_value.CodeList = codelists
+
+        # Bind the real method to the mock instance
+        from types import MethodType
+
+        instance.get_extensible_codelist_mappings = MethodType(
+            DefineXMLReader21.get_extensible_codelist_mappings, instance
+        )
+        return instance
+
+    def test_empty_alias_list_is_skipped_without_error(self):
+        """A codelist with extended values but Alias=[] must not raise and must be excluded."""
+        alias = MagicMock()
+        alias.Name = "C12345"
+
+        codelists = [
+            self._make_codelist("CodelistA", [("VAL1", True)], alias_list=[]),
+            self._make_codelist("CodelistB", [("VAL2", True)], alias_list=[alias]),
+        ]
+
+        instance = self._make_instance(codelists)
+        result = instance.get_extensible_codelist_mappings()
+
+        assert "CodelistA" not in result, "Codelist with empty Alias should be excluded"
+        assert "CodelistB" in result
+        assert result["CodelistB"] == {
+            "codelist": "C12345",
+            "extended_values": ["VAL2"],
+        }
+
+    def test_none_alias_is_skipped_without_error(self):
+        """A codelist where Alias is None must not raise and must be excluded."""
+        codelists = [
+            self._make_codelist("CodelistC", [("VAL3", True)], alias_list=None),
+        ]
+
+        instance = self._make_instance(codelists)
+
+        result = instance.get_extensible_codelist_mappings()
+
+        assert result == {}, "Codelist with None Alias should produce an empty mapping"
