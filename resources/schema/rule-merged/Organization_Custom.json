@@ -1,0 +1,183 @@
+{
+  "$id": "Organization_Custom.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Custom Organization Schema",
+  "description": "Schema for defining custom organizations and their rule categorization structure",
+  "$comment": "Version: 1.0.0, Last Updated: 2025-03-09",
+  "properties": {
+    "Organization": {
+      "type": "string",
+      "description": "Name of your custom organization",
+      "not": {
+        "enum": ["CDISC", "FDA"]
+      }
+    },
+    "Standards": {
+      "items": {
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Name of the standard"
+          },
+          "Version": {
+            "type": "string",
+            "description": "Version of the standard"
+          },
+          "Substandard": {
+            "type": "string",
+            "description": "Optional substandard name"
+          },
+          "References": {
+            "items": {
+              "properties": {
+                "Origin": {
+                  "type": "string",
+                  "description": "Origin of the rule (e.g., 'Custom Conformance Rules')"
+                },
+                "Rule Identifier": {
+                  "properties": {
+                    "Id": {
+                      "type": "string",
+                      "description": "Custom rule identifier pattern"
+                    },
+                    "Version": {
+                      "type": "string",
+                      "description": "Version of the rule"
+                    }
+                  },
+                  "required": ["Id"],
+                  "type": "object"
+                },
+                "Version": {
+                  "type": "string",
+                  "description": "Version of the references"
+                },
+                "Criteria": {
+                  "properties": {
+                    "Type": {
+                      "enum": ["Failure", "Success"],
+                      "type": "string"
+                    },
+                    "Plain Language Expression": {
+                      "type": "string"
+                    },
+                    "Logical Expression": {
+                      "properties": {
+                        "Rule": {
+                          "type": "string"
+                        },
+                        "Condition": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["Rule"],
+                      "type": "object"
+                    }
+                  },
+                  "required": ["Type"],
+                  "anyOf": [
+                    {
+                      "required": ["Logical Expression"]
+                    },
+                    {
+                      "required": ["Plain Language Expression"]
+                    }
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": ["Origin", "Rule Identifier", "Version"],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": ["Name", "References", "Version"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "Category": {
+      "type": "object",
+      "description": "Custom categorization for rule governance",
+      "properties": {
+        "Sponsors": {
+          "type": "array",
+          "description": "List of sponsors the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Vendors": {
+          "type": "array",
+          "description": "List of vendors the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "TherapeuticAreas": {
+          "type": "array",
+          "description": "List of therapeutic areas the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Trials": {
+          "type": "array",
+          "description": "List of trials the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Purpose": {
+          "type": "string",
+          "description": "Specific purpose of the rule, e.g., 'RAW data validation', 'External data validation'"
+        },
+        "CompanyRuleLibrary": {
+          "type": "boolean",
+          "description": "Whether the rule is part of a company rule library"
+        },
+        "OutputType": {
+          "type": "string",
+          "enum": ["Check", "Listing"],
+          "description": "Output type of the rule validation result"
+        },
+        "Keywords": {
+          "type": "array",
+          "description": "Custom keywords for further categorization",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["Organization", "Standards", "Category"],
+  "type": "object",
+  "$defs": {
+    "metadata": {
+      "schemaVersion": "1.0.0",
+      "releaseDate": "2025-03-09",
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2025-03-09",
+          "description": "Initial release of Custom Organization Schema",
+          "changes": [
+            "Added Category object structure with standard properties",
+            "Implemented support for Sponsors, Vendors, TherapeuticAreas arrays",
+            "Added support for X, Y  and Z enum",
+            "Enabled extensibility with additionalProperties: true"
+          ]
+        }
+      ],
+      "maintainer": {
+        "name": "Your Organization Name",
+        "email": "standards@yourorganization.com"
+      }
+    }
+  }
+}
