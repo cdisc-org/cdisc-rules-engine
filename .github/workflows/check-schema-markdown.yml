@@ -1,19 +1,20 @@
-name: Merge Schema with Markdown Descriptions
-
+name: Check Schema has been merged with Markdown Descriptions
 on:
   workflow_dispatch:
-  # Only on push to main to avoid overwriting checks in PRs
+  pull_request:
+    paths:
+      - "resources/schema/rule/**"
   push:
     paths:
       - "resources/schema/rule/**"
     branches:
       - main
+permissions:
+  contents: read
 
 jobs:
-  merge-schema-markdown:
+  check-schema-markdown:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
@@ -29,6 +30,7 @@ jobs:
           npx prettier resources/schema/rule-merged/*.json --write
       - uses: CatChen/check-git-status-action@v2
         with:
-          push-if-not-clean: true
-          commit-message: Update merged schema files with markdown descriptions
+          fail-if-not-clean: true
+          request-changes-if-not-clean: true
+          request-changes-comment: Updated schema has not been merged with markdown descriptions. Please run the "Merge Schema with Markdown Descriptions" workflow to update the merged schema files.
           targets: resources/schema/rule-merged
