@@ -186,9 +186,22 @@ def _validate_data_directory(
     return dataset_paths, found_formats
 
 
-def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
+def _validate_dataset_paths(
+    dataset_path: tuple[str], logger, filetype: str
+) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+    if filetype:
+        pattern = f"*.{filetype}"
+        dataset_paths, found_formats = valid_data_file(
+            [
+                str(p)
+                for p in dataset_path
+                if Path(p).match(pattern)
+                if Path(p).is_file()
+            ]
+        )
+    else:
+        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -206,6 +219,12 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Excel format (XLSX) validation only supports single files.\n"
                 f"Please provide either a single XLSX file or use other supported formats: "
                 f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        elif filetype:
+            logger.error(
+                f"Provided dataset path does not match the specified file type.\n"
+                f"Specified format: {filetype}\n"
+                f"Please ensure the file extension matches the selected format."
             )
         else:
             logger.error(
@@ -561,7 +580,9 @@ def validate(  # noqa
         if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
-        dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
+        dataset_paths, found_formats = _validate_dataset_paths(
+            dataset_path, logger, filetype
+        )
         if not dataset_paths:
             ctx.exit(2)
     else:

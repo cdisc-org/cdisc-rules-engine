@@ -39,6 +39,7 @@ def test_get_export(mock_validation_results):
                     "filename": "test.xpt",
                     "label": "Test Data",
                     "full_path": str(Path("tests/unit/text.xpt")),
+                    "original_path": str(Path("tests/unit/text.xpt")),
                     "modification_date": "2022-04-19T16:17:45",
                     "file_size": 20000,
                     "record_count": 700,

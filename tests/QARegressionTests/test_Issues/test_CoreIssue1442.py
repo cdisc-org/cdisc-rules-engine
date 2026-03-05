@@ -1,31 +1,61 @@
 import os
 import subprocess
-import unittest
 import openpyxl
 import pytest
 from conftest import get_python_executable
 
 
 @pytest.mark.regression
-class TestCoreIssue1442(unittest.TestCase):
-    def test_positive_dataset(self):
+class TestCoreIssue1442:
+    @pytest.mark.parametrize(
+        "command",
+        [
+            (
+                f"{get_python_executable()}",
+                "-m",
+                "core",
+                "validate",
+                "-s",
+                "usdm",
+                "-v",
+                "4-0",
+                "-dp",
+                os.path.join(
+                    "tests", "resources", "CoreIssue1442", "test_adam_dataset.xpt"
+                ),
+                "-dp",
+                os.path.join(
+                    "tests", "resources", "CoreIssue1442", "test_dataset.ndjson"
+                ),
+                "-dp",
+                os.path.join(
+                    "tests", "resources", "CoreIssue1442", "CDISC_Pilot_Study.json"
+                ),
+                "-ft",
+                "json",
+                "-lr",
+                os.path.join("tests", "resources", "CoreIssue1442", "rule.yml"),
+            ),
+            (
+                f"{get_python_executable()}",
+                "-m",
+                "core",
+                "validate",
+                "-s",
+                "usdm",
+                "-v",
+                "4-0",
+                "-d",
+                os.path.join("tests", "resources", "CoreIssue1442"),
+                "-ft",
+                "json",
+                "-lr",
+                os.path.join("tests", "resources", "CoreIssue1442", "rule.yml"),
+            ),
+        ],
+    )
+    def test_positive_dataset(self, command):
         # Run the command in the terminal
-        command = [
-            f"{get_python_executable()}",
-            "-m",
-            "core",
-            "validate",
-            "-s",
-            "usdm",
-            "-v",
-            "4-0",
-            "-d",
-            os.path.join("tests", "resources", "CoreIssue1442"),
-            "-ft",
-            "json",
-            "-lr",
-            os.path.join("tests", "resources", "CoreIssue1442", "rule.yml"),
-        ]
         subprocess.run(command, check=True)
 
         # Get the latest created Excel file
