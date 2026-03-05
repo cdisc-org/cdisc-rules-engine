@@ -46,6 +46,7 @@ Columns are the columns within the original dataset along with the following col
 - `define_dataset_name`
 - `define_dataset_structure`
 - `define_dataset_variables`
+- `define_dataset_variable_order`
 
 ## Dataset Metadata Check against Define XML
 
@@ -69,6 +70,7 @@ Returns a dataset where each dataset is a row in the new dataset. The define xml
 - `define_dataset_name`
 - `define_dataset_structure`
 - `define_dataset_variables`
+- `define_dataset_variable_order`
 
 #### Rule Macro
 
@@ -107,6 +109,7 @@ any:
 - `define_dataset_name`
 - `define_dataset_structure`
 - `define_dataset_variables`
+- `define_dataset_variable_order`
 
 ## Define Item Metadata Check
 
