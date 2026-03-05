@@ -507,6 +507,8 @@ def test_extract_dataset_metadata_without_ordernumber(filename):
             dataset_metadata["define_dataset_variable_order"]
             == dataset_metadata["define_dataset_variables"]
         )
+
+
 class TestGetExtensibleCodelistMappings:
     @staticmethod
     def _make_codelist(name, coded_values_extended, alias_list):
