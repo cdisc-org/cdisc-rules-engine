@@ -242,6 +242,7 @@ def _validate_no_arguments(logger) -> None:
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+    envvar="DATA_DIR",
 )
 @click.option(
     "-ft",
@@ -256,6 +257,7 @@ def _validate_no_arguments(logger) -> None:
     required=False,
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
+    envvar="DATASET_PATH",
 )
 @click.option(
     "-l",
@@ -275,6 +277,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="CDISC standard to validate against",
+    envvar="STANDARD",
 )
 @click.option(
     "-v",
@@ -282,6 +285,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="Standard version to validate against",
+    envvar="VERSION",
 )
 @click.option(
     "-ss",
@@ -289,6 +293,7 @@ def _validate_no_arguments(logger) -> None:
     default=None,
     type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
     help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+    envvar="SUBSTANDARD",
 )
 @click.option(
     "-uc",
@@ -358,12 +363,14 @@ def _validate_no_arguments(logger) -> None:
     "-r",
     multiple=True,
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
+    envvar="RULES",
 )
 @click.option(
     "--exclude-rules",
     "-er",
     multiple=True,
     help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+    envvar="EXCLUDE_RULES",
 )
 @click.option(
     "--local-rules",
@@ -372,6 +379,7 @@ def _validate_no_arguments(logger) -> None:
     type=click.Path(exists=True, readable=True, resolve_path=True),
     help="Path to directory containing local rules.",
     multiple=True,
+    envvar="LOCAL_RULES",
 )
 @click.option(
     "--custom-standard",
@@ -392,7 +400,13 @@ def _validate_no_arguments(logger) -> None:
         "is printed."
     ),
 )
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
+@click.option(
+    "-dxp",
+    "--define-xml-path",
+    required=False,
+    help="Path to Define-XML",
+    envvar="DEFINE",
+)
 @click.option(
     "-vx",
     "--validate-xml",
@@ -740,6 +754,7 @@ def update_cache(
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
+    envvar="RULEID",
 )
 @click.pass_context
 def list_rules(
