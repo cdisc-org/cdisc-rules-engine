@@ -1,6 +1,6 @@
 import os
 from io import IOBase
-from typing import List, Sequence
+from typing import List, Optional, Sequence
 from datetime import datetime
 import re
 import pandas as pd
@@ -125,14 +125,21 @@ class ExcelDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
+        self,
+        dataset_name: str,
+        *,
+        cached_worksheet: Optional[pd.DataFrame] = None,
+        **kwargs,
     ) -> SDTMDatasetMetadata:
         """
         Returns dataset metadata as DatasetMetadata instance.
+        Pass cached_worksheet to avoid re-reading the Datasets sheet when
+        calling repeatedly (e.g. from get_datasets()).
         """
-        _worksheet = kwargs.get("_worksheet")
-        if _worksheet is not None:
-            metadata = _worksheet[_worksheet[DATASET_FILENAME_COLUMN] == dataset_name]
+        if cached_worksheet is not None:
+            metadata = cached_worksheet[
+                cached_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
+            ]
         else:
             datasets_worksheet = pd.read_excel(
                 self.dataset_path,
@@ -242,7 +249,7 @@ class ExcelDataService(BaseDataService):
             )
 
         datasets = [
-            self.get_raw_dataset_metadata(dataset_name=fn, _worksheet=worksheet)
+            self.get_raw_dataset_metadata(dataset_name=fn, cached_worksheet=worksheet)
             for fn in worksheet[DATASET_FILENAME_COLUMN]
         ]
         return datasets

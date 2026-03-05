@@ -30,20 +30,9 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     CTPackageNotFoundError,
     CT_PACKAGE_NOT_FOUND_PREFIX,
-    EngineError,
-    InvalidDatasetFormat,
     LibraryMetadataNotFoundError,
     library_metadata_not_found_message,
 )
-
-
-def _get_datasets_or_raise(data_service):
-    try:
-        return data_service.get_datasets()
-    except EngineError:
-        raise
-    except Exception as e:
-        raise InvalidDatasetFormat("Your data files could not be read.") from e
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
