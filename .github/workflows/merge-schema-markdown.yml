@@ -20,10 +20,10 @@ jobs:
         run: |
           npm i prettier
           npx prettier resources/schema/rule-merged/*.json --write
-      - uses: CatChen/check-git-status-action@7b45cb4ce3e00a8bce4910dc2d5f2785235a6d7e # v2.1.2
-        with:
-          fail-if-not-clean: false
-          push-if-not-clean: true
-          commit-message: Update merged schema files with markdown descriptions
-          request-changes-if-not-clean: false
-          targets: resources/schema/rule-merged
+      - name: Commit and push the merged schema files to the current branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@cdisc.org
+          git add resources/schema/rule-merged
+          git diff-index --quiet HEAD || git commit -m "Update merged schema files with markdown descriptions"
+          git push
