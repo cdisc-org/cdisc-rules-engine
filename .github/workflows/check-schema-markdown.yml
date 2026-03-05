@@ -28,7 +28,7 @@ jobs:
         run: |
           npm i prettier
           npx prettier resources/schema/rule-merged/*.json --write
-      - uses: CatChen/check-git-status-action@v2
+      - uses: CatChen/check-git-status-action@7b45cb4ce3e00a8bce4910dc2d5f2785235a6d7e # v2.1.2
         with:
           fail-if-not-clean: true
           request-changes-if-not-clean: true
