@@ -1,13 +1,6 @@
 name: Merge Schema with Markdown Descriptions
-
 on:
   workflow_dispatch:
-  # Only on push to main to avoid overwriting checks in PRs
-  push:
-    paths:
-      - "resources/schema/rule/**"
-    branches:
-      - main
 
 jobs:
   merge-schema-markdown:
@@ -31,4 +24,5 @@ jobs:
         with:
           push-if-not-clean: true
           commit-message: Update merged schema files with markdown descriptions
+          request-changes-if-not-clean: false
           targets: resources/schema/rule-merged

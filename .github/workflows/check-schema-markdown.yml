@@ -31,6 +31,6 @@ jobs:
       - uses: CatChen/check-git-status-action@7b45cb4ce3e00a8bce4910dc2d5f2785235a6d7e # v2.1.2
         with:
           fail-if-not-clean: true
-          request-changes-if-not-clean: true
+          request-changes-if-not-clean: ${{ github.event_name == 'pull_request' }}
           request-changes-comment: Updated schema has not been merged with markdown descriptions. Please run the "Merge Schema with Markdown Descriptions" workflow to update the merged schema files.
           targets: resources/schema/rule-merged
