@@ -1143,31 +1143,3 @@ Complement of `target_is_sorted_by`
 ## Define.XML
 
 Validation operators specifically for checking compliance with Define.XML metadata specifications, including data type conformance, length validation, and codelist references.
-
-### conformant_value_data_type
-
-Value Level Metadata Check against Define XML
-
-True if the types in the row match the VLM types specified in the define.xml
-
-### non_conformant_value_data_type
-
-Complement of `conformant_value_data_type`
-
-### conformant_value_length
-
-Value Level Metadata Check against Define XML
-
-True if the lengths in the row match the VLM lengths specified in the define.xml
-
-### non_conformant_value_length
-
-Complement of `conformant_value_length`
-
-### references_correct_codelist
-
-True if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.
-
-### does_not_reference_correct_codelist
-
-Complement of `references_correct_codelist`
