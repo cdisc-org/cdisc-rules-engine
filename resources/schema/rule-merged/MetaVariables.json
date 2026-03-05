@@ -1,0 +1,254 @@
+{
+  "$id": "MetaVariables.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "const": "dataset_label",
+      "markdownDescription": "\nLabel for the dataset\n"
+    },
+    {
+      "const": "dataset_location",
+      "markdownDescription": "\nPath to file\n"
+    },
+    {
+      "const": "dataset_name",
+      "markdownDescription": "\nName of the dataset\n"
+    },
+    {
+      "const": "dataset_size",
+      "markdownDescription": "\nFile size\n"
+    },
+    {
+      "const": "define_dataset_class",
+      "markdownDescription": "\nItemGroupDef.Class.Name\n"
+    },
+    {
+      "const": "define_dataset_is_non_standard",
+      "markdownDescription": "\nItemGroupDef.IsNonStandard\n"
+    },
+    {
+      "const": "define_dataset_key_sequence",
+      "markdownDescription": "\n[ItemGroupDef/ValueListDef].ItemRef.KeySequence\n"
+    },
+    {
+      "const": "define_dataset_label",
+      "markdownDescription": "\nItemGroupDef.Description.TranslatedText\n"
+    },
+    {
+      "const": "define_dataset_location",
+      "markdownDescription": "\nItemGroupDef.leaf.href\n"
+    },
+    {
+      "const": "define_dataset_name",
+      "markdownDescription": "\nItemGroupDef.Name\n"
+    },
+    {
+      "const": "define_dataset_structure",
+      "markdownDescription": "\nItemGroupDef.Structure\n"
+    },
+    {
+      "const": "define_variable_allowed_terms",
+      "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText\n"
+    },
+    {
+      "const": "define_variable_ccode",
+      "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.Alias.Name\n"
+    },
+    {
+      "const": "define_variable_codelist_coded_values",
+      "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue\n"
+    },
+    {
+      "const": "define_variable_data_type",
+      "markdownDescription": "\nItemGroupDef.ItemDef.DataType\n"
+    },
+    {
+      "const": "define_variable_format",
+      "markdownDescription": "\n[Not Implemented]\n"
+    },
+    {
+      "const": "define_variable_has_codelist",
+      "markdownDescription": "\nItemGroupDef.ItemDef.CodeListRef exists\n"
+    },
+    {
+      "const": "define_variable_has_comment",
+      "markdownDescription": "\nItemGroupDef.ItemDef.CommentOID exists\n"
+    },
+    {
+      "const": "define_variable_has_no_data",
+      "markdownDescription": "\nItemGroupDef.ItemRef.HasNoData\n"
+    },
+    {
+      "const": "define_variable_is_collected",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Origin.Type = \\\"Collected\\\" (2.1) or \\\"CRF\\\" (2.0)\n"
+    },
+    {
+      "const": "define_variable_label",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Description.TranslatedText\n"
+    },
+    {
+      "const": "define_variable_length",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Length\n"
+    },
+    {
+      "const": "define_variable_mandatory",
+      "markdownDescription": "\nItemGroupDef.ItemRef.Mandatory\n"
+    },
+    {
+      "const": "define_variable_name",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Name\n"
+    },
+    {
+      "const": "define_variable_order_number",
+      "markdownDescription": "\nItemGroupDef.ItemRef.OrderNumber\n"
+    },
+    {
+      "const": "define_variable_origin_type",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Origin.Type\n"
+    },
+    {
+      "const": "define_variable_role",
+      "markdownDescription": "\nItemGroupDef.ItemRef.Role\n"
+    },
+    {
+      "const": "define_variable_size",
+      "markdownDescription": "\nItemGroupDef.ItemDef.Size\n"
+    },
+    {
+      "const": "define_vlm_allowed_terms",
+      "markdownDescription": "\nValueListDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText\n"
+    },
+    {
+      "const": "define_vlm_ccode",
+      "markdownDescription": "\nValueListDef.ItemDef.CodeList.Alias.Name\n"
+    },
+    {
+      "const": "define_vlm_codelist_coded_values",
+      "markdownDescription": "\nValueListDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue\n"
+    },
+    {
+      "const": "define_vlm_data_type",
+      "markdownDescription": "\nValueListDef.ItemDef.DataType\n"
+    },
+    {
+      "const": "define_vlm_format",
+      "markdownDescription": "\n[Not Implemented]\n"
+    },
+    {
+      "const": "define_vlm_has_codelist",
+      "markdownDescription": "\nValueListDef.ItemDef.CodeListRef exists\n"
+    },
+    {
+      "const": "define_vlm_has_comment",
+      "markdownDescription": "\nValueListDef.ItemDef.CommentOID exists\n"
+    },
+    {
+      "const": "define_vlm_has_no_data",
+      "markdownDescription": "\nValueListDef.ItemRef.HasNoData\n"
+    },
+    {
+      "const": "define_vlm_is_collected",
+      "markdownDescription": "\nValueListDef.ItemDef.Origin.Type = \\\"Collected\\\" (2.1) or \\\"CRF\\\" (2.0)\n"
+    },
+    {
+      "const": "define_vlm_label",
+      "markdownDescription": "\nValueListDef.ItemDef.Description.TranslatedText\n"
+    },
+    {
+      "const": "define_vlm_length",
+      "markdownDescription": "\nValueListDef.ItemDef.Length\n"
+    },
+    {
+      "const": "define_vlm_mandatory",
+      "markdownDescription": "\nValueListDef.ItemRef.Mandatory\n"
+    },
+    {
+      "const": "define_vlm_name",
+      "markdownDescription": "\nValueListDef.ItemDef.Name\n"
+    },
+    {
+      "const": "define_vlm_order_number",
+      "markdownDescription": "\nValueListDef.ItemRef.OrderNumber\n"
+    },
+    {
+      "const": "define_vlm_origin_type",
+      "markdownDescription": "\nValueListDef.ItemDef.Origin.Type\n"
+    },
+    {
+      "const": "define_vlm_role",
+      "markdownDescription": "\nValueListDef.ItemRef.Role\n"
+    },
+    {
+      "const": "define_vlm_size",
+      "markdownDescription": "\nValueListDef.ItemDef.Size\n"
+    },
+    {
+      "const": "filename",
+      "markdownDescription": "\nName of file\n"
+    },
+    {
+      "const": "library_variable_core",
+      "markdownDescription": "\ncore attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_data_type",
+      "markdownDescription": "\nsimpleDatatype attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_label",
+      "markdownDescription": "\nlabel attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_name",
+      "markdownDescription": "\nname attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_order_number",
+      "markdownDescription": "\nordinal attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_role",
+      "markdownDescription": "\nrole attribute of a variable from the CDISC Library\n"
+    },
+    {
+      "const": "row_number",
+      "markdownDescription": "\n1-based index of record number\n"
+    },
+    {
+      "const": "variable_data_type",
+      "markdownDescription": "\nVariable data type (Char or Num)\n"
+    },
+    {
+      "const": "variable_format",
+      "markdownDescription": "\nVariable format\n"
+    },
+    {
+      "const": "variable_has_empty_values",
+      "markdownDescription": "\nTrue/False value indicating whether a variable has any empty values\n"
+    },
+    {
+      "const": "variable_label",
+      "markdownDescription": "\nVariable long label\n"
+    },
+    {
+      "const": "variable_name",
+      "markdownDescription": "\nVariable short name\n"
+    },
+    {
+      "const": "variable_order_number",
+      "markdownDescription": "\nOrder of variable within dataset\n"
+    },
+    {
+      "const": "variable_size",
+      "markdownDescription": "\nVariable size\n"
+    },
+    {
+      "const": "variable_value",
+      "markdownDescription": "\nValue at `row_number` and `variable_name`\n"
+    },
+    {
+      "const": "variable_value_length",
+      "markdownDescription": "\nCalculated length of the value at `row_number` and `variable_name`\n"
+    }
+  ]
+}

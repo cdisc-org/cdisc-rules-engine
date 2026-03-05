@@ -193,7 +193,7 @@ try:
         ],
         "FA": [
             {
-                "executionStatus": "issue_reported",
+                "executionStatus": "issue reported",
                 "dataset": "fa.xpt",
                 "domain": "FA",
                 "variables": [
@@ -261,7 +261,7 @@ try:
         ],
         "IE": [
             {
-                "executionStatus": "issue_reported",
+                "executionStatus": "issue reported",
                 "dataset": "ie.xpt",
                 "domain": "IE",
                 "variables": [
@@ -293,7 +293,7 @@ try:
         ],
         "LB": [
             {
-                "executionStatus": "issue_reported",
+                "executionStatus": "issue reported",
                 "dataset": "lb.xpt",
                 "domain": "LB",
                 "variables": [
@@ -329,6 +329,8 @@ try:
         print("Test Passed: API response matches expected JSON.")
     else:
         print("Test Failed: API response does NOT match expected JSON.")
+        print("Expected:")
+        print(json.dumps(expected_json, indent=2))
         print("Received:")
         print(json.dumps(rule_exec_response, indent=2))
         sys.exit(1)
