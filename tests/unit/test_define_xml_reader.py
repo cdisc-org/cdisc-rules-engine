@@ -22,6 +22,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
     DefineXMLReader20,
 )
+from unittest.mock import MagicMock
 
 resources_path: Path = Path(__file__).parent.parent.joinpath("resources")
 test_define_2_0_file_path: Path = resources_path.joinpath("test_defineV20-SDTM.xml")
@@ -110,6 +111,19 @@ def test_extract_domain_metadata(filename):
                 "TSVCDREF",
                 "TSVCDVER",
             ],
+            "define_dataset_variable_order": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
             "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
             "define_dataset_has_no_data": False,
         }
@@ -135,6 +149,19 @@ def test_extract_dataset_metadata(filename):
             "define_dataset_structure": "One record per trial summary parameter value",
             "define_dataset_is_non_standard": "",
             "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
+            "define_dataset_variable_order": [
                 "STUDYID",
                 "DOMAIN",
                 "TSSEQ",
@@ -209,7 +236,7 @@ def test_extract_variable_metadata(filename):
             assert variable["define_variable_order_number"] == index + 1
 
 
-@pytest.mark.parametrize("filename", [(test_define_file_path)])
+@pytest.mark.parametrize("filename", [test_define_file_path])
 def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -434,3 +461,114 @@ def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
         # Check that at least one expected variable is present
         for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
             assert v in domain_metadata["define_dataset_variables"]
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_dataset_metadata_with_ordernumber(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata function.
+    Tests that define_dataset_variable_order respects OrderNumber attributes.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="SE")
+        assert "define_dataset_variables" in dataset_metadata
+        assert "define_dataset_variable_order" in dataset_metadata
+        assert isinstance(dataset_metadata["define_dataset_variables"], list)
+        assert isinstance(dataset_metadata["define_dataset_variable_order"], list)
+        assert len(dataset_metadata["define_dataset_variables"]) == len(
+            dataset_metadata["define_dataset_variable_order"]
+        )
+        assert dataset_metadata["define_dataset_variable_order"][0] == "STUDYID"
+        assert dataset_metadata["define_dataset_variable_order"][1] == "DOMAIN"
+        assert dataset_metadata["define_dataset_variable_order"][2] == "USUBJID"
+        assert dataset_metadata["define_dataset_variable_order"][3] == "SESEQ"
+        assert dataset_metadata["define_dataset_variable_order"][4] == "ETCD"
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_dataset_metadata_without_ordernumber(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata function.
+    Tests that define_dataset_variable_order uses XML document order when OrderNumber is not present.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="TS")
+        assert "define_dataset_variables" in dataset_metadata
+        assert "define_dataset_variable_order" in dataset_metadata
+        assert (
+            dataset_metadata["define_dataset_variable_order"]
+            == dataset_metadata["define_dataset_variables"]
+        )
+
+
+class TestGetExtensibleCodelistMappings:
+    @staticmethod
+    def _make_codelist(name, coded_values_extended, alias_list):
+        """Helper to build a mock CodeList object."""
+        codelist = MagicMock()
+        codelist.Name = name
+
+        items = []
+        for value, is_extended in coded_values_extended:
+            item = MagicMock()
+            item.CodedValue = value
+            item.ExtendedValue = "Yes" if is_extended else "No"
+            items.append(item)
+        codelist.CodeListItem = items
+        codelist.Alias = alias_list
+
+        return codelist
+
+    @staticmethod
+    def _make_instance(codelists):
+        """Create a minimal object with the method under test and mock loader."""
+        instance = MagicMock()
+        instance._odm_loader.MetaDataVersion.return_value.CodeList = codelists
+
+        # Bind the real method to the mock instance
+        from types import MethodType
+
+        instance.get_extensible_codelist_mappings = MethodType(
+            DefineXMLReader21.get_extensible_codelist_mappings, instance
+        )
+        return instance
+
+    def test_empty_alias_list_is_skipped_without_error(self):
+        """A codelist with extended values but Alias=[] must not raise and must be excluded."""
+        alias = MagicMock()
+        alias.Name = "C12345"
+
+        codelists = [
+            self._make_codelist("CodelistA", [("VAL1", True)], alias_list=[]),
+            self._make_codelist("CodelistB", [("VAL2", True)], alias_list=[alias]),
+        ]
+
+        instance = self._make_instance(codelists)
+        result = instance.get_extensible_codelist_mappings()
+
+        assert "CodelistA" not in result, "Codelist with empty Alias should be excluded"
+        assert "CodelistB" in result
+        assert result["CodelistB"] == {
+            "codelist": "C12345",
+            "extended_values": ["VAL2"],
+        }
+
+    def test_none_alias_is_skipped_without_error(self):
+        """A codelist where Alias is None must not raise and must be excluded."""
+        codelists = [
+            self._make_codelist("CodelistC", [("VAL3", True)], alias_list=None),
+        ]
+
+        instance = self._make_instance(codelists)
+
+        result = instance.get_extensible_codelist_mappings()
+
+        assert result == {}, "Codelist with None Alias should produce an empty mapping"
