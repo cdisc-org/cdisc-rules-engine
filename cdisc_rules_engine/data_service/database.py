@@ -1,3 +1,5 @@
+import logging
+import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from os import getenv
@@ -7,11 +9,7 @@ import psycopg2.pool
 from dotenv import load_dotenv
 from psycopg2.extras import RealDictCursor
 
-import logging
 from cdisc_rules_engine.services import logger
-
-import pgserver
-import tempfile
 
 load_dotenv()
 
@@ -77,6 +75,9 @@ class DatabasePostgres:
             raise
 
     def setup_pg_server(self):
+        # Importing pgserver here to avoid unnecessary dependency for users who don't use PGServer
+        import pgserver
+
         DatabasePostgres._pgserver_tempdir = tempfile.mkdtemp()
         DatabasePostgres._pgserver_instance = pgserver.get_server(
             DatabasePostgres._pgserver_tempdir, cleanup_mode="delete"

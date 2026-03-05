@@ -23,4 +23,3 @@ dask[array]==2024.6.0
 pyreadstat==1.2.7
 fastparquet==2024.2.0
 psycopg2==2.9.10
-pgserver==0.1.4

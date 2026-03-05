@@ -8,3 +8,4 @@ class DataFormatTypes(BaseEnum):
     USDM = "USDM"
     XLSX = "XLSX"
     XPT = "XPT"
+    SAS7BDAT = "SAS7BDAT"
