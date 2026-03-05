@@ -79,6 +79,29 @@ Pairs dataset metadata sourced from the submission contents.
   value: 6
 ```
 
+## Dataset Contents Check against Define XML
+
+#### Columns
+
+Columns are the columns within the original dataset along with the following columns:
+
+- `dataset_label`
+- `dataset_location`
+- `dataset_name`
+- `dataset_size`
+- `dataset_domain`
+- `define_dataset_class`
+- `define_dataset_domain`
+- `define_dataset_has_no_data`
+- `define_dataset_is_non_standard`
+- `define_dataset_key_sequence`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_name`
+- `define_dataset_structure`
+- `define_dataset_variables`
+- `define_dataset_variable_order`
+
 ## Dataset Metadata Check against Define XML
 
 Returns a dataset where each dataset is a row in the new dataset. The define xml dataset metadata is attached to each row.
@@ -101,6 +124,7 @@ Returns a dataset where each dataset is a row in the new dataset. The define xml
 - `define_dataset_name`
 - `define_dataset_structure`
 - `define_dataset_variables`
+- `define_dataset_variable_order`
 
 #### Rule Macro
 
@@ -146,6 +170,27 @@ Columns are the columns within the original dataset along with the following col
 - `define_dataset_name`
 - `define_dataset_structure`
 - `define_dataset_variables`
+
+## Define Item Metadata Check
+
+#### Columns
+
+- `define_variable_name`
+- `define_variable_label`
+- `define_variable_data_type`
+- `define_variable_role`
+- `define_variable_size`
+- `define_variable_ccode`
+- `define_variable_format`
+- `define_variable_allowed_terms`
+- `define_variable_origin_type`
+- `define_variable_is_collected`
+- `define_variable_has_no_data`
+- `define_variable_order_number`
+- `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_values`
+- `define_variable_has_comment`
 
 #### Rule Macro
 

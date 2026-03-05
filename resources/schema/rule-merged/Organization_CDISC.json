@@ -1,0 +1,328 @@
+{
+  "$id": "Organization_CDISC.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "Organization": {
+      "const": "CDISC"
+    },
+    "Standards": {
+      "items": {
+        "oneOf": [
+          {
+            "properties": {
+              "Name": {
+                "const": "ADaMIG"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Failure"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "ADaM Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^\\d{1,3}(\\.\\d{1,2})?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["5.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.0", "1.1", "1.2", "1.3"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SDTMIG"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "SDTM and SDTMIG Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^CG\\d{4}$",
+                          "type": "string"
+                        },
+                        "Version": {
+                          "enum": ["1", "2", "3"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["2.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["3.2", "3.3", "3.4"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "SEND Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["5.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["3.0", "3.1", "3.1.1"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-DART"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "SEND Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["5.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.1", "1.2"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-GENETOX"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "SEND Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["5.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.0"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "TIG"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "TIG Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^TIG\\d{4}[a-z]?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.0"]
+              },
+              "Substandard": {
+                "enum": ["SDTM", "SEND", "ADaM", "CDASH"]
+              }
+            },
+            "required": ["Name", "Version", "Substandard"],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "USDM"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Origin": {
+                      "const": "USDM Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^DDF\\d{5}$",
+                          "type": "string"
+                        },
+                        "Version": {
+                          "enum": ["1"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["3.0", "4.0"]
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "type": "object"
+}
