@@ -55,6 +55,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
             "library_variable_core": ["Req", "Req", "Req", "Req"],
             "library_variable_order_number": ["1", "2", "8", "9"],
             "library_variable_data_type": ["Char", "Char", "Num", "Char"],
+            "library_variable_has_codelist": [False, False, False, False],
         }
     )
     mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
@@ -232,6 +233,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         "library_variable_core",
         "library_variable_order_number",
         "library_variable_data_type",
+        "library_variable_has_codelist",
     ]
     intersection = {"STUDYID", "USUBJID", "AESEQ", "AETERM"}
 
