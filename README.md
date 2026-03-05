@@ -163,7 +163,8 @@ This will show the list of validation options.
                                   against, can provide more than one
                                   NOTE: if a defineXML is provided, if it is version 2.1
                                   engine will use the CT laid out in the define.  If it is
-                                  version 2.0, -ct is expected to specify the CT package
+                                  version 2.0, -ct is expected to specify the CT package.
+                                  CONTROLLED_TERMINOLOGY_PACKAGE environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename
@@ -206,7 +207,7 @@ This will show the list of validation options.
                                   if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
                                   If limit is set to 0, no maximum will be enforced.
                                   No maximum is the default behavior.
-  -dv, --define-version TEXT      Define-XML version used for validation
+  -dv, --define-version TEXT      Define-XML version used for validation. DEFINE_VERSION environment variable can be used to pass value.
   -dxp, --define-xml-path         Path to define-xml file.
   -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary

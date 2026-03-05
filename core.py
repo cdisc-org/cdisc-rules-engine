@@ -314,6 +314,7 @@ def _validate_no_arguments(logger) -> None:
         "Controlled terminology package to validate against, "
         "can provide more than one"
     ),
+    envvar="CONTROLLED_TERMINOLOGY_PACKAGE",
 )
 @click.option(
     "-o",
@@ -345,6 +346,7 @@ def _validate_no_arguments(logger) -> None:
     "--define-version",
     type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
+    envvar="DEFINE_VERSION",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
