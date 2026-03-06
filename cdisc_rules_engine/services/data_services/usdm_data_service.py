@@ -457,6 +457,12 @@ class USDMDataService(BaseDataService):
         dataset_dict = {}
         for path in metadata:
             entity = path["entity"]
+
+            if entity is None:
+                raise ValueError(
+                    f"Invalid metadata: 'entity' is null for path '{path.get('path')}'"
+                )
+
             if entity.lower() == "code":
                 entity = "Code"
             # Do not skip 'null' entities; include them as datasets
