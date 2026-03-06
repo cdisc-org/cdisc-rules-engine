@@ -105,3 +105,10 @@ class DatasetBuilderError(EngineError):
 class DateTimeParserError(EngineError):
     code = 400
     description = "Failure to parse a datetime string"
+
+
+class UnsupportedXptFormatError(EngineError):
+    code = 400
+    description = (
+        "Unsupported XPT (SAS Transport) format. Only Transport v5 is supported."
+    )
