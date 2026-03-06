@@ -48,7 +48,18 @@ class DatasetCSVMetadataReader:
     def __get_variable_metadata(
         self, dataset_name: str, variables_file_path: Path
     ) -> dict:
-        meta_df = pd.read_csv(variables_file_path, encoding=self.encoding)
+        logger = logging.getLogger("validator")
+        try:
+            meta_df = pd.read_csv(variables_file_path, encoding=self.encoding)
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.error(
+                f"Could not decode CSV file {variables_file_path} with {self.encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
+            )
+            return {}
+        except Exception as e:
+            logger.error("Error reading CSV file %s. %s", self.file_path, e)
+            return {}
 
         meta_df["dataset"] = meta_df["dataset"].apply(
             lambda x: Path(str(x)).stem.lower()
@@ -83,11 +94,23 @@ class DatasetCSVMetadataReader:
         }
 
     def __dataset_label(self) -> dict:
+        logger = logging.getLogger("validator")
         tables_file_path = Path(self.file_path).parent / "tables.csv"
         if not tables_file_path.exists():
             return {}
 
-        tables_df = pd.read_csv(tables_file_path, encoding=self.encoding)
+        try:
+            tables_df = pd.read_csv(tables_file_path, encoding=self.encoding)
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.error(
+                f"\n  Error reading CSV from: {self.file_path}"
+                f"\n  Failed to decode with {self.encoding} encoding: {e}"
+                f"\n  Please specify the correct encoding using the -e flag."
+            )
+            return {}
+        except Exception as e:
+            logger.error("Error reading CSV file %s. %s", self.file_path, e)
+            return {}
 
         if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
             return {}
@@ -105,16 +128,41 @@ class DatasetCSVMetadataReader:
         return {"dataset_label": str(match.iloc[0]["Label"])}
 
     def __data_meta(self):
-        first_row_df = pd.read_csv(self.file_path, encoding=self.encoding, nrows=1)
+        logger = logging.getLogger("validator")
+        result = {
+            "dataset_length": 0,
+            "first_record": {},
+        }
+        try:
+            first_row_df = pd.read_csv(self.file_path, encoding=self.encoding, nrows=1)
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.error(
+                f"\n  Error reading CSV from: {self.file_path}"
+                f"\n  Failed to decode with {self.encoding} encoding: {e}"
+                f"\n  Please specify the correct encoding using the -e flag."
+            )
+            return result
+        except Exception as e:
+            logger.error("Error reading CSV file %s. %s", self.file_path, e)
+            return result
 
         if not first_row_df.empty:
-            first_record = first_row_df.iloc[0].fillna("").astype(str).to_dict()
-        else:
-            first_record = {}
+            result["first_record"] = (
+                first_row_df.iloc[0].fillna("").astype(str).to_dict()
+            )
 
-        with open(self.file_path, encoding=self.encoding) as f:
-            dataset_length = sum(1 for _ in f) - 1  # subtract header
-        return {
-            "dataset_length": dataset_length,
-            "first_record": first_record,
-        }
+        try:
+            with open(self.file_path, encoding=self.encoding) as f:
+                result["dataset_length"] = max(
+                    sum(1 for _ in f) - 1, 0
+                )  # subtract header
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.error(
+                f"\n  Error reading CSV from: {self.file_path}"
+                f"\n  Failed to decode with {self.encoding} encoding: {e}"
+                f"\n  Please specify the correct encoding using the -e flag."
+            )
+        except Exception as e:
+            logger.error("Error reading CSV file %s. %s", self.file_path, e)
+
+        return result

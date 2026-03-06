@@ -1,5 +1,6 @@
 import tempfile
 
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFormat
 from cdisc_rules_engine.interfaces import DataReaderInterface
 import pandas as pd
 
@@ -13,9 +14,21 @@ class CSVReader(DataReaderInterface):
         raise NotImplementedError
 
     def from_file(self, file_path):
-        with open(file_path, "r", encoding=self.encoding) as fp:
-            data = pd.read_csv(fp, sep=",", header=0, index_col=False)
-        return data
+        try:
+            with open(file_path, "r", encoding=self.encoding) as fp:
+                data = pd.read_csv(fp, sep=",", header=0, index_col=False)
+            return data
+        except (UnicodeDecodeError, UnicodeError) as e:
+            raise InvalidCSVFormat(
+                f"\n  Error reading CSV from: {file_path}"
+                f"\n  Failed to decode with {self.encoding} encoding: {e}"
+                f"\n  Please specify the correct encoding using the -e flag."
+            )
+        except Exception as e:
+            raise InvalidCSVFormat(
+                f"\n  Error reading CSV from: {file_path}"
+                f"\n  {type(e).__name__}: {e}"
+            )
 
     def to_parquet(self, file_path: str) -> tuple[int, str]:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")

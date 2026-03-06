@@ -62,6 +62,11 @@ class InvalidJSONFormat(EngineError):
     description = "JSON data is malformed."
 
 
+class InvalidCSVFormat(EngineError):
+    code = 400
+    description = "CSV data is malformed."
+
+
 class NumberOfAttemptsExceeded(EngineError):
     pass
 
