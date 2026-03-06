@@ -438,9 +438,8 @@ class RulesEngine:
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
-            dataset_metadata.unsplit_name,
+            dataset_metadata,
             datasets,
-            dataset_metadata.full_path,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
