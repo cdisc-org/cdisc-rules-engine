@@ -7,9 +7,6 @@ from cdisc_rules_engine.utilities.utils import tag_source
 
 class DayDataValidator(BaseOperation):
     def _execute_operation(self):
-        if self.params.target not in self.evaluation_dataset.columns:
-            # Return none for all values if target column is missing.
-            return [0] * len(self.evaluation_dataset)
         dtc_value = self.evaluation_dataset[self.params.target].map(
             self.parse_timestamp
         )
