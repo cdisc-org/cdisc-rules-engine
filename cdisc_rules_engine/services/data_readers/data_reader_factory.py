@@ -4,6 +4,7 @@ from cdisc_rules_engine.interfaces import (
     DataReaderInterface,
     FactoryInterface,
 )
+from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
 from cdisc_rules_engine.services.data_readers.dataset_json_reader import (
     DatasetJSONReader,
@@ -19,12 +20,13 @@ from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DataReaderFactory(FactoryInterface):
-    _reader_map = {
+    _reader_map: dict[str, Type[DataReaderInterface]] = {
         DataFormatTypes.XPT.value: XPTReader,
         DataFormatTypes.PARQUET.value: ParquetReader,
         DataFormatTypes.JSON.value: DatasetJSONReader,
         DataFormatTypes.NDJSON.value: DatasetNDJSONReader,
         DataFormatTypes.USDM.value: JSONReader,
+        DataFormatTypes.CSV.value: CSVReader,
     }
 
     def __init__(

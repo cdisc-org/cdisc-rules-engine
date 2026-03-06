@@ -65,6 +65,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
         DataFormatTypes.JSON.value,
         DataFormatTypes.NDJSON.value,
         DataFormatTypes.XLSX.value,
+        DataFormatTypes.CSV.value,
     ]
     found_formats = set()
     file_list = []
@@ -103,6 +104,44 @@ def cli():
     pass
 
 
+def _filter_dataset_paths(
+    dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
+) -> list[str]:
+    """
+    Filters dataset paths based on tables.csv content (if exists).
+
+    Keeps only datasets listed in tables.csv (Filename column).
+    Always excludes tables.csv and variables.csv from result.
+    """
+    import pandas as pd
+
+    paths = [Path(p) for p in dataset_paths]
+    tables_path = next((p for p in paths if p.name.lower() == "tables.csv"), None)
+
+    dataset_files = [
+        p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
+    ]
+
+    if not tables_path:
+        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+
+    tables_df = pd.read_csv(tables_path, encoding=encoding)
+
+    if "Filename" not in tables_df.columns:
+        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+
+    allowed_datasets = {
+        Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
+    }
+
+    filtered = {
+        str(p)
+        for p in dataset_files
+        if p.suffix.lower() == ".csv" and p.stem.lower() in allowed_datasets
+    }
+    return list(filtered)
+
+
 def _validate_data_directory(
     data: str, logger, filetype: str = None
 ) -> tuple[list, set]:
@@ -126,7 +165,8 @@ def _validate_data_directory(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
-
+    elif DataFormatTypes.CSV.value in found_formats:
+        dataset_paths = _filter_dataset_paths(dataset_paths)
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -221,6 +261,7 @@ def _validate_no_arguments(logger) -> None:
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+    envvar="DATA_DIR",
 )
 @click.option(
     "-ft",
@@ -235,6 +276,7 @@ def _validate_no_arguments(logger) -> None:
     required=False,
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
+    envvar="DATASET_PATH",
 )
 @click.option(
     "-l",
@@ -254,6 +296,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="CDISC standard to validate against",
+    envvar="STANDARD",
 )
 @click.option(
     "-v",
@@ -261,6 +304,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="Standard version to validate against",
+    envvar="VERSION",
 )
 @click.option(
     "-ss",
@@ -268,6 +312,7 @@ def _validate_no_arguments(logger) -> None:
     default=None,
     type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
     help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+    envvar="SUBSTANDARD",
 )
 @click.option(
     "-uc",
@@ -288,6 +333,7 @@ def _validate_no_arguments(logger) -> None:
         "Controlled terminology package to validate against, "
         "can provide more than one"
     ),
+    envvar="CONTROLLED_TERMINOLOGY_PACKAGE",
 )
 @click.option(
     "-o",
@@ -319,6 +365,7 @@ def _validate_no_arguments(logger) -> None:
     "--define-version",
     type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
+    envvar="DEFINE_VERSION",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
@@ -337,12 +384,14 @@ def _validate_no_arguments(logger) -> None:
     "-r",
     multiple=True,
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
+    envvar="RULES",
 )
 @click.option(
     "--exclude-rules",
     "-er",
     multiple=True,
     help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+    envvar="EXCLUDE_RULES",
 )
 @click.option(
     "--local-rules",
@@ -351,6 +400,7 @@ def _validate_no_arguments(logger) -> None:
     type=click.Path(exists=True, readable=True, resolve_path=True),
     help="Path to directory containing local rules.",
     multiple=True,
+    envvar="LOCAL_RULES",
 )
 @click.option(
     "--custom-standard",
@@ -371,7 +421,13 @@ def _validate_no_arguments(logger) -> None:
         "is printed."
     ),
 )
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
+@click.option(
+    "-dxp",
+    "--define-xml-path",
+    required=False,
+    help="Path to Define-XML",
+    envvar="DEFINE",
+)
 @click.option(
     "-vx",
     "--validate-xml",
@@ -721,6 +777,7 @@ def update_cache(
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
+    envvar="RULEID",
 )
 @click.pass_context
 def list_rules(
