@@ -4,9 +4,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 from conftest import mock_data_service
-from cdisc_rules_engine.exceptions.custom_exceptions import (
-    OperationError,
-)
+from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_conditions.condition_composite import (
@@ -1271,7 +1269,7 @@ def test_operation_nonexistent_domain_raises_error(mock_data_service):
             full_path="lb.xpt",
         )
     ]
-    with pytest.raises(OperationError) as exc_info:
+    with pytest.raises(DomainNotFoundError) as exc_info:
         processor.perform_rule_operations(
             rule=rule,
             dataset=df.copy(),
@@ -1283,8 +1281,6 @@ def test_operation_nonexistent_domain_raises_error(mock_data_service):
         )
     error_message = str(exc_info.value)
     assert (
-        "Failed to execute rule operation. Operation: distinct, "
-        "Target: AESEQ, Domain: AE, Error: Failed to execute rule operation. "
-        "Domain AE does not exist. Operation: distinct, Target: AESEQ, Core ID: None"
+        "Failed to execute rule operation. Domain AE does not exist. Operation: distinct, Target: AESEQ, Core ID: None"
         == error_message
     )

@@ -27,7 +27,10 @@ from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
-from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DomainNotFoundError,
+    OperationError,
+)
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
@@ -408,6 +411,8 @@ class RuleProcessor:
                 dataset_copy = self._execute_operation(
                     operation_params, dataset_copy, previous_operations
                 )
+            except (DomainNotFoundError, KeyError):
+                raise
             except Exception as e:
                 raise OperationError(
                     f"Failed to execute rule operation. "
@@ -466,7 +471,7 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                raise OperationError(
+                raise DomainNotFoundError(
                     f"Failed to execute rule operation. "
                     f"Domain {operation_params.domain} does not exist. "
                     f"Operation: {operation_params.operation_name}, "

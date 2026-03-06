@@ -1,3 +1,4 @@
+from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
@@ -17,8 +18,9 @@ class DayDataValidator(BaseOperation):
             dataset for dataset in self.params.datasets if dataset.domain == "DM"
         ]
         if not dm_datasets:
-            # Return none for all values if dm is not provided.
-            return [0] * len(self.evaluation_dataset[self.params.target])
+            raise DomainNotFoundError(
+                "Operation dy requires DM domain but Domain not found in datasets"
+            )
         if len(dm_datasets) > 1:
             dm_data = self.data_service.concat_split_datasets(
                 self.data_service.get_dataset, dm_datasets
