@@ -78,6 +78,7 @@ class ExcelDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
+        # sometimes, instead of dataset name, SDTMDatasetMetadata.full_path sent
         dtype_mapping = {
             "Char": str,
             "Num": float,
@@ -144,7 +145,8 @@ class ExcelDataService(BaseDataService):
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
             filename=dataset_name,
-            full_path=dataset_name,
+            full_path=self.dataset_path,
+            # full_path=dataset_name,
             file_size=0,
             record_count=len(dataset),
         )
@@ -191,6 +193,7 @@ class ExcelDataService(BaseDataService):
         """
         Reads local define xml file as bytes
         """
+        # will not work if define.xml is in different folder from dataset
         with open(dataset_name, "rb") as f:
             return f.read()
 

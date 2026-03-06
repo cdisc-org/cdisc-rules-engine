@@ -30,6 +30,7 @@ from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.services.data_services import ExcelDataService
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
@@ -234,11 +235,15 @@ class RuleProcessor:
         excluded_classes = classes.get("Exclude", [])
         is_included = True
         is_excluded = False
+        if isinstance(self.data_service, ExcelDataService):
+            dataset_name = dataset_metadata.filename
+        else:
+            dataset_name = dataset_metadata.full_path
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.full_path, datasets=datasets
+                dataset_name=dataset_name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
@@ -252,7 +257,7 @@ class RuleProcessor:
                 is_included = False
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.full_path, datasets=datasets
+                dataset_name=dataset_name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
@@ -479,6 +484,8 @@ class RuleProcessor:
                 get_directory_path(operation_params.dataset_path),
                 filename,
             )
+            if isinstance(self.data_service, ExcelDataService):
+                file_path = domain_details.filename
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path
             )
