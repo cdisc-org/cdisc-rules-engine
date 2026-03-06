@@ -146,6 +146,7 @@ class LocalDataService(BaseDataService):
         """
         Reads local define xml file as bytes
         """
+        # will not work if define.xml is in different folder from dataset
         with open(dataset_name, "rb") as f:
             return f.read()
 

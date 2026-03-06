@@ -36,6 +36,7 @@ class DefineDictionaryVersionValidator(BaseOperation):
             whodrug_path=self.params.whodrug_path,
             loinc_path=self.params.loinc_path,
         )
+        # will not be possible to read define.xml when directory path is not equal to define path
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
         )
