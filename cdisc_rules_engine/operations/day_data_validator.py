@@ -1,15 +1,14 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
-from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import tag_source
 
 
 class DayDataValidator(BaseOperation):
     def _execute_operation(self):
-        logger.info(
-            f"trying to find '{self.params.target}' in the {self.evaluation_dataset['DOMAIN'].iloc[0]}."
-        )
+        if self.params.target not in self.evaluation_dataset.columns:
+            # Return none for all values if target column is missing.
+            return [0] * len(self.evaluation_dataset)
         dtc_value = self.evaluation_dataset[self.params.target].map(
             self.parse_timestamp
         )

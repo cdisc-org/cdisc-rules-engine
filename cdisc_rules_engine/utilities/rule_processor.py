@@ -320,9 +320,8 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset: DatasetInterface,
-        domain: str,
+        dataset_metadata: SDTMDatasetMetadata,
         datasets: Iterable[SDTMDatasetMetadata],
-        dataset_path: str,
         standard: str,
         standard_version: str,
         standard_substandard: str,
@@ -344,11 +343,11 @@ class RuleProcessor:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
             target: str = original_target
-            domain: str = operation.get("domain", domain)
+            domain: str = operation.get("domain", dataset_metadata.domain)
             if target and target.startswith("--") and domain:
                 # Not a study wide operation
                 target = target.replace("--", domain)
-                domain = domain.replace("--", domain)
+                domain = domain.replace("--", dataset_metadata.domain)
 
             # get necessary operation
             operation_params = OperationParams(
@@ -368,11 +367,11 @@ class RuleProcessor:
                 ],
                 ct_version=operation.get("version"),
                 dataframe=dataset_copy,
-                dataset_path=dataset_path,
+                dataset_path=dataset_metadata.full_path,
                 datasets=datasets,
                 delimiter=operation.get("delimiter"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
-                directory_path=get_directory_path(dataset_path),
+                directory_path=get_directory_path(dataset_metadata.full_path),
                 domain=domain,
                 domain_class=operation.get("domain_class"),
                 external_dictionaries=external_dictionaries,

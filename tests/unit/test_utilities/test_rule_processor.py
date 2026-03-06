@@ -489,7 +489,7 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
     df = dataset_implementation.from_dict(
         {"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]}
     )
-    datasets = [
+    datasets_metadata = [
         SDTMDatasetMetadata(
             filename="ae.xpt",
             full_path="test/ae.xpt",
@@ -502,9 +502,8 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
     result = processor.perform_rule_operations(
         rule,
         df,
-        "AE",
-        datasets,
-        "test/",
+        datasets_metadata[0],
+        datasets_metadata,
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
@@ -585,7 +584,7 @@ def test_perform_rule_operation_with_grouping(
         }
     )
 
-    datasets = [
+    datasets_metadata = [
         SDTMDatasetMetadata(
             filename="ae.xpt",
             full_path="test/ae.xpt",
@@ -599,9 +598,8 @@ def test_perform_rule_operation_with_grouping(
     data = processor.perform_rule_operations(
         rule,
         df,
-        "AE",
-        datasets,
-        "test/",
+        datasets_metadata[0],
+        datasets_metadata,
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
@@ -703,7 +701,7 @@ def test_perform_rule_operation_with_multi_key_grouping(
         }
     )
 
-    datasets = [
+    datasets_metadata = [
         SDTMDatasetMetadata(
             filename="ae.xpt",
             full_path="test/ae.xpt",
@@ -717,9 +715,8 @@ def test_perform_rule_operation_with_multi_key_grouping(
     data = processor.perform_rule_operations(
         rule,
         df,
-        "AE",
-        datasets,
-        "test/",
+        datasets_metadata[0],
+        datasets_metadata,
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
@@ -763,7 +760,7 @@ def test_perform_rule_operation_with_null_operations(
     df = dataset_implementation.from_dict(
         {"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]}
     )
-    datasets = [
+    datasets_metadata = [
         SDTMDatasetMetadata(
             filename="ae.xpt",
             full_path="test/ae.xpt",
@@ -775,9 +772,8 @@ def test_perform_rule_operation_with_null_operations(
     new_data = processor.perform_rule_operations(
         rule,
         df,
-        "AE",
-        datasets,
-        "test/",
+        datasets_metadata[0],
+        datasets_metadata,
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
@@ -901,16 +897,19 @@ def test_perform_extract_metadata_operation(
         }
     )
     processor = RuleProcessor(mock, InMemoryCacheService())
+    datasets_metadata = [
+        SDTMDatasetMetadata(
+            name="SUPPEC",
+            first_record={"RDOMAIN": "EC"},
+            filename="suppec.xpt",
+            full_path="study/data_bundle/suppec.xpt",
+        )
+    ]
     dataset_after_operation = processor.perform_rule_operations(
         rule=rule_equal_to_with_extract_metadata_operation,
         dataset=dataset,
-        domain="SUPPEC",
-        datasets=[
-            SDTMDatasetMetadata(
-                name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt"
-            )
-        ],
-        dataset_path="study/data_bundle/suppec.xpt",
+        dataset_metadata=datasets_metadata[0],
+        datasets=datasets_metadata,
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
@@ -1265,15 +1264,19 @@ def test_operation_nonexistent_domain_raises_error(mock_data_service):
     }
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     datasets_metadata = [
-        SDTMDatasetMetadata(name="LB", filename="lb.xpt", first_record={"DOMAIN": "LB"})
+        SDTMDatasetMetadata(
+            name="LB",
+            filename="lb.xpt",
+            first_record={"DOMAIN": "LB"},
+            full_path="lb.xpt",
+        )
     ]
     with pytest.raises(OperationError) as exc_info:
         processor.perform_rule_operations(
             rule=rule,
             dataset=df.copy(),
-            domain="LB",
+            dataset_metadata=datasets_metadata[0],
             datasets=datasets_metadata,
-            dataset_path="lb.xpt",
             standard="sdtmig",
             standard_version="3-1-2",
             standard_substandard=None,
