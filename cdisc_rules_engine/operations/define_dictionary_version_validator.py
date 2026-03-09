@@ -36,9 +36,15 @@ class DefineDictionaryVersionValidator(BaseOperation):
             whodrug_path=self.params.whodrug_path,
             loinc_path=self.params.loinc_path,
         )
-        # will not be possible to read define.xml when directory path is not equal to define path
+        define_path = (
+            self.params.define_xml_path
+            if self.params.define_xml_path
+            else os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
+        )
+        if not os.path.exists(define_path):
+            raise FileNotFoundError("Define XML file %s not found", define_path)
         define_contents = self.data_service.get_define_xml_contents(
-            dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
+            dataset_name=define_path
         )
         define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
         define_dictionary_version = define_reader.get_external_dictionary_version(
