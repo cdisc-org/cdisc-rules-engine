@@ -910,7 +910,7 @@
       "properties": {
         "operator": {
           "const": "target_is_sorted_by",
-          "markdownDescription": "\nTrue if the values in `name` are ordered according to the values specified by `value` in ascending/descending order, grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 'YYYY-MM-DD' format\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n```\n"
+          "markdownDescription": "\nTrue if the values in name are ordered according to the values specified by value in ascending/descending order, grouped by the values in within. Each value entry requires a variable name, a sort_order of asc or desc, and an optional null_position of first or last (defaults to last) which controls where null/empty comparator values are placed in the expected ordering. Within accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that overlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as their order cannot be inferred.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n"
         }
       },
       "required": ["operator", "value", "within"],
@@ -1075,6 +1075,10 @@
             "properties": {
               "name": {
                 "$ref": "Operator.json#/properties/name"
+              },
+              "null_position": {
+                "enum": ["first", "last"],
+                "type": "string"
               },
               "order": {
                 "$ref": "Operator.json#/properties/order"

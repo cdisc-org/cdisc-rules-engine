@@ -47,6 +47,14 @@
       "markdownDescription": "\nItemGroupDef.Structure\n"
     },
     {
+      "const": "define_dataset_variables",
+      "markdownDescription": "\nList of ItemGroupDef.ItemRef.ItemDef.Name in XML document order (as they appear in ItemRef, no sorting applied)\n"
+    },
+    {
+      "const": "define_dataset_variable_order",
+      "markdownDescription": "\nList of ItemGroupDef.ItemRef.ItemDef.Name, sorted by ItemRef OrderNumber when present, otherwise by XML document order\n"
+    },
+    {
       "const": "define_variable_allowed_terms",
       "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText\n"
     },
@@ -225,6 +233,10 @@
     {
       "const": "variable_has_empty_values",
       "markdownDescription": "\nTrue/False value indicating whether a variable has any empty values\n"
+    },
+    {
+      "const": "variable_is_empty",
+      "markdownDescription": "\nTrue/False value indicating whether a variable is completely empty\n"
     },
     {
       "const": "variable_label",
