@@ -2,7 +2,6 @@ from abc import abstractmethod
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.services.data_services import ExcelDataService
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
@@ -84,8 +83,6 @@ class BaseDatasetBuilder:
             )
         else:
             # single dataset. the most common case
-            if isinstance(self.data_service, ExcelDataService):
-                self.dataset_path = self.dataset_metadata.filename
             dataset: DatasetInterface = self.build()
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset

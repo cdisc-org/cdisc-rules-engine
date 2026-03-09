@@ -62,3 +62,4 @@ class OperationParams:
     value_is_reference: bool = False
     namespace: str = None
     delimiter: str = None
+    define_xml_path: str = None

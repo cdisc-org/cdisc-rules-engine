@@ -446,6 +446,7 @@ class RulesEngine:
             standard_substandard=self.standard_substandard,
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
+            define_xml_path=self.define_xml_path,
         )
         dataset_variable = DatasetVariable(
             dataset,
