@@ -14,10 +14,13 @@ class XPTReader(DataReaderInterface):
     def _read_sas(self, source, **kwargs):
         try:
             return pd.read_sas(source, encoding=self.encoding, **kwargs)
-        except Exception as exc:
-            raise UnsupportedXptFormatError(
-                f"Unsupported XPT (SAS Transport) format. Only Transport v5 is supported. Original error: {exc}"
-            ) from exc
+        except ValueError as exc:
+            message = str(exc)
+            if "Header record is not an XPORT file" in message:
+                raise UnsupportedXptFormatError(
+                    "Unsupported XPT (SAS Transport) format. Only Transport v5 is supported."
+                ) from exc
+            raise
 
     def read(self, data):
         df = self._read_sas(BytesIO(data), format="xport")
