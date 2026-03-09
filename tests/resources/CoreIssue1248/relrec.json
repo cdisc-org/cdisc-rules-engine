@@ -73,59 +73,11 @@
     }
   ],
   "rows": [
-    [
-      "CDISCPILOT01",
-      "AE",
-      "",
-      "AELNKID",
-      "",
-      "ONE",
-      "AEDS"
-    ],
-    [
-      "CDISCPILOT01",
-      "DS",
-      "",
-      "DSLNKID",
-      "",
-      "ONE",
-      "AEDS"
-    ],
-    [
-      "CDISCPILOT01",
-      "AE",
-      "",
-      "AELNKID",
-      "",
-      "ONE",
-      "AEDD"
-    ],
-    [
-      "CDISCPILOT01",
-      "DD",
-      "",
-      "DDLNKID",
-      "",
-      "ONE",
-      "AEDD"
-    ],
-    [
-      "CDISCPILOT01",
-      "AE",
-      "",
-      "AELNKID",
-      "",
-      "ONE",
-      "AEFA"
-    ],
-    [
-      "CDISCPILOT01",
-      "FA",
-      "",
-      "FALNKGRP",
-      "",
-      "MANY",
-      "AEFA"
-    ]
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEDS"],
+    ["CDISCPILOT01", "DS", "", "DSLNKID", "", "ONE", "AEDS"],
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEDD"],
+    ["CDISCPILOT01", "DD", "", "DDLNKID", "", "ONE", "AEDD"],
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEFA"],
+    ["CDISCPILOT01", "FA", "", "FALNKGRP", "", "MANY", "AEFA"]
   ]
 }
