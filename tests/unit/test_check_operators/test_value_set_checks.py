@@ -244,6 +244,47 @@ def test_is_inconsistent_across_dataset(
     assert result.equals(df.convert_to_series(expected_result))
 
 
+def test_is_inconsistent_across_dataset_regex():
+    data = {
+        "VISIT": [
+            "SCREENING 1",
+            "SCREENING 1",
+            "BASELINE",
+            "BASELINE",
+            "BASELINE",
+            "WEEK 1",
+            "WEEK 1",
+        ],
+        "EPOCH": [
+            "SCREENING",
+            "SCREENING",
+            "SCREENING",
+            "SCREENING",
+            "SCREENING",
+            "TREATMENT",
+            "TREATMENT",
+        ],
+        "VSDTC": [
+            "2012-11-23",
+            "2012-11-28",
+            "2012-11-30",
+            "2012-11-30",
+            "2012-11-30",
+            "2014-09-30T11:09",
+            "2014-09-30T11:07",
+        ],
+    }
+    df = PandasDataset.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset(
+        {"target": "VSDTC", "comparator": "VISIT", "regex": r"^(\d{4}-\d{2}-\d{2})"}
+    )
+    assert result.equals(
+        df.convert_to_series([True, True, False, False, False, False, False])
+    )
+
+
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
