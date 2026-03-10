@@ -55,6 +55,12 @@ class SqlColumnSchema:
         return cls(name=column.lower(), hash=hash, type="Bool", origin="co")
 
     @classmethod
+    def define(cls, column: str, type: DATASET_COLUMN_TYPES) -> "SqlColumnSchema":
+        """Create a SqlColumnSchema with the define origin."""
+        hash = generate_hash(column.lower())
+        return cls(name=column.lower(), hash=hash, type=type, origin="define")
+
+    @classmethod
     def alias(cls, column: str, schema: "SqlColumnSchema") -> "SqlColumnSchema":
         """Create a SqlColumnSchema which aliases another column."""
         return cls(name=column.lower(), hash=schema.hash, type=schema.type, alias=True)

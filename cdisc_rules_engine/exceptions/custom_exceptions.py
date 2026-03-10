@@ -35,9 +35,7 @@ class InvalidMatchKeyError(EngineError):
 
 class VariableMetadataNotFoundError(EngineError):
     code = 400
-    description = (
-        "Variable metadata is not found in CDISC Library for the provided standard"
-    )
+    description = "Variable metadata is not found in CDISC Library for the provided standard"
 
 
 class DomainNotFoundError(EngineError):
@@ -62,9 +60,7 @@ class NumberOfAttemptsExceeded(EngineError):
 
 
 class InvalidDictionaryVariable(EngineError):
-    description = (
-        "Provided dictionary variable does not correspond to a dictionary term type"
-    )
+    description = "Provided dictionary variable does not correspond to a dictionary term type"
 
 
 class UnsupportedDictionaryType(EngineError):

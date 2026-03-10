@@ -35,8 +35,7 @@ class SqlValueCheckWithDatasetMetadataBuilder(SqlBaseDatasetBuilder):
         column_names = [
             name
             for name, schema in columns_list
-            if name.lower() not in ["id", "source_ds", "source_row_number"]
-            if schema.origin != "co"
+            if name.lower() not in ["id", "source_ds", "source_row_number"] and schema.origin == "data"
         ]
 
         source_table_hash = self.data_service.pgi.schema.get_table_hash(source_table_id)
