@@ -7,6 +7,5 @@ class StandardTypes(BaseEnum):
     SDTMIG = "sdtmig"
     SENDIG = "sendig"
     ADAM = "adam"
-    CDASHIG = "cdashig"
     TIG = "tig"
     USDM = "usdm"

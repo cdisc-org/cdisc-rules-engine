@@ -1,6 +1,7 @@
 import os
 from io import IOBase
-from typing import List, Optional, Sequence
+import functools
+from typing import List, Sequence
 from datetime import datetime
 import re
 import pandas as pd
@@ -123,33 +124,28 @@ class ExcelDataService(BaseDataService):
             return first_record.get("instanceType", dataset_filename.split(".")[0])
         return dataset_filename.split(".")[0].upper()
 
+    @functools.lru_cache(maxsize=None)
+    def _get_datasets_worksheet(self) -> pd.DataFrame:
+        return pd.read_excel(
+            self.dataset_path,
+            sheet_name=DATASETS_SHEET_NAME,
+            na_values=[""],
+            keep_default_na=False,
+        )
+
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
         self,
         dataset_name: str,
-        *,
-        cached_worksheet: Optional[pd.DataFrame] = None,
         **kwargs,
     ) -> SDTMDatasetMetadata:
         """
         Returns dataset metadata as DatasetMetadata instance.
-        Pass cached_worksheet to avoid re-reading the Datasets sheet when
-        calling repeatedly (e.g. from get_datasets()).
         """
-        if cached_worksheet is not None:
-            metadata = cached_worksheet[
-                cached_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
-            ]
-        else:
-            datasets_worksheet = pd.read_excel(
-                self.dataset_path,
-                sheet_name=DATASETS_SHEET_NAME,
-                na_values=[""],
-                keep_default_na=False,
-            )
-            metadata = datasets_worksheet[
-                datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
-            ]
+        datasets_worksheet = self._get_datasets_worksheet()
+        metadata = datasets_worksheet[
+            datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
+        ]
         dataset = self.get_dataset(dataset_name=dataset_name)
         first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
         return SDTMDatasetMetadata(
@@ -249,7 +245,7 @@ class ExcelDataService(BaseDataService):
             )
 
         datasets = [
-            self.get_raw_dataset_metadata(dataset_name=fn, cached_worksheet=worksheet)
+            self.get_raw_dataset_metadata(dataset_name=fn)
             for fn in worksheet[DATASET_FILENAME_COLUMN]
         ]
         return datasets
