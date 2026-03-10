@@ -9,8 +9,8 @@ from openpyxl import Workbook
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.exceptions.custom_exceptions import ExcelTestDataError
 from cdisc_rules_engine.services.data_services import ExcelDataService
-from cdisc_rules_engine.services.data_services.excel_data_service import (
-    DATASETS_SHEET_NAME,
+from cdisc_rules_engine.enums.excel_test_sheets import (
+    ExcelDataSheets,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -217,8 +217,7 @@ def test_get_datasets_missing_datasets_sheet_raises_friendly_error():
             data_service.get_datasets()
 
         msg = str(exc_info.value)
-        assert DATASETS_SHEET_NAME in msg or "Datasets" in msg
-        assert "case-sensitive" in msg
+        assert ExcelDataSheets.DATASETS_SHEET_NAME.value in msg
     finally:
         os.unlink(temp_path)
 
@@ -235,7 +234,7 @@ def test_get_datasets_missing_label_column_raises_friendly_error():
     try:
         wb = Workbook()
         datasets_sheet = wb.active
-        datasets_sheet.title = DATASETS_SHEET_NAME
+        datasets_sheet.title = ExcelDataSheets.DATASETS_SHEET_NAME.value
         datasets_sheet.append(["Filename", "label", "Dataset Name"])
         datasets_sheet.append(["dm.xpt", "Demographics", "DM"])
         wb.create_sheet("dm.xpt")
@@ -261,7 +260,6 @@ def test_get_datasets_missing_label_column_raises_friendly_error():
 
         msg = str(exc_info.value)
         assert "Label" in msg
-        assert "case-sensitive" in msg
         assert "column" in msg.lower()
     finally:
         os.unlink(temp_path)

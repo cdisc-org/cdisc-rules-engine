@@ -20,15 +20,8 @@ from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
 from .base_data_service import BaseDataService, cached_dataset
-
-DATASETS_SHEET_NAME = "Datasets"
-DATASET_FILENAME_COLUMN = "Filename"
-DATASET_LABEL_COLUMN = "Label"
-DATASET_NAME_COLUMN = "Dataset Name"
-
-DATASETS_SHEET_REQUIRED_COLUMNS = (
-    DATASET_FILENAME_COLUMN,
-    DATASET_LABEL_COLUMN,
+from cdisc_rules_engine.enums.excel_test_sheets import (
+    ExcelDataSheets,
 )
 
 
@@ -118,8 +111,6 @@ class ExcelDataService(BaseDataService):
     def _get_dataset_name(
         self, metadata: pd.DataFrame, first_record: dict, dataset_filename: str
     ) -> str:
-        if DATASET_NAME_COLUMN in metadata.columns and not metadata.empty:
-            return metadata[DATASET_NAME_COLUMN].iloc[0]
         if self.standard == "usdm":
             return first_record.get("instanceType", dataset_filename.split(".")[0])
         return dataset_filename.split(".")[0].upper()
@@ -128,7 +119,7 @@ class ExcelDataService(BaseDataService):
     def _get_datasets_worksheet(self) -> pd.DataFrame:
         return pd.read_excel(
             self.dataset_path,
-            sheet_name=DATASETS_SHEET_NAME,
+            sheet_name=ExcelDataSheets.DATASETS_SHEET_NAME.value,
             na_values=[""],
             keep_default_na=False,
         )
@@ -144,14 +135,19 @@ class ExcelDataService(BaseDataService):
         """
         datasets_worksheet = self._get_datasets_worksheet()
         metadata = datasets_worksheet[
-            datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
+            datasets_worksheet[ExcelDataSheets.DATASET_FILENAME_COLUMN.value]
+            == dataset_name
         ]
         dataset = self.get_dataset(dataset_name=dataset_name)
         first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
         return SDTMDatasetMetadata(
             name=self._get_dataset_name(metadata, first_record, dataset_name),
             first_record=first_record,
-            label=metadata[DATASET_LABEL_COLUMN].iloc[0] if not metadata.empty else "",
+            label=(
+                metadata[ExcelDataSheets.DATASET_LABEL_COLUMN.value].iloc[0]
+                if not metadata.empty
+                else ""
+            ),
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
@@ -213,14 +209,14 @@ class ExcelDataService(BaseDataService):
         try:
             with pd.ExcelFile(self.dataset_path) as xl:
                 sheet_names = xl.sheet_names
-                if DATASETS_SHEET_NAME not in sheet_names:
+                if ExcelDataSheets.DATASETS_SHEET_NAME.value not in sheet_names:
                     available = ", ".join(repr(s) for s in sheet_names) or "(none)"
                     raise ExcelTestDataError(
-                        f"The workbook does not contain a '{DATASETS_SHEET_NAME}' sheet. "
+                        f"The workbook does not contain a '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet. "
                         f"Submitted sheet names: {available}."
                     )
                 worksheet = xl.parse(
-                    DATASETS_SHEET_NAME,
+                    ExcelDataSheets.DATASETS_SHEET_NAME.value,
                     na_values=[""],
                     keep_default_na=False,
                 )
@@ -233,19 +229,19 @@ class ExcelDataService(BaseDataService):
             ) from e
 
         missing_cols = sorted(
-            set(DATASETS_SHEET_REQUIRED_COLUMNS) - set(worksheet.columns)
+            set(ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value)
+            - set(worksheet.columns)
         )
         if missing_cols:
             raise ExcelTestDataError(
-                f"The '{DATASETS_SHEET_NAME}' sheet is missing required column(s): "
+                f"The '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet is missing a "
+                f"required {ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value} column(s): "
                 f"{missing_cols}. Column headers are case-sensitive. "
-                f"Required: '{DATASET_FILENAME_COLUMN}', '{DATASET_LABEL_COLUMN}', "
-                f"and optionally '{DATASET_NAME_COLUMN}'."
             )
 
         datasets = [
             self.get_raw_dataset_metadata(dataset_name=fn)
-            for fn in worksheet[DATASET_FILENAME_COLUMN]
+            for fn in worksheet[ExcelDataSheets.DATASET_FILENAME_COLUMN.value]
         ]
         return datasets
 
