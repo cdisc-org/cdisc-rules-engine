@@ -216,9 +216,8 @@ class ExcelDataService(BaseDataService):
                 if DATASETS_SHEET_NAME not in sheet_names:
                     available = ", ".join(repr(s) for s in sheet_names) or "(none)"
                     raise ExcelTestDataError(
-                        f"The workbook does not contain a sheet named "
-                        f"'{DATASETS_SHEET_NAME}'. Make sure there is a 'Datasets' tab "
-                        f"(case-sensitive). Available sheet names: {available}."
+                        f"The workbook does not contain a '{DATASETS_SHEET_NAME}' sheet. "
+                        f"Submitted sheet names: {available}."
                     )
                 worksheet = xl.parse(
                     DATASETS_SHEET_NAME,
