@@ -40,15 +40,6 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
-def library_metadata_not_found_message(standard, version, substandard=None):
-    version_display = (version or "").replace("-", ".")
-    sub_part = f" substandard {substandard}" if substandard else ""
-    return (
-        f"No library metadata found for standard '{standard}' "
-        f"version '{version_display}'{sub_part}."
-    )
-
-
 class LibraryMetadataNotFoundError(EngineError):
     code = 400
     description = (
@@ -86,12 +77,9 @@ class ExcelTestDataError(EngineError):
     )
 
 
-CT_PACKAGE_NOT_FOUND_PREFIX = "Controlled terminology package(s) not found"
-
-
 class CTPackageNotFoundError(EngineError):
     code = 400
-    description = f"{CT_PACKAGE_NOT_FOUND_PREFIX}."
+    description = "Controlled terminology package(s) not found"
 
 
 class NumberOfAttemptsExceeded(EngineError):

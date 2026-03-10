@@ -29,9 +29,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     CTPackageNotFoundError,
-    CT_PACKAGE_NOT_FOUND_PREFIX,
     LibraryMetadataNotFoundError,
-    library_metadata_not_found_message,
 )
 
 
@@ -160,16 +158,14 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     if args.define_xml_path:
         extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
         ct_package_data["extensible"] = extensible_terms
-    requested_ct = set(args.controlled_terminology_package or [])
-    if args.define_xml_path and define_version.model_package == "define_2_1":
-        requested_ct |= define_referenced_ct
+    requested_ct = set(args.controlled_terminology_package or []) | define_referenced_ct
     missing_ct = requested_ct - published_ct_packages
     if missing_ct:
         sorted_missing = sorted(
             missing_ct, key=lambda x: (x is None, str(x) if x is not None else "")
         )
         raise CTPackageNotFoundError(
-            f"{CT_PACKAGE_NOT_FOUND_PREFIX} in cache: "
+            "Controlled terminology package(s) not found in cache: "
             f"{', '.join(str(c) for c in sorted_missing)}."
         )
     return LibraryMetadataContainer(
@@ -616,3 +612,12 @@ def replace_yml_spaces(data):
         return [replace_yml_spaces(item) for item in data]
     else:
         return data
+
+
+def library_metadata_not_found_message(standard, version, substandard=None):
+    version_display = (version or "").replace("-", ".")
+    sub_part = f" substandard {substandard}" if substandard else ""
+    return (
+        f"No library metadata found for standard '{standard}' "
+        f"version '{version_display}'{sub_part}."
+    )

@@ -7,11 +7,10 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
 from cdisc_rules_engine.exceptions.custom_exceptions import (
-    CT_PACKAGE_NOT_FOUND_PREFIX,
     CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
-    library_metadata_not_found_message,
 )
+from scripts.script_utils import library_metadata_not_found_message
 from cdisc_library_client.custom_exceptions import (
     ResourceNotFoundException as LibraryResourceNotFoundException,
 )
@@ -144,7 +143,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
                 asyncio.run(cache_populator.load_codelists(codelists or []))
             except LibraryResourceNotFoundException:
                 raise CTPackageNotFoundError(
-                    f"{CT_PACKAGE_NOT_FOUND_PREFIX}: "
+                    "Controlled terminology package(s) not found: "
                     f"{', '.join(str(c) for c in (codelists or []))}."
                 )
         if not rule:

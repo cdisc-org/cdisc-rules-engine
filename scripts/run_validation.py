@@ -20,7 +20,6 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     LibraryMetadataNotFoundError,
-    library_metadata_not_found_message,
 )
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
@@ -44,6 +43,7 @@ from cdisc_rules_engine.utilities.utils import (
     set_max_errors_per_rule,
 )
 from scripts.script_utils import (
+    library_metadata_not_found_message,
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,

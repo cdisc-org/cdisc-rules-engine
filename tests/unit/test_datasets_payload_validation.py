@@ -12,8 +12,8 @@ import pytest
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
-    library_metadata_not_found_message,
 )
+from scripts.script_utils import library_metadata_not_found_message
 
 
 class _MockHttpResponse:
