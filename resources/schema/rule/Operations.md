@@ -458,6 +458,30 @@ Output
 true
 ```
 
+### related_domain_is_custom
+
+Checks whether the related domain (for example, the parent domain of a SUPP or RELREC dataset) is not present in the set of standard domains for the provided standard and version. This is useful for determining whether relationships point to non-standard or custom domains.
+
+Input
+
+Target Domain: SUPPEX
+
+Product: sdtmig
+
+Version: 3-4
+
+```yaml
+Operations:
+  - operator: related_domain_is_custom
+    id: $related_domain_is_custom
+```
+
+Output
+
+```
+true
+```
+
 ### domain_label
 
 Returns the label for the domain the operation is executing on within the provided standard.
