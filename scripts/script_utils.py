@@ -27,6 +27,10 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CTPackageNotFoundError,
+    LibraryMetadataNotFoundError,
+)
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
@@ -75,6 +79,14 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         data = pickle.load(f)
         standard_metadata = data.get(standard_details_cache_key, {})
 
+    if not standard_metadata and not args.custom_standard:
+        if args.standard and args.standard.lower() != "usdm":
+            raise LibraryMetadataNotFoundError(
+                library_metadata_not_found_message(
+                    args.standard, args.version, args.substandard
+                )
+            )
+
     if standard_metadata:
         model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
         with open(models_file, "rb") as f:
@@ -104,6 +116,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         variables_metadata = data.get(cache_key)
 
     ct_package_data = {}
+    define_referenced_ct = set()
     cache_files = next(os.walk(args.cache), (None, None, []))[2]
     ct_files = [file_name for file_name in cache_files if "ct-" in file_name]
     published_ct_packages = set()
@@ -124,6 +137,10 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             extensible,
             merged_flag,
         ) = define_xml_reader.get_ct_standards_metadata()
+        define_referenced_ct = {
+            f"{standard.publishing_set.lower()}ct-{standard.version}"
+            for standard in standards
+        }
         for standard in standards:
             pickle_filename = (
                 f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
@@ -141,6 +158,16 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     if args.define_xml_path:
         extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
         ct_package_data["extensible"] = extensible_terms
+    requested_ct = set(args.controlled_terminology_package or []) | define_referenced_ct
+    missing_ct = requested_ct - published_ct_packages
+    if missing_ct:
+        sorted_missing = sorted(
+            missing_ct, key=lambda x: (x is None, str(x) if x is not None else "")
+        )
+        raise CTPackageNotFoundError(
+            "Controlled terminology package(s) not found in cache: "
+            f"{', '.join(str(c) for c in sorted_missing)}."
+        )
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         standard_schema_definition=standard_schema_definition,
@@ -585,3 +612,12 @@ def replace_yml_spaces(data):
         return [replace_yml_spaces(item) for item in data]
     else:
         return data
+
+
+def library_metadata_not_found_message(standard, version, substandard=None):
+    version_display = (version or "").replace("-", ".")
+    sub_part = f" substandard {substandard}" if substandard else ""
+    return (
+        f"No library metadata found for standard '{standard}' "
+        f"version '{version_display}'{sub_part}."
+    )

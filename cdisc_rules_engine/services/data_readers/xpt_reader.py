@@ -7,22 +7,33 @@ import tempfile
 from cdisc_rules_engine.interfaces import (
     DataReaderInterface,
 )
+from cdisc_rules_engine.exceptions import UnsupportedXptFormatError
 
 
 class XPTReader(DataReaderInterface):
+    def _read_sas(self, source, **kwargs):
+        try:
+            return pd.read_sas(source, encoding=self.encoding, **kwargs)
+        except ValueError as exc:
+            message = str(exc)
+            if "Header record is not an XPORT file" in message:
+                raise UnsupportedXptFormatError(
+                    "Unsupported XPT (SAS Transport) format. Only Transport v5 is supported."
+                ) from exc
+            raise
 
     def read(self, data):
-        df = pd.read_sas(BytesIO(data), format="xport", encoding=self.encoding)
+        df = self._read_sas(BytesIO(data), format="xport")
         df = self._format_floats(df)
         return df
 
     def _read_pandas(self, file_path):
-        data = pd.read_sas(file_path, format="xport", encoding=self.encoding)
+        data = self._read_sas(file_path, format="xport")
         return PandasDataset(self._format_floats(data))
 
-    def to_parquet(self, file_path: str) -> str:
+    def to_parquet(self, file_path: str) -> tuple[int, str]:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
-        dataset = pd.read_sas(file_path, chunksize=20000, encoding=self.encoding)
+        dataset = self._read_sas(file_path, chunksize=20000)
         created = False
         num_rows = 0
         for chunk in dataset:
