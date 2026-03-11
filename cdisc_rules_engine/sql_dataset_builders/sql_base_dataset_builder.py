@@ -125,7 +125,7 @@ class SqlBaseDatasetBuilder(ABC):
             self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
         )
         try:
-            metadata = define_reader.extract_dataset_metadata()
+            metadata = define_reader.extract_dataset_metadata(self.dataset_metadata.domain)
             metadata = self._format_metadata_dict(metadata)
             if "define_dataset_variable_order" not in metadata.keys():
                 metadata["define_dataset_variable_order"] = self._get_define_dataset_variable_order(
