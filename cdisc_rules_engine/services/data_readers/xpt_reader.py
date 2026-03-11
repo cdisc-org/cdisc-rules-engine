@@ -50,4 +50,5 @@ class XPTReader(DataReaderInterface):
         return self._read_pandas(file_path)
 
     def _format_floats(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+        dataframe.columns = dataframe.columns.str.strip()
         return dataframe.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)

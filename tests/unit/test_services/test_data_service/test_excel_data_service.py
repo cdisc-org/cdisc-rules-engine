@@ -34,6 +34,28 @@ def test_get_dataset(dataset_name):
 
 
 @pytest.mark.parametrize(
+    "dataset_name",
+    ("ex.xpt", "lb.xpt", "ds.xpt"),
+)
+def test_whitespace_get_dataset(dataset_name):
+    dataset_path = (
+        f"{os.path.dirname(__file__)}/../../../resources/Datasets_whitespace.xlsx"
+    )
+    mock_cache = MagicMock()
+    mock_cache.get_dataset.return_value = None
+    data_service = ExcelDataService.get_instance(
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=PandasDataset,
+        dataset_path=dataset_path,
+    )
+    data = data_service.get_dataset(dataset_name=dataset_name)
+    assert isinstance(data, PandasDataset)
+    assert "DOMAIN" in data.data.columns
+    assert "DOMAIN " not in data.data.columns
+
+
+@pytest.mark.parametrize(
     "expected_result",
     (
         {
@@ -101,6 +123,28 @@ def test_get_variables_metdata(dataset_name):
     ]
     for key in expected_keys:
         assert key in data
+
+
+@pytest.mark.parametrize(
+    "dataset_name",
+    ("ex.xpt", "lb.xpt", "ds.xpt"),
+)
+def test_whitespace_removal_get_variables_metadata(dataset_name):
+    dataset_path = (
+        f"{os.path.dirname(__file__)}/../../../resources/Datasets_whitespace.xlsx"
+    )
+    mock_cache = MagicMock()
+    mock_cache.get_dataset.return_value = None
+    data_service = ExcelDataService.get_instance(
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=PandasDataset,
+        dataset_path=dataset_path,
+    )
+    data = data_service.get_variables_metadata(dataset_name=dataset_name, datasets=[])
+    assert isinstance(data, PandasDataset)
+    assert "DOMAIN" in data.data["variable_name"].values
+    assert "DOMAIN " not in data.data["variable_name"].values
 
 
 def test_na_value_preserved_not_converted_to_nan():
