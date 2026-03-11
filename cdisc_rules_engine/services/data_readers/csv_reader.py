@@ -1,6 +1,6 @@
 import tempfile
 
-from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFormat
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.interfaces import DataReaderInterface
 import pandas as pd
 
@@ -19,13 +19,13 @@ class CSVReader(DataReaderInterface):
                 data = pd.read_csv(fp, sep=",", header=0, index_col=False)
             return data
         except (UnicodeDecodeError, UnicodeError) as e:
-            raise InvalidCSVFormat(
+            raise InvalidCSVFile(
                 f"\n  Error reading CSV from: {file_path}"
                 f"\n  Failed to decode with {self.encoding} encoding: {e}"
                 f"\n  Please specify the correct encoding using the -e flag."
             )
         except Exception as e:
-            raise InvalidCSVFormat(
+            raise InvalidCSVFile(
                 f"\n  Error reading CSV from: {file_path}"
                 f"\n  {type(e).__name__}: {e}"
             )

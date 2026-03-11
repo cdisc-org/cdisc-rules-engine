@@ -62,7 +62,7 @@ class InvalidJSONFormat(EngineError):
     description = "JSON data is malformed."
 
 
-class InvalidCSVFormat(EngineError):
+class InvalidCSVFile(EngineError):
     code = 400
     description = "CSV data is malformed."
 
