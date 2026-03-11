@@ -39,7 +39,7 @@ class DefineVariableMetadata(BaseOperation):
             else os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
         )
         if not os.path.exists(define_path):
-            raise FileNotFoundError("Define XML file %s not found", define_path)
+            raise FileNotFoundError(f"Define XML file {define_path} not found")
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=define_path
         )

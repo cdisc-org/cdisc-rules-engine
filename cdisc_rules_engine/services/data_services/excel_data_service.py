@@ -144,8 +144,7 @@ class ExcelDataService(BaseDataService):
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
             filename=dataset_name,
-            full_path=self.dataset_path,
-            # full_path=dataset_name,
+            full_path=dataset_name,
             file_size=0,
             record_count=len(dataset),
         )
