@@ -66,6 +66,16 @@
     {
       "properties": {
         "operator": {
+          "const": "related_domain_is_custom",
+          "markdownDescription": "\nChecks whether the related domain (for example, the parent domain of a SUPP or RELREC dataset) is not present in the set of standard domains for the provided standard and version. This is useful for determining whether relationships point to non-standard or custom domains.\n\nInput\n\nTarget Domain: SUPPEX\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: related_domain_is_custom\n    id: $related_domain_is_custom\n```\n\nOutput\n\n```\ntrue\n```\n"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "domain_label",
           "markdownDescription": "\nReturns the label for the domain the operation is executing on within the provided standard.\n\nInput.\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: domain_label\n    id: $domain_label\n```\n\nOutput\n\n```\nLaboratory Test Results\n```\n"
         }
