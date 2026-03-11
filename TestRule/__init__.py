@@ -6,6 +6,14 @@ from cdisc_rules_engine.utilities.utils import normalize_adam_input
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    CTPackageNotFoundError,
+    LibraryMetadataNotFoundError,
+)
+from scripts.script_utils import library_metadata_not_found_message
+from cdisc_library_client.custom_exceptions import (
+    ResourceNotFoundException as LibraryResourceNotFoundException,
+)
 import json
 import os
 import asyncio
@@ -17,11 +25,13 @@ class BadRequestError(Exception):
     pass
 
 
+_REQUIRED_DATASET_KEYS = {"filename", "label", "domain", "records", "variables"}
+
+
 def validate_datasets_payload(datasets):
-    required_keys = {"filename", "label", "domain", "records", "variables"}
     missing_keys = set()
     for dataset in datasets:
-        for key in required_keys:
+        for key in _REQUIRED_DATASET_KEYS:
             if key not in dataset:
                 missing_keys.add(key)
 
@@ -32,19 +42,39 @@ def validate_datasets_payload(datasets):
                 )
 
     if missing_keys:
-        raise KeyError(
-            f"one or more datasets missing the following keys {missing_keys}"
-        )
+        raise BadRequestError("Test data is incorrect and missing required formatting.")
 
 
 def handle_exception(e: Exception):
-    if isinstance(e, KeyError):
+    if isinstance(e, BadRequestError):
         return func.HttpResponse(
-            json.dumps({"error": "KeyError", "message": str(e)}), status_code=400
+            json.dumps({"error": "BadRequestError", "message": str(e)}),
+            status_code=400,
         )
-    elif isinstance(e, BadRequestError):
+    if isinstance(e, LibraryMetadataNotFoundError):
+        msg = getattr(e, "message", None) or getattr(e, "description", None) or str(e)
         return func.HttpResponse(
-            json.dumps({"error": "BadRequestError", "message": str(e)}), status_code=400
+            json.dumps(
+                {
+                    "error": "LibraryMetadataNotFoundError",
+                    "message": msg,
+                }
+            ),
+            status_code=400,
+        )
+    if isinstance(e, CTPackageNotFoundError):
+        msg = getattr(e, "message", None) or getattr(e, "description", None) or str(e)
+        return func.HttpResponse(
+            json.dumps({"error": "CTPackageNotFoundError", "message": msg}),
+            status_code=400,
+        )
+    if isinstance(e, KeyError):
+        msg = str(e)
+        if "rule" in msg.lower() or "datasets" in msg.lower():
+            msg = f"{msg} Ensure the request body includes the required JSON keys."
+        return func.HttpResponse(
+            json.dumps({"error": "BadRequestError", "message": msg}),
+            status_code=400,
         )
     else:
         return func.HttpResponse(
@@ -97,12 +127,25 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         asyncio.run(cache_populator.load_available_ct_packages())
         if standards_data or codelists:
             if standards_data:
-                asyncio.run(
-                    cache_populator.load_standard(
-                        standard, standard_version, standard_substandard
+                try:
+                    asyncio.run(
+                        cache_populator.load_standard(
+                            standard, standard_version, standard_substandard
+                        )
                     )
+                except LibraryResourceNotFoundException:
+                    raise LibraryMetadataNotFoundError(
+                        library_metadata_not_found_message(
+                            standard, standard_version, standard_substandard
+                        )
+                    )
+            try:
+                asyncio.run(cache_populator.load_codelists(codelists or []))
+            except LibraryResourceNotFoundException:
+                raise CTPackageNotFoundError(
+                    "Controlled terminology package(s) not found: "
+                    f"{', '.join(str(c) for c in (codelists or []))}."
                 )
-            asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
             raise KeyError("'rule' required in request")
         datasets = json_data.get("datasets")
