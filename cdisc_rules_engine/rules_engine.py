@@ -344,54 +344,7 @@ class RulesEngine:
             kwargs["codelist_term_maps"] = (
                 self.library_metadata.get_all_ct_package_metadata()
             )
-        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
-            if self.library_metadata:
-                kwargs["variable_codelist_map"] = (
-                    self.library_metadata.variable_codelist_map
-                )
-                kwargs["codelist_term_maps"] = (
-                    self.library_metadata.get_all_ct_package_metadata()
-                )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            self.rule_processor.add_comparator_to_rule_conditions(
-                rule, comparator=None, target_prefix="define_"
-            )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_metadata.full_path, dataset_metadata.unsplit_name
-            )
-            kwargs["value_level_metadata"] = value_level_metadata
-
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
-        ):
-            library_metadata: dict = self.library_metadata.variables_metadata.get(
-                dataset_metadata.domain, {}
-            )
-            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
-            targets: List[str] = (
-                self.data_processor.filter_dataset_columns_by_metadata_and_rule(
-                    dataset.columns.tolist(), define_metadata, library_metadata, rule
-                )
-            )
-            rule_copy = deepcopy(rule)
-            updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
-                rule_copy["conditions"], targets
-            )
-            rule_copy["conditions"].set_conditions(updated_conditions)
-            # When duplicating conditions,
-            # rule should be copied to prevent updates to concurrent rule executions
-            return self.execute_rule(
-                rule_copy, dataset, datasets, dataset_metadata, **kwargs
-            )
-        elif rule.get("rule_type") == RuleTypes.JSONATA.value:
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
                 rule, dataset, self.jsonata_custom_functions
             )
