@@ -138,19 +138,21 @@ This will show the list of validation options.
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
   -ps, --pool-size INTEGER         Number of parallel processes for validation
-  -d, --data TEXT                 Path to directory containing data files
+  -d, --data TEXT                 Path to directory containing data files.
+                                    DATA_DIR environment variable can be used to pass value.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
-  -dxp, --define-xml-path TEXT    Path to Define-XML
+                                  DATASET_PATH environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
+  -dxp, --define-xml-path TEXT    Path to Define-XML. DEFINE environment variable can be used to pass value.
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
   -rt, --report-template TEXT     File path of report template to use for
                                   excel output
-  -s, --standard TEXT             CDISC standard to validate against
+  -s, --standard TEXT             CDISC standard to validate against. STANDARD environment variable can be used to pass value.
                                   [required]
-  -v, --version TEXT              Standard version to validate against
+  -v, --version TEXT              Standard version to validate against. VERSION environment variable can be used to pass value.
                                   [required]
-  -ss, --substandard TEXT         Substandard to validate against
+  -ss, --substandard TEXT         Substandard to validate against. SUBSTANDARD environment variable can be used to pass value.
                                   "SDTM", "SEND", "ADaM", or "CDASH"
                                   [required for TIG]
   -uc, --use-case TEXT            Use Case for TIG Validation
@@ -161,7 +163,8 @@ This will show the list of validation options.
                                   against, can provide more than one
                                   NOTE: if a defineXML is provided, if it is version 2.1
                                   engine will use the CT laid out in the define.  If it is
-                                  version 2.0, -ct is expected to specify the CT package
+                                  version 2.0, -ct is expected to specify the CT package.
+                                  CONTROLLED_TERMINOLOGY_PACKAGE environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename
@@ -204,7 +207,7 @@ This will show the list of validation options.
                                   if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
                                   If limit is set to 0, no maximum will be enforced.
                                   No maximum is the default behavior.
-  -dv, --define-version TEXT      Define-XML version used for validation
+  -dv, --define-version TEXT      Define-XML version used for validation. DEFINE_VERSION environment variable can be used to pass value.
   -dxp, --define-xml-path         Path to define-xml file.
   -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
@@ -221,9 +224,12 @@ This will show the list of validation options.
   --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
   --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
+                                    RULES environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -er, --exclude-rules TEXT       Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times.
+                                    EXCLUDE_RULES environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -lr, --local-rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
+                                  LOCAL_RULES environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
   -cse, --custom-standard-encoding TEXT
