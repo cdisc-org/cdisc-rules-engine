@@ -24,26 +24,6 @@
     {
       "properties": {
         "operator": {
-          "const": "conformant_value_data_type",
-          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the types in the row match the VLM types specified in the define.xml\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "conformant_value_length",
-          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the lengths in the row match the VLM lengths specified in the define.xml\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "contains",
           "markdownDescription": "\nWill return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.\n\nThe operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']\n  operator: \"contains\"\n  value: \"GRADE\" # True if 'GRADE' is an element in the list\n```\n"
         }
@@ -169,16 +149,6 @@
         }
       },
       "required": ["operator", "ordering", "value", "within"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "does_not_reference_correct_codelist",
-          "markdownDescription": "\nComplement of `references_correct_codelist`\n"
-        }
-      },
-      "required": ["operator", "value"],
       "type": "object"
     },
     {
@@ -492,7 +462,7 @@
       "properties": {
         "operator": {
           "const": "is_inconsistent_across_dataset",
-          "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
+          "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists \u2014 i.e., two or more values are tied for the highest frequency \u2014 all records in that group are flagged.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
         }
       },
       "required": ["operator", "value"],
@@ -556,26 +526,6 @@
         }
       },
       "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "non_conformant_value_data_type",
-          "markdownDescription": "\nComplement of `conformant_value_data_type`\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "non_conformant_value_length",
-          "markdownDescription": "\nComplement of `conformant_value_length`\n"
-        }
-      },
-      "required": ["operator"],
       "type": "object"
     },
     {
@@ -754,16 +704,6 @@
         }
       },
       "required": ["operator", "within"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "references_correct_codelist",
-          "markdownDescription": "\nTrue if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.\n"
-        }
-      },
-      "required": ["operator", "value"],
       "type": "object"
     },
     {
