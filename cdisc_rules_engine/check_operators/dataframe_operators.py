@@ -1164,6 +1164,9 @@ class DataframeType(BaseType):
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
         if regex:
+            pattern = re.compile(regex)
+            if pattern.groups == 0:
+                regex = f"({regex})"
             extracted = df_check[target].astype(str).str.extract(regex, expand=False)
             df_check[target] = extracted.fillna(df_check[target])
         results = pd.Series(False, index=df_check.index)

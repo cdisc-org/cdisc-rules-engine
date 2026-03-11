@@ -244,45 +244,61 @@ def test_is_inconsistent_across_dataset(
     assert result.equals(df.convert_to_series(expected_result))
 
 
-def test_is_inconsistent_across_dataset_regex():
-    data = {
-        "VISIT": [
-            "SCREENING 1",
-            "SCREENING 1",
-            "BASELINE",
-            "BASELINE",
-            "BASELINE",
-            "WEEK 1",
-            "WEEK 1",
-        ],
-        "EPOCH": [
-            "SCREENING",
-            "SCREENING",
-            "SCREENING",
-            "SCREENING",
-            "SCREENING",
-            "TREATMENT",
-            "TREATMENT",
-        ],
-        "VSDTC": [
-            "2012-11-23",
-            "2012-11-28",
-            "2012-11-30",
-            "2012-11-30",
-            "2012-11-30",
-            "2014-09-30T11:09",
-            "2014-09-30T11:07",
-        ],
+@pytest.mark.parametrize(
+    "values,regex,expected",
+    [
+        # regex disabled
+        (["A", "B"], None, [True, True]),
+        (["A", "B"], "", [True, True]),
+        # regex collapsing values
+        (["TEST_v1", "TEST_v2"], r"^(TEST)", [False, False]),
+        (["ABC123", "XYZ123"], r"(\d+)", [False, False]),
+        (["HEIGHT_cm", "HEIGHT_mm"], r"^(HEIGHT)", [False, False]),
+        # datetime normalization
+        (
+            ["2014-09-30T11:09", "2014-09-30T11:07"],
+            r"^(\d{4}-\d{2}-\d{2})",
+            [False, False],
+        ),
+        (["TEST_A", "TEST_B"], r"^(TEST_[A-Z])", [True, True]),
+        (["SUBJ-001", "SUBJ-002"], r"SUBJ-(\d+)", [True, True]),
+        (
+            ["2014-09-30T11:09", "2014-09-29T11:07"],
+            r"^(\d{4}-\d{2}-\d{2})",
+            [True, True],
+        ),
+        # regex no capture group
+        (["ABC", "DEF"], r"^XYZ", [True, True]),
+        (["TEST_v1", "CONTROL"], r"^(TEST)", [True, True]),
+        (["A", "B"], r"(.*)", [True, True]),
+        (["A", None], r"(A)", [True, True]),
+        ([None, None], r"(.*)", [False, False]),
+        ([1, 1], r"(\d+)", [False, False]),
+    ],
+)
+def test_is_inconsistent_across_dataset_regex(values, regex, expected):
+    df = pd.DataFrame(
+        {
+            "VISIT": ["WEEK1"] * len(values),
+            "EPOCH": ["TREATMENT"] * len(values),
+            "VALUE": values,
+        }
+    )
+
+    other_value = {
+        "target": "VALUE",
+        "comparator": ["VISIT", "EPOCH"],
+        "regex": regex,
     }
-    df = PandasDataset.from_dict(data)
-    result = DataframeType(
-        {"value": df, "column_prefix_map": {"--": ""}}
-    ).is_inconsistent_across_dataset(
-        {"target": "VSDTC", "comparator": "VISIT", "regex": r"^(\d{4}-\d{2}-\d{2})"}
+
+    obj = DataframeType(
+        {
+            "value": df,
+        }
     )
-    assert result.equals(
-        df.convert_to_series([True, True, False, False, False, False, False])
-    )
+    result = obj.is_inconsistent_across_dataset(other_value)
+
+    assert result.tolist() == expected
 
 
 @pytest.mark.parametrize(
