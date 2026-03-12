@@ -446,6 +446,27 @@ class RulesEngine:
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
+        if dataset.empty:
+            rule_id = rule.get("core_id", "unknown")
+            reason = (
+                f"Dataset skipped - Dataset is empty after preprocessing and operations. "
+                f"rule id={rule_id}, dataset={dataset_metadata.name}"
+            )
+            logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
+            error_obj = FailedValidationEntity(
+                dataset=dataset_metadata.filename,
+                error=SkippedReason.EMPTY_DATASET.value,
+                message=reason,
+            )
+            return [
+                ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
+                    message=reason,
+                    dataset=dataset_metadata.filename,
+                    domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
+                    errors=[error_obj],
+                ).to_representation()
+            ]
         dataset_variable = DatasetVariable(
             dataset,
             column_prefix_map={"--": dataset_metadata.domain_cleaned},
