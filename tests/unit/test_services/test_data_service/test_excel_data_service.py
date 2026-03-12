@@ -15,6 +15,13 @@ from cdisc_rules_engine.enums.excel_test_sheets import (
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
+@pytest.fixture(autouse=True)
+def reset_excel_data_service():
+    ExcelDataService._instance = None
+    yield
+    ExcelDataService._instance = None
+
+
 @pytest.mark.parametrize(
     "dataset_name",
     ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
