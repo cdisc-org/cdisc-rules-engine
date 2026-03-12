@@ -223,6 +223,7 @@ def test_extract_variable_metadata(filename):
             "define_variable_is_collected": False,
             "define_variable_order_number": 11,
             "define_variable_has_comment": True,
+            "define_variable_has_method": False,
         }
         for index, variable in enumerate(variable_metadata):
             assert variable["define_variable_name"] in expected_variables
