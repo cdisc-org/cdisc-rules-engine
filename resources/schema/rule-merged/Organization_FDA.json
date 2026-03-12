@@ -1,0 +1,144 @@
+{
+  "$id": "Organization_FDA.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "Organization": {
+      "const": "FDA"
+    },
+    "Standards": {
+      "items": {
+        "properties": {
+          "References": {
+            "items": {
+              "properties": {
+                "Citations": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "Cited Guidance": {
+                            "type": "string"
+                          },
+                          "Document": {
+                            "const": "CDISC"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "Cited Guidance": {
+                            "type": "string"
+                          },
+                          "Document": {
+                            "const": "FDA"
+                          },
+                          "Section": {
+                            "pattern": "^(FDAB\\d{3}|TRC\\d{4}[A-Z]?|\\d{4}[A-Z])$",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ],
+                    "required": ["Document", "Cited Guidance"],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "Criteria": {
+                  "properties": {
+                    "Type": {
+                      "const": "Success"
+                    }
+                  },
+                  "required": ["Type"],
+                  "type": "object"
+                },
+                "Origin": {
+                  "const": "FDA Business Rules"
+                },
+                "Rule Identifier": {
+                  "properties": {
+                    "Id": {
+                      "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$|^TRC.*$",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "Version": {
+                  "enum": ["1.5"]
+                }
+              },
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "Name": {
+                "const": "SDTMIG"
+              },
+              "Version": {
+                "enum": ["3.2", "3.3", "3.4"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG"
+              },
+              "Version": {
+                "enum": ["3.0", "3.1", "3.1.1"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-AR"
+              },
+              "Version": {
+                "enum": ["1.0"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-DART"
+              },
+              "Version": {
+                "enum": ["1.1", "1.2"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-GENETOX"
+              },
+              "Version": {
+                "enum": ["1.0"]
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "type": "object"
+}

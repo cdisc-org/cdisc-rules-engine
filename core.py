@@ -23,6 +23,7 @@ from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.enums.standard_types import StandardTypes
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -146,9 +147,22 @@ def _validate_data_directory(
     return dataset_paths, found_formats
 
 
-def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
+def _validate_dataset_paths(
+    dataset_path: tuple[str], logger, filetype: str
+) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+    if filetype:
+        pattern = f"*.{filetype}"
+        dataset_paths, found_formats = valid_data_file(
+            [
+                str(p)
+                for p in dataset_path
+                if Path(p).match(pattern)
+                if Path(p).is_file()
+            ]
+        )
+    else:
+        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -166,6 +180,12 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Excel format (XLSX) validation only supports single files.\n"
                 f"Please provide either a single XLSX file or use other supported formats: "
                 f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        elif filetype:
+            logger.error(
+                f"Provided dataset path does not match the specified file type.\n"
+                f"Specified format: {filetype}\n"
+                f"Please ensure the file extension matches the selected format."
             )
         else:
             logger.error(
@@ -459,6 +479,15 @@ def validate(  # noqa
 
     if not custom_standard:
         standard = standard.lower()
+        supported_standards = StandardTypes.values()
+        if standard not in supported_standards:
+            supported_list = ", ".join(sorted(supported_standards))
+            logger.error(
+                f"Standard '{standard}' is not a supported standard. "
+                f"Supported standards: {supported_list}. "
+                f"Use --custom-standard flag for custom standards."
+            )
+            ctx.exit(2)
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -505,7 +534,9 @@ def validate(  # noqa
         if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
-        dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
+        dataset_paths, found_formats = _validate_dataset_paths(
+            dataset_path, logger, filetype
+        )
         if not dataset_paths:
             ctx.exit(2)
     else:

@@ -30,6 +30,12 @@
       "const": "define_dataset_structure"
     },
     {
+      "const": "define_dataset_variables"
+    },
+    {
+      "const": "define_dataset_variable_order"
+    },
+    {
       "const": "define_variable_allowed_terms"
     },
     {
@@ -133,6 +139,8 @@
     },
     { "const": "filename" },
     { "const": "library_variable_core" },
+    { "const": "library_variable_has_codelist" },
+    { "const": "library_variable_ccode" },
     { "const": "library_variable_data_type" },
     { "const": "library_variable_label" },
     { "const": "library_variable_name" },
@@ -146,6 +154,7 @@
     },
     { "const": "variable_format" },
     { "const": "variable_has_empty_values" },
+    { "const": "variable_is_empty" },
     { "const": "variable_label" },
     { "const": "variable_name" },
     {

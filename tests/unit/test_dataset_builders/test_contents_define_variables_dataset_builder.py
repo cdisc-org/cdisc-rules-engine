@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 import pandas as pd
 import numpy as np
-from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (  # noqa: E501
+from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (
     ContentsDefineVariablesDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService

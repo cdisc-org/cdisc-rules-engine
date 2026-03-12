@@ -30,6 +30,7 @@ from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.operations.domain_label import DomainLabel
+from cdisc_rules_engine.operations.related_domain_is_custom import RelatedDomainIsCustom
 from cdisc_rules_engine.operations.standard_domains import StandardDomains
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
@@ -41,6 +42,7 @@ from cdisc_rules_engine.operations.meddra_term_references_validator import (
     MedDRATermReferencesValidator,
 )
 from cdisc_rules_engine.operations.min_date import MinDate
+from cdisc_rules_engine.operations.minus import Minus
 from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.record_count import RecordCount
 from cdisc_rules_engine.operations.split_by import SplitBy
@@ -109,6 +111,7 @@ class OperationsFactory(FactoryInterface):
         "mean": Mean,
         "min": Minimum,
         "min_date": MinDate,
+        "minus": Minus,
         "record_count": RecordCount,
         "valid_meddra_code_references": MedDRACodeReferencesValidator,
         "valid_whodrug_references": WhodrugReferencesValidator,
@@ -121,6 +124,7 @@ class OperationsFactory(FactoryInterface):
         "variable_count": VariableCount,
         "variable_is_null": VariableIsNull,
         "domain_is_custom": DomainIsCustom,
+        "related_domain_is_custom": RelatedDomainIsCustom,
         "domain_label": DomainLabel,
         "standard_domains": StandardDomains,
         "required_variables": RequiredVariables,

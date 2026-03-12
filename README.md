@@ -241,7 +241,8 @@ This will show the list of validation options.
                                   "[████████████████████████████--------]
                                   78%"is printed.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
-  -e, --encoding TEXT            File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
+  -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
+  -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
   --help                          Show this message and exit.
 ```
 
@@ -330,8 +331,14 @@ The rules report tab displays the run status of each rule selected for validatio
 
 The possible rule run statuses are:
 
-- `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
-- `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
+- `SUCCESS` - The rule ran, data was validated, and no issues were reported.
+- `SKIPPED` - The rule was unable to be run for one of the following reasons:
+  - Column not found in data
+  - Domain not found
+  - Schema validation is off
+  - Outside scope
+- `ISSUE REPORTED` - The rule ran, data was validated, and issues were reported
+- `EXECUTION ERROR` - The validation failed for an unknown reason caused by rule evaluation or execution. Error details are found in the `Issue Details` tab.
 
 #### Setting DATASET_SIZE_THRESHOLD for Large Datasets
 
@@ -386,6 +393,35 @@ Update locally stored cache data (An api-key can be provided through the environ
 **Firewall Note:** If you encounter an SSL certificate verification error (e.g., `[SSL: CERTIFICATE_VERIFY_FAILED]`), this is typically caused by corporate firewall/proxy SSL inspection. The application connects to `api.library.cdisc.org` on port 443. Contact your IT department to request either the corporate CA certificate bundle or whitelisting for this hostname.
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
+
+The update-cache command options are:
+
+```
+  -c, --cache-path TEXT                   Relative path to cache. Optional. Only required if the cache has been
+                                          moved from its default location.
+  --apikey TEXT                           CDISC Library api key.
+                                          Can also be provided as an environment
+                                          variable CDISC_LIBRARY_API_KEY
+  -crd, --custom-rules-directory TEXT     Relative path to directory containing local
+                                          rules in yaml or JSON formats to be added
+                                          to the cache
+  -cr, --custom-rule TEXT                 Relative path to rule file in yaml or JSON
+                                          formats to be added to the cache.
+                                          Can be specified multiple times.
+  -rcr, --remove-custom-rules TEXT        Remove rules from the cache. Can be a single
+                                          rule ID, a comma-separated list of IDs,
+                                          or 'ALL' to remove all custom rules.
+  -ucr, --update-custom-rule TEXT         Relative path to rule file in yaml or JSON
+                                          formats. Rule will be updated in cache
+                                          with this file.
+  -cs, --custom-standard TEXT             Relative path to JSON file containing custom
+                                          standard details. Will update the standard
+                                          if it already exists.
+  -cse, --custom-standard-encoding TEXT   Encoding for custom standard details.
+  -rcs, --remove-custom-standard TEXT     Removes a custom standard and version from
+                                          the cache. Can be specified multiple times.
+  --help                                  Show this message and exit.
+```
 
 ##### Custom Standards and Rules
 

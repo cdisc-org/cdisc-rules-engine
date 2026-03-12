@@ -222,6 +222,14 @@ ordinal attribute of a variable from the CDISC Library
 
 role attribute of a variable from the CDISC Library
 
+## library_variable_ccode
+
+ccode attribute of a variable from the CDISC Library
+
+## library_variable_has_codelist
+
+Indicates whether a variable has an associated codelist in the CDISC Library
+
 ## row_number
 
 1-based index of record number
@@ -237,6 +245,10 @@ Variable format
 ## variable_has_empty_values
 
 True/False value indicating whether a variable has any empty values
+
+## variable_is_empty
+
+True/False value indicating whether a variable is completely empty
 
 ## variable_label
 

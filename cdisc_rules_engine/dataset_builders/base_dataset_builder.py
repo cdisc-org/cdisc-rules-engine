@@ -109,10 +109,10 @@ class BaseDatasetBuilder:
 
     def get_define_xml_item_group_metadata_for_dataset(
         self, dataset_metadata: SDTMDatasetMetadata
-    ) -> List[dict]:
+    ) -> dict:
         """
         Gets Define XML item group metadata
-        returns a list of dictionaries containing the following keys:
+        returns a dictionary containing the following keys:
             "define_dataset_name"
             "define_dataset_label"
             "define_dataset_location"
@@ -120,6 +120,7 @@ class BaseDatasetBuilder:
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_variable_order"
             "define_dataset_key_sequence"
             "define_dataset_has_no_data"
         """
@@ -142,6 +143,7 @@ class BaseDatasetBuilder:
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_variable_order"
             "define_dataset_key_sequence"
             "define_dataset_has_no_data"
         """
@@ -215,12 +217,14 @@ class BaseDatasetBuilder:
         )
         for variable in variables:
             variable["ccode"] = ""
+            variable["has_codelist"] = False
             variable_metadata: Optional[dict] = variables_metadata.get(variable["name"])
             if variable_metadata:
                 if "_links" in variable and "codelist" in variable["_links"]:
                     first_codelist = variable["_links"]["codelist"][0]
                     codelist_code = first_codelist["href"].split("/")[-1]
                     variable["ccode"] = codelist_code
+                    variable["has_codelist"] = True
             if "role" not in variable:
                 variable["role"] = ""
             if "core" not in variable:
