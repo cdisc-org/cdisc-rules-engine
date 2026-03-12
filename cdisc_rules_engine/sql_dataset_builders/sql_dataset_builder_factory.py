@@ -36,6 +36,9 @@ from cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_define_vari
 from cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_define_vlm_dataset_builder import (
     SqlValueCheckAgainstDefineVLMDatasetBuilder,
 )
+from cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_library_dataset_builder import (
+    SqlValueCheckAgainstLibraryDatasetBuilder,
+)
 from cdisc_rules_engine.sql_dataset_builders.sql_variables_metadata_with_define_dataset_builder import (
     SqlVariablesMetadataWithDefineDatasetBuilder,
 )
@@ -70,6 +73,7 @@ class SqlDatasetBuilderFactory:
         RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value: SqlValueCheckWithVariableMetadataBuilder,
         RuleTypes.VALUE_CHECK_WITH_DATASET_METADATA.value: SqlValueCheckWithDatasetMetadataBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: SqlValueCheckAgainstDefineVariablesDatasetBuilder,
+        RuleTypes.VALUE_CHECK_AGAINST_LIBRARY.value: SqlValueCheckAgainstLibraryDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: SqlValueCheckAgainstDefineVLMDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: SqlDefineVariablesDatasetBuilder,
         RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: SqlDefineItemGroupDatasetBuilder,

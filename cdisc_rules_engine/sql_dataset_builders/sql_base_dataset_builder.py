@@ -15,6 +15,7 @@ LIBRARY_VARIABLES_TYPE = {
     "library_variable_data_type": "Char",
     "library_variable_role": "Char",
     "library_variable_core": "Char",
+    "library_variable_ccode": "Char",
     "library_variable_order_number": "Num",
 }
 
@@ -185,9 +186,18 @@ class SqlBaseDatasetBuilder(ABC):
     @staticmethod
     def _filter_library_vars_dict(library_var: dict) -> dict:
         new_var_dict = {}
+
         for key in library_var.keys():
             if f"library_variable_{key}" in LIBRARY_VARIABLES_TYPE.keys():
                 new_var_dict[f"library_variable_{key}"] = library_var[key]
+
+        codelist = library_var.get("_links", {}).get("codelist")
+        if codelist:
+            ccodes = set()
+            for ccode in codelist:
+                if ccode.get("href"):
+                    ccodes.add(ccode["href"].split("/")[-1])
+            new_var_dict["library_variable_ccode"] = ",".join(ccodes) if ccodes else None
         return new_var_dict
 
     @staticmethod
