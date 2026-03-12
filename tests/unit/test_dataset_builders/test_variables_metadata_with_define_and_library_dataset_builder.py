@@ -78,6 +78,7 @@ def test_build_combined_metadata(
             "library_variable_order_number": ["1", "2", "9", "8"],
             "library_variable_data_type": ["Char", "Char", "Char", "Num"],
             "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
+            "library_variable_has_codelist": [True, True, True, True],
         }
     )
     mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
@@ -181,6 +182,7 @@ def test_build_combined_metadata(
         "library_variable_role",
         "library_variable_core",
         "library_variable_ccode",
+        "library_variable_has_codelist",
         "library_variable_order_number",
         "variable_has_empty_values",
         "variable_is_empty",
@@ -228,3 +230,4 @@ def test_build_combined_metadata(
         assert row["library_variable_role"] in ["Identifier", "Topic"]
         assert row["library_variable_core"] == "Req"
         assert row["library_variable_ccode"] in ["C49487", "C69256", "C41331"]
+        assert row["library_variable_has_codelist"] in [True, True, True]
