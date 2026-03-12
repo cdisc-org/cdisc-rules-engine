@@ -8,7 +8,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 import pandas as pd
-from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata import (  # noqa: E501
+from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata import (
     VariablesMetadataWithLibraryMetadataDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService

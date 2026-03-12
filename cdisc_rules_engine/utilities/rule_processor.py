@@ -560,35 +560,6 @@ class RuleProcessor:
                 condition.clear()  # delete all keys from dict
                 condition[AllowedConditionsKeys.ANY.value] = nested_conditions
 
-    def add_comparator_to_rule_conditions(
-        self, rule: dict, comparator: dict = None, target_prefix=None
-    ):
-        """
-        Adds "comparator" key to rule conditions.value key.
-
-        comparator parameter is a dict where
-        keys are targets and values are comparators.
-
-        The rule is passed and changed by reference.
-        """
-        conditions: ConditionInterface = rule["conditions"]
-        for condition in conditions.values():
-            value: dict = condition["value"]
-            if comparator:
-                # Adding a specific value
-                comparator_to_add = comparator.get(value["target"])
-            elif target_prefix:
-                # Referencing a target variable in another dataset
-                comparator_to_add = f"{target_prefix}{value['target']}"
-            else:
-                comparator_to_add = None
-            if comparator_to_add:
-                value["comparator"] = comparator_to_add
-        logger.info(
-            f"Added comparator to rule conditions. "
-            f"comparator={comparator}, conditions={rule['conditions']}"
-        )
-
     def _preprocess_operation_params(
         self, operation_params: OperationParams, domain_details: dict = None
     ) -> OperationParams:

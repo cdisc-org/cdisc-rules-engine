@@ -1,4 +1,3 @@
-# flake8: noqa
 from typing import Type
 
 from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
@@ -23,14 +22,8 @@ from cdisc_rules_engine.dataset_builders.variables_metadata_dataset_builder impo
 from cdisc_rules_engine.dataset_builders.domain_list_dataset_builder import (
     DomainListDatasetBuilder,
 )
-from cdisc_rules_engine.dataset_builders.define_variables_dataset_builder import (
-    DefineVariablesDatasetBuilder,
-)
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_dataset_builder import (
     VariablesMetadataWithDefineDatasetBuilder,
-)
-from cdisc_rules_engine.dataset_builders.define_item_group_dataset_builder import (
-    DefineItemGroupDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (
     ContentsDefineVariablesDatasetBuilder,
@@ -65,17 +58,14 @@ from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 class DatasetBuilderFactory(FactoryInterface):
     _builders_map = {
+        RuleTypes.RECORD_CHECK.value: ContentsDatasetBuilder,
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK.value: ContentMetadataDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: DatasetMetadataDefineDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK.value: VariablesMetadataDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: DomainListDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: DomainListWithDefineDatasetBuilder,
-        RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
-        RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: ContentsDatasetBuilder,
-        RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDatasetBuilder,
-        RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
@@ -106,7 +96,11 @@ class DatasetBuilderFactory(FactoryInterface):
         """
         Get instance of dataset builder by name.
         """
-        builder = self._builders_map.get(name, ContentsDatasetBuilder)(
+        builder_class = self._builders_map.get(name)
+        if builder_class is None:
+            raise ValueError(f"Invalid Rule Type Entered: '{name}'")
+
+        return builder_class(
             kwargs.get("rule"),
             kwargs.get("data_service"),
             kwargs.get("cache_service"),
@@ -121,4 +115,3 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("standard_substandard", None),
             kwargs.get("library_metadata"),
         )
-        return builder

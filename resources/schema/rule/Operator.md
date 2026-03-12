@@ -992,7 +992,7 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists — i.e., two or more values are tied for the highest frequency — all records in that group are flagged.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
@@ -1143,31 +1143,3 @@ Complement of `target_is_sorted_by`
 ## Define.XML
 
 Validation operators specifically for checking compliance with Define.XML metadata specifications, including data type conformance, length validation, and codelist references.
-
-### conformant_value_data_type
-
-Value Level Metadata Check against Define XML
-
-True if the types in the row match the VLM types specified in the define.xml
-
-### non_conformant_value_data_type
-
-Complement of `conformant_value_data_type`
-
-### conformant_value_length
-
-Value Level Metadata Check against Define XML
-
-True if the lengths in the row match the VLM lengths specified in the define.xml
-
-### non_conformant_value_length
-
-Complement of `conformant_value_length`
-
-### references_correct_codelist
-
-True if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.
-
-### does_not_reference_correct_codelist
-
-Complement of `references_correct_codelist`

@@ -1,0 +1,36 @@
+name: Check Schema has been merged with Markdown Descriptions
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "resources/schema/rule/**"
+  push:
+    paths:
+      - "resources/schema/rule/**"
+    branches:
+      - main
+permissions:
+  contents: read
+
+jobs:
+  check-schema-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run schema markdown merge script
+        run: |
+          python scripts/merge_schema_markdown.py
+      - uses: actions/setup-node@v6
+      - name: Run Prettier to format merged schema files
+        run: |
+          npm i prettier
+          npx prettier resources/schema/rule-merged/*.json --write
+      - uses: CatChen/check-git-status-action@7b45cb4ce3e00a8bce4910dc2d5f2785235a6d7e # v2.1.2
+        with:
+          fail-if-not-clean: true
+          request-changes-if-not-clean: ${{ github.event_name == 'pull_request' }}
+          request-changes-comment: Updated schema has not been merged with markdown descriptions. Please run the "Merge Schema with Markdown Descriptions" workflow to update the merged schema files.
+          targets: resources/schema/rule-merged

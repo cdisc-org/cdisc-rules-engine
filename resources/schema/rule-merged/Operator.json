@@ -24,26 +24,6 @@
     {
       "properties": {
         "operator": {
-          "const": "conformant_value_data_type",
-          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the types in the row match the VLM types specified in the define.xml\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "conformant_value_length",
-          "markdownDescription": "\nValue Level Metadata Check against Define XML\n\nTrue if the lengths in the row match the VLM lengths specified in the define.xml\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "contains",
           "markdownDescription": "\nWill return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.\n\nThe operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']\n  operator: \"contains\"\n  value: \"GRADE\" # True if 'GRADE' is an element in the list\n```\n"
         }
@@ -169,16 +149,6 @@
         }
       },
       "required": ["operator", "ordering", "value", "within"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "does_not_reference_correct_codelist",
-          "markdownDescription": "\nComplement of `references_correct_codelist`\n"
-        }
-      },
-      "required": ["operator", "value"],
       "type": "object"
     },
     {
@@ -492,7 +462,7 @@
       "properties": {
         "operator": {
           "const": "is_inconsistent_across_dataset",
-          "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
+          "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists \u2014 i.e., two or more values are tied for the highest frequency \u2014 all records in that group are flagged.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
         }
       },
       "required": ["operator", "value"],
@@ -556,26 +526,6 @@
         }
       },
       "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "non_conformant_value_data_type",
-          "markdownDescription": "\nComplement of `conformant_value_data_type`\n"
-        }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "non_conformant_value_length",
-          "markdownDescription": "\nComplement of `conformant_value_length`\n"
-        }
-      },
-      "required": ["operator"],
       "type": "object"
     },
     {
@@ -759,16 +709,6 @@
     {
       "properties": {
         "operator": {
-          "const": "references_correct_codelist",
-          "markdownDescription": "\nTrue if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.\n"
-        }
-      },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "shares_at_least_one_element_with",
           "markdownDescription": "\nWill raise an issue if at least one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).\n"
         }
@@ -910,7 +850,7 @@
       "properties": {
         "operator": {
           "const": "target_is_sorted_by",
-          "markdownDescription": "\nTrue if the values in `name` are ordered according to the values specified by `value` in ascending/descending order, grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 'YYYY-MM-DD' format\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n```\n"
+          "markdownDescription": "\nTrue if the values in name are ordered according to the values specified by value in ascending/descending order, grouped by the values in within. Each value entry requires a variable name, a sort_order of asc or desc, and an optional null_position of first or last (defaults to last) which controls where null/empty comparator values are placed in the expected ordering. Within accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that overlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as their order cannot be inferred.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n"
         }
       },
       "required": ["operator", "value", "within"],
@@ -1075,6 +1015,10 @@
             "properties": {
               "name": {
                 "$ref": "Operator.json#/properties/name"
+              },
+              "null_position": {
+                "enum": ["first", "last"],
+                "type": "string"
               },
               "order": {
                 "$ref": "Operator.json#/properties/order"
