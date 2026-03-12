@@ -105,7 +105,12 @@ class ExcelDataService(BaseDataService):
             false_values=["False", "FALSE", "false", False, 0, "0"],
         )
         dataframe = dataframe.replace({nan: None})
-        dataframe.columns = dataframe.columns.str.strip()
+        offending = [col for col in dataframe.columns if col != col.strip()]
+        if offending:
+            raise ExcelTestDataError(
+                f"Sheet '{dataset_name}' has column headers with leading/trailing whitespace: "
+                f"{[repr(c) for c in offending]}."
+            )
         dataset = PandasDataset(dataframe)
         return dataset
 
@@ -118,14 +123,12 @@ class ExcelDataService(BaseDataService):
 
     @functools.lru_cache(maxsize=None)
     def _get_datasets_worksheet(self) -> pd.DataFrame:
-        df = pd.read_excel(
+        return pd.read_excel(
             self.dataset_path,
             sheet_name=ExcelDataSheets.DATASETS_SHEET_NAME.value,
             na_values=[""],
             keep_default_na=False,
         )
-        df.columns = df.columns.str.strip()
-        return df
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
@@ -173,20 +176,22 @@ class ExcelDataService(BaseDataService):
             na_values=[""],
             keep_default_na=False,
         )
-        row0 = [v.strip() for v in dataframe.iloc[0].tolist()]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             {
-                "variable_names": row0,
+                "variable_names": dataframe.iloc[0].tolist(),
                 "variable_labels": dataframe.iloc[1].tolist(),
                 "variable_formats": [""] * dataframe.shape[1],
                 "variable_name_to_label_map": dict(
-                    zip(row0, dataframe.iloc[1].tolist())
+                    zip(dataframe.iloc[0].tolist(), dataframe.iloc[1].tolist())
                 ),
                 "variable_name_to_data_type_map": dict(
-                    zip(row0, dataframe.iloc[2].tolist())
+                    zip(dataframe.iloc[0].tolist(), dataframe.iloc[2].tolist())
                 ),
                 "variable_name_to_size_map": dict(
-                    zip(row0, dataframe.iloc[3].tolist())
+                    zip(
+                        dataframe.iloc[0].tolist(),
+                        dataframe.iloc[3].tolist(),
+                    )
                 ),
                 "number_of_variables": dataframe.shape[1],
             }
@@ -221,7 +226,6 @@ class ExcelDataService(BaseDataService):
                     na_values=[""],
                     keep_default_na=False,
                 )
-                worksheet.columns = worksheet.columns.str.strip()
         except ExcelTestDataError:
             raise
         except Exception as e:

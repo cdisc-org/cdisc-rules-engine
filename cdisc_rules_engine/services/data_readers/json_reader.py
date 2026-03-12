@@ -10,7 +10,10 @@ class JSONReader(DataReaderInterface):
         try:
             with open(file_path, "r", encoding=self.encoding) as fp:
                 json_data = load(fp)
-            return self._strip_dataset_keys(json_data)
+            self._detect_whitespace_in_dataset_keys(json_data, file_path)
+            return json_data
+        except InvalidJSONFormat:
+            raise
         except (UnicodeDecodeError, UnicodeError) as e:
             raise InvalidJSONFormat(
                 f"\n  Error reading JSON from: {file_path}"
@@ -23,12 +26,21 @@ class JSONReader(DataReaderInterface):
                 f"\n  {type(e).__name__}: {e}"
             )
 
-    def _strip_dataset_keys(self, json_data: dict) -> dict:
+    def _detect_whitespace_in_dataset_keys(self, json_data: dict, file_path: str):
+        offending = []
         for dataset in json_data.get("datasets", []):
+            dataset_name = dataset.get("filename")
             records = dataset.get("records", {})
-            stripped = {k.strip(): v for k, v in records.items()}
-            dataset["records"] = stripped
-        return json_data
+            for key in records:
+                if key != key.strip():
+                    offending.append(f"    dataset '{dataset_name}': {repr(key)}")
+        if offending:
+            offending_list = "\n".join(offending)
+            raise InvalidJSONFormat(
+                f"\n  Error reading JSON from: {file_path}"
+                f"\n  The following column keys contain leading/trailing whitespace:"
+                f"\n{offending_list}"
+            )
 
     def read(self, data):
         pass
