@@ -21,7 +21,7 @@ including the supp and split domains"""
 @pytest.mark.regression
 def test_CG0019():
     command = (
-        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue747", "Rule_underscores.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue747", "Datasets.json")
@@ -38,7 +38,7 @@ def test_CG0019():
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    file_name = stdout.decode().strip().split(": ")[1] + ".xlsx"
+    file_name = stdout.decode().strip().split(": ")[1]
     # Open the Excel file
     workbook = openpyxl.load_workbook(file_name)
 
@@ -64,9 +64,9 @@ def test_CG0019():
 
     # Perform the assertion
     assert process.returncode == 0, f"Process failed with error: {stderr.decode()}"
-    assert dataset_values[0] == "ecaa.xpt"
-    assert dataset_values[1] == "ecbb.xpt"
-    assert dataset_values[2] == "suppec.xpt"
+    assert dataset_values[0] == "ECAA"
+    assert dataset_values[1] == "ECBB"
+    assert dataset_values[2] == "SUPPEC"
     assert len(dataset_values) == 3
 
     assert len(coreid_values) == 4
