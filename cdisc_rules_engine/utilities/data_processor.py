@@ -187,15 +187,17 @@ class DataProcessor:
         relrec_for_domain = DataProcessor.filter_relrec_for_domain(
             left_dataset_domain_name, relrec_dataset
         )
-
-        # TODO: FIX
         objs = [
             DataProcessor.merge_on_relrec_record(
                 relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
             )
             for _, relrec_row in relrec_for_domain.iterrows()
         ]
-        result = objs[0].concat(objs[1:], ignore_index=True)
+        result = (
+            objs[0].concat(objs[1:], ignore_index=True)
+            if objs
+            else left_dataset.__class__()
+        )
         return result
 
     @staticmethod
