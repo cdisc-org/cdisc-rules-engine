@@ -5,7 +5,7 @@ import openpyxl
 import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
-    dataset_details_sheet,
+    entity_details_sheet,
     issue_datails_sheet,
     rules_report_sheet,
     issue_sheet_record_column,
@@ -116,7 +116,7 @@ class TestPrefTerm(unittest.TestCase):
         workbook = openpyxl.load_workbook(excel_file_path)
 
         # --- Entity Details ---
-        dataset_sheet = workbook[dataset_details_sheet]
+        dataset_sheet = workbook[entity_details_sheet]
         dataset_values = [row for row in dataset_sheet.iter_rows(values_only=True)][1:]
         dataset_values = [row for row in dataset_values if any(row)]
         assert len(dataset_values) > 0
