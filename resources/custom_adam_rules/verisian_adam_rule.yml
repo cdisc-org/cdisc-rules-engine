@@ -1,0 +1,52 @@
+# Variable: ADTTE.CNSR
+# Condition: DTHFL = "Y"
+# Rule: CNSR = 1
+# verified
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: ADaMIG
+        References:
+          - Citations:
+              - Cited Guidance: Custom Rule
+                Document: Custom Rule
+                Item: Custom Rule
+                Section: Custom Rule
+            Origin: ADaM Conformance Rules
+            Rule Identifier:
+              Id: "111"
+              Version: "2"
+            Version: "5.0"
+        Version: "1.3"
+Check:
+  all:
+    - name: DTHFL
+      operator: equal_to
+      value: Y
+    - name: CNSR
+      operator: not_equal_to
+      value: 1
+Core:
+  Id: CDISC.ADAMIG.111
+  Status: Draft
+  Version: "1"
+Description: Trigger error when CNSR is not 1 when DTHFL is Y
+Executability: Fully Executable
+Match Datasets:
+  - Keys:
+      - USUBJID
+    Name: ADSL
+Outcome:
+  Message: CNSR is not 1 when DTHFL is Y
+  Output Variables:
+    - ADSL.DTHFL
+    - CNSR
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - ADTTE
+  Domains:
+    Include:
+      - ADTTE
+Sensitivity: Record

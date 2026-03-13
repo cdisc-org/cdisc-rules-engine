@@ -6,10 +6,11 @@ from cdisc_rules_engine.standards.default_standards_context import (
     DefaultStandardsContext,
 )
 from cdisc_rules_engine.standards.sdtm_standards_context import SdtmStandardsContext
+from cdisc_rules_engine.standards.adam_standards_context import AdamStandardsContext
 
 
 class StandardsFactory:
-    _lookup = {"SDTMIG": SdtmStandardsContext}
+    _lookup = {"SDTMIG": SdtmStandardsContext, "ADAMIG": AdamStandardsContext}
 
     # Temporarily adding Library metadata container
     @staticmethod

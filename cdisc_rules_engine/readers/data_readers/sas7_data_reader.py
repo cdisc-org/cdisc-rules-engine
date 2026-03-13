@@ -21,7 +21,7 @@ class Sas7DataReader(BaseDataReader):
         super().__init__(file_path)
 
     def read(self) -> Tuple[DatasetMetadata2, Iterable[List[Dict[str, Any]]]]:
-        reader = SAS7BDATReader(self.file_path, encoding="utf-8", chunksize=self.CHUNKSIZE)
+        reader = SAS7BDATReader(self.file_path, encoding="utf-8", chunksize=self.CHUNKSIZE, convert_dates=False)
         metadata = self._extract_metadata(reader)
         chunk_stream = self._read_chunks(reader, metadata)
         return metadata, chunk_stream

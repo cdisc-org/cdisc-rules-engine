@@ -51,6 +51,7 @@ class BaseDataReader(ABC):
         """Read the file as chunks into a stream."""
         for chunk_df in reader:
             chunk_df = self._cleanup_missing_values(chunk_df, metadata)
+            chunk_df = self._cleanup_zero_floating_point_values(chunk_df, metadata)
             chunk_data = chunk_df.to_dict(orient="records")
             yield chunk_data
 
@@ -61,6 +62,15 @@ class BaseDataReader(ABC):
             if column.type == "Char":
                 df[column.name] = df[column.name].apply(lambda x: "" if pd.isna(x) or x is None else x)
 
+        return df
+
+    def _cleanup_zero_floating_point_values(self, df: pd.DataFrame, metadata: DatasetMetadata2) -> pd.DataFrame:
+        """Clean up zero floating point values by replacing them with 0.0, modifies the input dataframe."""
+        for column in metadata.variables:
+            if column.type == "Num":
+                df[column.name] = df[column.name].apply(
+                    lambda x: 0.0 if isinstance(x, (int, float)) and abs(x) < 1e-20 else x
+                )
         return df
 
     def _is_text_type(self, sas_type: str) -> bool:
