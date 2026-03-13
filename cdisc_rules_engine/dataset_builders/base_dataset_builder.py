@@ -160,17 +160,14 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        # If domain is not set and this is a SUPP domain, use rdomain
-        domain = self.dataset_metadata.domain
-        if not domain and getattr(self.dataset_metadata, "is_supp", False):
-            domain = getattr(self.dataset_metadata, "rdomain", None)
-            name = getattr(self.dataset_metadata, "name", None)
-            return define_xml_reader.extract_variables_metadata(
-                domain_name=domain, name=name
-            )
-        if not domain:
-            return []
-        return define_xml_reader.extract_variables_metadata(domain_name=domain)
+        domain = (
+            self.dataset_metadata.domain
+            or self.dataset_metadata.rdomain
+            or self.dataset_metadata.unsplit_name
+        )
+        return define_xml_reader.extract_variables_metadata(
+            domain_name=domain, name=self.dataset_metadata.name
+        )
 
     def get_define_xml_value_level_metadata(self) -> List[dict]:
         """
