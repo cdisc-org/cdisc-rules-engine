@@ -142,18 +142,24 @@ class DataProcessor:
                 variables_with_wildcards["USUBJID"],
             ]
         else:
-            left_on = ["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]]
+            left_on = ["STUDYID", "USUBJID", "RELREC.IDVAR"]
             right_on = [
                 variables_with_wildcards["STUDYID"],
                 variables_with_wildcards["USUBJID"],
-                variables_with_wildcards[relrec_row["IDVAR_RIGHT"]],
+                "RELREC.IDVAR",
             ]
+            left_subset["RELREC.IDVAR"] = left_subset[relrec_row["IDVAR_LEFT"]].astype(
+                str
+            )
+            right_subset["RELREC.IDVAR"] = right_subset[
+                relrec_row["IDVAR_RIGHT"]
+            ].astype(str)
         right_subset = right_subset.rename(columns=variables_with_wildcards)
         result = left_subset.merge(
             other=right_subset.data,
             left_on=left_on,
             right_on=right_on,
-        )
+        ).drop(["RELREC.IDVAR"], axis=1, errors="ignore")
         return result
 
     @staticmethod

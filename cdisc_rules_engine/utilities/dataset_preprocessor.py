@@ -551,7 +551,6 @@ class DatasetPreprocessor:
                 raise PreprocessingError(
                     f"Failed to merge RELREC dataset in preprocessing. "
                     f"Left dataset: {left_dataset_domain_name}, "
-                    f"RELREC dataset: {right_dataset_domain_name}, "
                     f"Wildcard: {right_dataset_domain_details.get('wildcard')}, "
                     f"Match keys: {match_keys}, "
                     f"Error: {str(e)}"
