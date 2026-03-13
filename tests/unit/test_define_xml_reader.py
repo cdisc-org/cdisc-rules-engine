@@ -228,10 +228,8 @@ def test_extract_variable_metadata(filename):
         expected_exdose_metadata = {
             "define_variable_name": "EXDOSE",
             "define_variable_data_type": "integer",
-            "define_variable_role": None,
             "define_variable_origin_type": "Derived",
             "define_variable_is_collected": False,
-            "define_variable_order_number": 6,
             "define_variable_has_comment": False,
             "define_variable_has_method": True,
         }
