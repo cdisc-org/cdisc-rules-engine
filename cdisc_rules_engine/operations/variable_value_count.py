@@ -5,8 +5,8 @@ import asyncio
 import os
 from collections import Counter
 from typing import List
-from cdisc_rules_engine.utilities.utils import (
-    get_corresponding_datasets,
+from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
+from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
 )
 

@@ -1,4 +1,18 @@
+import re
+
+from cdisc_rules_engine.constants.domains import (
+    AP_DOMAIN,
+    APFA_DOMAIN,
+    APRELSUB_DOMAIN,
+    SUPPLEMENTARY_DOMAINS,
+)
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
 )
@@ -495,3 +509,46 @@ def add_variable_wildcards(
         )
         for variable in variables
     }
+
+
+def is_supp_domain(dataset_domain: str) -> bool:
+    """
+    Returns true if domain name starts with SUPP or SQ
+    """
+    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
+
+
+def is_ap_domain(dataset_domain: str) -> bool:
+    """
+    Returns true if domain name is like AP-- / APFA APRELSUB.
+    """
+    if dataset_domain == APRELSUB_DOMAIN:
+        return True
+    if len(dataset_domain) == 6:
+        domain_to_check: str = APFA_DOMAIN
+    else:
+        domain_to_check: str = AP_DOMAIN
+    regex = r"^" + re.escape(domain_to_check) + "[a-zA-Z]{2,4}$"
+    return bool(re.match(regex, dataset_domain))
+
+
+def get_corresponding_datasets(
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> List[SDTMDatasetMetadata]:
+    return [
+        other
+        for other in datasets
+        if dataset_metadata.unsplit_name == other.unsplit_name
+    ]
+
+
+def tag_source(
+    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
+) -> DatasetInterface:
+    """
+    For sdtm split datasets,
+    Adds source filename and row number to dataset
+    """
+    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
+    return dataset

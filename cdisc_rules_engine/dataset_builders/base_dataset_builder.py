@@ -5,8 +5,8 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
-from cdisc_rules_engine.utilities.utils import (
-    get_corresponding_datasets,
+from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
+from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
 )
 from typing import List, Iterable, Optional

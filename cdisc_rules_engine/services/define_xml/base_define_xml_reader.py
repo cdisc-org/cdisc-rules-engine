@@ -19,7 +19,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
-from cdisc_rules_engine.utilities.utils import is_supp_domain
+from cdisc_rules_engine.utilities.sdtm_utilities import is_supp_domain
 
 
 @dataclass

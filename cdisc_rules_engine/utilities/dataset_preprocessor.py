@@ -14,7 +14,6 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     get_sided_match_keys,
-    get_dataset_name_from_details,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 import os
@@ -126,7 +125,7 @@ class DatasetPreprocessor:
                 if file_info.domain in merged_domains:
                     continue
 
-                filename = get_dataset_name_from_details(file_info)
+                filename = file_info.dataset_name
 
                 # Try to download the dataset
                 try:

@@ -10,7 +10,9 @@ from cdisc_rules_engine.interfaces.cache_service_interface import (
 from cdisc_rules_engine.models.dataset.dataset_interface import (
     DatasetInterface,
 )
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset_metadata import (
+    DatasetMetadata,
+)
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -38,7 +40,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
     search_in_list_of_dicts,
-    get_dataset_name_from_details,
 )
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
@@ -478,7 +479,7 @@ class RuleProcessor:
                     f"Target: {operation_params.target}, "
                     f"Core ID: {operation_params.core_id}"
                 )
-            filename = get_dataset_name_from_details(domain_details)
+            filename = domain_details.dataset_name
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
                 filename,

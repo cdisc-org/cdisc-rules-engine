@@ -2,7 +2,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
-from cdisc_rules_engine.utilities.utils import tag_source
+from cdisc_rules_engine.utilities.sdtm_utilities import tag_source
 
 
 class DayDataValidator(BaseOperation):
