@@ -140,8 +140,10 @@ class BaseOperation:
             result = self._rename_grouping_columns(result)
         grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
-        target_columns = self._resolve_variable_name(target_columns, self.params.domain)
-        grouping_columns = self._resolve_variable_name(
+        target_columns = self._replace_variable_wildcard(
+            target_columns, self.params.domain
+        )
+        grouping_columns = self._replace_variable_wildcard(
             grouping_columns, self.params.domain
         )
         result = result.reset_index()
@@ -294,12 +296,12 @@ class BaseOperation:
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [
-            BaseOperation._resolve_variable_name(var["name"], domain)
+            BaseOperation._replace_variable_wildcard(var["name"], domain)
             for var in variables_metadata
         ]
 
     @staticmethod
-    def _resolve_variable_name(variable_name, domain: str):
+    def _replace_variable_wildcard(variable_name, domain: str):
         if isinstance(variable_name, list):
             return [
                 var.replace("--", domain) if "--" in var else var

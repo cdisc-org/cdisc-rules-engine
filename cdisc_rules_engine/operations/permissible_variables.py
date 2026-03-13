@@ -23,7 +23,7 @@ class PermissibleVariables(BaseOperation):
 
         return list(
             {
-                BaseOperation._resolve_variable_name(
+                BaseOperation._replace_variable_wildcard(
                     var["name"], self.params.domain
                 ): None
                 for var in variables_metadata

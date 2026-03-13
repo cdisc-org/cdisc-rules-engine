@@ -34,6 +34,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     OperationError,
 )
 from cdisc_rules_engine.operations import operations_factory
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
@@ -350,7 +351,9 @@ class RuleProcessor:
             domain: str = operation.get("domain", dataset_metadata.domain)
             if target and target.startswith("--") and domain:
                 # Not a study wide operation
-                target = target.replace("--", domain)
+                target = BaseOperation._replace_variable_wildcard(
+                    target, dataset_metadata.wildcard_replacement
+                )
                 domain = domain.replace("--", dataset_metadata.domain)
 
             # get necessary operation

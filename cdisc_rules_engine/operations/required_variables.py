@@ -22,7 +22,7 @@ class RequiredVariables(BaseOperation):
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
         return list(
             {
-                BaseOperation._resolve_variable_name(
+                BaseOperation._replace_variable_wildcard(
                     var["name"], self.params.domain
                 ): None
                 for var in variables_metadata

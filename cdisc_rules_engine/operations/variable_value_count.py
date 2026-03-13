@@ -49,8 +49,8 @@ class VariableValueCount(BaseOperation):
                 )
             )
             data = tag_source(data, dataset_metadata)
-        target_variable = self.params.original_target.replace(
-            "--", dataset_metadata.domain, 1
+        target_variable = BaseOperation._replace_variable_wildcard(
+            self.params.original_target, dataset_metadata.wildcard_replacement
         )
         if target_variable in data:
             return Counter(data[target_variable].unique())
