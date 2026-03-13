@@ -242,9 +242,7 @@ class COREActions(BaseActions):
             ),
             targets=targets_list,
             errors=errors_list,
-            message=message.replace(
-                "--", self.dataset_metadata.wildcard_replacement or ""
-            ),
+            message=message.replace("--", self.dataset_metadata.wildcard_replacement),
         )
 
     def _generate_errors_by_target_presence(
