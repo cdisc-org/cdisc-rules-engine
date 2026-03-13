@@ -2380,7 +2380,7 @@ def test_validate_variables_order_against_library_metadata(
     }
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {
+        "dataset_names": {
             "HO",
             "CO",
             "SU",
@@ -2477,7 +2477,7 @@ def test_validate_variables_order_against_library_metadata(
     )
 
     def mock_cached_method(*args, **kwargs):
-        return mock_get_dataset.return_value
+        return dataset_metadata
 
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",

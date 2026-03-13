@@ -26,9 +26,9 @@ def test_get_standard_details(mock_get_sdtmig: MagicMock):
 
     library_service = CDISCLibraryService(config, MagicMock())
     standard_details: dict = library_service.get_standard_details("sdtmig", "3-1-2")
-    # expected is that mocked sdtmig details is extended with "domains" key
+    # expected is that mocked sdtmig details is extended with "dataset_names" key
     assert standard_details == {
-        "domains": {
+        "dataset_names": {
             "CO",
             "DM",
             "SE",

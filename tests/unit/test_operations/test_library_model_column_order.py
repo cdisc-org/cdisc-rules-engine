@@ -76,7 +76,7 @@ model_metadata = {
 
 standard_metadata = {
     "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-    "domains": {"AE"},
+    "dataset_names": {"AE"},
     "classes": [
         {
             "name": "Events",
@@ -231,7 +231,7 @@ def test_get_column_order_from_library(operation_params: OperationParams, datase
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "domains": {"AE"},
+                "dataset_names": {"AE"},
                 "classes": [
                     {
                         "name": FINDINGS_ABOUT,

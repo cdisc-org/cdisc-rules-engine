@@ -225,13 +225,9 @@ class BaseOperation:
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
 
-        # self.params.domain is unsplit_name
-        domain_for_library = self.params.domain
         return sdtm_utilities.get_variables_metadata_from_standard(
-            domain=domain_for_library,
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            dataset=self.evaluation_dataset,
             dataset_metadata=self.data_service.get_raw_dataset_metadata(
                 dataset_name=self.params.dataset_path, datasets=self.params.datasets
             ),
@@ -250,7 +246,7 @@ class BaseOperation:
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[dict] = (
-            self._get_variables_metadata_from_standard_model(domain, dataframe)
+            self._get_variables_metadata_from_standard_model(dataframe)
         )
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
@@ -258,9 +254,7 @@ class BaseOperation:
         )
         return list(OrderedDict.fromkeys(variable_names_list))
 
-    def _get_variables_metadata_from_standard_model(
-        self, domain, dataframe
-    ) -> List[dict]:
+    def _get_variables_metadata_from_standard_model(self, dataframe) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -287,7 +281,6 @@ class BaseOperation:
         # TODO: Update to handle multiple standard types.
 
         return sdtm_utilities.get_variables_metadata_from_standard_model(
-            domain=domain,
             dataframe=dataframe,
             datasets=self.params.datasets,
             dataset_path=self.params.dataset_path,

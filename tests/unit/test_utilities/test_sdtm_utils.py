@@ -38,21 +38,11 @@ def mock_datasets():
     return []
 
 
-@pytest.fixture
-def mock_dataset():
-    """Mock dataset for tests."""
-    return Mock()
-
-
-def test_standard_domain_ae(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
-):
+def test_standard_domain_ae(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
     variables = get_variables_metadata_from_standard(
-        "AE",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/ae.xpt",
         mock_datasets,
@@ -62,15 +52,11 @@ def test_standard_domain_ae(
     assert any(var["name"] == "AESTDTC" for var in variables)
 
 
-def test_standard_domain_dm(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
-):
+def test_standard_domain_dm(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="DM", first_record={"DOMAIN": "DM"})
     variables = get_variables_metadata_from_standard(
-        "DM",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/dm.xpt",
         mock_datasets,
@@ -80,15 +66,11 @@ def test_standard_domain_dm(
     assert any(var["name"] == "SEX" for var in variables)
 
 
-def test_findings_domain_lb(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
-):
+def test_findings_domain_lb(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="LB", first_record={"DOMAIN": "LB"})
     variables = get_variables_metadata_from_standard(
-        "LB",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/lb.xpt",
         mock_datasets,
@@ -99,13 +81,11 @@ def test_findings_domain_lb(
     assert any(var["name"] == "LBORRES" for var in variables)
 
 
-def test_supp_domain(library_metadata, mock_data_service, mock_dataset, mock_datasets):
+def test_supp_domain(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="SUPPAE", first_record={"QNAM": "TEST"})
     variables = get_variables_metadata_from_standard(
-        "SUPPAE",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/suppae.xpt",
         mock_datasets,
@@ -115,13 +95,11 @@ def test_supp_domain(library_metadata, mock_data_service, mock_dataset, mock_dat
     assert any(var["name"] == "QLABEL" for var in variables)
 
 
-def test_sq_domain(library_metadata, mock_data_service, mock_dataset, mock_datasets):
+def test_sq_domain(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="SQAE", first_record={"QNAM": "TEST"})
     variables = get_variables_metadata_from_standard(
-        "SQAE",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/sqae.xpt",
         mock_datasets,
@@ -131,13 +109,11 @@ def test_sq_domain(library_metadata, mock_data_service, mock_dataset, mock_datas
     assert any(var["name"] == "QLABEL" for var in variables)
 
 
-def test_ap_domain(library_metadata, mock_data_service, mock_dataset, mock_datasets):
+def test_ap_domain(library_metadata, mock_data_service, mock_datasets):
     dataset_metadata = SDTMDatasetMetadata(name="APDM", first_record={"APID": "001"})
     variables = get_variables_metadata_from_standard(
-        "APDM",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/apdm.xpt",
         mock_datasets,
@@ -149,15 +125,15 @@ def test_ap_domain(library_metadata, mock_data_service, mock_dataset, mock_datas
     assert any(var["name"] == "DMDY" for var in variables)
 
 
-def test_sqap_domain(library_metadata, mock_data_service, mock_dataset, mock_datasets):
-    dataset_metadata = SDTMDatasetMetadata(name="SQAP", first_record={"QNAM": "TEST"})
+def test_sqap_domain(library_metadata, mock_data_service, mock_datasets):
+    dataset_metadata = SDTMDatasetMetadata(
+        name="SQAPMH", first_record={"QNAM": "TEST", "RDOMAIN": "APMH"}
+    )
     variables = get_variables_metadata_from_standard(
-        "SQAP",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
-        "/path/to/sqap.xpt",
+        "/path/to/sqapmh.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "APID" for var in variables)
@@ -165,16 +141,12 @@ def test_sqap_domain(library_metadata, mock_data_service, mock_dataset, mock_dat
     assert any(var["name"] == "RDOMAIN" for var in variables)
 
 
-def test_findings_about_domain_fa(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
-):
+def test_findings_about_domain_fa(library_metadata, mock_data_service, mock_datasets):
     """Test Findings About domain includes FINDINGS class variables."""
     dataset_metadata = SDTMDatasetMetadata(name="FA", first_record={"DOMAIN": "FA"})
     variables = get_variables_metadata_from_standard(
-        "FA",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/fa.xpt",
         mock_datasets,
@@ -188,7 +160,6 @@ def test_findings_domain_from_model(library_metadata, mock_data_service, mock_da
     mock_dataframe = Mock()
     dataset_metadata = SDTMDatasetMetadata(name="LB", first_record={"DOMAIN": "LB"})
     variables = get_variables_metadata_from_standard_model(
-        domain="LB",
         dataframe=mock_dataframe,
         datasets=mock_datasets,
         dataset_path="/path/to/lb.xpt",
@@ -205,7 +176,6 @@ def test_supp_domain_from_model(library_metadata, mock_data_service, mock_datase
     mock_dataframe = Mock()
     dataset_metadata = SDTMDatasetMetadata(name="SUPPAE", first_record={"QNAM": "TEST"})
     variables = get_variables_metadata_from_standard_model(
-        domain="SUPPAE",
         dataframe=mock_dataframe,
         datasets=mock_datasets,
         dataset_path="/path/to/suppae.xpt",
@@ -222,7 +192,6 @@ def test_sqap_domain_from_model(library_metadata, mock_data_service, mock_datase
     mock_dataframe = Mock()
     dataset_metadata = SDTMDatasetMetadata(name="SQAP", first_record={"QNAM": "TEST"})
     variables = get_variables_metadata_from_standard_model(
-        domain="SQAP",
         dataframe=mock_dataframe,
         datasets=mock_datasets,
         dataset_path="/path/to/suppae.xpt",
@@ -239,7 +208,6 @@ def test_ap_domain_from_model(library_metadata, mock_data_service, mock_datasets
     mock_dataframe = Mock()
     dataset_metadata = SDTMDatasetMetadata(name="APDM", first_record={"APID": "001"})
     variables = get_variables_metadata_from_standard_model(
-        domain="APDM",
         dataframe=mock_dataframe,
         datasets=mock_datasets,
         dataset_path="/path/to/apdm.xpt",
@@ -253,18 +221,13 @@ def test_ap_domain_from_model(library_metadata, mock_data_service, mock_datasets
     assert any(var["name"] == "DMDY" for var in variables)
 
 
-def test_custom_domain_events_class(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
-):
+def test_custom_domain_events_class(library_metadata, mock_data_service, mock_datasets):
     """Test custom domain detection and variable metadata retrieval for EVENTS class."""
     dataset_metadata = SDTMDatasetMetadata(name="ZZ", first_record={"DOMAIN": "ZZ"})
     mock_data_service._handle_custom_domains = Mock(return_value="EVENTS")
-    mock_dataset.columns = ["STUDYID", "DOMAIN", "USUBJID", "ZZTERM", "ZZSEQ"]
     variables = get_variables_metadata_from_standard(
-        "ZZ",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/zz.xpt",
         mock_datasets,
@@ -277,17 +240,14 @@ def test_custom_domain_events_class(
 
 
 def test_custom_domain_findings_class(
-    library_metadata, mock_data_service, mock_dataset, mock_datasets
+    library_metadata, mock_data_service, mock_datasets
 ):
     """Test custom domain detection and variable metadata retrieval for FINDINGS class."""
     dataset_metadata = SDTMDatasetMetadata(name="XX", first_record={"DOMAIN": "XX"})
     mock_data_service._handle_custom_domains = Mock(return_value="FINDINGS")
-    mock_dataset.columns = ["STUDYID", "DOMAIN", "USUBJID", "XXTESTCD", "XXORRES"]
     variables = get_variables_metadata_from_standard(
-        "XX",
         library_metadata,
         mock_data_service,
-        mock_dataset,
         dataset_metadata,
         "/path/to/xx.xpt",
         mock_datasets,
