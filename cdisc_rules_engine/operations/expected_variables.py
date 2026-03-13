@@ -23,7 +23,9 @@ class ExpectedVariables(BaseOperation):
 
         return list(
             {
-                var["name"].replace("--", self.params.domain or ""): None
+                BaseOperation._resolve_variable_name(
+                    var["name"], self.params.domain
+                ): None
                 for var in variables_metadata
                 if self.get_allowed_variable_permissibility(var) == EXPECTED
             }.keys()

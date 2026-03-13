@@ -293,7 +293,10 @@ class BaseOperation:
 
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
-        return [var["name"].replace("--", domain) for var in variables_metadata]
+        return [
+            BaseOperation._resolve_variable_name(var["name"], domain)
+            for var in variables_metadata
+        ]
 
     @staticmethod
     def _resolve_variable_name(variable_name, domain: str):
