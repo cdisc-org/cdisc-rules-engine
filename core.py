@@ -242,6 +242,20 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
+def load_custom_dotenv(ctx, param, value):
+    if not value:
+        return value
+    if isinstance(value, str):
+        env_path = os.path.join(value, ".env")
+    elif isinstance(value, tuple):
+        env_path = os.path.join(Path(value[0]).parent, ".env")
+    else:
+        return value
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=False)
+    return value
+
+
 @click.command()
 @click.option(
     "-ca",
@@ -262,6 +276,7 @@ def _validate_no_arguments(logger) -> None:
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
     envvar="DATA_DIR",
+    callback=load_custom_dotenv,
 )
 @click.option(
     "-ft",
@@ -277,6 +292,7 @@ def _validate_no_arguments(logger) -> None:
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
     envvar="DATASET_PATH",
+    callback=load_custom_dotenv,
 )
 @click.option(
     "-l",
@@ -293,7 +309,7 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-s",
     "--standard",
-    required=True,
+    required=False,
     default=None,
     help="CDISC standard to validate against",
     envvar="STANDARD",
@@ -301,7 +317,7 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-v",
     "--version",
-    required=True,
+    required=False,
     default=None,
     help="Standard version to validate against",
     envvar="VERSION",
@@ -533,6 +549,9 @@ def validate(  # noqa
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if not custom_standard:
+        if not standard:
+            logger.error("Missing 'standard'. Specify it with -s or in the .env file.")
+            ctx.exit(2)
         standard = standard.lower()
 
     if raw_report is True:
