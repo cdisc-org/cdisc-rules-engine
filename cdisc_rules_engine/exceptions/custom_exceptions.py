@@ -40,6 +40,13 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
+class LibraryMetadataNotFoundError(EngineError):
+    code = 400
+    description = (
+        "Library metadata not found for the provided standard and version combination."
+    )
+
+
 class DomainNotFoundError(EngineError):
     """Raised when a required domain is not found in the dataset"""
 
@@ -60,6 +67,19 @@ class InvalidDatasetFormat(EngineError):
 class InvalidJSONFormat(EngineError):
     code = 400
     description = "JSON data is malformed."
+
+
+class ExcelTestDataError(EngineError):
+    code = 400
+    description = (
+        "Excel test data file is missing required sheets or column headers. "
+        "Sheet and column names are case-sensitive."
+    )
+
+
+class CTPackageNotFoundError(EngineError):
+    code = 400
+    description = "Controlled terminology package(s) not found"
 
 
 class InvalidCSVFile(EngineError):
@@ -110,3 +130,10 @@ class DatasetBuilderError(EngineError):
 class DateTimeParserError(EngineError):
     code = 400
     description = "Failure to parse a datetime string"
+
+
+class UnsupportedXptFormatError(EngineError):
+    code = 400
+    description = (
+        "Unsupported XPT (SAS Transport) format. Only Transport v5 is supported."
+    )
