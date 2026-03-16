@@ -410,11 +410,12 @@ class RuleProcessor:
                     operation_params, dataset_copy, previous_operations
                 )
             except Exception as e:
+                error_detail = getattr(e, "message", None) or str(e)
                 raise OperationError(
                     f"Failed to execute rule operation. "
                     f"Operation: {operation_params.operation_name}, "
                     f"Target: {target}, Domain: {domain}, "
-                    f"Error: {str(e)}"
+                    f"Error: {error_detail}"
                 )
             previous_operations.append(operation_params.operation_name)
 
