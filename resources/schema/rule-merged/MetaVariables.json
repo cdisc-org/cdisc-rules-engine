@@ -199,6 +199,14 @@
       "markdownDescription": "\ncore attribute of a variable from the CDISC Library\n"
     },
     {
+      "const": "library_variable_has_codelist",
+      "markdownDescription": "\nIndicates whether a variable has an associated codelist in the CDISC Library\n"
+    },
+    {
+      "const": "library_variable_ccode",
+      "markdownDescription": "\nccode attribute of a variable from the CDISC Library\n"
+    },
+    {
       "const": "library_variable_data_type",
       "markdownDescription": "\nsimpleDatatype attribute of a variable from the CDISC Library\n"
     },
