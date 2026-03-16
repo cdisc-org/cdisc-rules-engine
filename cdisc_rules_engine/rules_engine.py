@@ -548,10 +548,11 @@ class RulesEngine:
             )
 
         elif isinstance(exception, OperationError):
+            error_msg = getattr(exception, "message", None) or str(exception)
             error_obj = FailedValidationEntity(
                 dataset=filename,
                 error=OperationError.description,
-                message=str(exception),
+                message=error_msg,
             )
             message = "rule evaluation error - operation failed"
             errors = [error_obj]
