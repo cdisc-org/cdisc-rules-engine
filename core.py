@@ -310,7 +310,7 @@ def load_custom_dotenv(ctx, param, value):
 @click.option(
     "-s",
     "--standard",
-    required=False,
+    required=True,
     default=None,
     help="CDISC standard to validate against",
     envvar="STANDARD",
@@ -318,7 +318,7 @@ def load_custom_dotenv(ctx, param, value):
 @click.option(
     "-v",
     "--version",
-    required=False,
+    required=True,
     default=None,
     help="Standard version to validate against",
     envvar="VERSION",
@@ -550,9 +550,6 @@ def validate(  # noqa
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if not custom_standard:
-        if not standard:
-            logger.error("Missing 'standard'. Specify it with -s or in the .env file.")
-            ctx.exit(2)
         standard = standard.lower()
         supported_standards = StandardTypes.values()
         if standard not in supported_standards:
