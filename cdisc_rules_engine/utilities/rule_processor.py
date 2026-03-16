@@ -348,13 +348,15 @@ class RuleProcessor:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
             target: str = original_target
-            domain: str = operation.get("domain", dataset_metadata.domain)
+            domain: str = operation.get("domain", dataset_metadata.unsplit_name)
+            wildcard_replacement: str = operation.get(
+                "domain", dataset_metadata.wildcard_replacement
+            )
             if target and target.startswith("--") and domain:
                 # Not a study wide operation
                 target = BaseOperation._replace_variable_wildcard(
-                    target, dataset_metadata.wildcard_replacement
+                    target, wildcard_replacement
                 )
-                domain = domain.replace("--", dataset_metadata.domain)
 
             # get necessary operation
             operation_params = OperationParams(
