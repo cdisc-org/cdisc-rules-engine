@@ -17,7 +17,7 @@ from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
@@ -1289,6 +1289,69 @@ def test_dm_merged_with_suppdm_without_dupes(
     assert result.data.shape[0] == 1
     assert {"RACE1", "RACE2", "RACE3"}.issubset(set(result.columns))
     assert result.data.loc[0, ["RACE1", "RACE2", "RACE3"]].notna().all()
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_suppae_mismatched_studyid_raises_key_error(mock_get_dataset):
+    ae_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["CDISC-PILOT-01"],
+                "DOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "AESEQ": [1],
+                "AETERM": ["Headache"],
+            }
+        )
+    )
+    suppae_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["COMPLETELY-DIFFERENT-STUDY"],
+                "RDOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "IDVAR": ["AESEQ"],
+                "IDVARVAL": ["1"],
+                "QNAM": ["TEST"],
+                "QLABEL": ["Test"],
+                "QVAL": ["A"],
+            }
+        )
+    )
+
+    mock_get_dataset.return_value = suppae_dataset
+    rule = {
+        "core_id": "TestRule",
+        "datasets": [{"domain_name": "SUPPAE", "match_key": ["USUBJID"]}],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "TEST", "comparator": "A"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE", first_record={"RDOMAIN": "AE"}, filename="suppae.xpt"
+        )
+    ]
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ae_dataset,
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
+        data_service,
+        InMemoryCacheService(),
+    )
+
+    with pytest.raises(
+        PreprocessingError, match="SUPP merge key 'STUDYID' has no overlapping values"
+    ):
+        preprocessor.preprocess(rule, datasets)
 
 
 def test_relrec_processed_correctly_with_others(rule_with_specific_supp):
