@@ -485,10 +485,9 @@ class RuleProcessor:
                     f"Target: {operation_params.target}, "
                     f"Core ID: {operation_params.core_id}"
                 )
-            filename = domain_details.dataset_name
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
-                filename,
+                domain_details.data_service_identifier,
             )
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path

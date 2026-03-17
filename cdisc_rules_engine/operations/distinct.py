@@ -71,7 +71,7 @@ class Distinct(BaseOperation):
     def _get_referenced_datasets(self):
         referenced_datasets = {}
         for dataset_metadata in self.data_service.get_datasets():
-            dataset = self.data_service.get_dataset(dataset_metadata.name)
+            dataset = self.data_service.get_dataset(dataset_metadata.filename)
             referenced_datasets[dataset_metadata.name] = dataset
         return referenced_datasets
 

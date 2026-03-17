@@ -20,5 +20,5 @@ class DatasetMetadata:
     original_path: Union[str, None] = None
 
     @property
-    def dataset_name(self) -> str:
+    def data_service_identifier(self) -> str:
         return basename(self.full_path) if self.full_path else self.filename

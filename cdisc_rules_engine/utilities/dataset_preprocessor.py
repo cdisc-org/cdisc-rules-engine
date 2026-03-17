@@ -125,14 +125,14 @@ class DatasetPreprocessor:
                 if file_info.domain in merged_domains:
                     continue
 
-                filename = file_info.dataset_name
-
                 # Try to download the dataset
                 try:
-                    other_dataset: DatasetInterface = self._download_dataset(filename)
+                    other_dataset: DatasetInterface = self._download_dataset(
+                        file_info.data_service_identifier
+                    )
                 except Exception as e:
                     raise PreprocessingError(
-                        f"Failed to download dataset '{filename}' for preprocessing: {str(e)}"
+                        f"Failed to download dataset '{file_info.data_service_identifier}' for preprocessing: {str(e)}"
                     )
 
                 referenced_targets = set(
