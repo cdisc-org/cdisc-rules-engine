@@ -1153,6 +1153,8 @@ class DataframeType(BaseType):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
         regex = other_value.get("regex")
+        if isinstance(regex, list) and regex:
+            regex = regex[0]
         grouping_cols = []
         if isinstance(comparator, str):
             if comparator in self.value.columns:
@@ -1169,6 +1171,11 @@ class DataframeType(BaseType):
                 regex = f"({regex})"
             extracted = df_check[target].astype(str).str.extract(regex, expand=False)
             df_check[target] = extracted.fillna(df_check[target])
+        results = self._check_inconsistency(df_check, grouping_cols, target)
+        return results
+
+    @staticmethod
+    def _check_inconsistency(df_check, grouping_cols: list[Any], target):
         results = pd.Series(False, index=df_check.index)
         for name, group in df_check.groupby(grouping_cols, dropna=False):
             if group[target].nunique() > 1:
