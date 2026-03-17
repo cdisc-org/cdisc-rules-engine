@@ -11,6 +11,10 @@ from cdisc_rules_engine.constants.metadata_columns import DATASET_NAME
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    ColumnNotFoundError,
+    SqlOperatorError,
+)
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
@@ -19,32 +23,6 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 
 CHECK_OPERATOR_TABLE_ALIAS = "co"
-
-
-class SqlOperatorError(Exception):
-    """Simple exception to identify which check operator caused the error."""
-
-    def __init__(self, original_exception, operator_name):
-        self.original_exception = original_exception
-        self.operator_name = operator_name
-        super().__init__(f"{operator_name}: {str(original_exception)}")
-
-
-class ColumnNotFoundError(Exception):
-    """Raised when a required column is not found in the dataset."""
-
-    def __init__(self, column_name: str, table_id: str = None, message: str = None):
-        self.column_name = column_name
-        self.table_id = table_id
-
-        if message:
-            self.message = message
-        elif table_id:
-            self.message = f"Column '{column_name}' not found in table '{table_id}'"
-        else:
-            self.message = f"Column '{column_name}' not found in dataset"
-
-        super().__init__(self.message)
 
 
 def log_operator_execution(operator_name):
@@ -487,7 +465,7 @@ class BaseSqlOperator:
         """
         column = self.sql_data_service.pgi.schema.get_column(self.table_id, col)
         if not column:
-            raise ValueError(f"Column {col} does not exist in the table {self.table_id}.")
+            raise ColumnNotFoundError(col, self.table_id)
 
         key = column.hash
         if alias:

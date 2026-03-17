@@ -69,3 +69,25 @@ class UnsupportedDictionaryType(EngineError):
 
 class FailedSchemaValidation(EngineError):
     description = "Error Occured in Schema Validation"
+
+
+class SqlOperatorError(Exception):
+    def __init__(self, original_exception, operator_name):
+        self.original_exception = original_exception
+        self.operator_name = operator_name
+        super().__init__(f"{operator_name}: {str(original_exception)}")
+
+
+class ColumnNotFoundError(Exception):
+    def __init__(self, column_name: str, table_id: str = None, message: str = None):
+        self.column_name = column_name
+        self.table_id = table_id
+
+        if message:
+            exception_message = message
+        elif table_id:
+            exception_message = f"Column '{column_name}' not found in table '{table_id}'"
+        else:
+            exception_message = f"Column '{column_name}' not found in dataset"
+
+        super().__init__(exception_message)

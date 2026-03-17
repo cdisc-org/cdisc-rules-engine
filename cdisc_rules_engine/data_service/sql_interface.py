@@ -12,6 +12,7 @@ from cdisc_rules_engine.data_service.database import (
 from cdisc_rules_engine.data_service.sql_compiler import SQLCompiler
 from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
 from cdisc_rules_engine.enums.static_tables import StaticTables
+from cdisc_rules_engine.exceptions.custom_exceptions import ColumnNotFoundError
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.db_schema import SqlDbSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
@@ -149,7 +150,7 @@ class PostgresQLInterface:
         """Builds a date column from a string column and adds to the table"""
         col_schema = self.schema.get_column(table, column)
         if not col_schema:
-            raise ValueError(f"Column {column} does not exist in table {table}")
+            raise ColumnNotFoundError(column, table)
         date_column_name = f"{column}_dt"
 
         # Check whether we've already generated this date column

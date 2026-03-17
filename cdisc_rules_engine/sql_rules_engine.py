@@ -7,7 +7,6 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 from psycopg2.errors import ProgrammingError
 
-from cdisc_rules_engine.check_operators.sql.base_sql_operator import SqlOperatorError
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -21,6 +20,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     FailedSchemaValidation,
     RuleFormatError,
     VariableMetadataNotFoundError,
+    ColumnNotFoundError,
+    SqlOperatorError,
 )
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
@@ -248,6 +249,19 @@ class SQLRulesEngine:
                 message="Rule contains invalid operator",
             )
             message = "rule execution error"
+        elif isinstance(exception, ColumnNotFoundError):
+            error_obj: ValidationErrorContainer = ValidationErrorContainer(
+                status=ExecutionStatus.SKIPPED.value,
+                dataset=name,
+            )
+            message = exception.message
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=name,
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         elif isinstance(exception, KeyError):
             message = ", ".join(sorted(exception.args[0].split(", ")))
             error_obj = FailedValidationEntity(
