@@ -27,7 +27,7 @@ Check:
       operator: not_equal_to
       value: 1
 Core:
-  Id: CDISC.ADAMIG.111
+  Id: Velonyx Custom Rule | CNSR 01
   Status: Draft
   Version: "1"
 Description: Trigger error when CNSR is not 1 when DTHFL is Y
@@ -37,7 +37,8 @@ Match Datasets:
       - USUBJID
     Name: ADSL
 Outcome:
-  Message: CNSR is not 1 when DTHFL is Y
+  # Error message phrased differently to usual so we can show the rule clearly in the platform
+  Message: ADTTE.CNSR should be 1 when ADSL.DTHFL is Y
   Output Variables:
     - ADSL.DTHFL
     - CNSR
