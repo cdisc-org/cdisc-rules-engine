@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.data_services.local_data_service import (
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 import pandas as pd
 import pandas.testing as pdt
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 
 
 @pytest.fixture
@@ -258,7 +259,7 @@ def test_merge_supp_dataset_multi_idvar_aggregation(
 
 @patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
-def test_merge_supp_dataset_multi_idvar_same_qnam_validation_error(
+def test_merge_supp_dataset_same_qnam_validation_error(
     mock_async_get_datasets, data_service
 ):
     parent_dataset = PandasDataset(
@@ -292,7 +293,7 @@ def test_merge_supp_dataset_multi_idvar_same_qnam_validation_error(
 
     mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
 
-    with pytest.raises(ValueError, match="Multiple records with the same QNAM"):
+    with pytest.raises(PreprocessingError, match="Multiple records with the same QNAM"):
         DataProcessor.merge_pivot_supp_dataset(
             data_service.dataset_implementation, parent_dataset, supp_dataset
         )
