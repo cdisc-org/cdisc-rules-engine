@@ -361,7 +361,7 @@ class DataProcessor:
         excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
         group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
         grouped = supp_dataset.data.groupby(
-            group_cols, dropna=False, as_index=False
+            group_cols + ["QNAM"], dropna=False, as_index=False
         ).size()
         if (grouped["size"] > 1).any():
             raise PreprocessingError(
