@@ -358,14 +358,13 @@ class DataProcessor:
         columns_to_drop = [
             col for col in ["QNAM", "QVAL", "QLABEL"] if col in supp_dataset.columns
         ]
-        if "RDOMAIN" in supp_dataset.columns and supp_dataset["RDOMAIN"][0] == "DM":
-            excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
-            group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
-            supp_dataset = PandasDataset(
-                supp_dataset.data.groupby(group_cols, dropna=False, as_index=False).agg(
-                    lambda x: (x.dropna().iloc[0] if not x.dropna().empty else pd.NA)
-                )
+        excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
+        group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
+        supp_dataset = PandasDataset(
+            supp_dataset.data.groupby(group_cols, dropna=False, as_index=False).agg(
+                lambda x: (x.dropna().iloc[0] if not x.dropna().empty else pd.NA)
             )
+        )
         if columns_to_drop:
             supp_dataset = supp_dataset.drop(labels=columns_to_drop, axis=1)
         return supp_dataset
