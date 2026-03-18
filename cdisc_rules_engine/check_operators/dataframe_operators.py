@@ -1155,6 +1155,7 @@ class DataframeType(BaseType):
         regex = other_value.get("regex")
         if isinstance(regex, list) and regex:
             regex = regex[0]
+
         grouping_cols = []
         if isinstance(comparator, str):
             if comparator in self.value.columns:
@@ -1166,10 +1167,14 @@ class DataframeType(BaseType):
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
         if regex:
-            pattern = re.compile(regex)
+            try:
+                pattern = re.compile(regex)
+            except re.error:
+                logger.error("Invalid regex: %s. It will be ignored.", regex)
+                regex, pattern = r".*", re.compile(r".*")
             if pattern.groups == 0:
                 regex = f"({regex})"
-            extracted = df_check[target].astype(str).str.extract(regex, expand=False)
+            extracted = df_check[target].astype(str).str.extract(regex, expand=True)[0]
             df_check[target] = extracted.fillna(df_check[target])
         results = self._check_inconsistency(df_check, grouping_cols, target)
         return results
