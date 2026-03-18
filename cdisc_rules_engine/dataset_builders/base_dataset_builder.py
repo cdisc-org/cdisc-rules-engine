@@ -160,11 +160,7 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        domain = (
-            self.dataset_metadata.domain
-            or self.dataset_metadata.rdomain
-            or self.dataset_metadata.unsplit_name
-        )
+        domain = self.dataset_metadata.domain or self.dataset_metadata.rdomain
         return define_xml_reader.extract_variables_metadata(
             domain_name=domain, name=self.dataset_metadata.name
         )
