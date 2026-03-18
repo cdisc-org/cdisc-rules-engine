@@ -155,7 +155,13 @@ class BaseDatasetBuilder:
 
     def get_define_xml_variables_metadata(self) -> List[dict]:
         """
-        Gets Define XML variables metadata.
+        Gets Define XML variables metadata. Name and Domain combos for these types of datasets:
+        | Name   | Domain |
+        | ------ | ------ |
+        | AE     | AE     |
+        | QSPH   | QS     |
+        | RELREC |        |
+        | SUPPDM | DM     |
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
