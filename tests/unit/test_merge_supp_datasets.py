@@ -56,6 +56,30 @@ def test_process_supp():
     assert "QLABEL" not in processed_dataset.data.columns, "'QVAL' should be dropped."
 
 
+def test_data_processor_suppae_multiple_qnams():
+    suppae_data = {
+        "STUDYID": ["CDISCPILOT01", "CDISCPILOT01"],
+        "RDOMAIN": ["AE", "AE"],
+        "USUBJID": ["CDISC008", "CDISC008"],
+        "IDVAR": ["", ""],
+        "IDVARVAL": ["", ""],
+        "QNAM": ["AESPID", "AEREL2"],
+        "QLABEL": ["Sponsor ID", "Relationship 2"],
+        "QVAL": ["SP001", "POSSIBLE"],
+        "QORIG": ["CRF", "CRF"],
+        "QEVAL": ["", ""],
+    }
+    suppae_ds = PandasDataset(pd.DataFrame(suppae_data))
+    assert suppae_ds.data.shape[0] == 2
+
+    result = DataProcessor().process_supp(suppae_ds).data
+
+    assert result.shape[0] == 1
+    assert {"AESPID", "AEREL2"}.issubset(set(result.columns))
+    assert result.loc[0, "AESPID"] == "SP001"
+    assert result.loc[0, "AEREL2"] == "POSSIBLE"
+
+
 @patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
 def test_merge_pivot_supp_dataset(

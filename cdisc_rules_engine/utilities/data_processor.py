@@ -212,9 +212,6 @@ class DataProcessor:
                 for key in static_keys
                 if key in left_dataset.columns and key in right_dataset.columns
             ]
-            DataProcessor._validate_merge_key_overlap(
-                left_dataset, right_dataset, common_keys
-            )
             if not is_blank:
                 common_keys.append(dynamic_key)
                 current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
@@ -291,9 +288,6 @@ class DataProcessor:
                 for key in static_keys
                 if key in result_dataset.columns and key in group_data.columns
             ]
-            DataProcessor._validate_merge_key_overlap(
-                result_dataset, group_data, common_keys
-            )
             common_keys.append(idvar_value)
 
             agg_dict = {
@@ -493,19 +487,3 @@ class DataProcessor:
     @staticmethod
     def is_dummy_data(data_service: DataServiceInterface) -> bool:
         return isinstance(data_service, DummyDataService)
-
-    @staticmethod
-    def _validate_merge_key_overlap(
-        left_dataset: DatasetInterface,
-        right_dataset: DatasetInterface,
-        common_keys: List[str],
-    ):
-        for key in common_keys:
-            left_values = set(left_dataset[key].dropna().unique())
-            right_values = set(right_dataset[key].dropna().unique())
-            if left_values and right_values and left_values.isdisjoint(right_values):
-                raise PreprocessingError(
-                    f"SUPP merge key '{key}' has no overlapping values between "
-                    f"parent dataset and SUPP dataset. "
-                    f"Parent values: {left_values}, SUPP values: {right_values}."
-                )
