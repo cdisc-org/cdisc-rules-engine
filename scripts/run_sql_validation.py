@@ -91,6 +91,7 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
         args.dataset_paths,
         standards_context=standards_context,
         codelists=library_metadata.get_all_ct_package_metadata(),
+        external_dictionaries=args.external_dictionaries,
         cache_path=args.cache,
         define_xml_path=args.define_xml_path,
         sql_namespace=args.sql_namespace,
@@ -121,6 +122,8 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     progress_handler: Callable = get_progress_displayer(args)
     iterable = run()
     progress_handler(rules, iterable, results)
+
+    data_service.pgi.wipe()
 
     # build all desired reports
     end = time.time()

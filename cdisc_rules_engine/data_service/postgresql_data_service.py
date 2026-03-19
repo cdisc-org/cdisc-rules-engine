@@ -8,6 +8,7 @@ from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoad
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
+from cdisc_rules_engine.models.sql_external_dictionaries_container import SqlExternalDictionariesContainer
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.data_service.sql_data_preprocessor import SqlDataPreprocessor
 from cdisc_rules_engine.data_service.startup.populate_codelists import (
@@ -16,8 +17,8 @@ from cdisc_rules_engine.data_service.startup.populate_codelists import (
 from cdisc_rules_engine.data_service.startup.populate_standards import (
     populate_standards,
 )
-from cdisc_rules_engine.data_service.startup.populate_terminology import (
-    populate_terminology,
+from cdisc_rules_engine.data_service.startup.populate_dictionaries import (
+    populate_dictionaries,
 )
 from cdisc_rules_engine.models.dataset_metadata2 import (
     VariableMetadata,
@@ -61,6 +62,7 @@ class PostgresQLDataService:
         sql_namespace: Optional[str] = None,
         use_pgserver: bool = False,
         codelists: Optional[List[Union[str, Dict]]] = None,
+        external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
     ) -> "PostgresQLDataService":
@@ -75,7 +77,7 @@ class PostgresQLDataService:
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi)
-        populate_terminology(pgi)
+        populate_dictionaries(pgi, external_dictionaries)
         populate_codelists(pgi, cache_path, codelists)
         populate_standards(pgi)
 
@@ -110,6 +112,7 @@ class PostgresQLDataService:
         dataset_paths,
         standards_context,
         codelists: Optional[List[Union[str, Dict]]] = None,
+        external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
         sql_namespace: Optional[str] = None,
@@ -120,6 +123,7 @@ class PostgresQLDataService:
             use_pgserver=use_pgserver,
             codelists=codelists,
             cache_path=cache_path,
+            external_dictionaries=external_dictionaries,
             define_xml_path=define_xml_path,
         )
 

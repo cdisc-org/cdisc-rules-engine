@@ -5,3 +5,4 @@ class StaticTables(BaseEnum):
     IG_CODELIST_TABLE_NAME = "ig_codelists"
     IG_DATASETS_TABLE_NAME = "ig_datasets"
     IG_VARIABLES_TABLE_NAME = "ig_variables"
+    WHODRUG_TABLE_NAME = "ex_whodrug"

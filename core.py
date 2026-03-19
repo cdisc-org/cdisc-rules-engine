@@ -20,6 +20,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
 )
+from cdisc_rules_engine.models.sql_external_dictionaries_container import SqlExternalDictionariesContainer
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
@@ -275,8 +276,8 @@ def validate(
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
-    # Construct ExternalDictionariesContainer:
-    external_dictionaries = ExternalDictionariesContainer(
+    dict_container = SqlExternalDictionariesContainer if sql_engine else ExternalDictionariesContainer
+    external_dictionaries = dict_container(
         {
             DictionaryTypes.UNII.value: unii,
             DictionaryTypes.MEDRT.value: medrt,

@@ -64,7 +64,9 @@ class InvalidDictionaryVariable(EngineError):
 
 
 class UnsupportedDictionaryType(EngineError):
-    description = "Specified dictionary type is not supported by the rules engine."
+    def __init__(self, dictionary=None):
+        self.message = f"Specified dictionary {dictionary} is not supported by the engine"
+        super().__init__(self.message)
 
 
 class FailedSchemaValidation(EngineError):
