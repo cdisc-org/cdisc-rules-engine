@@ -2,10 +2,10 @@ from cdisc_rules_engine.constants.permissibility import (
     EXPECTED,
     PERMISSIBILITY_KEY,
 )
-from cdisc_rules_engine.operations.filtered_variables import FilteredVariables
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 
 
-class ExpectedVariables(FilteredVariables):
+class ExpectedVariables(LibraryColumnOrder):
     def _execute_operation(self):
         """
         Fetches required variables for a given domain from the CDISC library.

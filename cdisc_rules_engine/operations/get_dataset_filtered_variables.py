@@ -1,7 +1,7 @@
-from cdisc_rules_engine.operations.filtered_variables import FilteredVariables
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 
 
-class GetDatasetFilteredVariables(FilteredVariables):
+class GetDatasetFilteredVariables(LibraryColumnOrder):
     def _execute_operation(self):
         """
         Filter variables from the dataset based on specified criteria.

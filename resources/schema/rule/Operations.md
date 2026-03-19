@@ -582,17 +582,6 @@ FA
 
 Operations for working with Implementation Guide and model variable metadata.
 
-### filtered_variables
-
-Filters variables from the IG and model based on specified metadata criteria.
-
-```yaml
-- operator: get_dataset_filtered_variables
-  id: $expected_variables
-  key_name: "role" # role, core, etc
-  key_value: "Exp" # Timing, Req, Exp, Perm, etc
-```
-
 ### expected_variables
 
 Returns the expected ("Core" = Exp ) variables for the domain in the current standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
@@ -685,6 +674,7 @@ Output:
 ### get_column_order_from_library
 
 Fetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to "ordinal" key of library metadata.
+Optionally Filters variables based on specified metadata criteria.
 
 Rule Type: Variable Metadata Check
 
@@ -697,6 +687,8 @@ Check:
 Operations:
   - id: $ig_variables
     operator: get_column_order_from_library
+    key_name: "role" # role, core, etc
+    key_value: "Exp" # Timing, Req, Exp, Perm, etc
 ```
 
 ### get_model_column_order

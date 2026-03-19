@@ -105,15 +105,6 @@
     {
       "properties": {
         "operator": {
-          "const": "filtered_variables"
-        }
-      },
-      "required": ["id", "operator", "key_name", "key_value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "get_codelist_attributes"
         }
       },

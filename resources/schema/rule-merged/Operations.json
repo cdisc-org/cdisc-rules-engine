@@ -116,16 +116,6 @@
     {
       "properties": {
         "operator": {
-          "const": "filtered_variables",
-          "markdownDescription": "\nFilters variables from the IG and model based on specified metadata criteria.\n\n```yaml\n- operator: get_dataset_filtered_variables\n  id: $expected_variables\n  key_name: \"role\" # role, core, etc\n  key_value: \"Exp\" # Timing, Req, Exp, Perm, etc\n```\n"
-        }
-      },
-      "required": ["id", "operator", "key_name", "key_value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "get_codelist_attributes",
           "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.\n"
         }
@@ -147,7 +137,7 @@
       "properties": {
         "operator": {
           "const": "get_column_order_from_library",
-          "markdownDescription": "\nFetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $ig_variables\nOperations:\n  - id: $ig_variables\n    operator: get_column_order_from_library\n```\n"
+          "markdownDescription": "\nFetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\nOptionally Filters variables based on specified metadata criteria.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $ig_variables\nOperations:\n  - id: $ig_variables\n    operator: get_column_order_from_library\n    key_name: \"role\" # role, core, etc\n    key_value: \"Exp\" # Timing, Req, Exp, Perm, etc\n```\n"
         }
       },
       "required": ["id", "operator"],

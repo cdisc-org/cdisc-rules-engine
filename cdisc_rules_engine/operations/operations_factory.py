@@ -10,7 +10,6 @@ from cdisc_rules_engine.operations.define_dictionary_version_validator import (
 )
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
-from cdisc_rules_engine.operations.filtered_variables import FilteredVariables
 from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 from cdisc_rules_engine.operations.library_model_column_order import (
@@ -100,7 +99,6 @@ class OperationsFactory(FactoryInterface):
         "distinct": Distinct,
         "dy": DayDataValidator,
         "extract_metadata": ExtractMetadata,
-        "filtered_variables": FilteredVariables,
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
         "get_codelist_attributes": CodeListAttributes,

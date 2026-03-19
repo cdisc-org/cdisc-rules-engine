@@ -1,8 +1,8 @@
 from cdisc_rules_engine.constants.permissibility import PERMISSIBILITY_KEY, REQUIRED
-from cdisc_rules_engine.operations.filtered_variables import FilteredVariables
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 
 
-class RequiredVariables(FilteredVariables):
+class RequiredVariables(LibraryColumnOrder):
     def _execute_operation(self):
         """
         Fetches required variables for a given domain from the CDISC library.
