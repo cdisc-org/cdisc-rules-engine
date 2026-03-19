@@ -17,6 +17,7 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements-dev.txt
+          pip install -e .
       - name: Running Tests
         env:
           CDISC_LIBRARY_API_KEY: fakekey12341234
