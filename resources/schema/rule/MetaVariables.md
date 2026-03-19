@@ -86,6 +86,10 @@ ItemGroupDef.ItemDef.CodeListRef exists
 
 ItemGroupDef.ItemDef.CommentOID exists
 
+## define_variable_has_method
+
+ItemGroupDef.ItemRef.MethodOID exists
+
 ## define_variable_has_no_data
 
 ItemGroupDef.ItemRef.HasNoData
