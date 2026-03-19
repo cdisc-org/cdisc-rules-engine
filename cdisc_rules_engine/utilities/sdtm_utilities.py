@@ -10,6 +10,10 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS_TEST_VARIABLE,
 )
+from cdisc_rules_engine.constants.permissibility import (
+    PERMISSIBILITY_DEFAULT,
+    PERMISSIBILITY_KEY,
+)
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -181,6 +185,7 @@ def get_variables_metadata_from_standard(  # noqa
                 )
             else:
                 variables_metadata = ig_variables
+    set_default_variable_permissibility(variables_metadata)
     return variables_metadata
 
 
@@ -361,6 +366,7 @@ def get_variables_metadata_from_standard_model(  # noqa
             timing_metadata,
         ]:
             replace_variable_wildcards(var_list, original_domain, variables_metadata)
+            set_default_variable_permissibility(variables_metadata)
         return variables_metadata
     else:
         # First, try to get class metadata and check for classVariables
@@ -382,6 +388,7 @@ def get_variables_metadata_from_standard_model(  # noqa
             replace_variable_wildcards(
                 class_variables, original_domain, variables_metadata
             )
+            set_default_variable_permissibility(variables_metadata)
             return variables_metadata
         else:
             # Second, check if domain exists in model datasets
@@ -404,6 +411,7 @@ def get_variables_metadata_from_standard_model(  # noqa
                     dataset_variables, original_domain, variables_metadata
                 )
                 variables_metadata.sort(key=lambda item: int(item["ordinal"]))
+                set_default_variable_permissibility(variables_metadata)
                 return variables_metadata
             # Third, fall back to standard datasets
             if IG_domain_details:
@@ -423,6 +431,7 @@ def get_variables_metadata_from_standard_model(  # noqa
                 replace_variable_wildcards(
                     dataset_variables, original_domain, variables_metadata
                 )
+                set_default_variable_permissibility(variables_metadata)
                 return variables_metadata
         return None
 
@@ -443,6 +452,12 @@ def replace_variable_wildcards(var_list, domain, target_list):
         var_copy = copy.deepcopy(var)
         var_copy["name"] = var_copy["name"].replace("--", domain)
         target_list.append(var_copy)
+
+
+def set_default_variable_permissibility(var_list):
+    for variable_metadata in var_list:
+        if PERMISSIBILITY_KEY not in variable_metadata:
+            variable_metadata[PERMISSIBILITY_KEY] = PERMISSIBILITY_DEFAULT
 
 
 def get_all_model_wildcard_variables(model_details: dict):
