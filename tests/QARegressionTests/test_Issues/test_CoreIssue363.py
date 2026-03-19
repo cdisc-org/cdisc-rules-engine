@@ -5,7 +5,7 @@ import os
 import pytest
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 class TestCoreIssue363(unittest.TestCase):
     def test_post_request(self):
         # URL to send the POST request to

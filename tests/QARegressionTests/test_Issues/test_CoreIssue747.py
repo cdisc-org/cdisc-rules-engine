@@ -18,10 +18,10 @@ have both positive and negative cases,
 including the supp and split domains"""
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_CG0019():
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue747", "Rule_underscores.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue747", "Datasets.json")

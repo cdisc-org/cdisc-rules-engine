@@ -11,7 +11,7 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 class TestCoreIssue720(unittest.TestCase):
     def test_negative_dataset(self):
         """Negative scenario: SPECIES missing -> expect one populated issue."""

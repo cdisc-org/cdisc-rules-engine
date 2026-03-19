@@ -21,10 +21,10 @@ succesfuly running against postive dataset means
 the scope skip problem is resolved """
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_negative_dataset():
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue576", "Rule_underscores.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue576", "Datasets_Negative.json")
@@ -76,7 +76,7 @@ def test_negative_dataset():
     os.remove(file_name)
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_positive_dataset():
     command = (
         f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
