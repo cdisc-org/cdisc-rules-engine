@@ -58,7 +58,7 @@ class SqlValueCheckAgainstLibraryDatasetBuilder(SqlBaseDatasetBuilder):
             select_parts = [
                 f"CAST(ROW_NUMBER() OVER (ORDER BY id) AS TEXT) as {new_col_hash_map['row_number']}",
                 f"'{col_upper}' as {new_col_hash_map['variable_name']}",
-                f"'{col_hash}' as {new_col_hash_map['variable_value']}",
+                f"CAST({col_hash} AS TEXT) as {new_col_hash_map['variable_value']}",
             ]
 
             for key in LIBRARY_VARIABLES_TYPE.keys():
