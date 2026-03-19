@@ -7,7 +7,7 @@ import json
 from conftest import get_python_executable
 
 
-@pytest.mark.skip
+@pytest.mark.regression
 class TestCoreIssue1501(unittest.TestCase):
     def test_raw_report(self):
         # Run the command in the terminal
@@ -17,9 +17,9 @@ class TestCoreIssue1501(unittest.TestCase):
             "core",
             "validate",
             "-s",
-            "send",
+            "sendig",
             "-v",
-            "1-0",
+            "3-1",
             "-dp",
             os.path.join(
                 "tests",
