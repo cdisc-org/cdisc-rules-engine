@@ -17,7 +17,6 @@ from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
