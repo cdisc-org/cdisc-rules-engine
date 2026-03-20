@@ -70,9 +70,9 @@ class Distinct(BaseOperation):
 
     def _get_referenced_datasets(self):
         referenced_datasets = {}
-        for dataset_meta in self.data_service.data:
-            dataset = self.data_service.get_dataset(dataset_meta.filename)
-            referenced_datasets[dataset_meta.name] = dataset
+        for dataset_metadata in self.data_service.get_datasets():
+            dataset = self.data_service.get_dataset(dataset_metadata.filename)
+            referenced_datasets[dataset_metadata.name] = dataset
         return referenced_datasets
 
     def _unique_values_for_column(self, column):

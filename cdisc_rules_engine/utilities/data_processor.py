@@ -143,18 +143,24 @@ class DataProcessor:
                 variables_with_wildcards["USUBJID"],
             ]
         else:
-            left_on = ["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]]
+            left_on = ["STUDYID", "USUBJID", "RELREC.IDVAR"]
             right_on = [
                 variables_with_wildcards["STUDYID"],
                 variables_with_wildcards["USUBJID"],
-                variables_with_wildcards[relrec_row["IDVAR_RIGHT"]],
+                "RELREC.IDVAR",
             ]
+            left_subset["RELREC.IDVAR"] = left_subset[relrec_row["IDVAR_LEFT"]].astype(
+                str
+            )
+            right_subset["RELREC.IDVAR"] = right_subset[
+                relrec_row["IDVAR_RIGHT"]
+            ].astype(str)
         right_subset = right_subset.rename(columns=variables_with_wildcards)
         result = left_subset.merge(
             other=right_subset.data,
             left_on=left_on,
             right_on=right_on,
-        )
+        ).drop(["RELREC.IDVAR"], axis=1, errors="ignore")
         return result
 
     @staticmethod
@@ -182,15 +188,17 @@ class DataProcessor:
         relrec_for_domain = DataProcessor.filter_relrec_for_domain(
             left_dataset_domain_name, relrec_dataset
         )
-
-        # TODO: FIX
         objs = [
             DataProcessor.merge_on_relrec_record(
                 relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
             )
             for _, relrec_row in relrec_for_domain.iterrows()
         ]
-        result = objs[0].concat(objs[1:], ignore_index=True)
+        result = (
+            objs[0].concat(objs[1:], ignore_index=True)
+            if objs
+            else left_dataset.__class__()
+        )
         return result
 
     @staticmethod

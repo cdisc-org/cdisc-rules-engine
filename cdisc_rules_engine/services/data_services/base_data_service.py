@@ -33,14 +33,16 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
-    convert_library_class_name_to_ct_class,
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
-    tag_source,
     replace_nan_values_in_df,
 )
-from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
+from cdisc_rules_engine.utilities.sdtm_utilities import (
+    convert_library_class_name_to_ct_class,
+    get_class_and_dataset_metadata,
+    tag_source,
+)
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -176,8 +178,8 @@ class BaseDataService(DataServiceInterface, ABC):
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         if self.library_metadata.standard_metadata:
-            class_data, _ = get_class_and_domain_metadata(
-                self.library_metadata.standard_metadata,
+            class_data, _ = get_class_and_dataset_metadata(
+                self.library_metadata,
                 dataset_metadata.unsplit_name,
             )
             name = class_data.get("name")

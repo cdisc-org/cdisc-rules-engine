@@ -52,7 +52,7 @@ class COREActions(BaseActions):
         # get targets in the order they appear in rule.output_variables
         target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
             self.rule,
-            self.dataset_metadata.domain_cleaned,
+            self.dataset_metadata.wildcard_replacement,
             self.variable.dataset.columns.tolist(),
         )
         target_names = self._get_target_names_from_list_values(
@@ -242,7 +242,7 @@ class COREActions(BaseActions):
             ),
             targets=targets_list,
             errors=errors_list,
-            message=message.replace("--", self.dataset_metadata.domain_cleaned or ""),
+            message=message.replace("--", self.dataset_metadata.wildcard_replacement),
         )
 
     def _generate_errors_by_target_presence(

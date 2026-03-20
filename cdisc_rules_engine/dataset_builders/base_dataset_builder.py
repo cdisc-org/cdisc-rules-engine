@@ -5,8 +5,8 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
-from cdisc_rules_engine.utilities.utils import (
-    get_corresponding_datasets,
+from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
+from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
 )
 from typing import List, Iterable, Optional
@@ -155,22 +155,21 @@ class BaseDatasetBuilder:
 
     def get_define_xml_variables_metadata(self) -> List[dict]:
         """
-        Gets Define XML variables metadata.
+        Gets Define XML variables metadata. Name and Domain combos for these types of datasets:
+        | Name   | Domain |
+        | ------ | ------ |
+        | AE     | AE     |
+        | QSPH   | QS     |
+        | RELREC |        |
+        | SUPPDM | DM     |
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        # If domain is not set and this is a SUPP domain, use rdomain
-        domain = self.dataset_metadata.domain
-        if not domain and getattr(self.dataset_metadata, "is_supp", False):
-            domain = getattr(self.dataset_metadata, "rdomain", None)
-            name = getattr(self.dataset_metadata, "name", None)
-            return define_xml_reader.extract_variables_metadata(
-                domain_name=domain, name=name
-            )
-        if not domain:
-            return []
-        return define_xml_reader.extract_variables_metadata(domain_name=domain)
+        domain = self.dataset_metadata.domain or self.dataset_metadata.rdomain
+        return define_xml_reader.extract_variables_metadata(
+            domain_name=domain, name=self.dataset_metadata.name
+        )
 
     def get_define_xml_value_level_metadata(self) -> List[dict]:
         """
@@ -204,10 +203,8 @@ class BaseDatasetBuilder:
         else:
             domain = self.dataset_metadata.domain
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            domain=self.dataset_metadata.unsplit_name,
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            dataset=self.get_dataset_contents(),
             datasets=self.datasets,
             dataset_metadata=self.dataset_metadata,
             dataset_path=self.dataset_path,

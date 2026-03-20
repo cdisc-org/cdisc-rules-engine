@@ -12,6 +12,7 @@ from unittest.mock import Mock, patch
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
@@ -69,7 +70,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "domains": {
+                "dataset_names": {
                     "HO",
                     "CO",
                     "SU",
@@ -201,7 +202,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "domains": {
+                "dataset_names": {
                     "HO",
                     "CO",
                     "SU",
@@ -335,7 +336,7 @@ def test_get_column_order_from_library(
     )
 
     def mock_cached_method(*args, **kwargs):
-        return operation_params.dataframe
+        return SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
 
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",

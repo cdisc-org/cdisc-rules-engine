@@ -96,7 +96,7 @@ events_timing_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -189,7 +189,7 @@ events_identifier_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -275,7 +275,7 @@ wildcard_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -352,7 +352,7 @@ no_match_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -442,7 +442,7 @@ findings_about_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"FA"},
+        "dataset_names": {"FA"},
         "classes": [
             {
                 "name": FINDINGS_ABOUT,
@@ -643,7 +643,7 @@ def test_get_dataset_filtered_variables_dask(
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -758,7 +758,7 @@ def test_get_dataset_filtered_variables_empty_dataset(
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -870,7 +870,7 @@ def test_get_dataset_filtered_variables_invalid_key(operation_params: OperationP
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
         "classes": [
             {
                 "name": "Events",

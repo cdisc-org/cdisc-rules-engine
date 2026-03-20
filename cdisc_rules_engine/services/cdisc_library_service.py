@@ -310,7 +310,7 @@ class CDISCLibraryService:
                 {...},
                 ...
             ],
-            "domains": {
+            "dataset_names": {
                 "CO",
                 "DM",
                 "SE",
@@ -319,11 +319,11 @@ class CDISCLibraryService:
         }
         """
         standard_data: dict = self._get_standard(standard_type, version, substandard)
-        domains: Set[str] = self._extract_domain_names_from_tabulation_standard(
+        dataset_names: Set[str] = self._extract_dataset_names_from_tabulation_standard(
             standard_data
         )
-        if domains:
-            standard_data["domains"] = domains
+        if dataset_names:
+            standard_data["dataset_names"] = dataset_names
         return standard_data
 
     def get_model_details(self, standard_details: dict) -> Optional[dict]:
@@ -352,6 +352,11 @@ class CDISCLibraryService:
         model_version: str = standard_href[-1]
         model_data: dict = self._get_model(standard_type, model_version)
         model_data["standard_type"] = standard_type
+        dataset_names: Set[str] = self._extract_dataset_names_from_tabulation_standard(
+            model_data
+        )
+        if dataset_names:
+            model_data["dataset_names"] = dataset_names
         return model_data
 
     def _get_standard(
@@ -405,7 +410,7 @@ class CDISCLibraryService:
             },
             "cdashig": {
                 "classes_key": "classes",
-                "datasets_key": "domains",
+                "datasets_key": "dataset_names",
                 "variables_key": "fields",
             },
             "adam": {
@@ -425,7 +430,7 @@ class CDISCLibraryService:
             },
             "tig/cdash": {
                 "classes_key": "classes",
-                "datasets_key": "domains",
+                "datasets_key": "dataset_names",
                 "variables_key": "fields",
             },
             "tig/adam": {
@@ -668,11 +673,11 @@ class CDISCLibraryService:
                 result[key] = new_map[key]
         return result
 
-    def _extract_domain_names_from_tabulation_standard(
+    def _extract_dataset_names_from_tabulation_standard(
         self, standard_data: dict
     ) -> Set[str]:
         """
-        Accepts tabulation standard data and extracts domain names.
+        Accepts tabulation standard data and extracts dataset names.
         Input example:
         {
             "registrationStatus": "Final",
@@ -708,8 +713,8 @@ class CDISCLibraryService:
         Output example:
         {"CO", "DM", ...}
         """
-        domain_names: Set[str] = set()
+        dataset_names: Set[str] = set()
         for cls in standard_data.get("classes", []):
             for dataset in cls.get("datasets", []):
-                domain_names.add(dataset.get("name"))
-        return domain_names
+                dataset_names.add(dataset.get("name"))
+        return dataset_names
