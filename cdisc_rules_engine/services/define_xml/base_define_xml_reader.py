@@ -384,6 +384,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_codelist_coded_codes": [],
             "define_variable_mandatory": None,
             "define_variable_has_comment": False,
+            "define_variable_has_method": False,
         }
         if itemdef:
             data["define_variable_mandatory"] = itemref.Mandatory
@@ -420,6 +421,7 @@ class BaseDefineXMLReader(ABC):
                 itemref, index
             )
             data["define_variable_has_comment"] = itemdef.CommentOID is not None
+            data["define_variable_has_method"] = itemref.MethodOID is not None
         return data
 
     def _get_codelist_ccode(self, codelist):
