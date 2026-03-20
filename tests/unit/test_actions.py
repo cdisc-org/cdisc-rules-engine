@@ -9,7 +9,7 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 import json
 import pytest
 
-from cdisc_rules_engine.utilities.utils import tag_source
+from cdisc_rules_engine.utilities.sdtm_utilities import tag_source
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
     SOURCE_ROW_NUMBER,
