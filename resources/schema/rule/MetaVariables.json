@@ -57,6 +57,9 @@
       "const": "define_variable_has_comment"
     },
     {
+      "const": "define_variable_has_method"
+    },
+    {
       "const": "define_variable_has_no_data"
     },
     {

@@ -22,7 +22,10 @@ class LibraryColumnOrder(BaseOperation):
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
         # create a list of variable names in accordance to the "ordinal" key
-        variable_names_list = [
-            var["name"].replace("--", self.params.domain) for var in variables_metadata
-        ]
+        variable_names_list = BaseOperation._replace_variable_wildcards(
+            variables_metadata,
+            self.data_service.get_raw_dataset_metadata(
+                dataset_name=self.params.dataset_path, datasets=self.params.datasets
+            ).wildcard_replacement,
+        )
         return list(OrderedDict.fromkeys(variable_names_list))

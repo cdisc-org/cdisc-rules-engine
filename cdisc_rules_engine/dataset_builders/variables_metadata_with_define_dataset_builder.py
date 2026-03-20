@@ -28,8 +28,9 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_has_codelist,
         define_variable_codelist_coded_values,
         define_variable_codelist_coded_codes,
-        define_variable_mandatory
-        define_variable_has_comment
+        define_variable_mandatory,
+        define_variable_has_comment,
+        define_variable_has_method
         """
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()

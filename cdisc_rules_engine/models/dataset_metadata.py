@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Union
+from os.path import basename
 
 
 @dataclass
@@ -17,3 +18,7 @@ class DatasetMetadata:
     full_path: Union[str, None] = None
     first_record: Union[dict, None] = None
     original_path: Union[str, None] = None
+
+    @property
+    def data_service_identifier(self) -> str:
+        return basename(self.full_path) if self.full_path else self.filename

@@ -1,5 +1,5 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-from cdisc_rules_engine.utilities.utils import (
+from cdisc_rules_engine.utilities.sdtm_utilities import (
     get_corresponding_datasets,
 )
 

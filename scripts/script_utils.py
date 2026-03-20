@@ -28,6 +28,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    MissingDataError,
     CTPackageNotFoundError,
     LibraryMetadataNotFoundError,
 )
@@ -221,7 +222,16 @@ def fill_cache_with_dictionaries(
                     f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
                 )
             continue
-        terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
+        try:
+            terms = extract_dictionary_terms(
+                data_service, dictionary_type, dictionary_path
+            )
+        except MissingDataError as e:
+            engine_logger.warning(
+                f"External dictionary '{dictionary_type}' at '{dictionary_path}' "
+                f"could not be loaded and will be skipped: {getattr(e, 'message', str(e))}"
+            )
+            continue
         cache.add(dictionary_path, terms)
         versions_map[dictionary_type] = terms.version
 
