@@ -45,6 +45,7 @@ from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
 from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
 from .variable_metadata_equal_to_operator import VariableMetadataEqualToOperator
+from .is_valid_whodrug_reference_operator import IsValidWhodrugReferenceOperator
 
 
 class PostgresQLOperators(BaseType):
@@ -156,6 +157,7 @@ class PostgresQLOperators(BaseType):
         "shares_no_elements_with": lambda data: SharesElementsWithOperator(data, operation_type="no_elements"),
         "is_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data),
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
+        "is_valid_whodrug_reference": lambda data: IsValidWhodrugReferenceOperator(data),
     }
 
     def __init__(self, data):

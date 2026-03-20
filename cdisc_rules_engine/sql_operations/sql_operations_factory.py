@@ -61,7 +61,6 @@ class SqlOperationsFactory:
         "min_date": lambda params, ds: SqlDateOperation(params, ds, "MIN"),
         "record_count": lambda params, ds: SqlNumericOperation(params, ds, "COUNT"),
         "valid_meddra_code_references": None,
-        "valid_whodrug_references": None,
         "whodrug_code_hierarchy": SqlWhodrugHierarchyOperation,
         "valid_meddra_term_references": None,
         "valid_meddra_code_term_pairs": None,
