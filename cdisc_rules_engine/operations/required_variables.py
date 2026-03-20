@@ -22,7 +22,9 @@ class RequiredVariables(BaseOperation):
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
         return list(
             {
-                var["name"].replace("--", self.params.domain): None
+                BaseOperation._replace_variable_wildcard(
+                    var["name"], self.params.domain
+                ): None
                 for var in variables_metadata
                 if self.get_allowed_variable_permissibility(var) == REQUIRED
             }.keys()

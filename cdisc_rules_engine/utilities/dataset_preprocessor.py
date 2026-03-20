@@ -14,7 +14,6 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     get_sided_match_keys,
-    get_dataset_name_from_details,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 import os
@@ -126,14 +125,14 @@ class DatasetPreprocessor:
                 if file_info.domain in merged_domains:
                     continue
 
-                filename = get_dataset_name_from_details(file_info)
-
                 # Try to download the dataset
                 try:
-                    other_dataset: DatasetInterface = self._download_dataset(filename)
+                    other_dataset: DatasetInterface = self._download_dataset(
+                        file_info.data_service_identifier
+                    )
                 except Exception as e:
                     raise PreprocessingError(
-                        f"Failed to download dataset '{filename}' for preprocessing: {str(e)}"
+                        f"Failed to download dataset '{file_info.data_service_identifier}' for preprocessing: {str(e)}"
                     )
 
                 referenced_targets = set(
@@ -552,7 +551,6 @@ class DatasetPreprocessor:
                 raise PreprocessingError(
                     f"Failed to merge RELREC dataset in preprocessing. "
                     f"Left dataset: {left_dataset_domain_name}, "
-                    f"RELREC dataset: {right_dataset_domain_name}, "
                     f"Wildcard: {right_dataset_domain_details.get('wildcard')}, "
                     f"Match keys: {match_keys}, "
                     f"Error: {str(e)}"

@@ -99,6 +99,10 @@ class DaskDataset(PandasDataset):
 
         return self.length
 
+    @property
+    def empty(self):
+        return len(self) == 0
+
     def __deepcopy__(self, memo):
         pandas_df = self._data.compute()
         fresh_dask_df = dd.from_pandas(pandas_df, npartitions=DEFAULT_NUM_PARTITIONS)

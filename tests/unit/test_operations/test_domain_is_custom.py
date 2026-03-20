@@ -86,7 +86,7 @@ def test_domain_is_custom(
     expected: bool,
 ):
     standard_metadata = {
-        "domains": {"AE"},
+        "dataset_names": {"AE"},
     }
     operation_params.dataframe = dataframe
     operation_params.domain = domain

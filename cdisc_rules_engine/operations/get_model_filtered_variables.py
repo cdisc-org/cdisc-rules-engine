@@ -23,7 +23,7 @@ class LibraryModelVariablesFilter(BaseOperation):
         key = self.params.key_name
         val = self.params.key_value
         model_variables: List[dict] = self._get_variables_metadata_from_standard_model(
-            self.params.domain, self.params.dataframe
+            self.params.dataframe
         )
         filtered_model = [var for var in model_variables if var.get(key) == val]
         variable_names_list = self._replace_variable_wildcards(
