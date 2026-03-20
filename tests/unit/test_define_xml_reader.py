@@ -223,6 +223,15 @@ def test_extract_variable_metadata(filename):
             "define_variable_is_collected": False,
             "define_variable_order_number": 11,
             "define_variable_has_comment": True,
+            "define_variable_has_method": False,
+        }
+        expected_exdose_metadata = {
+            "define_variable_name": "EXDOSE",
+            "define_variable_data_type": "integer",
+            "define_variable_origin_type": "Derived",
+            "define_variable_is_collected": False,
+            "define_variable_has_comment": False,
+            "define_variable_has_method": True,
         }
         for index, variable in enumerate(variable_metadata):
             assert variable["define_variable_name"] in expected_variables
@@ -232,6 +241,12 @@ def test_extract_variable_metadata(filename):
             ):
                 for key in expected_exroute_metadata.keys():
                     assert variable[key] == expected_exroute_metadata[key]
+            if (
+                variable["define_variable_name"]
+                == expected_exdose_metadata["define_variable_name"]
+            ):
+                for key in expected_exdose_metadata.keys():
+                    assert variable[key] == expected_exdose_metadata[key]
 
             assert variable["define_variable_order_number"] == index + 1
 

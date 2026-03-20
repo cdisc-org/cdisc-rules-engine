@@ -24,6 +24,7 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         "define_variable_codelist_coded_codes",
         "define_variable_mandatory",
         "define_variable_has_comment",
+        "define_variable_has_method",
         "library_variable_name",
         "library_variable_label",
         "library_variable_data_type",

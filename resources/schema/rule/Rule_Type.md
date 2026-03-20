@@ -191,6 +191,7 @@ Columns are the columns within the original dataset along with the following col
 - `define_variable_codelist_coded_values`
 - `define_variable_codelist_coded_values`
 - `define_variable_has_comment`
+- `define_variable_has_method`
 
 #### Rule Macro
 
@@ -309,6 +310,7 @@ all:
 - `define_variable_codelist_coded_codes`
 - `define_variable_mandatory`
 - `define_variable_has_comment`
+- `define_variable_has_method`
 - `library_variable_name`
 - `library_variable_order_number`
 - `library_variable_label`
@@ -498,6 +500,7 @@ all:
 - `define_variable_codelist_coded_codes`
 - `define_variable_mandatory`
 - `define_variable_has_comment`
+- `define_variable_has_method`
 
 #### Rule Macro
 
@@ -561,6 +564,7 @@ Combines variable-level metadata from submission dataset contents against the co
 - `define_variable_codelist_coded_codes`
 - `define_variable_mandatory`
 - `define_variable_has_comment`
+- `define_variable_has_method`
 - `library_variable_name`
 - `library_variable_role`
 - `library_variable_label`

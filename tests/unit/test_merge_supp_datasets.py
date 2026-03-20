@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.data_services.local_data_service import (
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 import pandas as pd
 import pandas.testing as pdt
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 
 
 @pytest.fixture
@@ -53,6 +54,30 @@ def test_process_supp():
     assert "QNAM" not in processed_dataset.data.columns, "'QNAM' should be dropped."
     assert "QVAL" not in processed_dataset.data.columns, "'QVAL' should be dropped."
     assert "QLABEL" not in processed_dataset.data.columns, "'QVAL' should be dropped."
+
+
+def test_data_processor_suppae_multiple_qnams():
+    suppae_data = {
+        "STUDYID": ["CDISCPILOT01", "CDISCPILOT01"],
+        "RDOMAIN": ["AE", "AE"],
+        "USUBJID": ["CDISC008", "CDISC008"],
+        "IDVAR": ["", ""],
+        "IDVARVAL": ["", ""],
+        "QNAM": ["AESPID", "AEREL2"],
+        "QLABEL": ["Sponsor ID", "Relationship 2"],
+        "QVAL": ["SP001", "POSSIBLE"],
+        "QORIG": ["CRF", "CRF"],
+        "QEVAL": ["", ""],
+    }
+    suppae_ds = PandasDataset(pd.DataFrame(suppae_data))
+    assert suppae_ds.data.shape[0] == 2
+
+    result = DataProcessor().process_supp(suppae_ds).data
+
+    assert result.shape[0] == 1
+    assert {"AESPID", "AEREL2"}.issubset(set(result.columns))
+    assert result.loc[0, "AESPID"] == "SP001"
+    assert result.loc[0, "AEREL2"] == "POSSIBLE"
 
 
 @patch.object(LocalDataService, "check_filepath", return_value=False)
@@ -258,7 +283,7 @@ def test_merge_supp_dataset_multi_idvar_aggregation(
 
 @patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
-def test_merge_supp_dataset_multi_idvar_same_qnam_validation_error(
+def test_merge_supp_dataset_same_qnam_validation_error(
     mock_async_get_datasets, data_service
 ):
     parent_dataset = PandasDataset(
@@ -292,7 +317,7 @@ def test_merge_supp_dataset_multi_idvar_same_qnam_validation_error(
 
     mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
 
-    with pytest.raises(ValueError, match="Multiple records with the same QNAM"):
+    with pytest.raises(PreprocessingError, match="Multiple records with the same QNAM"):
         DataProcessor.merge_pivot_supp_dataset(
             data_service.dataset_implementation, parent_dataset, supp_dataset
         )
