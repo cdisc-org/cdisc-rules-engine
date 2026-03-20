@@ -24,6 +24,7 @@ from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.enums.standard_types import StandardTypes
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -129,7 +130,7 @@ def _filter_dataset_paths(
     tables_df = pd.read_csv(tables_path, encoding=encoding)
 
     if "Filename" not in tables_df.columns:
-        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+        raise InvalidCSVFile("Metadata files is malformed")
 
     allowed_datasets = {
         Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()

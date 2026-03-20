@@ -47,4 +47,8 @@ class CSVReader(DataReaderInterface):
             else:
                 chunk.to_parquet(temp_file.name, engine="fastparquet", append=True)
 
+        if not created:
+            empty_df = pd.read_csv(file_path, nrows=0, encoding=self.encoding)
+            empty_df.to_parquet(temp_file.name, engine="fastparquet")
+
         return num_rows, temp_file.name
