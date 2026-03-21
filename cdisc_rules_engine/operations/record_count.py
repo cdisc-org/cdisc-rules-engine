@@ -79,7 +79,7 @@ class RecordCount(BaseOperation):
         )
         effective_grouping = []
         for col in grouping_cols:
-            col = self._resolve_variable_name(col, self.params.domain)
+            col = self._replace_variable_wildcard(col, self.params.domain)
             if col in self.evaluation_dataset.data.columns:
                 sample_val = self.evaluation_dataset[col].iloc[0]
                 if isinstance(sample_val, (list, tuple)):
@@ -150,7 +150,7 @@ class RecordCount(BaseOperation):
         )
         effective_grouping = []
         for col in grouping_cols:
-            col = self._resolve_variable_name(col, self.params.domain)
+            col = self._replace_variable_wildcard(col, self.params.domain)
             if col in self.evaluation_dataset.data.columns:
                 if len(self.evaluation_dataset) == 0:
                     effective_grouping.append(col)

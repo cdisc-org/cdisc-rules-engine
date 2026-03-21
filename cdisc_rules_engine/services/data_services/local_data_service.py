@@ -1,4 +1,5 @@
 import os
+from os.path import basename
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
@@ -22,7 +23,6 @@ from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
 )
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
-    extract_file_name_from_path_string,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 from .base_data_service import BaseDataService, cached_dataset
@@ -99,7 +99,7 @@ class LocalDataService(BaseDataService):
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         reader = self._reader_factory.get_service(
-            extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
+            basename(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
         return df
@@ -169,7 +169,7 @@ class LocalDataService(BaseDataService):
         self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
     ) -> dict:
         file_size = os.path.getsize(file_path)
-        file_name = extract_file_name_from_path_string(file_path)
+        file_name = basename(file_path)
         file_metadata = {
             "path": file_path,
             "name": file_name,
@@ -180,7 +180,7 @@ class LocalDataService(BaseDataService):
                 if obj.full_path == file_path:
                     file_metadata = {
                         "path": obj.original_path,
-                        "name": extract_file_name_from_path_string(obj.original_path),
+                        "name": basename(obj.original_path),
                         "file_size": os.path.getsize(obj.original_path),
                     }
                     file_name = obj.filename
@@ -232,7 +232,7 @@ class LocalDataService(BaseDataService):
 
     def to_parquet(self, file_path: str) -> str:
         reader = self._reader_factory.get_service(
-            extract_file_name_from_path_string(file_path).split(".")[1].upper()
+            basename(file_path).split(".")[1].upper()
         )
         return reader.to_parquet(file_path)
 

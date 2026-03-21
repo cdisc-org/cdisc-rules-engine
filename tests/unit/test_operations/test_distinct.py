@@ -227,7 +227,7 @@ def test_distinct_value_is_reference(
             self.name = name
             self.filename = filename
 
-    data_service.data = [MockDataset("LB", "lb.xpt")]
+    data_service.get_datasets = lambda: [MockDataset("LB", "lb.xpt")]
 
     def mock_get_dataset(dataset_name, **kwargs):
         return referenced_data
@@ -298,7 +298,7 @@ def test_grouped_distinct_value_is_reference(
             self.name = name
             self.filename = filename
 
-    data_service.data = [MockDataset("LB", "lb.xpt")]
+    data_service.get_datasets = lambda: [MockDataset("LB", "lb.xpt")]
 
     def mock_get_dataset(dataset_name, **kwargs):
         return referenced_data

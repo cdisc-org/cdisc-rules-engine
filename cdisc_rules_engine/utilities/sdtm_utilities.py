@@ -1,7 +1,20 @@
+import re
+
+from cdisc_rules_engine.constants.domains import (
+    AP_DOMAIN,
+    APFA_DOMAIN,
+    APRELSUB_DOMAIN,
+    SUPPLEMENTARY_DOMAINS,
+)
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
-    convert_library_class_name_to_ct_class,
 )
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
@@ -9,6 +22,8 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS,
     FINDINGS_ABOUT,
     FINDINGS_TEST_VARIABLE,
+    SPECIAL_PURPOSE,
+    SPECIAL_PURPOSE_MODEL,
 )
 from cdisc_rules_engine.constants.permissibility import (
     PERMISSIBILITY_DEFAULT,
@@ -20,35 +35,65 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import copy
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from typing import Iterable, Tuple, List, Optional
 
 
-def get_class_and_domain_metadata(
-    standard_details: dict, domain: str
-) -> Tuple[dict, dict]:
+def is_custom_domain(
+    library_metadata: LibraryMetadataContainer, dataset_name: str
+) -> bool:
     """
-    Extracts metadata of a certain class and domain
-    from given standards details.
+    Checks if the given dataset is a custom domain based on the standard metadata.
 
     Args:
-        standard_details: Library implementation guide metadata.
-        domain: Name of the target domain
+        dataset_name: The dataset name to check.
+        library_metadata: The library metadata container containing standard metadata.
+    """
+    standard_details = library_metadata.standard_metadata
+    model_details = library_metadata.model_metadata
+    is_custom = dataset_name not in standard_details.get(
+        "dataset_names", {}
+    ) and dataset_name not in model_details.get("dataset_names", {})
+    return is_custom
+
+
+def get_class_and_dataset_metadata(
+    library_metadata: LibraryMetadataContainer, dataset_name: str
+) -> Tuple[dict, dict]:
+    """
+    Extracts metadata of a certain class and dataset
+    from given standards details. Checks IG first, then model. If not found, returns empty dicts.
+
+    Args:
+        library_metadata: Library metadata container containing standard metadata.
+        dataset_name: Name of the target dataset
 
     Returns:
-        The class metadata and domain metadata from the standard.
+        The class metadata and dataset metadata from the standard.
         Ex:
-            {class_details}, {domain_details}
+            {class_details}, {dataset_details}
 
     """
-    # Get domain and class details for domain.
-    for c in standard_details.get("classes"):
-        domain_details = search_in_list_of_dicts(
-            c.get("datasets", []), lambda item: item["name"] == domain
+    for c in library_metadata.standard_metadata.get("classes", []):
+        dataset_details = search_in_list_of_dicts(
+            c.get("datasets", []), lambda item: item["name"] == dataset_name
         )
-        if domain_details:
-            return c, domain_details
+        if dataset_details:
+            return c, dataset_details
+    for c in library_metadata.model_metadata.get("classes", []):
+        dataset_details = search_in_list_of_dicts(
+            c.get("datasets", []), lambda item: item["name"] == dataset_name
+        )
+        if dataset_details:
+            return c, dataset_details
     return {}, {}
+
+
+def convert_library_class_name_to_ct_class(class_name: str):
+    conversions = {
+        "special-purpose": SPECIAL_PURPOSE,
+        "special-purpose datasets": SPECIAL_PURPOSE_MODEL,
+    }
+    return conversions.get(class_name.lower(), class_name.upper())
 
 
 def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
@@ -59,15 +104,14 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
 
 
 def get_variables_metadata_from_standard(  # noqa
-    domain,
     library_metadata,
     data_service,
-    dataset: DatasetInterface,
     dataset_metadata: SDTMDatasetMetadata,
     dataset_path: str,
     datasets: Iterable[SDTMDatasetMetadata],
 ):
     add_AP = False
+    domain = dataset_metadata.unsplit_name
     original_domain = domain
     if (
         domain
@@ -83,13 +127,12 @@ def get_variables_metadata_from_standard(  # noqa
         domain = domain[2:]
         original_domain = domain
         add_AP = True
-    standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
-    is_custom = domain not in standard_details.get("domains", {})
+    is_custom = is_custom_domain(library_metadata, domain)
     variables_metadata = []
     if not is_custom:
-        IG_class_details, IG_domain_details = get_class_and_domain_metadata(
-            standard_details, domain
+        IG_class_details, IG_domain_details = get_class_and_dataset_metadata(
+            library_metadata, domain
         )
         class_name = convert_library_class_name_to_ct_class(
             IG_class_details.get("name")
@@ -299,7 +342,6 @@ def group_class_variables_by_role(
 
 
 def get_variables_metadata_from_standard_model(  # noqa
-    domain: str,
     dataframe,
     datasets: Iterable[SDTMDatasetMetadata],
     dataset_path: str,
@@ -314,6 +356,7 @@ def get_variables_metadata_from_standard_model(  # noqa
     if custom, IDs class and uses class variables.
     """
     add_AP = False
+    domain = dataset_metadata.unsplit_name
     original_domain = domain
     if (
         domain
@@ -329,12 +372,11 @@ def get_variables_metadata_from_standard_model(  # noqa
         domain = domain[2:]
         original_domain = domain
         add_AP = True
-    standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
-    is_custom = domain not in standard_details.get("domains", {})
+    is_custom = is_custom_domain(library_metadata, domain)
     if not is_custom:
-        IG_class_details, IG_domain_details = get_class_and_domain_metadata(
-            standard_details, domain
+        IG_class_details, IG_domain_details = get_class_and_dataset_metadata(
+            library_metadata, domain
         )
         class_name = convert_library_class_name_to_ct_class(
             IG_class_details.get("name")
@@ -482,3 +524,46 @@ def add_variable_wildcards(
         )
         for variable in variables
     }
+
+
+def is_supp_domain(dataset_domain: str) -> bool:
+    """
+    Returns true if domain name starts with SUPP or SQ
+    """
+    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
+
+
+def is_ap_domain(dataset_domain: str) -> bool:
+    """
+    Returns true if domain name is like AP-- / APFA APRELSUB.
+    """
+    if dataset_domain == APRELSUB_DOMAIN:
+        return True
+    if len(dataset_domain) == 6:
+        domain_to_check: str = APFA_DOMAIN
+    else:
+        domain_to_check: str = AP_DOMAIN
+    regex = r"^" + re.escape(domain_to_check) + "[a-zA-Z]{2,4}$"
+    return bool(re.match(regex, dataset_domain))
+
+
+def get_corresponding_datasets(
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> List[SDTMDatasetMetadata]:
+    return [
+        other
+        for other in datasets
+        if dataset_metadata.unsplit_name == other.unsplit_name
+    ]
+
+
+def tag_source(
+    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
+) -> DatasetInterface:
+    """
+    For sdtm split datasets,
+    Adds source filename and row number to dataset
+    """
+    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
+    return dataset
