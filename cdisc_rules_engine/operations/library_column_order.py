@@ -27,7 +27,7 @@ class LibraryColumnOrder(BaseOperation):
 
         # Filter variables based on the specified criteria
 
-        if self.params.key_name is not None and self.params.key_value is not None:
+        if self.params.key_name:
             variables_metadata = [
                 var
                 for var in variables_metadata
