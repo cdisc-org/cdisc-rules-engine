@@ -674,6 +674,7 @@ Output:
 ### get_column_order_from_library
 
 Fetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to "ordinal" key of library metadata.
+Optionally Filters variables based on specified metadata criteria.
 
 Rule Type: Variable Metadata Check
 
@@ -686,6 +687,8 @@ Check:
 Operations:
   - id: $ig_variables
     operator: get_column_order_from_library
+    key_name: "role" # role, core, etc
+    key_value: "Exp" # Timing, Req, Exp, Perm, etc
 ```
 
 ### get_model_column_order
@@ -751,7 +754,7 @@ Output
 Filters variables from the dataset based on specified metadata criteria. Returns a list of variable names that exist in the dataset and match the filter criteria.
 
 ```yaml
-- operation: get_dataset_filtered_variables
+- operator: get_dataset_filtered_variables
   id: $timing_variables
   key_name: "role"
   key_value: "Timing"
@@ -834,6 +837,7 @@ Output
     "Record Qualifier"
   ],
   "$qlabel_referenced_variable_metadata_ordinal": [44, null, 38],
+  "$qlabel_referenced_variable_metadata_core": ["Req", "Req", "Req"],
   "$qlabel_referenced_variable_metadata_label": ["Toxicity", null, "Analysis Method"]
 }
 ```
@@ -882,6 +886,7 @@ Output
     "Record Qualifier"
   ],
   "$qnam_referenced_variable_metadata_ordinal": [44, null, 38],
+  "$qnam_referenced_variable_metadata_core": ["Req", "Req", "Req"],
   "$qnam_referenced_variable_metadata_label": ["Toxicity", null, "Analysis Method"]
 }
 ```
@@ -1095,7 +1100,7 @@ Example: return the number of records grouped by USUBJID and timing variables, e
 Example: return the number of records where QNAM starts with "RACE" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $race_records_in_dataset
   filter:
     QNAM: "RACE&"
