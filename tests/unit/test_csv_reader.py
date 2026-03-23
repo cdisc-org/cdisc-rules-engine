@@ -6,7 +6,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
 from core import _filter_dataset_paths
@@ -40,19 +42,6 @@ class TestNoTablesCsv:
 
 
 class TestTablesCsvMissingFilenameColumn:
-    def test_returns_all_csv_dataset_files(self, tmp_path):
-        tables_csv = tmp_path / "tables.csv"
-        pd.DataFrame({"Name": ["dm"]}).to_csv(tables_csv, index=False)
-
-        dm = tmp_path / "dm.csv"
-        customers = tmp_path / "customers.csv"
-        dm.touch()
-        customers.touch()
-
-        paths = [str(tables_csv), str(dm), str(customers)]
-        result = _filter_dataset_paths(paths)
-        assert sorted(result) == sorted([str(dm), str(customers)])
-
     def test_non_csv_files_excluded_when_no_filename_col(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
         pd.DataFrame({"Name": ["dm"]}).to_csv(tables_csv, index=False)
@@ -61,10 +50,8 @@ class TestTablesCsvMissingFilenameColumn:
         readme = tmp_path / "readme.txt"
         dm.touch()
         readme.touch()
-
-        result = _filter_dataset_paths([str(tables_csv), str(dm), str(readme)])
-        assert str(dm) in result
-        assert str(readme) not in result
+        with pytest.raises(InvalidCSVFile):
+            _filter_dataset_paths([str(tables_csv), str(dm), str(readme)])
 
 
 class TestTablesCsvWithFilenameColumn:
