@@ -106,11 +106,13 @@ def cli():
     pass
 
 
-def _filter_dataset_paths(
+def _validate_csv_data_paths(
     dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
 ) -> list[str]:
     """
-    Filters dataset paths based on tables.csv content (if exists).
+    Filters dataset paths based on tables.csv content.
+
+    Raises InvalidCSVFile error if there are no proper tables.csv files in provided path.
 
     Keeps only datasets listed in tables.csv (Filename column).
     Always excludes tables.csv and variables.csv from result.
@@ -118,14 +120,18 @@ def _filter_dataset_paths(
     import pandas as pd
 
     paths = [Path(p) for p in dataset_paths]
-    tables_path = next((p for p in paths if p.name.lower() == "tables.csv"), None)
+
+    tables_path = [p for p in paths if p.name.lower() == "tables.csv"]
+    if len(tables_path) > 1:
+        raise InvalidCSVFile("There is more than one tables.csv file in provided path.")
+    elif len(tables_path) == 0:
+        raise InvalidCSVFile("There is no tables.csv file in provided path.")
+    else:
+        tables_path = tables_path[0]
 
     dataset_files = [
         p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
     ]
-
-    if not tables_path:
-        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
 
     tables_df = pd.read_csv(tables_path, encoding=encoding)
 
@@ -168,7 +174,11 @@ def _validate_data_directory(
         )
         return [], set()
     elif DataFormatTypes.CSV.value in found_formats:
-        dataset_paths = _filter_dataset_paths(dataset_paths)
+        try:
+            dataset_paths = _validate_csv_data_paths(dataset_paths)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -213,7 +223,24 @@ def _validate_dataset_paths(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
+    elif DataFormatTypes.CSV.value in found_formats:
+        all_files_in_dp = []
 
+        for dp in dataset_path:
+            all_files_in_dp.append(dp)
+            dp_path = Path(dp)
+            all_files_in_dp.extend(
+                [
+                    str(p)
+                    for p in dp_path.parent.glob("*")
+                    if p.is_file() and p.name in {"tables.csv", "variables.csv"}
+                ]
+            )
+        try:
+            dataset_paths = _validate_csv_data_paths(all_files_in_dp)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -250,7 +277,7 @@ def load_custom_dotenv(ctx, param, value):
     if isinstance(value, str):
         env_path = os.path.join(value, ".env")
     elif isinstance(value, tuple):
-        env_path = os.path.join(Path(value[0]).parent, ".env")
+        env_path = next((os.path.join(Path(v).parent, ".env") for v in value), None)
     else:
         return value
     if os.path.exists(env_path):

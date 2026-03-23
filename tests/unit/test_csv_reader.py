@@ -11,34 +11,15 @@ import pytest
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
-from core import _filter_dataset_paths
+from core import _validate_csv_data_paths
 
 DEFAULT_ENCODING = "utf-8"
 
 
-def norm(paths):
-    """Normalize path separators for cross-platform comparison."""
-    return [Path(p) for p in paths]
-
-
-class TestNoTablesCsv:
-
-    # Then in each affected test:
-    def test_excludes_non_csv_files(self):
-        paths = ["/data/dm.csv", "/data/readme.txt", "/data/report.xlsx"]
-        assert norm(_filter_dataset_paths(paths)) == norm(["/data/dm.csv"])
-
-    def test_variables_csv_excluded_without_tables_csv(self):
-        paths = ["/data/variables.csv", "/data/dm.csv"]
-        assert norm(_filter_dataset_paths(paths)) == norm(["/data/dm.csv"])
-
-    def test_returns_all_csv_files(self):
-        paths = ["/data/dm.csv", "/data/customers.csv"]
-        result = _filter_dataset_paths(paths)
-        assert sorted(norm(result)) == sorted(norm(paths))
-
-    def test_only_non_csv_returns_empty(self):
-        assert _filter_dataset_paths(["/data/readme.txt", "/data/image.png"]) == []
+def test_no_tables_csv_raises_error():
+    paths = ["/data/variables.csv", "/data/dm.csv"]
+    with pytest.raises(InvalidCSVFile):
+        _validate_csv_data_paths(paths)
 
 
 class TestTablesCsvMissingFilenameColumn:
@@ -51,7 +32,7 @@ class TestTablesCsvMissingFilenameColumn:
         dm.touch()
         readme.touch()
         with pytest.raises(InvalidCSVFile):
-            _filter_dataset_paths([str(tables_csv), str(dm), str(readme)])
+            _validate_csv_data_paths([str(tables_csv), str(dm), str(readme)])
 
 
 class TestTablesCsvWithFilenameColumn:
@@ -67,7 +48,7 @@ class TestTablesCsvWithFilenameColumn:
         for f in (dm, customers, orders):
             f.touch()
 
-        result = _filter_dataset_paths(
+        result = _validate_csv_data_paths(
             [str(tables_csv), str(dm), str(customers), str(orders)]
         )
         assert sorted(result) == sorted([str(dm), str(customers)])
@@ -83,7 +64,7 @@ class TestTablesCsvWithFilenameColumn:
         variables.touch()
         dm.touch()
 
-        result = _filter_dataset_paths([str(tables_csv), str(variables), str(dm)])
+        result = _validate_csv_data_paths([str(tables_csv), str(variables), str(dm)])
         assert str(variables) not in result
         assert str(dm) in result
 
@@ -94,7 +75,7 @@ class TestTablesCsvWithFilenameColumn:
         dm = tmp_path / "dm.csv"
         dm.touch()
 
-        result = _filter_dataset_paths([str(tables_csv), str(dm)])
+        result = _validate_csv_data_paths([str(tables_csv), str(dm)])
         assert str(dm) in result
 
     def test_nan_filenames_are_ignored(self, tmp_path):
@@ -105,7 +86,7 @@ class TestTablesCsvWithFilenameColumn:
         dm.touch()
         unknown.touch()
 
-        result = _filter_dataset_paths([str(tables_csv), str(dm), str(unknown)])
+        result = _validate_csv_data_paths([str(tables_csv), str(dm), str(unknown)])
         assert str(dm) in result
         assert str(unknown) not in result
 
@@ -115,7 +96,7 @@ class TestTablesCsvWithFilenameColumn:
         dm = tmp_path / "dm.csv"
         dm.touch()
 
-        assert _filter_dataset_paths([str(tables_csv), str(dm)]) == []
+        assert _validate_csv_data_paths([str(tables_csv), str(dm)]) == []
 
     def test_non_csv_files_excluded_even_if_stem_matches(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
@@ -124,7 +105,7 @@ class TestTablesCsvWithFilenameColumn:
         dm_xlsx = tmp_path / "dm.xlsx"
         dm_xlsx.touch()
 
-        assert _filter_dataset_paths([str(tables_csv), str(dm_xlsx)]) == []
+        assert _validate_csv_data_paths([str(tables_csv), str(dm_xlsx)]) == []
 
     def test_encoding_is_forwarded_to_read_csv(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
@@ -132,7 +113,7 @@ class TestTablesCsvWithFilenameColumn:
         (tmp_path / "dm.csv").touch()
 
         with patch("pandas.read_csv", wraps=pd.read_csv) as mock_read:
-            _filter_dataset_paths(
+            _validate_csv_data_paths(
                 [str(tables_csv), str(tmp_path / "dm.csv")], encoding="latin-1"
             )
             mock_read.assert_called_once_with(tables_csv, encoding="latin-1")
@@ -142,10 +123,11 @@ class TestEdgeCases:
     def test_only_tables_csv_in_input(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
         pd.DataFrame({"Filename": ["dm.csv"]}).to_csv(tables_csv, index=False)
-        assert _filter_dataset_paths([str(tables_csv)]) == []
+        assert _validate_csv_data_paths([str(tables_csv)]) == []
 
     def test_only_variables_csv_in_input(self):
-        assert _filter_dataset_paths(["/data/variables.csv"]) == []
+        with pytest.raises(InvalidCSVFile):
+            _validate_csv_data_paths(["/data/variables.csv"])
 
     def test_empty_filename_column_returns_empty(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
@@ -155,7 +137,7 @@ class TestEdgeCases:
         dm = tmp_path / "dm.csv"
         dm.touch()
 
-        assert _filter_dataset_paths([str(tables_csv), str(dm)]) == []
+        assert _validate_csv_data_paths([str(tables_csv), str(dm)]) == []
 
     def test_all_filename_values_nan_returns_empty(self, tmp_path):
         tables_csv = tmp_path / "tables.csv"
@@ -163,7 +145,7 @@ class TestEdgeCases:
         dm = tmp_path / "dm.csv"
         dm.touch()
 
-        assert _filter_dataset_paths([str(tables_csv), str(dm)]) == []
+        assert _validate_csv_data_paths([str(tables_csv), str(dm)]) == []
 
     def test_duplicate_paths_removed(self, tmp_path):
         """The function does not deduplicate; duplicates in -> duplicates out."""
@@ -173,7 +155,7 @@ class TestEdgeCases:
         dm.touch()
 
         paths = [str(tables_csv), str(dm), str(dm)]
-        result = _filter_dataset_paths(paths)
+        result = _validate_csv_data_paths(paths)
         assert result.count(str(dm)) == 1
 
 
