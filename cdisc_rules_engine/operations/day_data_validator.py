@@ -1,15 +1,12 @@
+from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
-from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.utilities.utils import tag_source
+from cdisc_rules_engine.utilities.sdtm_utilities import tag_source
 
 
 class DayDataValidator(BaseOperation):
     def _execute_operation(self):
-        logger.info(
-            f"trying to find '{self.params.target}' in the {self.evaluation_dataset['DOMAIN'].iloc[0]}."
-        )
         dtc_value = self.evaluation_dataset[self.params.target].map(
             self.parse_timestamp
         )
@@ -18,8 +15,9 @@ class DayDataValidator(BaseOperation):
             dataset for dataset in self.params.datasets if dataset.domain == "DM"
         ]
         if not dm_datasets:
-            # Return none for all values if dm is not provided.
-            return [0] * len(self.evaluation_dataset[self.params.target])
+            raise DomainNotFoundError(
+                "Operation dy requires DM domain but Domain not found in datasets"
+            )
         if len(dm_datasets) > 1:
             dm_data = self.data_service.concat_split_datasets(
                 self.data_service.get_dataset, dm_datasets

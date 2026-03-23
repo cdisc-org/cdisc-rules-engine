@@ -11,27 +11,13 @@ import re
 import ast
 import pandas as pd
 from datetime import datetime
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Callable, List, Optional, Union
 from uuid import UUID
-from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
-    SOURCE_ROW_NUMBER,
-)
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 
-from cdisc_rules_engine.constants.domains import (
-    AP_DOMAIN,
-    APFA_DOMAIN,
-    APRELSUB_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
-)
-from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
 
 
@@ -173,27 +159,6 @@ def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str
     )
 
 
-def is_supp_domain(dataset_domain: str) -> bool:
-    """
-    Returns true if domain name starts with SUPP or SQ
-    """
-    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
-
-
-def is_ap_domain(dataset_domain: str) -> bool:
-    """
-    Returns true if domain name is like AP-- / APFA APRELSUB.
-    """
-    if dataset_domain == APRELSUB_DOMAIN:
-        return True
-    if len(dataset_domain) == 6:
-        domain_to_check: str = APFA_DOMAIN
-    else:
-        domain_to_check: str = AP_DOMAIN
-    regex = r"^" + re.escape(domain_to_check) + "[a-zA-Z]{2,4}$"
-    return bool(re.match(regex, dataset_domain))
-
-
 def get_library_variables_metadata_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
@@ -287,36 +252,6 @@ def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
 
 
-def tag_source(
-    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
-) -> DatasetInterface:
-    """
-    For sdtm split datasets,
-    Adds source filename and row number to dataset
-    """
-    dataset[SOURCE_FILENAME] = dataset_metadata.filename
-    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
-    return dataset
-
-
-def get_corresponding_datasets(
-    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
-) -> List[SDTMDatasetMetadata]:
-    return [
-        other
-        for other in datasets
-        if dataset_metadata.unsplit_name == other.unsplit_name
-    ]
-
-
-def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:
-    return (
-        os.path.split(dataset_metadata.full_path)[-1]
-        if dataset_metadata.full_path
-        else dataset_metadata.filename
-    )
-
-
 def serialize_rule(rule: dict) -> dict:
     """
     Converts rule "conditions" to dict.
@@ -349,16 +284,6 @@ def list_contains_duplicates(list_to_check: list) -> bool:
     Checks if a list contains duplicated items.
     """
     return bool(len(list_to_check) > len(set(list_to_check)))
-
-
-def extract_file_name_from_path_string(path: str) -> str:
-    """
-    Extracts file name from given path string.
-    Example:
-        input: "CDISC01/test/ae.xpt"
-        output: ae.xpt
-    """
-    return os.path.split(path)[-1]
 
 
 def generate_report_filename(generation_time: str) -> str:
@@ -434,14 +359,6 @@ def get_dictionary_path(directory_path: str, file_name: str) -> str:
     Creates a path to dictionary directory or file.
     """
     return os.path.join(directory_path, file_name)
-
-
-def convert_library_class_name_to_ct_class(class_name: str):
-    conversions = {
-        "special-purpose": SPECIAL_PURPOSE,
-        "special-purpose datasets": SPECIAL_PURPOSE_MODEL,
-    }
-    return conversions.get(class_name.lower(), class_name.upper())
 
 
 def decode_line(line: bytes) -> str:

@@ -1,0 +1,470 @@
+{
+  "datasets": [
+    {
+      "filename": "ex.xpt",
+      "label": "Exposure",
+      "domain": "EX",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "DOMAIN ",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXTRT",
+          "label": "Name of Actual Treatment ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXDOSE",
+          "label": "Dose per Administration ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXDOSU",
+          "label": "Dose Units ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXDOSFRM",
+          "label": "Dose Form ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXDOSFRQ",
+          "label": "Dosing Frequency Per Interval ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXROUTE",
+          "label": "Route of Administration ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "EXLOT",
+          "label": "Lot Number ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "RPHASE",
+          "label": "Reproductive Phase ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "RPPLDY",
+          "label": "Planned Repro Phase Day",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLSTDY",
+          "label": "Planned Repro Phase Day of Obs Start ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLENDY",
+          "label": "Planned Repro Phase Day of Obs End ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXRPDY",
+          "label": "Actual Repro Phase Day of Observation ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXRPSTDY",
+          "label": "Actual Repro Phase Day of Obs Start",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXRPENDY",
+          "label": "Actual Repro Phase Day of Obs End",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "EXSTDTC",
+          "label": "Start Date/Time of Treatment ",
+          "type": "Char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 "
+        ],
+        "DOMAIN ": ["EX", "EX", "EX", "EX", "EX", "EX"],
+        "USUBJID": [
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 "
+        ],
+        "EXSEQ": [1, 2, 3, 4, 5, 6],
+        "EXTRT": ["DRUG A", "DRUG A", "DRUG A", "DRUG A", "DRUG A", "DRUG A"],
+        "EXDOSE": [1, 1, 1, 1, 1, 1],
+        "EXDOSU": ["mg", "mg", "mg", "mg", "mg", "mg"],
+        "EXDOSFRM": [
+          "POWDER",
+          "POWDER",
+          "POWDER",
+          "POWDER",
+          "POWDER",
+          "POWDER"
+        ],
+        "EXDOSFRQ": ["", "", "", "", "", ""],
+        "EXROUTE": ["ORAL", "ORAL", "ORAL", "ORAL", "ORAL", "ORAL"],
+        "EXLOT": ["", "", "", "", "", ""],
+        "RPHASE": [
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION "
+        ],
+        "RPPLDY": [1.01, 2, 3, 4, -5, 0],
+        "RPPLSTDY": [1, 2.6, 3, 4, 5, 6],
+        "RPPLENDY": [1, 2, 1.1, 4, 5, 6],
+        "EXRPDY": [1, 2, 3, -2.2, 5, 6],
+        "EXRPSTDY": [1, 2, 3, 4, 2.3, 6],
+        "EXRPENDY": [1, 2, 3, 4, 5, -4.1],
+        "EXSTDTC": [
+          "2023-01-01",
+          "2023-01-02",
+          "2023-01-03",
+          "2023-01-04",
+          "2023-01-05",
+          "2023-01-06"
+        ]
+      }
+    },
+    {
+      "filename": "lb.xpt",
+      "label": "Laboratory",
+      "domain": "LB",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "DOMAIN ",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "LBSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "LBTESTCD",
+          "label": "Lab Test or Examination Short Name ",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "LBTEST",
+          "label": "Lab Test or Examination Name ",
+          "type": "Char",
+          "length": 40
+        },
+        {
+          "name": "LBORRES",
+          "label": "Result or Findings as Collected ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "RPHASE",
+          "label": "Reproductive Phase ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "RPPLDY",
+          "label": "Planned Repro Phase Day",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLSTDY",
+          "label": "Planned Repro Phase Day of Obs Start ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLENDY",
+          "label": "Planned Repro Phase Day of Obs End ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "LBRPDY",
+          "label": "Actual Repro Phase Day of Observation ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "LBRPSTDY",
+          "label": "Actual Repro Phase Day of Obs Start",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "LBRPENDY",
+          "label": "Actual Repro Phase Day of Obs End",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "LBSTDTC",
+          "label": "Start Date/Time of Treatment ",
+          "type": "Char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "STUDYID ": [
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 "
+        ],
+        "DOMAIN ": ["LB", "LB", "LB", "LB", "LB", "LB"],
+        "USUBJID": [
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 "
+        ],
+        "LBSEQ": [1, 2, 3, 4, 5, 6],
+        "LBTESTCD": ["GLUC", "GLUC", "GLUC", "GLUC", "GLUC", "GLUC"],
+        "LBTEST": [
+          "Glucose",
+          "Glucose",
+          "Glucose",
+          "Glucose",
+          "Glucose",
+          "Glucose"
+        ],
+        "LBORRES": [
+          "POSITIVE",
+          "POSITIVE",
+          "POSITIVE",
+          "POSITIVE",
+          "POSITIVE",
+          "POSITIVE"
+        ],
+        "RPHASE": [
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION "
+        ],
+        "RPPLDY": [1.01, 2, 3, 4, -5, -5],
+        "RPPLSTDY": [1, 2.6, 3, 4, 5, 5],
+        "RPPLENDY": [1, 2, 1.1, 4, 5, 5],
+        "LBRPDY": [1, 2, 3, -2.2, 5, 5],
+        "LBRPSTDY": [1, 2, 3, 4, 2.3, 5],
+        "LBRPENDY": [1, 2, 3, 4, 5, 5.7],
+        "LBSTDTC": [
+          "2023-01-01",
+          "2023-01-02",
+          "2023-01-03",
+          "2023-01-04",
+          "2023-01-05",
+          "2023-01-06"
+        ]
+      }
+    },
+    {
+      "filename": "ds.xpt",
+      "label": "Disposition",
+      "domain": "DS",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "DOMAIN ",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "DSSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "DSTERM",
+          "label": "Reported Term for the Disposition Event ",
+          "type": "Char",
+          "length": 100
+        },
+        {
+          "name": "RPHASE",
+          "label": "Reproductive Phase ",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "RPPLDY",
+          "label": "Planned Repro Phase Day",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLSTDY",
+          "label": "Planned Repro Phase Day of Obs Start ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RPPLENDY",
+          "label": "Planned Repro Phase Day of Obs End ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "DSRPDY",
+          "label": "Actual Repro Phase Day of Observation ",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "DSRPSTDY",
+          "label": "Actual Repro Phase Day of Obs Start",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "DSRPENDY",
+          "label": "Actual Repro Phase Day of Obs End",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "DSSTDTC",
+          "label": "Start Date/Time of Treatment ",
+          "type": "Char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 ",
+          "EFD111 "
+        ],
+        "DOMAIN ": ["DS", "DS", "DS", "DS", "DS", "DS"],
+        "USUBJID": [
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 ",
+          "EFD111-0001 "
+        ],
+        "DSSEQ": [1, 2, 3, 4, 5, 6],
+        "DSTERM": ["aa", "bb", "cc", "dd", "ee", "ee"],
+        "RPHASE": [
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION ",
+          "GESTATION "
+        ],
+        "RPPLDY": [1.01, 2, 3, 4, -5, -6],
+        "RPPLSTDY": [1, 2.6, 3, 4, 5, 6],
+        "RPPLENDY": [1, 2, 1.1, 4, 5, 6],
+        "DSRPDY": [1, 2, 3, -2.2, 5, 6],
+        "DSRPSTDY": [1, 2, 3, 4, 2.3, 6],
+        "DSRPENDY": [1, 2, 3, 4, 5, 6.1],
+        "DSSTDTC": [
+          "2023-01-01",
+          "2023-01-02",
+          "2023-01-03",
+          "2023-01-04",
+          "2023-01-05",
+          "2023-01-06"
+        ]
+      }
+    }
+  ],
+  "standard": {
+    "product": "sendig",
+    "version": "3-1"
+  },
+  "codelists": []
+}
