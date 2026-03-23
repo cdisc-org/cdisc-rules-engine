@@ -1,8 +1,4 @@
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.constants.permissibility import (
-    PERMISSIBLE,
-    PERMISSIBILITY_KEY,
-)
 from abc import abstractmethod
 from typing import List
 import pandas as pd
@@ -236,14 +232,6 @@ class BaseOperation:
             datasets=self.params.datasets,
             dataset_path=self.params.dataset_path,
         )
-
-    def get_allowed_variable_permissibility(self, variable_metadata: dict):
-        """
-        Returns the permissibility value of a variable allowed in the current domain
-        """
-        if PERMISSIBILITY_KEY in variable_metadata:
-            return variable_metadata[PERMISSIBILITY_KEY]
-        return PERMISSIBLE
 
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
