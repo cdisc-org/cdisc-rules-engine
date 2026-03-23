@@ -1170,8 +1170,9 @@ class DataframeType(BaseType):
             try:
                 pattern = re.compile(regex)
             except re.error:
-                logger.error("Invalid regex: %s. It will be ignored.", regex)
-                regex, pattern = r".*", re.compile(r".*")
+                raise ValueError(
+                    f"Invalid regex: {regex}. Remove parameter or fix the regex."
+                )
             if pattern.groups == 0:
                 regex = f"({regex})"
             extracted = df_check[target].astype(str).str.extract(regex, expand=True)[0]

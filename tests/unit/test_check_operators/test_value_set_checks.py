@@ -249,7 +249,8 @@ def test_is_inconsistent_across_dataset(
     [
         # regex disabled
         (["A", "B"], None, [True, True]),
-        (["A", "B"], "", [True, True]),
+        (["TEST_v1", "TEST_v2"], "", [True, True]),
+        (["TEST", "TEST"], "", [False, False]),
         # regex collapsing values
         (["TEST_v1", "TEST_v2"], r"^(TEST)", [False, False]),
         (["ABC123", "XYZ123"], r"(\d+)", [False, False]),
@@ -320,13 +321,11 @@ def test_is_inconsistent_across_dataset_regex(values, regex, expected):
         (["TEST_v1", "TEST_v2"], "AA(C)B)A", [True, True]),
         (["TEST_v1", "TEST_v2"], "\\", [True, True]),
         (["TEST_v1", "TEST_v2"], "**", [True, True]),
-        (["TEST_v1", "TEST_v2"], "", [True, True]),
         (["TEST", "TEST"], "AABB???", [False, False]),
         (["TEST", "TEST"], "AA(C(B)A", [False, False]),
         (["TEST", "TEST"], "AA(C)B)A", [False, False]),
         (["TEST", "TEST"], "\\", [False, False]),
         (["TEST", "TEST"], "**", [False, False]),
-        (["TEST", "TEST"], "", [False, False]),
     ],
 )
 def test_is_inconsistent_across_dataset_regex_ignores_bad_regex(
@@ -351,9 +350,8 @@ def test_is_inconsistent_across_dataset_regex_ignores_bad_regex(
             "value": df,
         }
     )
-    result = obj.is_inconsistent_across_dataset(other_value)
-
-    assert result.tolist() == expected
+    with pytest.raises(ValueError):
+        obj.is_inconsistent_across_dataset(other_value)
 
 
 @pytest.mark.parametrize(
