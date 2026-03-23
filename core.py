@@ -81,7 +81,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
 
     if ignored_files:
         logger = logging.getLogger("validator")
-        logger.warning(
+        logger.info(
             f"Ignoring {len(ignored_files)} file(s) with unsupported formats: {', '.join(ignored_files[:5])}"
             + ("..." if len(ignored_files) > 5 else "")
         )

@@ -1,8 +1,4 @@
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.constants.permissibility import (
-    PERMISSIBLE,
-    PERMISSIBILITY_KEY,
-)
 from abc import abstractmethod
 from typing import List
 import pandas as pd
@@ -140,8 +136,10 @@ class BaseOperation:
             result = self._rename_grouping_columns(result)
         grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
-        target_columns = self._resolve_variable_name(target_columns, self.params.domain)
-        grouping_columns = self._resolve_variable_name(
+        target_columns = self._replace_variable_wildcard(
+            target_columns, self.params.domain
+        )
+        grouping_columns = self._replace_variable_wildcard(
             grouping_columns, self.params.domain
         )
         result = result.reset_index()
@@ -225,13 +223,9 @@ class BaseOperation:
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
 
-        # self.params.domain is unsplit_name
-        domain_for_library = self.params.domain
         return sdtm_utilities.get_variables_metadata_from_standard(
-            domain=domain_for_library,
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            dataset=self.evaluation_dataset,
             dataset_metadata=self.data_service.get_raw_dataset_metadata(
                 dataset_name=self.params.dataset_path, datasets=self.params.datasets
             ),
@@ -239,18 +233,10 @@ class BaseOperation:
             dataset_path=self.params.dataset_path,
         )
 
-    def get_allowed_variable_permissibility(self, variable_metadata: dict):
-        """
-        Returns the permissibility value of a variable allowed in the current domain
-        """
-        if PERMISSIBILITY_KEY in variable_metadata:
-            return variable_metadata[PERMISSIBILITY_KEY]
-        return PERMISSIBLE
-
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[dict] = (
-            self._get_variables_metadata_from_standard_model(domain, dataframe)
+            self._get_variables_metadata_from_standard_model(dataframe)
         )
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
@@ -258,9 +244,7 @@ class BaseOperation:
         )
         return list(OrderedDict.fromkeys(variable_names_list))
 
-    def _get_variables_metadata_from_standard_model(
-        self, domain, dataframe
-    ) -> List[dict]:
+    def _get_variables_metadata_from_standard_model(self, dataframe) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -287,7 +271,6 @@ class BaseOperation:
         # TODO: Update to handle multiple standard types.
 
         return sdtm_utilities.get_variables_metadata_from_standard_model(
-            domain=domain,
             dataframe=dataframe,
             datasets=self.params.datasets,
             dataset_path=self.params.dataset_path,
@@ -300,10 +283,13 @@ class BaseOperation:
 
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
-        return [var["name"].replace("--", domain) for var in variables_metadata]
+        return [
+            BaseOperation._replace_variable_wildcard(var["name"], domain)
+            for var in variables_metadata
+        ]
 
     @staticmethod
-    def _resolve_variable_name(variable_name, domain: str):
+    def _replace_variable_wildcard(variable_name, domain: str):
         if isinstance(variable_name, list):
             return [
                 var.replace("--", domain) if "--" in var else var

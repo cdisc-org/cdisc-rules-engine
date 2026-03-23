@@ -83,6 +83,10 @@
       "markdownDescription": "\nItemGroupDef.ItemDef.CommentOID exists\n"
     },
     {
+      "const": "define_variable_has_method",
+      "markdownDescription": "\nItemGroupDef.ItemRef.MethodOID exists\n"
+    },
+    {
       "const": "define_variable_has_no_data",
       "markdownDescription": "\nItemGroupDef.ItemRef.HasNoData\n"
     },

@@ -76,7 +76,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": ["AE", "DM", "VS"],
+        "dataset_names": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -239,7 +239,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
-        "domains": ["AE", "DM", "VS"],
+        "dataset_names": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
