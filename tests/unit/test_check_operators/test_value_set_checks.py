@@ -245,6 +245,116 @@ def test_is_inconsistent_across_dataset(
 
 
 @pytest.mark.parametrize(
+    "values,regex,expected",
+    [
+        # regex disabled
+        (["A", "B"], None, [True, True]),
+        (["TEST_v1", "TEST_v2"], "", [True, True]),
+        (["TEST", "TEST"], "", [False, False]),
+        # regex collapsing values
+        (["TEST_v1", "TEST_v2"], r"^(TEST)", [False, False]),
+        (["ABC123", "XYZ123"], r"(\d+)", [False, False]),
+        (["HEIGHT_cm", "HEIGHT_mm"], r"^(HEIGHT)", [False, False]),
+        # datetime normalization
+        (
+            ["2014-09-30T11:09", "2014-09-30T11:07"],
+            r"^(\d{4}-\d{2}-\d{2})",
+            [False, False],
+        ),
+        (["TEST_A", "TEST_B"], r"^(TEST_[A-Z])", [True, True]),
+        (["SUBJ-001", "SUBJ-002"], r"SUBJ-(\d+)", [True, True]),
+        (
+            ["2014-09-30T11:09", "2014-09-29T11:07"],
+            r"^(\d{4}-\d{2}-\d{2})",
+            [True, True],
+        ),
+        # regex no capture group
+        (["ABC", "DEF"], r"^XYZ", [True, True]),
+        (["TEST_v1", "CONTROL"], r"^(TEST)", [True, True]),
+        (["A", "B"], r"(.*)", [True, True]),
+        (["A", None], r"(A)", [True, True]),
+        ([None, None], r"(.*)", [False, False]),
+        ([1, 1], r"(\d+)", [False, False]),
+        # multiple capture groups
+        ([1, 1], r"(\d+)(\d+)", [False, False]),
+        # multiple regex
+        (
+            [1, 1],
+            [
+                r"(\d+)(\d+)",
+                r"(\d+)(\d+)",
+            ],
+            [False, False],
+        ),
+    ],
+)
+def test_is_inconsistent_across_dataset_regex(values, regex, expected):
+    df = pd.DataFrame(
+        {
+            "VISIT": ["WEEK1"] * len(values),
+            "EPOCH": ["TREATMENT"] * len(values),
+            "VALUE": values,
+        }
+    )
+
+    other_value = {
+        "target": "VALUE",
+        "comparator": ["VISIT", "EPOCH"],
+        "regex": regex,
+    }
+
+    obj = DataframeType(
+        {
+            "value": df,
+        }
+    )
+    result = obj.is_inconsistent_across_dataset(other_value)
+
+    assert result.tolist() == expected
+
+
+@pytest.mark.parametrize(
+    "values,regex,expected",
+    [
+        (["TEST_v1", "TEST_v2"], "AABB???", [True, True]),
+        (["TEST_v1", "TEST_v2"], "AA(C(B)A", [True, True]),
+        (["TEST_v1", "TEST_v2"], "AA(C)B)A", [True, True]),
+        (["TEST_v1", "TEST_v2"], "\\", [True, True]),
+        (["TEST_v1", "TEST_v2"], "**", [True, True]),
+        (["TEST", "TEST"], "AABB???", [False, False]),
+        (["TEST", "TEST"], "AA(C(B)A", [False, False]),
+        (["TEST", "TEST"], "AA(C)B)A", [False, False]),
+        (["TEST", "TEST"], "\\", [False, False]),
+        (["TEST", "TEST"], "**", [False, False]),
+    ],
+)
+def test_is_inconsistent_across_dataset_regex_ignores_bad_regex(
+    values, regex, expected
+):
+    df = pd.DataFrame(
+        {
+            "VISIT": ["WEEK1"] * len(values),
+            "EPOCH": ["TREATMENT"] * len(values),
+            "VALUE": values,
+        }
+    )
+
+    other_value = {
+        "target": "VALUE",
+        "comparator": ["VISIT", "EPOCH"],
+        "regex": regex,
+    }
+
+    obj = DataframeType(
+        {
+            "value": df,
+        }
+    )
+    with pytest.raises(ValueError):
+        obj.is_inconsistent_across_dataset(other_value)
+
+
+@pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
         ("BGSTRESU", "USUBJID", DaskDataset, [False, False, True, True]),
