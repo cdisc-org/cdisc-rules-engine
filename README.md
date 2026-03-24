@@ -250,10 +250,10 @@ This will show the list of validation options.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
-  -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders. 
-                                    Not required if variables.txt exists in all -dp directories. 
+  -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders.
+                                    Not required if variables.txt exists in all -dp directories.
                                     VARIABLES_CSV environment variable can be used to pass value.
-  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders. 
+  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders.
                                     TABLES_CSV environment variable can be used to pass value
   --help                          Show this message and exit.
 ```

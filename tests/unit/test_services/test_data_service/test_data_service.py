@@ -208,6 +208,8 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
             None,
             None,
             None,
+            None,
+            None,
         )
     )
     data_service = LocalDataService(

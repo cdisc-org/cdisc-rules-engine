@@ -129,7 +129,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         ]
 
 
-def test_get_variables_metdata():
+def test_get_variables_metadata():
     USDMDataService._instance = None
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None

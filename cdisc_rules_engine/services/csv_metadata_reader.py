@@ -15,6 +15,7 @@ class DatasetCSVMetadataReader:
         encoding: str = DEFAULT_ENCODING,
         variables_csv_path: str = None,
         tables_csv_path: str = None,
+        **kwargs,
     ):
         self.file_path = file_path
         self.file_name = file_name
