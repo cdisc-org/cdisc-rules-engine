@@ -9,23 +9,37 @@ from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 class DatasetCSVMetadataReader:
     def __init__(
-        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+        self,
+        file_path: str,
+        file_name: str,
+        encoding: str = DEFAULT_ENCODING,
+        variables_csv_path: str = None,
+        tables_csv_path: str = None,
     ):
         self.file_path = file_path
         self.file_name = file_name
         self.encoding = encoding
+        self.variables_csv_path = (
+            Path(variables_csv_path)
+            if variables_csv_path
+            else Path(self.file_path).parent / "variables.csv"
+        )
+        self.tables_csv_path = (
+            Path(tables_csv_path)
+            if tables_csv_path
+            else Path(self.file_path).parent / "tables.csv"
+        )
 
     def read(self) -> dict:
         dataset_name = Path(self.file_name).stem.lower()
-        variables_file_path = Path(self.file_path).parent / "variables.csv"
 
-        if not variables_file_path.exists():
+        if not self.variables_csv_path.exists():
             logger = logging.getLogger("validator")
             logger.info("No variables file found for %s", dataset_name)
             variables_meta = {}
         else:
             variables_meta = self.__get_variable_metadata(
-                dataset_name, variables_file_path
+                dataset_name, self.variables_csv_path
             )
 
         metadata = {
@@ -95,12 +109,12 @@ class DatasetCSVMetadataReader:
 
     def __dataset_label(self) -> dict:
         logger = logging.getLogger("validator")
-        tables_file_path = Path(self.file_path).parent / "tables.csv"
-        if not tables_file_path.exists():
+
+        if not self.tables_csv_path.exists():
             return {}
 
         try:
-            tables_df = pd.read_csv(tables_file_path, encoding=self.encoding)
+            tables_df = pd.read_csv(self.tables_csv_path, encoding=self.encoding)
         except (UnicodeDecodeError, UnicodeError) as e:
             logger.error(
                 f"\n  Error reading CSV from: {self.file_path}"

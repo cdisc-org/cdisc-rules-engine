@@ -137,7 +137,8 @@ This will show the list of validation options.
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
-  -ps, --pool-size INTEGER         Number of parallel processes for validation
+  -ps, --pool-size INTEGER        Number of parallel processes for validation
+  -dep, --dotenv-path             Path to the .env file used to set environment variables.
   -d, --data TEXT                 Path to directory containing data files.
                                     DATA_DIR environment variable can be used to pass value.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
@@ -214,15 +215,15 @@ This will show the list of validation options.
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
-  --loinc TEXT                  Path to directory with LOINC dictionary
+  --loinc TEXT                    Path to directory with LOINC dictionary
                                   files
-  --medrt TEXT                  Path to directory with MEDRT dictionary
+  --medrt TEXT                    Path to directory with MEDRT dictionary
                                   files
-  --unii TEXT                  Path to directory with UNII dictionary
+  --unii TEXT                     Path to directory with UNII dictionary
                                   files
-  --snomed-version TEXT        Version of snomed to use. (ex. 2024-09-01)
-  --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
-  --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
+  --snomed-version TEXT           Version of snomed to use. (ex. 2024-09-01)
+  --snomed-url TEXT               Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+  --snomed-edition TEXT           Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
                                     RULES environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -er, --exclude-rules TEXT       Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times.
@@ -230,7 +231,7 @@ This will show the list of validation options.
   -lr, --local-rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
                                   LOCAL_RULES environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
-  -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+  -cs, --custom-standard          Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
   -cse, --custom-standard-encoding TEXT
                                   Explicitly specify the file encoding to use
@@ -249,6 +250,11 @@ This will show the list of validation options.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
+  -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders. 
+                                    Not required if variables.txt exists in all -dp directories. 
+                                    VARIABLES_CSV environment variable can be used to pass value.
+  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders. 
+                                    TABLES_CSV environment variable can be used to pass value
   --help                          Show this message and exit.
 ```
 

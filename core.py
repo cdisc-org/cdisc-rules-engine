@@ -135,8 +135,10 @@ def _validate_csv_data_paths(
 
     tables_df = pd.read_csv(tables_path, encoding=encoding)
 
-    if "Filename" not in tables_df.columns:
-        raise InvalidCSVFile("Metadata files is malformed")
+    if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
+        raise InvalidCSVFile(
+            "Metadata files is malformed. One of [Filename, Label] columns is missing."
+        )
 
     allowed_datasets = {
         Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
@@ -274,6 +276,14 @@ def _validate_no_arguments(logger) -> None:
 def load_custom_dotenv(ctx, param, value):
     if not value:
         return value
+    if os.path.exists(value):
+        load_dotenv(value, override=False)
+    return value
+
+
+def load_custom_dotenv_from_data_options(ctx, param, value):
+    if not value:
+        return value
     if isinstance(value, str):
         env_path = os.path.join(value, ".env")
     elif isinstance(value, tuple):
@@ -300,12 +310,19 @@ def load_custom_dotenv(ctx, param, value):
     help="Number of parallel processes for validation",
 )
 @click.option(
+    "-dep",
+    "--dotenv-path",
+    required=False,
+    help="Path to .env file containing custom dotenv values",
+    callback=load_custom_dotenv,
+)
+@click.option(
     "-d",
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
     envvar="DATA_DIR",
-    callback=load_custom_dotenv,
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-ft",
@@ -321,7 +338,7 @@ def load_custom_dotenv(ctx, param, value):
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
     envvar="DATASET_PATH",
-    callback=load_custom_dotenv,
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-l",
@@ -525,11 +542,26 @@ def load_custom_dotenv(ctx, param, value):
         f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
     ),
 )
+@click.option(
+    "-vcp",
+    "--variables-csv-path",
+    required=False,
+    help="Path to variables.csv",
+    envvar="VARIABLES_CSV",
+)
+@click.option(
+    "-tcp",
+    "--tables-csv-path",
+    required=False,
+    help="Path to tables.csv",
+    envvar="TABLES_CSV",
+)
 @click.pass_context
 def validate(  # noqa
     ctx,
     cache: str,
     pool_size: int,
+    dotenv_path: str,
     data: str,
     filetype: str,
     dataset_path: tuple[str],
@@ -563,6 +595,8 @@ def validate(  # noqa
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
     encoding: str,
+    variables_csv_path: str,
+    tables_csv_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -574,7 +608,7 @@ def validate(  # noqa
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    load_dotenv()
+    load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if not custom_standard:
@@ -589,7 +623,7 @@ def validate(  # noqa
             )
             ctx.exit(2)
 
-    if raw_report is True:
+    if raw_report:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
@@ -671,6 +705,8 @@ def validate(  # noqa
             max_report_rows,
             max_errors_per_rule,
             encoding,
+            variables_csv_path,
+            tables_csv_path,
         )
     )
 
