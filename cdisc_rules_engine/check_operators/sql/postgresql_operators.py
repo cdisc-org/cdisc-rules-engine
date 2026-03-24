@@ -158,6 +158,7 @@ class PostgresQLOperators(BaseType):
         "is_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data),
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
         "is_valid_whodrug_reference": lambda data: IsValidWhodrugReferenceOperator(data),
+        "is_not_valid_whodrug_reference": lambda data: NotOperator(data, IsValidWhodrugReferenceOperator),
     }
 
     def __init__(self, data):
