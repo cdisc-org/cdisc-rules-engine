@@ -24,4 +24,4 @@ jobs:
         run: |
           python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=75
           python -m pytest tests/QARegressionTests/
-          pytest -m regression tests/QARegressionTests/test_Issues
+          python -m pytest -m regression tests/QARegressionTests/test_Issues
