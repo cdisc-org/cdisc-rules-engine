@@ -1,8 +1,7 @@
+import os
+
+from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.constants.permissibility import (
-    PERMISSIBLE,
-    PERMISSIBILITY_KEY,
-)
 from abc import abstractmethod
 from typing import List
 import pandas as pd
@@ -237,14 +236,6 @@ class BaseOperation:
             dataset_path=self.params.dataset_path,
         )
 
-    def get_allowed_variable_permissibility(self, variable_metadata: dict):
-        """
-        Returns the permissibility value of a variable allowed in the current domain
-        """
-        if PERMISSIBILITY_KEY in variable_metadata:
-            return variable_metadata[PERMISSIBILITY_KEY]
-        return PERMISSIBLE
-
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[dict] = (
@@ -312,3 +303,16 @@ class BaseOperation:
             if "--" in variable_name
             else variable_name
         )
+
+    def _get_define_contents(self):
+        define_path = (
+            self.params.define_xml_path
+            if self.params.define_xml_path
+            else os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
+        )
+        if not os.path.exists(define_path):
+            raise FileNotFoundError(f"Define XML file {define_path} not found")
+        define_contents = self.data_service.get_define_xml_contents(
+            dataset_name=define_path
+        )
+        return define_contents

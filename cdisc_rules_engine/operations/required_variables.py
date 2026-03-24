@@ -1,9 +1,8 @@
-from typing import List
-from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.constants.permissibility import REQUIRED
+from cdisc_rules_engine.constants.permissibility import PERMISSIBILITY_KEY, REQUIRED
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 
 
-class RequiredVariables(BaseOperation):
+class RequiredVariables(LibraryColumnOrder):
     def _execute_operation(self):
         """
         Fetches required variables for a given domain from the CDISC library.
@@ -17,15 +16,6 @@ class RequiredVariables(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-
-        # get variables metadata from the standard model
-        variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
-        return list(
-            {
-                BaseOperation._replace_variable_wildcard(
-                    var["name"], self.params.domain
-                ): None
-                for var in variables_metadata
-                if self.get_allowed_variable_permissibility(var) == REQUIRED
-            }.keys()
-        )
+        self.params.key_name = PERMISSIBILITY_KEY
+        self.params.key_value = REQUIRED
+        return super()._execute_operation()
