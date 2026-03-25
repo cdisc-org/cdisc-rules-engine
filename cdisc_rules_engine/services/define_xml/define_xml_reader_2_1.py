@@ -21,7 +21,14 @@ class DefineXMLReader21(BaseDefineXMLReader):
         return MetadataSchema
 
     def _get_origin_type(self, itemdef):
-        return itemdef.Origin[0].Type if itemdef.Origin else None
+        if itemdef.Origin and len(itemdef.Origin) > 0 and hasattr(itemdef.Origin[0], "Type"):
+            return itemdef.Origin[0].Type
+        return None
+
+    def _get_source_type(self, itemdef):
+        if itemdef.Origin and len(itemdef.Origin) > 0 and hasattr(itemdef.Origin[0], "Source"):
+            return itemdef.Origin[0].Source
+        return None
 
     def _get_variable_is_collected(self, itemdef):
         return self._get_origin_type(itemdef) == "Collected" if itemdef.Origin else None
@@ -44,13 +51,8 @@ class DefineXMLReader21(BaseDefineXMLReader):
         metadata = self._odm_loader.MetaDataVersion()
         standards = []
         for standard in metadata.Standards.Standard:
-            if (
-                standard.Type == "CT"
-                and "define-xml" not in standard.PublishingSet.lower()
-            ):
-                standards.append(
-                    f"{standard.PublishingSet.lower()}ct-{standard.Version}"
-                )
+            if standard.Type == "CT" and "define-xml" not in standard.PublishingSet.lower():
+                standards.append(f"{standard.PublishingSet.lower()}ct-{standard.Version}")
         return standards
 
     def get_ct_standards_metadata(self) -> List[StandardsCTMetadata]:
@@ -69,17 +71,11 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     )
                 )
         publishing_set_counts = Counter(
-            standard.PublishingSet
-            for standard in metadata.Standards
-            if standard.Type == "CT"
+            standard.PublishingSet for standard in metadata.Standards if standard.Type == "CT"
         )
-        multiple_sets = {
-            ps: count for ps, count in publishing_set_counts.items() if count > 1
-        }
+        multiple_sets = {ps: count for ps, count in publishing_set_counts.items() if count > 1}
         if multiple_sets:
-            multi_ct, extensible = self.get_multiple_standards_ct_mappings(
-                metadata, standards
-            )
+            multi_ct, extensible = self.get_multiple_standards_ct_mappings(metadata, standards)
             return standards, multi_ct, extensible, True
         else:
             return standards, {}, {}, False
@@ -141,11 +137,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             for item in items:
                 if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
                     extended_values.append(item.CodedValue)
-            if (
-                extended_values
-                and hasattr(codelist, "Alias")
-                and codelist.Alias is not None
-            ):
+            if extended_values and hasattr(codelist, "Alias") and codelist.Alias is not None:
                 mappings[codelist.Name] = {
                     "codelist": codelist.Alias[0].Name,
                     "extended_values": extended_values,

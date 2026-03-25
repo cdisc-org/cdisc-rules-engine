@@ -77,9 +77,7 @@ def test_read_define_xml():
             ]
 
 
-@pytest.mark.parametrize(
-    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
-)
+@pytest.mark.parametrize("filename", [(test_define_file_path), (test_define_2_0_file_path)])
 def test_extract_domain_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -113,9 +111,7 @@ def test_extract_domain_metadata(filename):
         }
 
 
-@pytest.mark.parametrize(
-    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
-)
+@pytest.mark.parametrize("filename", [(test_define_file_path), (test_define_2_0_file_path)])
 def test_extract_variable_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -123,9 +119,7 @@ def test_extract_variable_metadata(filename):
     with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
-        variable_metadata: List[dict] = reader.extract_variables_metadata(
-            domain_name="EX"
-        )
+        variable_metadata: List[dict] = reader.extract_variables_metadata(domain_name="EX")
         expected_variables = {
             "EXSEQ",
             "EXTRT",
@@ -154,23 +148,21 @@ def test_extract_variable_metadata(filename):
             "define_variable_ccode": "C66729",
             "define_variable_allowed_terms": ["Subcutaneous Route of Administration"],
             "define_variable_origin_type": "Predecessor",
+            "define_variable_source_type": None,
             "define_variable_is_collected": False,
             "define_variable_order_number": 11,
             "define_variable_has_comment": True,
         }
         for index, variable in enumerate(variable_metadata):
             assert variable["define_variable_name"] in expected_variables
-            if (
-                variable["define_variable_name"]
-                == expected_exroute_metadata["define_variable_name"]
-            ):
+            if variable["define_variable_name"] == expected_exroute_metadata["define_variable_name"]:
                 for key in expected_exroute_metadata.keys():
                     assert variable[key] == expected_exroute_metadata[key]
 
             assert variable["define_variable_order_number"] == index + 1
 
 
-@pytest.mark.parametrize("filename", [(test_define_file_path)])
+@pytest.mark.parametrize("filename", [test_define_file_path])
 def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -178,9 +170,7 @@ def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
     with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
-        variable_metadata: List[dict] = reader.extract_variables_metadata(
-            domain_name="AE"
-        )
+        variable_metadata: List[dict] = reader.extract_variables_metadata(domain_name="AE")
         for index, variable in enumerate(variable_metadata):
             if index == 0:
                 assert variable["define_variable_order_number"] != index + 1
@@ -195,17 +185,9 @@ def test_extract_variable_metadata_with_has_no_data():
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
-        variable_metadata: List[dict] = reader.extract_variables_metadata(
-            domain_name="AE"
-        )
+        variable_metadata: List[dict] = reader.extract_variables_metadata(domain_name="AE")
         target_variable = next(
-            iter(
-                [
-                    variable
-                    for variable in variable_metadata
-                    if variable["define_variable_name"] == "AEHLT"
-                ]
-            )
+            iter([variable for variable in variable_metadata if variable["define_variable_name"] == "AEHLT"])
         )
         assert target_variable["define_variable_has_no_data"] == "Yes"
 
@@ -251,30 +233,22 @@ def test_extract_variable_metadata_with_has_no_data():
         ),
     ],
 )
-def test_define_variable_is_collected(
-    define_file_path, domain_name, define_variable_name, expected
-):
+def test_define_variable_is_collected(define_file_path, domain_name, define_variable_name, expected):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
     with open(define_file_path, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
-        variable_metadata: List[dict] = reader.extract_variables_metadata(
-            domain_name=domain_name
-        )
+        variable_metadata: List[dict] = reader.extract_variables_metadata(domain_name=domain_name)
         variable = [
-            variable
-            for variable in variable_metadata
-            if variable["define_variable_name"] == define_variable_name
+            variable for variable in variable_metadata if variable["define_variable_name"] == define_variable_name
         ]
         assert len(variable) == 1
         assert variable[0]["define_variable_is_collected"] == expected
 
 
-@pytest.mark.parametrize(
-    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
-)
+@pytest.mark.parametrize("filename", [(test_define_file_path), (test_define_2_0_file_path)])
 def test_extract_value_level_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -282,9 +256,7 @@ def test_extract_value_level_metadata(filename):
     with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
-        value_level_metadata: dict = reader.extract_value_level_metadata(
-            domain_name="AE"
-        )
+        value_level_metadata: dict = reader.extract_value_level_metadata(domain_name="AE")
         assert len(value_level_metadata) == 2
         for vlm in value_level_metadata:
             assert vlm["define_variable_name"] == "AETERM"
@@ -293,13 +265,8 @@ def test_extract_value_level_metadata(filename):
         mock_valid_row_data = {"AETERM": "A" * 200}
         mock_filter_pass_row_data = {"AETERM": "INJECTION SITE REACTION"}
         mock_filter_fail_row_data = {"AETERM": "ALL_GOOD"}
-        assert (
-            value_level_metadata[0]["type_check"](mock_invalid_type_row_data) is False
-        )
-        assert (
-            value_level_metadata[0]["length_check"](mock_invalid_length_row_data)
-            is False
-        )
+        assert value_level_metadata[0]["type_check"](mock_invalid_type_row_data) is False
+        assert value_level_metadata[0]["length_check"](mock_invalid_length_row_data) is False
         assert value_level_metadata[0]["type_check"](mock_valid_row_data) is True
         assert value_level_metadata[0]["length_check"](mock_valid_row_data) is True
         assert value_level_metadata[0]["filter"](mock_filter_pass_row_data) is True

@@ -30,6 +30,7 @@ DEFINE_VARIABLES_TYPE = {
     "define_variable_format": "Char",
     "define_variable_allowed_terms": "Char",
     "define_variable_origin_type": "Char",
+    "define_variable_source_type": "Char",
     "define_variable_has_no_data": "Bool",
     "define_variable_order_number": "Num",
     "define_variable_length": "Num",

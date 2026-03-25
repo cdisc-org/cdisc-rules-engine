@@ -19,8 +19,7 @@ test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 
 
 @patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService"
-    + ".get_define_xml_contents",
+    "cdisc_rules_engine.services.data_services.LocalDataService" + ".get_define_xml_contents",
 )
 @patch(
     "cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata"
@@ -218,6 +217,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         "define_variable_format",
         "define_variable_allowed_terms",
         "define_variable_origin_type",
+        "define_variable_source_type",
         "define_variable_has_no_data",
         "define_variable_order_number",
         "define_variable_length",

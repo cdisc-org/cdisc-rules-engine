@@ -18,7 +18,14 @@ class DefineXMLReader20(BaseDefineXMLReader):
         return MetadataSchema
 
     def _get_origin_type(self, itemdef):
-        return itemdef.Origin.Type if itemdef.Origin else None
+        if hasattr(itemdef, "Origin") and hasattr(itemdef.Origin, "Type"):
+            return itemdef.Origin.Type
+        return None
+
+    def _get_source_type(self, itemdef):
+        if hasattr(itemdef, "Origin") and hasattr(itemdef.Origin, "Source"):
+            return itemdef.Origin.Source
+        return None
 
     def _get_variable_is_collected(self, itemdef):
         return self._get_origin_type(itemdef) == "CRF" if itemdef.Origin else None
@@ -47,11 +54,7 @@ class DefineXMLReader20(BaseDefineXMLReader):
             for item in items:
                 if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
                     extended_values.append(item.CodedValue)
-            if (
-                extended_values
-                and hasattr(codelist, "Alias")
-                and codelist.Alias is not None
-            ):
+            if extended_values and hasattr(codelist, "Alias") and codelist.Alias is not None:
                 mappings[codelist.Name] = {
                     "codelist": codelist.Alias[0].Name,
                     "extended_values": extended_values,
