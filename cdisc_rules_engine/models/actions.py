@@ -481,6 +481,7 @@ class COREActions(BaseActions):
             row=(
                 int(data.loc[df_row.name]["row_number"])
                 if "row_number" in data.columns
+                and pd.notna(data.loc[df_row.name]["row_number"])
                 else (
                     int(source_row_number[df_row.name])
                     if isinstance(source_row_number, pd.Series)
