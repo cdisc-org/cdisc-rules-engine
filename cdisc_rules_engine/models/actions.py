@@ -191,6 +191,10 @@ class COREActions(BaseActions):
                     targets,
                 )
 
+            grouping_variables = [
+                x.replace("--", self.dataset_metadata.domain_cleaned or "")
+                for x in grouping_variables
+            ]
             missing_grouping_vars = [
                 var for var in grouping_variables if var not in data.columns
             ]
