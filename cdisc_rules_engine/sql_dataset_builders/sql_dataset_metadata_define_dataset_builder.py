@@ -27,7 +27,7 @@ class SqlDatasetMetadataWithDefineDatasetBuilder(SqlBaseDatasetBuilder):
                 "dataset_label": ds_metadata.label or "",
                 "dataset_domain": ds_metadata.domain,
             }
-            define_metadata = define_ds_metadata.get(ds_metadata.domain, {})
+            define_metadata = define_ds_metadata.get(ds_metadata.domain, {k: None for k in DEFINE_DATASETS_TYPE})
             row.update(define_metadata)
             rows.append(row)
 

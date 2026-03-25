@@ -46,8 +46,8 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
                 "variable_data_type": var.type if var else "",
                 "variable_has_empty_values": str(has_empty),
             }
-            row.update(library_vars_by_name.get(var_name, {}))
-            row.update(define_vars_by_name.get(var_name, {}))
+            row.update(define_vars_by_name.get(var_name, {k: None for k in DEFINE_VARIABLES_TYPE}))
+            row.update(library_vars_by_name.get(var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
 
             rows.append(row)
 

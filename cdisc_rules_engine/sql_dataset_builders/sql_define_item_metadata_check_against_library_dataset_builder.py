@@ -29,8 +29,8 @@ class SqlDefineItemMetadataCheckAgainstLibraryDatasetBuilder(SqlBaseDatasetBuild
         rows = []
         for var_name in all_var_names:
             row = {}
-            row.update(define_vars_by_name.get(var_name, {}))
-            row.update(library_vars_by_name.get(var_name, {}))
+            row.update(define_vars_by_name.get(var_name, {k: None for k in DEFINE_VARIABLES_TYPE}))
+            row.update(library_vars_by_name.get(var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
             rows.append(row)
 
         schema = SqlTableSchema.derived(table_name, self.data_service.pgi)

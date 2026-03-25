@@ -48,7 +48,7 @@ class SqlVariablesMetadataWithLibraryBuilder(SqlBaseDatasetBuilder):
                 "variable_data_type": variable.type or "",
                 "variable_format": variable.format or "",
             }
-            row.update(library_vars_by_name.get(var_name, {}))
+            row.update(library_vars_by_name.get(var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
             rows.append(row)
 
         if rows:

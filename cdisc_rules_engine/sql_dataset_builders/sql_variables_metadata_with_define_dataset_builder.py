@@ -40,7 +40,7 @@ class SqlVariablesMetadataWithDefineDatasetBuilder(SqlBaseDatasetBuilder):
                 "variable_format": var.format or "",
             }
 
-            d_var = define_vars_by_name.get(var_name, {})
+            d_var = define_vars_by_name.get(var_name, {k: None for k in DEFINE_VARIABLES_TYPE})
             row.update(d_var)
 
             rows.append(row)
