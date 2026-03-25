@@ -8,6 +8,7 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     INTERVENTIONS,
     RELATIONSHIP,
+    DETECTABLE_CLASSES,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.data_service.merges.child import SqlChildMerge
@@ -27,7 +28,9 @@ from cdisc_rules_engine.standards.base_standards_context import BaseStandardsCon
 from cdisc_rules_engine.standards.sdtm_dataset_metadata import SdtmDatasetMetadata2
 from cdisc_rules_engine.utilities.sdtm_utilities import (
     get_class_and_domain_metadata,
-    get_variables_metadata_from_standard,
+    get_class_metadata,
+    get_allowed_class_variables,
+    replace_variable_wildcards,
 )
 from cdisc_rules_engine.utilities.utils import (
     convert_library_class_name_to_ct_class,
@@ -211,7 +214,11 @@ class SdtmStandardsContext(BaseStandardsContext):
         else:
             domain = dataset_metadata.domain
 
-        variables = get_variables_metadata_from_standard(domain=domain, library_metadata=self.library_metadata)
+        derived_class = self.derive_class(dataset_metadata, domain)
+
+        variables = self.get_variables_metadata_from_standard(
+            domain=domain, library_metadata=self.library_metadata, derived_class=derived_class
+        )
 
         column_name_mapping = {
             "ordinal": "order_number",
@@ -226,6 +233,63 @@ class SdtmStandardsContext(BaseStandardsContext):
                     var[new_key] = var.pop(key)
 
         return variables
+
+    def get_variables_metadata_from_standard(self, domain, library_metadata, derived_class=None):  # noqa
+        standard_details = library_metadata.standard_metadata
+        model_details = library_metadata.model_metadata
+        is_custom = domain not in standard_details.get("domains", {})
+        variables_metadata = []
+        IG_class_details, IG_domain_details = get_class_and_domain_metadata(standard_details, domain)
+        if IG_class_details:
+            class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
+        else:
+            class_name = derived_class
+        model_class_details = get_class_metadata(model_details, class_name)
+        # Both custom and standard General Observations pull from model
+        if is_custom or class_name in DETECTABLE_CLASSES:
+            (
+                identifiers_metadata,
+                class_variables_metadata,
+                timing_metadata,
+            ) = get_allowed_class_variables(model_details, model_class_details)
+            model_variables = []
+            for var_list in [
+                identifiers_metadata,
+                class_variables_metadata,
+                timing_metadata,
+            ]:
+                replace_variable_wildcards(var_list, domain, model_variables)
+        # Custom domains only pull from model hierarchy
+        if is_custom:
+            variables_metadata = model_variables
+        # All non-custom domains pull from IG and overwrite the model variables
+        else:
+            ig_variables = IG_domain_details.get("datasetVariables", [])
+            ig_variables.sort(key=lambda item: int(item["ordinal"]))
+            if class_name in DETECTABLE_CLASSES:
+                variables_metadata = model_variables.copy()
+                model_vars_by_name = {var["name"]: i for i, var in enumerate(variables_metadata)}
+                for ig_var in ig_variables:
+                    ig_var_name = ig_var["name"]
+                    if ig_var_name in model_vars_by_name:
+                        variables_metadata[model_vars_by_name[ig_var_name]] = ig_var
+                    else:
+                        # if a variable exists in the IG but not in the model,
+                        # insert it at the end of the its section
+                        ig_var_role = ig_var.get("role")
+                        if ig_var_role == "Identifier":
+                            identifiers_length = len(identifiers_metadata)
+                            insertion_point = identifiers_length
+                        elif ig_var_role == "Timing":
+                            insertion_point = len(variables_metadata)
+                        else:
+                            timing_metadata_length = len(timing_metadata)
+                            insertion_point = len(variables_metadata) - timing_metadata_length
+                        variables_metadata.insert(insertion_point, ig_var)
+                        model_vars_by_name = {var["name"]: i for i, var in enumerate(variables_metadata)}
+            else:
+                variables_metadata = ig_variables
+        return variables_metadata
 
     def within_rule_scope(self, rule: dict, metadata: DatasetMetadata2):
         """Check if rule is suitable and return reason if not"""
