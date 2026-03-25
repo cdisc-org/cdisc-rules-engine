@@ -339,16 +339,12 @@ class BaseSqlOperator:
 
         query = f"({query})"
         if lowercase:
-            query = self._apply_lowercase_to_collection(query, variable.params)
+            query = self._apply_lowercase_to_collection(query)
         return query
 
-    def _apply_lowercase_to_collection(self, query: str, params: dict) -> str:
+    def _apply_lowercase_to_collection(self, query: str) -> str:
         """Apply lowercase to collection query results."""
-        if params:
-            return f"(SELECT LOWER(value) FROM {query})"
-        else:
-            # column1 is the default column name for non-parameterized collections
-            return f"(SELECT LOWER(column1) FROM {query})"
+        return f"(SELECT LOWER(value) FROM {query})"
 
     def _sql(self, value: Any, lowercase: bool = False, value_is_literal: bool = False) -> str:
         """

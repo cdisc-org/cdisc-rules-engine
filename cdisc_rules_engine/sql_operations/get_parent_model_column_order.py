@@ -11,10 +11,10 @@ class SqlGetParentModelColumnOrderOperation(SqlBaseOperation):
         # Convert the list to individual rows in SQL
         if parent_col_list and isinstance(parent_col_list, list):
             table_values_clause = ", ".join([f"('{col}')" for col in parent_col_list])
-            query = f"SELECT column1 AS value FROM (VALUES {table_values_clause}) AS t(column1)"
+            query = f"SELECT value FROM (VALUES {table_values_clause}) AS t(value)"
         else:
             # Return empty result set using VALUES with no rows - this is a valid empty table
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+            query = "SELECT value FROM (VALUES (NULL)) AS t(value) WHERE FALSE"
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 

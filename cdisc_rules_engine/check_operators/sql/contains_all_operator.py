@@ -70,20 +70,20 @@ class ContainsAllOperator(BaseSqlOperator):
 
         def sql():
             return f"""CASE WHEN (
-                          SELECT COUNT(DISTINCT column1)
+                          SELECT COUNT(DISTINCT value)
                           FROM {collection_sql} AS op_var
-                          WHERE column1 IS NOT NULL
-                          AND column1 != ''
-                          AND column1 IN (
+                          WHERE value IS NOT NULL
+                          AND value != ''
+                          AND value IN (
                               SELECT DISTINCT {self._column_sql(target_column, alias=False)}
                               FROM {self._table_sql()}
                               WHERE NOT ({self._is_empty_sql(target_column, alias=False)})
                           )
                       ) = (
-                          SELECT COUNT(DISTINCT column1)
+                          SELECT COUNT(DISTINCT value)
                           FROM {collection_sql} AS op_var
-                          WHERE column1 IS NOT NULL
-                          AND column1 != ''
+                          WHERE value IS NOT NULL
+                          AND value != ''
                       )
                       THEN true
                       ELSE false
