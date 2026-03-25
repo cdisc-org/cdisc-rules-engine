@@ -8,6 +8,8 @@ class IsCompleteDateOperator(BaseSqlOperator):
 
     def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
+        if not self._exists(target):
+            return self._do_check_operator(lambda: "false")
 
         def sql():
             return f"""CASE WHEN

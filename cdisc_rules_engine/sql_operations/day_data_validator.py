@@ -31,6 +31,9 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
             type="LEFT",
         )
 
+        if not joined_table.has_column(self.params.target):
+            return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
+
         # This handles date parsing and validation using COMPLETE_DATE_REGEX
         target_date_col = self.data_service.pgi.generate_date_column(joined_table.name, self.params.target)
 

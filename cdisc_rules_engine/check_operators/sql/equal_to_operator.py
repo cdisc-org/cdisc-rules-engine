@@ -75,6 +75,9 @@ class EqualToOperator(BaseSqlOperator):
             target = f"""CAST({target} AS TEXT)"""
             comparator = f"""CAST({comparator} AS TEXT)"""
 
+        if original_target not in self.operation_variables and not self._exists(original_target):
+            target = "NULL"
+
         def sql():
             if invert:
                 return f"""CASE
@@ -82,7 +85,7 @@ class EqualToOperator(BaseSqlOperator):
                             THEN NOT ({self._is_empty_sql(original_comparator)})
                         WHEN {self._is_empty_sql(original_comparator)}
                             THEN TRUE
-                        ELSE {target} != {comparator}
+                        ELSE {target} IS DISTINCT FROM {comparator}
                     END"""
             else:
                 return f"""CASE
@@ -90,7 +93,7 @@ class EqualToOperator(BaseSqlOperator):
                             THEN FALSE
                         WHEN {self._is_empty_sql(original_comparator)}
                             THEN FALSE
-                        ELSE {target} = {comparator}
+                        ELSE {target} IS NOT DISTINCT FROM {comparator}
                     END"""
 
         return self._do_check_operator(sql)

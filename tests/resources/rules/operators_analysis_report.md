@@ -4,9 +4,9 @@
 
 - Total rules without check operators: 302
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 84
+- Total implemented PostgreSQL operators: 85
 - Missing operators (in rules but not implemented): 1
-- Extra operators (implemented but not used in rules): 27
+- Extra operators (implemented but not used in rules): 28
 
 ## ✅ Implementation Status
 
@@ -34,6 +34,7 @@ The following operators are implemented but not currently used in any rules:
 - is_not_ordered_set
 - is_ordered_set
 - is_unique_relationship
+- is_valid_whodrug_reference
 - longer_than_or_equal_to
 - non_conformant_value_data_type
 - non_conformant_value_length
