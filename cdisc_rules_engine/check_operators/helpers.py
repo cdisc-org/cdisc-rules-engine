@@ -423,7 +423,7 @@ def flatten_list(data, items):
 
 
 vectorized_apply_regex = np.vectorize(apply_regex)
-vectorized_is_complete_date = np.vectorize(is_complete_date)
+vectorized_is_complete_date = np.vectorize(is_complete_date, otypes=[bool])
 vectorized_compare_dates = np.vectorize(compare_dates)
 vectorized_is_valid = np.vectorize(is_valid_date)
 vectorized_is_valid_duration = np.vectorize(is_valid_duration)

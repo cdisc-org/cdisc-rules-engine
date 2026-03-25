@@ -1,4 +1,3 @@
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DICTIONARY_VALIDATORS,
     DictionaryTypes,
@@ -8,7 +7,6 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 )
 from .base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
-import os
 
 
 class DefineDictionaryVersionValidator(BaseOperation):
@@ -36,9 +34,7 @@ class DefineDictionaryVersionValidator(BaseOperation):
             whodrug_path=self.params.whodrug_path,
             loinc_path=self.params.loinc_path,
         )
-        define_contents = self.data_service.get_define_xml_contents(
-            dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
-        )
+        define_contents = self._get_define_contents()
         define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
         define_dictionary_version = define_reader.get_external_dictionary_version(
             self.params.external_dictionary_type

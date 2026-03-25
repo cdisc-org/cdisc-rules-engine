@@ -66,7 +66,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {
+        "dataset_names": {
             "HO",
             "CO",
             "SU",
@@ -227,6 +227,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         "define_variable_codelist_coded_codes",
         "define_variable_mandatory",
         "define_variable_has_comment",
+        "define_variable_has_method",
         "library_variable_name",
         "library_variable_role",
         "library_variable_label",

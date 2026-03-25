@@ -38,9 +38,7 @@ class VariableCount(BaseOperation):
         data: pd.DataFrame = self.data_service.get_dataset(
             dataset_name=dataset.full_path
         )
-        target_variable = (
-            self.params.original_target.replace("--", dataset.domain, 1)
-            if dataset.domain
-            else self.params.original_target
+        target_variable = BaseOperation._replace_variable_wildcard(
+            self.params.original_target, dataset.wildcard_replacement
         )
         return 1 if target_variable in data else 0

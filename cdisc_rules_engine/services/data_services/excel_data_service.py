@@ -105,6 +105,12 @@ class ExcelDataService(BaseDataService):
             false_values=["False", "FALSE", "false", False, 0, "0"],
         )
         dataframe = dataframe.replace({nan: None})
+        offending = [col for col in dataframe.columns if col != col.strip()]
+        if offending:
+            raise ExcelTestDataError(
+                f"Sheet '{dataset_name}' has column headers with leading/trailing whitespace: "
+                f"{[repr(c) for c in offending]}."
+            )
         dataset = PandasDataset(dataframe)
         return dataset
 

@@ -12,8 +12,9 @@ class ExecutionStatus(BaseEnum):
 class SkippedReason(BaseEnum):
     COLUMN_NOT_FOUND_IN_DATA = "Column not found in data"
     DOMAIN_NOT_FOUND = "Domain not found"
-    SCHEMA_VALIDATION_IS_OFF = "Schema validation is off"
+    EMPTY_DATASET = "Empty dataset"
     OUTSIDE_SCOPE = "Outside scope"
+    SCHEMA_VALIDATION_IS_OFF = "Schema validation is off"
 
 
 class ExecutionError(BaseEnum):

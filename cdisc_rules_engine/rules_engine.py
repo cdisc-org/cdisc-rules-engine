@@ -391,18 +391,39 @@ class RulesEngine:
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
-            dataset_metadata.unsplit_name,
+            dataset_metadata,
             datasets,
-            dataset_metadata.full_path,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
+            define_xml_path=self.define_xml_path,
         )
+        if dataset.empty:
+            rule_id = rule.get("core_id", "unknown")
+            reason = (
+                f"Dataset skipped - Dataset is empty after preprocessing and operations. "
+                f"rule id={rule_id}, dataset={dataset_metadata.name}"
+            )
+            logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
+            error_obj = FailedValidationEntity(
+                dataset=dataset_metadata.filename,
+                error=SkippedReason.EMPTY_DATASET.value,
+                message=reason,
+            )
+            return [
+                ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
+                    message=reason,
+                    dataset=dataset_metadata.filename,
+                    domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
+                    errors=[error_obj],
+                ).to_representation()
+            ]
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": dataset_metadata.domain_cleaned},
+            column_prefix_map={"--": dataset_metadata.wildcard_replacement},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,
@@ -528,10 +549,11 @@ class RulesEngine:
             )
 
         elif isinstance(exception, OperationError):
+            error_msg = getattr(exception, "message", None) or str(exception)
             error_obj = FailedValidationEntity(
                 dataset=filename,
                 error=OperationError.description,
-                message=str(exception),
+                message=error_msg,
             )
             message = "rule evaluation error - operation failed"
             errors = [error_obj]

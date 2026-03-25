@@ -15,6 +15,13 @@ from cdisc_rules_engine.enums.excel_test_sheets import (
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
+@pytest.fixture(autouse=True)
+def reset_excel_data_service():
+    ExcelDataService._instance = None
+    yield
+    ExcelDataService._instance = None
+
+
 @pytest.mark.parametrize(
     "dataset_name",
     ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
@@ -31,6 +38,28 @@ def test_get_dataset(dataset_name):
     )
     data = data_service.get_dataset(dataset_name=dataset_name)
     assert isinstance(data, PandasDataset)
+
+
+@pytest.mark.parametrize(
+    "dataset_name",
+    ("ex.xpt", "lb.xpt", "ds.xpt"),
+)
+def test_whitespace_get_dataset_raises(dataset_name):
+    dataset_path = (
+        f"{os.path.dirname(__file__)}/../../../resources/Datasets_whitespace.xlsx"
+    )
+    mock_cache = MagicMock()
+    mock_cache.get_dataset.return_value = None
+    data_service = ExcelDataService.get_instance(
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=PandasDataset,
+        dataset_path=dataset_path,
+    )
+    with pytest.raises(ExcelTestDataError) as exc_info:
+        data_service.get_dataset(dataset_name=dataset_name)
+    assert "leading/trailing whitespace" in str(exc_info.value.message)
+    assert any(col in exc_info.value.message for col in ["STUDYID", "DOMAIN", "EXSEQ"])
 
 
 @pytest.mark.parametrize(

@@ -10,7 +10,9 @@ from cdisc_rules_engine.interfaces.cache_service_interface import (
 from cdisc_rules_engine.models.dataset.dataset_interface import (
     DatasetInterface,
 )
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset_metadata import (
+    DatasetMetadata,
+)
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -27,15 +29,18 @@ from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
-from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DomainNotFoundError,
+    OperationError,
+)
 from cdisc_rules_engine.operations import operations_factory
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
     search_in_list_of_dicts,
-    get_dataset_name_from_details,
 )
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
@@ -234,11 +239,12 @@ class RuleProcessor:
         excluded_classes = classes.get("Exclude", [])
         is_included = True
         is_excluded = False
+        dataset_name = dataset_metadata.full_path
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.full_path, datasets=datasets
+                dataset_name=dataset_name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
@@ -252,7 +258,7 @@ class RuleProcessor:
                 is_included = False
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.full_path, datasets=datasets
+                dataset_name=dataset_name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
@@ -320,9 +326,8 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset: DatasetInterface,
-        domain: str,
+        dataset_metadata: SDTMDatasetMetadata,
         datasets: Iterable[SDTMDatasetMetadata],
-        dataset_path: str,
         standard: str,
         standard_version: str,
         standard_substandard: str,
@@ -344,11 +349,15 @@ class RuleProcessor:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
             target: str = original_target
-            domain: str = operation.get("domain", domain)
+            domain: str = operation.get("domain", dataset_metadata.unsplit_name)
+            wildcard_replacement: str = operation.get(
+                "domain", dataset_metadata.wildcard_replacement
+            )
             if target and target.startswith("--") and domain:
                 # Not a study wide operation
-                target = target.replace("--", domain)
-                domain = domain.replace("--", domain)
+                target = BaseOperation._replace_variable_wildcard(
+                    target, wildcard_replacement
+                )
 
             # get necessary operation
             operation_params = OperationParams(
@@ -367,12 +376,13 @@ class RuleProcessor:
                     for ct_package_type in operation.get("ct_package_types", [])
                 ],
                 ct_version=operation.get("version"),
+                define_xml_path=kwargs.get("define_xml_path"),
                 dataframe=dataset_copy,
-                dataset_path=dataset_path,
+                dataset_path=dataset_metadata.full_path,
                 datasets=datasets,
                 delimiter=operation.get("delimiter"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
-                directory_path=get_directory_path(dataset_path),
+                directory_path=get_directory_path(dataset_metadata.full_path),
                 domain=domain,
                 domain_class=operation.get("domain_class"),
                 external_dictionaries=external_dictionaries,
@@ -409,12 +419,15 @@ class RuleProcessor:
                 dataset_copy = self._execute_operation(
                     operation_params, dataset_copy, previous_operations
                 )
+            except (DomainNotFoundError, KeyError):
+                raise
             except Exception as e:
+                error_detail = getattr(e, "message", None) or str(e)
                 raise OperationError(
                     f"Failed to execute rule operation. "
                     f"Operation: {operation_params.operation_name}, "
                     f"Target: {target}, Domain: {domain}, "
-                    f"Error: {str(e)}"
+                    f"Error: {error_detail}"
                 )
             previous_operations.append(operation_params.operation_name)
 
@@ -467,17 +480,16 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                raise OperationError(
+                raise DomainNotFoundError(
                     f"Failed to execute rule operation. "
                     f"Domain {operation_params.domain} does not exist. "
                     f"Operation: {operation_params.operation_name}, "
                     f"Target: {operation_params.target}, "
                     f"Core ID: {operation_params.core_id}"
                 )
-            filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
-                filename,
+                domain_details.data_service_identifier,
             )
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path
@@ -501,7 +513,11 @@ class RuleProcessor:
         if not target_domain:
             return True
         elif not self.is_relationship_dataset(target_domain):
-            return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
+            return (
+                "DOMAIN" in dataset
+                and not dataset.empty
+                and dataset["DOMAIN"].iloc[0] == target_domain
+            )
         else:
             # Always lookup relationship datasets when performing operations on them.
             return False

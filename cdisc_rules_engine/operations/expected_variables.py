@@ -1,9 +1,11 @@
-from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.constants.permissibility import EXPECTED
-from typing import List
+from cdisc_rules_engine.constants.permissibility import (
+    EXPECTED,
+    PERMISSIBILITY_KEY,
+)
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 
 
-class ExpectedVariables(BaseOperation):
+class ExpectedVariables(LibraryColumnOrder):
     def _execute_operation(self):
         """
         Fetches required variables for a given domain from the CDISC library.
@@ -17,14 +19,6 @@ class ExpectedVariables(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-
-        # get variables metadata from the standard/model
-        variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
-
-        return list(
-            {
-                var["name"].replace("--", self.params.domain): None
-                for var in variables_metadata
-                if self.get_allowed_variable_permissibility(var) == EXPECTED
-            }.keys()
-        )
+        self.params.key_name = PERMISSIBILITY_KEY
+        self.params.key_value = EXPECTED
+        return super()._execute_operation()
