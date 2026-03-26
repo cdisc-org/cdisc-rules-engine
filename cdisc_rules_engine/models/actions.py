@@ -192,7 +192,7 @@ class COREActions(BaseActions):
                 )
 
             grouping_variables = [
-                x.replace("--", self.dataset_metadata.domain_cleaned or "")
+                x.replace("--", self.dataset_metadata.wildcard_replacement or "")
                 for x in grouping_variables
             ]
             missing_grouping_vars = [
