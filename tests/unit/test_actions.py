@@ -105,11 +105,22 @@ def test_targeted_error_object_with_dataset_sensitivity():
     assert error["value"] == {"TEST": 1, "MISSING": "Not in dataset"}
 
 
-def test_targeted_error_object_with_group_sensitivity():
+@pytest.mark.parametrize(
+    "grouping_variables, wildcard_replacement, expected_column",
+    [
+        # Original case: explicit column name, no wildcard
+        (["SETCD"], None, "SETCD"),
+        # Wildcard case: "--PARMCD" replaced with domain "TX" → "TXPARMCD"
+        (["--PARMCD", "SETCD"], "TX", "SETCD"),
+    ],
+)
+def test_targeted_error_object_with_group_sensitivity(
+    grouping_variables, wildcard_replacement, expected_column
+):
     dummy_rule = {
         "core_id": "FB4607",
         "sensitivity": "Group",
-        "grouping_variables": ["SETCD"],
+        "grouping_variables": grouping_variables,
         "conditions": {
             "all": [
                 {
@@ -171,18 +182,16 @@ def test_targeted_error_object_with_group_sensitivity():
     # Should have exactly 3 errors (one per SETCD group)
     assert len(result.errors) == 3
 
-    # Extract SETCD values from errors
-    setcd_values = [
-        error.to_representation()["value"]["SETCD"] for error in result.errors
+    group_values = [
+        error.to_representation()["value"][expected_column] for error in result.errors
     ]
-    assert sorted(setcd_values) == ["SET1", "SET2", "SET3"]
+    assert sorted(group_values) == ["SET1", "SET2", "SET3"]
 
     # Each error should have row information from the first record in its group
     for error in result.errors:
         error_repr = error.to_representation()
         assert "row" in error_repr
-        assert "SETCD" in error_repr["value"]
-        assert "TXPARMCD" in error_repr["value"]
+        assert expected_column in error_repr["value"]
 
 
 def test_group_sensitivity_missing_grouping_variables():
