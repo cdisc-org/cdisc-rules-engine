@@ -46,6 +46,16 @@ class DataProcessor:
         return series.astype(float, errors="ignore").astype(str)
 
     @staticmethod
+    def normalize_numeric_key(series: pd.Series) -> pd.Series:
+        numeric = pd.to_numeric(series, errors="coerce")
+        is_numeric = numeric.notna()
+        is_int = is_numeric & (numeric % 1 == 0)
+        result = series.astype("string")
+        result[is_int] = numeric[is_int].astype("Int64").astype("string")
+        result[is_numeric & ~is_int] = numeric[is_numeric & ~is_int].astype("string")
+        return result
+
+    @staticmethod
     def filter_if_present(df: DatasetInterface, col: str, filter_value):
         """
         If a filter value is provided, filter the dataframe on that value.
@@ -213,6 +223,9 @@ class DataProcessor:
         if len(unique_idvar_values) == 1:
             right_dataset = DataProcessor.process_supp(right_dataset)
             dynamic_key = right_dataset["IDVAR"].iloc[0]
+            temp_key = (
+                f"{dynamic_key}__norm"  # to preserve original values in left dataset
+            )
             is_blank: bool = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
             # Determine the common keys present in both datasets
             common_keys = [
@@ -224,8 +237,15 @@ class DataProcessor:
                 common_keys.append(dynamic_key)
                 current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
                 current_supp = current_supp.drop(columns=["IDVAR"])
-                left_dataset[dynamic_key] = left_dataset[dynamic_key].astype(str)
-                current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+
+                left_dataset[temp_key] = left_dataset[dynamic_key]
+                if pd.api.types.is_numeric_dtype(left_dataset[dynamic_key]):
+                    left_dataset[dynamic_key] = DataProcessor.normalize_numeric_key(
+                        left_dataset[dynamic_key]
+                    )
+                    current_supp[dynamic_key] = DataProcessor.normalize_numeric_key(
+                        current_supp[dynamic_key]
+                    )
             else:
                 columns_to_drop = [
                     col for col in ["IDVAR", "IDVARVAL"] if col in right_dataset.columns
@@ -242,7 +262,7 @@ class DataProcessor:
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
             else:
                 left_dataset = PandasDataset(
-                    pd.merge(
+                    pd.merge(  # noqa
                         left_dataset.data,
                         current_supp.data,
                         how="left",
@@ -251,6 +271,8 @@ class DataProcessor:
                     )
                 )
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
+            left_dataset[dynamic_key] = left_dataset[temp_key]
+            left_dataset = left_dataset.drop(columns=[temp_key])
         else:
             if dataset_implementation == DaskDataset:
                 left_dataset = PandasDataset(left_dataset.data.compute())
@@ -263,6 +285,7 @@ class DataProcessor:
                 left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
                     left_dataset, right_dataset, static_keys, qnam_list
                 )
+
         return left_dataset
 
     @staticmethod

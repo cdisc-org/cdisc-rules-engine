@@ -152,6 +152,99 @@ def test_merge_pivot_supp_dataset(
 
 @patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
+@pytest.mark.parametrize(
+    "a_parent, id_var_val, expected_dataset",
+    [
+        (
+            [1.0, 2.0, 3.0],
+            ["1", "2", "3"],
+            pd.DataFrame(
+                {
+                    "STUDYID": [1, 2, 3],
+                    "USUBJID": [101, 102, 103],
+                    "APID": [201, 202, 203],
+                    "POOLID": [301, 302, 303],
+                    "SPDEVID": [401, 402, 403],
+                    "A": [1.0, 2.0, 3.0],
+                    "X": [10, pd.NA, pd.NA],
+                    "Y": [pd.NA, 20, pd.NA],
+                    "Z": [pd.NA, pd.NA, 30],
+                }
+            ),
+        ),
+        (
+            [1.1, 2.2, 3.3],
+            ["1.1", "2.2", "3"],
+            pd.DataFrame(
+                {
+                    "STUDYID": [1, 2, 3],
+                    "USUBJID": [101, 102, 103],
+                    "APID": [201, 202, 203],
+                    "POOLID": [301, 302, 303],
+                    "SPDEVID": [401, 402, 403],
+                    "A": [1.1, 2.2, 3.3],
+                    "X": [10, pd.NA, pd.NA],
+                    "Y": [pd.NA, 20, pd.NA],
+                    "Z": [pd.NA, pd.NA, pd.NA],
+                }
+            ),
+        ),
+    ],
+)
+def test_merge_supp_str_float(
+    mock_async_get_datasets,
+    mock_check_filepath,
+    data_service,
+    a_parent,
+    id_var_val,
+    expected_dataset,
+):
+    # Setup example datasets
+    parent_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": [1, 2, 3],
+                "USUBJID": [101, 102, 103],
+                "APID": [201, 202, 203],
+                "POOLID": [301, 302, 303],
+                "SPDEVID": [401, 402, 403],
+                "A": a_parent,
+            }
+        )
+    )
+
+    supp_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": [1, 2, 3],
+                "USUBJID": [101, 102, 103],
+                "APID": [201, 202, 203],
+                "POOLID": [301, 302, 303],
+                "SPDEVID": [401, 402, 403],
+                "IDVAR": ["A", "A", "A"],
+                "IDVARVAL": id_var_val,
+                "QNAM": ["X", "Y", "Z"],
+                "QVAL": [10, 20, 30],
+                "QLABEL": ["Label1", "Label2", "Label3"],
+            }
+        )
+    )
+
+    mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
+
+    merged_dataset = DataProcessor.merge_pivot_supp_dataset(
+        data_service.dataset_implementation, parent_dataset, supp_dataset
+    )
+    expected_dataset = PandasDataset(expected_dataset)
+    pdt.assert_frame_equal(
+        merged_dataset.data, expected_dataset.data, check_dtype=False
+    )
+    assert len(merged_dataset.data) == len(parent_dataset.data), "The"
+    " length of the merged dataset should match the parent dataset."
+
+
+@patch.object(LocalDataService, "check_filepath", return_value=False)
+@patch.object(LocalDataService, "_async_get_datasets")
 def test_merge_supp_dataset_multi_idvar(mock_async_get_datasets, data_service):
     parent_dataset = PandasDataset(
         pd.DataFrame(
