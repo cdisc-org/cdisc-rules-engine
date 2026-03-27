@@ -223,9 +223,8 @@ class DataProcessor:
         if len(unique_idvar_values) == 1:
             right_dataset = DataProcessor.process_supp(right_dataset)
             dynamic_key = right_dataset["IDVAR"].iloc[0]
-            temp_key = (
-                f"{dynamic_key}__norm"  # to preserve original values in left dataset
-            )
+            temp_key = f"{dynamic_key}__norm"
+
             is_blank: bool = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
             # Determine the common keys present in both datasets
             common_keys = [
@@ -234,11 +233,12 @@ class DataProcessor:
                 if key in left_dataset.columns and key in right_dataset.columns
             ]
             if not is_blank:
+                left_dataset[temp_key] = left_dataset[dynamic_key]
+
                 common_keys.append(dynamic_key)
                 current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
                 current_supp = current_supp.drop(columns=["IDVAR"])
 
-                left_dataset[temp_key] = left_dataset[dynamic_key]
                 if pd.api.types.is_numeric_dtype(left_dataset[dynamic_key]):
                     left_dataset[dynamic_key] = DataProcessor.normalize_numeric_key(
                         left_dataset[dynamic_key]
@@ -271,8 +271,9 @@ class DataProcessor:
                     )
                 )
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
-            left_dataset[dynamic_key] = left_dataset[temp_key]
-            left_dataset = left_dataset.drop(columns=[temp_key])
+            if not is_blank:
+                left_dataset[dynamic_key] = left_dataset[temp_key]
+                left_dataset = left_dataset.drop(columns=[temp_key])
         else:
             if dataset_implementation == DaskDataset:
                 left_dataset = PandasDataset(left_dataset.data.compute())
