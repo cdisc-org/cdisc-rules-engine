@@ -1,0 +1,33 @@
+custom_id: SD1129
+Authorities:
+  - Organization: TEST
+    Standards:
+      - Name: SDTMIG
+        Version: "3.2"
+    Category: SD1129
+Check:
+  all:
+    - name: RELTYPE
+      operator: non_empty
+Operations:
+  - id: $test
+    operator: define_variable_metadata
+    name: RELID
+    attribute_name: define_variable_label
+Core:
+  Id: SD1129
+  Status: Published
+  Version: 1
+Description: TEST
+Executability: Fully Executable
+Outcome:
+  Message: TEST
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - RELATIONSHIP
+  Domains:
+    Include:
+      - RELREC
+Sensitivity: Record

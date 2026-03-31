@@ -206,6 +206,7 @@ def test_get_label_referenced_variable_metadata(
         "$label_referenced_variable_name",
         "$label_referenced_variable_role",
         "$label_referenced_variable_ordinal",
+        "$label_referenced_variable_core",
         "$label_referenced_variable_label",
     ]
 
