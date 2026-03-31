@@ -134,8 +134,13 @@ def test_build_combined_metadata(
     assert not aeterm_row["variable_is_empty"]
 
     # We need to check that the rest of the variables are coming from define.xml (variable_name is NaN)
-    assert len(result[
-        (result["variable_name"] == "") & result["define_variable_name"].notna()
-    ]) == 34
+    assert (
+        len(
+            result[
+                (result["variable_name"] == "") & result["define_variable_name"].notna()
+            ]
+        )
+        == 34
+    )
 
     assert len(result) == 37
