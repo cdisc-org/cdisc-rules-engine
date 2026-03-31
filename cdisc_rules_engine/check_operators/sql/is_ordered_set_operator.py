@@ -12,33 +12,61 @@ class IsOrderedSetOperator(BaseSqlOperator):
 
     def execute_operator(self, other_value):
         name = self.replace_prefix(other_value.get("target"))
-        value = other_value.get("comparator")
+        values = other_value.get("comparator")
         value_is_literal = other_value.get("value_is_literal", False)
+
+        if not isinstance(values, list):
+            values = [values]
+
         if not value_is_literal:
-            value = self.replace_prefix(value)
+            values = [self.replace_prefix(value) for value in values]
 
         def sql():
             table_hash = self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
             name_hash = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, name)
-            value_hash = (
-                self.sql_data_service.pgi.schema.get_column_hash(self.table_id, value)
-                if not value_is_literal
-                else self._constant_sql(value)
+
+            partition_cols = []
+            for value in values:
+                if not value_is_literal:
+                    partition_cols.append(self.sql_data_service.pgi.schema.get_column_hash(self.table_id, value))
+                else:
+                    partition_cols.append(self._constant_sql(value))
+
+            partition_sql = ", ".join(partition_cols) if partition_cols else "NULL"
+
+            group_match_sql = (
+                " AND ".join([f"t_all.{col} IS NOT DISTINCT FROM t_bad.{col}" for col in partition_cols])
+                if partition_cols
+                else "TRUE"
             )
-            value_column = self._column_sql(value) if not value_is_literal else self._constant_sql(value)
+
+            compare_logic = """
+                (sub.prev IS NOT NULL AND sub.curr IS NOT NULL AND (
+                    CASE
+                        WHEN sub.prev ~ '^[0-9]+(\\.[0-9]+)?$' AND sub.curr ~ '^[0-9]+(\\.[0-9]+)?$'
+                        THEN CAST(sub.prev AS NUMERIC) > CAST(sub.curr AS NUMERIC)
+                        ELSE sub.prev > sub.curr
+                    END
+                ))
+            """
 
             dataset_is_ordered = f"""
-                NOT EXISTS (
-                    SELECT 1
-                    FROM {table_hash} t1
-                    INNER JOIN {table_hash} t2 ON t1.{value_hash} = t2.{value_hash}
-                    WHERE t1.{value_hash} = {value_column}
-                    AND t1.{name_hash} IS NOT NULL
-                    AND t2.{name_hash} IS NOT NULL
-                    AND t1.ctid < t2.ctid
-                    AND t1.{name_hash} > t2.{name_hash}
+                ctid NOT IN (
+                    SELECT t_all.ctid
+                    FROM {table_hash} t_all
+                    INNER JOIN (
+                        SELECT DISTINCT {partition_sql}
+                        FROM (
+                            SELECT
+                                {partition_sql},
+                                {name_hash} AS curr,
+                                LAG({name_hash}) OVER (PARTITION BY {partition_sql} ORDER BY ctid) AS prev
+                            FROM {table_hash}
+                        ) sub
+                        WHERE {compare_logic}
+                    ) t_bad ON {group_match_sql}
                 )
-                """
+            """
             if self.invert:
                 return f"""
                 CASE

@@ -58,6 +58,27 @@ is_ordered_set_test_data = [
         False,
         [True, True, False, False, True, True],
     ),
+    (
+        {"target": ["1", "2", "1", "2"], "grp1": ["A", "A", "A", "A"], "grp2": ["X", "X", "Y", "Y"]},
+        "target",
+        ["grp1", "grp2"],
+        False,
+        [True, True, True, True],
+    ),
+    (
+        {"target": ["2", "1", "1", "2"], "grp1": ["A", "A", "A", "A"], "grp2": ["X", "X", "Y", "Y"]},
+        "target",
+        ["grp1", "grp2"],
+        False,
+        [False, False, True, True],
+    ),
+    (
+        {"target": ["10", "20", "5", "15"], "ARM": ["PBO", "PBO", "ZAN", "ZAN"], "SITE": ["01", "01", "01", "01"]},
+        "target",
+        ["ARM", "SITE"],
+        False,
+        [True, True, True, True],
+    ),
 ]
 
 is_not_ordered_set_test_data = [
@@ -102,6 +123,13 @@ is_not_ordered_set_test_data = [
         "groupby",
         False,
         [False, False, False, False],
+    ),
+    (
+        {"target": ["2", "1", "3", "4"], "grp1": ["A", "A", "B", "B"], "grp2": ["X", "X", "X", "X"]},
+        "target",
+        ["grp1", "grp2"],
+        False,
+        [True, True, False, False],
     ),
 ]
 
