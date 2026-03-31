@@ -209,3 +209,36 @@ class SqlBaseDatasetBuilder(ABC):
             elif isinstance(v, list):
                 metadata[k] = ",".join(map(str, v))
         return metadata
+
+    def _has_empty_values(self, source_table_id: str, source_table_hash: str, var, table_is_empty: bool) -> bool:
+        if table_is_empty or not var:
+            return True
+
+        var_name = var.name.upper()
+        col_hash = self.data_service.pgi.schema.get_column_hash(source_table_id, var_name)
+        if not col_hash:
+            return True
+
+        val_query = (
+            f"SELECT COUNT(*) as cnt FROM {source_table_hash} "
+            f"WHERE TRIM(COALESCE(CAST({col_hash} AS TEXT), '')) != ''"
+        )
+        self.data_service.pgi.execute_sql(val_query)
+        val_res = self.data_service.pgi.fetch_one()
+
+        return not (val_res and val_res["cnt"] > 0)
+
+    def _value_count(self, source_table_id: str, source_table_hash: str, var) -> int:
+        var_name = var.name.upper()
+        col_hash = self.data_service.pgi.schema.get_column_hash(source_table_id, var_name)
+        if not col_hash:
+            return 0
+
+        val_query = (
+            f"SELECT COUNT(*) as cnt FROM {source_table_hash} "
+            f"WHERE TRIM(COALESCE(CAST({col_hash} AS TEXT), '')) != ''"
+        )
+        self.data_service.pgi.execute_sql(val_query)
+        val_res = self.data_service.pgi.fetch_one()
+
+        return val_res["cnt"] if val_res and "cnt" in val_res else 0
