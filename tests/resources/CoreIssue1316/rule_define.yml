@@ -1,0 +1,84 @@
+# Variable: --DUR
+# Condition: --DUR ^= null
+# Rule: --DUR collected and not derived
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Used only if collected on the CRF and not derived.
+                Document: SDTM v2.0
+                Section: Timing
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0002
+              Version: '1'
+            Version: '2.0'
+        Version: '3.4'
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Collected duration of an event, intervention, or finding
+                  represented in ISO 8601 character format. Used only if
+                  collected on the CRF and not derived.
+                Document: Model v1.4
+                Section: 2.2.5
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0002
+              Version: '1'
+            Version: '2.0'
+        Version: '3.2'
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Collected duration of an event, intervention, or finding. Used
+                  only if collected on the CRF and not derived.  Format=ISO8601
+                Document: Model v1.7
+                Section: 2.2.5
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0002
+              Version: '1'
+            Version: '2.0'
+        Version: '3.3'
+Check:
+  all:
+    - name: define_variable_is_collected
+      operator: equal_to
+      value: false
+#    - name: variable_name
+#      operator: matches_regex
+#      value: ^..DUR$
+#    - name: $dur_is_null
+#      operator: equal_to
+#      value: false
+Core:
+  Id: CDISC.SDTMIG.CG0002
+  Status: Draft
+  Version: '1'
+Description: Raise a message when --DUR exists in a dataset, confirm collected
+  and not derived.
+Executability: Fully Executable
+#Operations:
+#  - id: $dur_is_null
+#    name: --DUR
+#    operator: variable_is_null
+    # Return true if at least one record is non null
+Outcome:
+  Message: --DUR exists in a dataset, confirm collected and not derived.
+  Output Variables:
+    - variable_name
+    - define_variable_is_collected
+    - row_number
+#    - $dur_is_null
+Rule Type: Value Check against Define XML Variable
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Dataset

@@ -1,0 +1,34 @@
+Check:
+  all:
+    - name: variable_name
+      operator: equal_to
+      value: EXROUTE
+
+    - name: library_codelist
+      operator: non_empty
+
+    - name: variable_value
+      operator: not_in
+      value: library_codelist_values
+Core:
+  Id: CORE-EX-ROUTE-001
+  Status: Draft
+  Version: "1"
+Description: EXROUTE must use values from the CDISC controlled terminology.
+Executability: Fully Executable
+
+Outcome:
+  Message: EXROUTE contains a value not defined in CDISC terminology.
+  Output Variables:
+    - USUBJID
+    - EXSEQ
+    - EXROUTE
+Rule Type: Value Check against Library Metadata
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Record

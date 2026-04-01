@@ -1,0 +1,135 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Using SDTM-specified variable labels for all standard domains
+                Document: IG v3.2
+                Section: 3.2.2
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0303
+              Version: '1'
+            Version: '2.0'
+        Version: '3.2'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.0
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "3.0"
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.1
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "3.1"
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.1.1
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "3.1.1"
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.1
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "1.1"
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.1.1
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "1.2"
+      - Name: SENDIG-GENETOX
+        References:
+          - Citations:
+              - Cited Guidance: Sponsors must use the predefined SENDIG-standard labels in all
+                  standard domains
+                Document: SENDIG v3.1.1
+                Section: "4.2.1"
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND276
+              Version: "1"
+            Version: "5.0"
+        Version: "1.0"
+# The implementation successfully skips invalid variables (e.g. VSINVALID)
+# and skips variables that are not in the IG, but come from the model (e.g. VSLOBXFL)
+Check:
+  all:
+    # Precondition: variable (label) is in the IG
+    - name: variable_name
+      operator: equal_to
+      value: library_variable_name
+    - name: library_variable_label
+      operator: non_empty
+    # variable label must be equal to that in the CDISC-library
+    - name: variable_label
+      operator: not_equal_to
+      value: library_variable_label
+Core:
+  Id: CORE-000398
+  Status: Published
+  Version: "1"
+Description: Raise an error when the variable label for an IG-variable does not
+  correspond to the variable label in the Implementation Guide.
+Executability: Fully Executable
+Operations:
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $codelist_extensible
+    operator: codelist_extensible
+    version: category.codeSystemVersion
+Outcome:
+  Message: The label of the variable does not correspond to the label in the IG
+  Output Variables:
+    - variable_name
+    - variable_label
+    - library_variable_label
+Rule Type: Variable Metadata Check against Library Metadata
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Dataset
