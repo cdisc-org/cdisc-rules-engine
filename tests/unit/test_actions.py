@@ -106,16 +106,153 @@ def test_targeted_error_object_with_dataset_sensitivity():
 
 
 @pytest.mark.parametrize(
-    "grouping_variables, wildcard_replacement, expected_column",
+    "grouping_variables, expected_column, df, expected_groups",
     [
-        # Original case: explicit column name, no wildcard
-        (["SETCD"], None, "SETCD"),
-        # Wildcard case: "--PARMCD" replaced with domain "TX" → "TXPARMCD"
-        (["--PARMCD", "SETCD"], "TX", "SETCD"),
+        # Case 1: explicit column name, no wildcard
+        (
+            ["SETCD"],
+            "SETCD",
+            pd.DataFrame(
+                {
+                    "TXPARMCD": [
+                        "PLANSUB",
+                        "PLANSUB",
+                        "PLANSUB",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "VALUE",
+                        "VALUE",
+                    ],
+                    "SETCD": [
+                        "SET1",
+                        "SET1",
+                        "SET1",
+                        "SET2",
+                        "SET2",
+                        "SET2",
+                        "SET2",
+                        "SET3",
+                        "SET3",
+                    ],
+                    "USUBJID": [
+                        "001",
+                        "001",
+                        "001",
+                        "002",
+                        "002",
+                        "002",
+                        "002",
+                        "003",
+                        "003",
+                    ],
+                }
+            ),
+            ["SET1", "SET2", "SET3"],
+        ),
+        # Case 2: wildcard "--PARMCD" → "TXPARMCD", grouped only on TXPARMCD
+        # Each distinct TXPARMCD value should produce one value
+        (
+            ["--PARMCD"],
+            "TXPARMCD",
+            pd.DataFrame(
+                {
+                    "TXPARMCD": [
+                        "PLANSUB",
+                        "PLANSUB",
+                        "PLANSUB",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "VALUE",
+                        "VALUE",
+                    ],
+                    "SETCD": [
+                        "SET1",
+                        "SET1",
+                        "SET1",
+                        "SET2",
+                        "SET2",
+                        "SET2",
+                        "SET2",
+                        "SET3",
+                        "SET3",
+                    ],
+                    "USUBJID": [
+                        "001",
+                        "001",
+                        "001",
+                        "002",
+                        "002",
+                        "002",
+                        "002",
+                        "003",
+                        "003",
+                    ],
+                }
+            ),
+            ["PLANSUB", "OTHER", "VALUE"],
+        ),
+        # Case 3: grouped on both "--PARMCD" (→ "TXPARMCD") and "SETCD"
+        # TXPARMCD varies within SETCD groups to prove both columns contribute to grouping:
+        #   SET1 has PLANSUB + OTHER  → 2 groups
+        #   SET2 has OTHER only       → 1 group
+        #   SET3 has VALUE + PLANSUB  → 2 groups
+        # Total: 5 distinct (TXPARMCD, SETCD) combinations
+        (
+            ["--PARMCD", "SETCD"],
+            "SETCD",
+            pd.DataFrame(
+                {
+                    "TXPARMCD": [
+                        "PLANSUB",
+                        "PLANSUB",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "OTHER",
+                        "VALUE",
+                        "VALUE",
+                        "PLANSUB",
+                        "PLANSUB",
+                    ],
+                    "SETCD": [
+                        "SET1",
+                        "SET1",
+                        "SET1",
+                        "SET1",
+                        "SET2",
+                        "SET2",
+                        "SET2",
+                        "SET3",
+                        "SET3",
+                        "SET3",
+                        "SET3",
+                    ],
+                    "USUBJID": [
+                        "001",
+                        "001",
+                        "001",
+                        "001",
+                        "002",
+                        "002",
+                        "002",
+                        "003",
+                        "003",
+                        "003",
+                        "003",
+                    ],
+                }
+            ),
+            ["SET1", "SET1", "SET2", "SET3", "SET3"],  # two SET1s and two SET3s
+        ),
     ],
 )
 def test_targeted_error_object_with_group_sensitivity(
-    grouping_variables, wildcard_replacement, expected_column
+    grouping_variables, expected_column, df, expected_groups
 ):
     dummy_rule = {
         "core_id": "FB4607",
@@ -139,35 +276,6 @@ def test_targeted_error_object_with_group_sensitivity(
         "output_variables": ["SETCD", "TXPARMCD"],
     }
 
-    # Create test data with 3 groups (SETCD), multiple records each
-    df = pd.DataFrame.from_dict(
-        {
-            "TXPARMCD": [
-                "PLANSUB",
-                "PLANSUB",
-                "PLANSUB",
-                "OTHER",
-                "OTHER",
-                "OTHER",
-                "OTHER",
-                "VALUE",
-                "VALUE",
-            ],
-            "SETCD": [
-                "SET1",
-                "SET1",
-                "SET1",
-                "SET2",
-                "SET2",
-                "SET2",
-                "SET2",
-                "SET3",
-                "SET3",
-            ],
-            "USUBJID": ["001", "001", "001", "002", "002", "002", "002", "003", "003"],
-        }
-    )
-
     variable = DatasetVariable(PandasDataset(df))
     dataset_metadata = SDTMDatasetMetadata(
         first_record={"DOMAIN": "TX"}, filename="tx.xpt"
@@ -179,13 +287,12 @@ def test_targeted_error_object_with_group_sensitivity(
         targets, df, "Missing required TXPARMCD value per set"
     )
 
-    # Should have exactly 3 errors (one per SETCD group)
-    assert len(result.errors) == 3
+    assert len(result.errors) == len(expected_groups)
 
-    group_values = [
+    actual_values = sorted(
         error.to_representation()["value"][expected_column] for error in result.errors
-    ]
-    assert sorted(group_values) == ["SET1", "SET2", "SET3"]
+    )
+    assert actual_values == sorted(expected_groups)
 
     # Each error should have row information from the first record in its group
     for error in result.errors:
