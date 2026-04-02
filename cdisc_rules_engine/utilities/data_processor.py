@@ -20,6 +20,7 @@ from cdisc_rules_engine.services.data_services import (
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
+    custom_str_conversion,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
 
@@ -44,16 +45,6 @@ class DataProcessor:
         For example, merging "2" with 2.0
         """
         return series.astype(float, errors="ignore").astype(str)
-
-    @staticmethod
-    def normalize_numeric_key(series: pd.Series) -> pd.Series:
-        numeric = pd.to_numeric(series, errors="coerce")
-        is_numeric = numeric.notna()
-        is_int = is_numeric & (numeric % 1 == 0)
-        result = series.astype("string")
-        result[is_int] = numeric[is_int].astype("Int64").astype("string")
-        result[is_numeric & ~is_int] = numeric[is_numeric & ~is_int].astype("string")
-        return result
 
     @staticmethod
     def filter_if_present(df: DatasetInterface, col: str, filter_value):
@@ -240,11 +231,11 @@ class DataProcessor:
                 current_supp = current_supp.drop(columns=["IDVAR"])
 
                 if pd.api.types.is_numeric_dtype(left_dataset[dynamic_key]):
-                    left_dataset[dynamic_key] = DataProcessor.normalize_numeric_key(
-                        left_dataset[dynamic_key]
+                    left_dataset[dynamic_key] = left_dataset[dynamic_key].apply(
+                        custom_str_conversion
                     )
-                    current_supp[dynamic_key] = DataProcessor.normalize_numeric_key(
-                        current_supp[dynamic_key]
+                    current_supp[dynamic_key] = current_supp[dynamic_key].apply(
+                        custom_str_conversion
                     )
             else:
                 columns_to_drop = [

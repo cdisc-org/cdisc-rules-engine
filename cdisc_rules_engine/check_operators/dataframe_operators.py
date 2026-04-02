@@ -17,7 +17,11 @@ from cdisc_rules_engine.check_operators.helpers import (
 )
 from cdisc_rules_engine.enums.dataset_title_case import DatasetTitleCase
 from cdisc_rules_engine.constants import NULL_FLAVORS
-from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
+from cdisc_rules_engine.utilities.utils import (
+    dates_overlap,
+    parse_date,
+    custom_str_conversion,
+)
 import numpy as np
 import dask.dataframe as dd
 import pandas as pd
@@ -93,24 +97,6 @@ class DataframeType(BaseType):
         """
         if pd.notna(x):
             if isinstance(x, int):
-                return str(x).strip()
-            elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()
-        return x
-
-    def _custom_str_conversion(self, x):
-        """used to normalize numeric representations i.e. treat 200.00 as 200 for comparisons"""
-        if pd.notna(x):
-            if isinstance(x, str):
-                try:
-                    float_val = float(x)
-                    if float_val.is_integer():
-                        return str(int(float_val)).strip()
-                    else:
-                        return str(float_val).strip()
-                except (ValueError, TypeError):
-                    return x.strip()
-            elif isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
                 return f"{x:.0f}" if x.is_integer() else str(x).strip()
@@ -239,8 +225,8 @@ class DataframeType(BaseType):
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(target_val)
-            comparison_val = self._custom_str_conversion(comparison_val)
+            target_val = custom_str_conversion(target_val)
+            comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
@@ -286,8 +272,8 @@ class DataframeType(BaseType):
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(target_val)
-            comparison_val = self._custom_str_conversion(comparison_val)
+            target_val = custom_str_conversion(target_val)
+            comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
