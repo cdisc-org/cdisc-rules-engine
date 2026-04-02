@@ -321,7 +321,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
-    envvar="DATA_DIR",
     callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
@@ -337,7 +336,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     required=False,
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
-    envvar="DATASET_PATH",
     callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
@@ -358,7 +356,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     required=True,
     default=None,
     help="CDISC standard to validate against",
-    envvar="STANDARD",
+    envvar="PRODUCT",
 )
 @click.option(
     "-v",
@@ -395,7 +393,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
         "Controlled terminology package to validate against, "
         "can provide more than one"
     ),
-    envvar="CONTROLLED_TERMINOLOGY_PACKAGE",
+    envvar="CT",
 )
 @click.option(
     "-o",
@@ -427,7 +425,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "--define-version",
     type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
-    envvar="DEFINE_VERSION",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
@@ -446,14 +443,12 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-r",
     multiple=True,
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
-    envvar="RULES",
 )
 @click.option(
     "--exclude-rules",
     "-er",
     multiple=True,
     help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
-    envvar="EXCLUDE_RULES",
 )
 @click.option(
     "--local-rules",
@@ -462,7 +457,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     type=click.Path(exists=True, readable=True, resolve_path=True),
     help="Path to directory containing local rules.",
     multiple=True,
-    envvar="LOCAL_RULES",
 )
 @click.option(
     "--custom-standard",
@@ -488,7 +482,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "--define-xml-path",
     required=False,
     help="Path to Define-XML",
-    envvar="DEFINE",
+    envvar="DEFINE_XML",
 )
 @click.option(
     "-vx",
@@ -547,14 +541,12 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "--variables-csv-path",
     required=False,
     help="Path to variables.csv",
-    envvar="VARIABLES_CSV",
 )
 @click.option(
     "-tcp",
     "--tables-csv-path",
     required=False,
     help="Path to tables.csv",
-    envvar="TABLES_CSV",
 )
 @click.pass_context
 def validate(  # noqa
@@ -867,7 +859,6 @@ def update_cache(
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
-    envvar="RULEID",
 )
 @click.pass_context
 def list_rules(
