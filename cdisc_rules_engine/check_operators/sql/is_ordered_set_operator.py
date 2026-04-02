@@ -43,9 +43,10 @@ class IsOrderedSetOperator(BaseSqlOperator):
             compare_logic = """
                 (sub.prev IS NOT NULL AND sub.curr IS NOT NULL AND (
                     CASE
-                        WHEN sub.prev ~ '^[0-9]+(\\.[0-9]+)?$' AND sub.curr ~ '^[0-9]+(\\.[0-9]+)?$'
+                        WHEN CAST(sub.prev AS TEXT) ~ '^[0-9]+(\\.[0-9]+)?$'
+                        AND CAST(sub.curr AS TEXT) ~ '^[0-9]+(\\.[0-9]+)?$'
                         THEN CAST(sub.prev AS NUMERIC) > CAST(sub.curr AS NUMERIC)
-                        ELSE sub.prev > sub.curr
+                        ELSE CAST(sub.prev AS TEXT) > CAST(sub.curr AS TEXT)
                     END
                 ))
             """
