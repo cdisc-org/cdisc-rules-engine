@@ -137,20 +137,21 @@ This will show the list of validation options.
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
-  -ps, --pool-size INTEGER         Number of parallel processes for validation
-  -d, --data TEXT                 Path to directory containing data files
+  -ps, --pool-size INTEGER        Number of parallel processes for validation
+  -dep, --dotenv-path             Path to the .env file used to set environment variables.
+  -d, --data TEXT                 Path to directory containing data files.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
-  -dxp, --define-xml-path TEXT    Path to Define-XML
+  -dxp, --define-xml-path TEXT    Path to Define-XML. DEFINE_XML environment variable can be used to pass value.
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
   -rt, --report-template TEXT     File path of report template to use for
                                   excel output
-  -s, --standard TEXT             CDISC standard to validate against
+  -s, --standard TEXT             CDISC standard to validate against. PRODUCT environment variable can be used to pass value.
                                   [required]
-  -v, --version TEXT              Standard version to validate against
+  -v, --version TEXT              Standard version to validate against. VERSION environment variable can be used to pass value.
                                   [required]
-  -ss, --substandard TEXT         Substandard to validate against
+  -ss, --substandard TEXT         Substandard to validate against. SUBSTANDARD environment variable can be used to pass value.
                                   "SDTM", "SEND", "ADaM", or "CDASH"
                                   [required for TIG]
   -uc, --use-case TEXT            Use Case for TIG Validation
@@ -161,7 +162,8 @@ This will show the list of validation options.
                                   against, can provide more than one
                                   NOTE: if a defineXML is provided, if it is version 2.1
                                   engine will use the CT laid out in the define.  If it is
-                                  version 2.0, -ct is expected to specify the CT package
+                                  version 2.0, -ct is expected to specify the CT package.
+                                  CT environment variable can be used to pass values separated by ':' on Unix and ';' for Windows.
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename
@@ -204,27 +206,27 @@ This will show the list of validation options.
                                   if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
                                   If limit is set to 0, no maximum will be enforced.
                                   No maximum is the default behavior.
-  -dv, --define-version TEXT      Define-XML version used for validation
+  -dv, --define-version TEXT      Define-XML version used for validation.
   -dxp, --define-xml-path         Path to define-xml file.
   -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
-  --loinc TEXT                  Path to directory with LOINC dictionary
+  --loinc TEXT                    Path to directory with LOINC dictionary
                                   files
-  --medrt TEXT                  Path to directory with MEDRT dictionary
+  --medrt TEXT                    Path to directory with MEDRT dictionary
                                   files
-  --unii TEXT                  Path to directory with UNII dictionary
+  --unii TEXT                     Path to directory with UNII dictionary
                                   files
-  --snomed-version TEXT        Version of snomed to use. (ex. 2024-09-01)
-  --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
-  --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
+  --snomed-version TEXT           Version of snomed to use. (ex. 2024-09-01)
+  --snomed-url TEXT               Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+  --snomed-edition TEXT           Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -er, --exclude-rules TEXT       Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times.
   -lr, --local-rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
-  -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+  -cs, --custom-standard          Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
   -cse, --custom-standard-encoding TEXT
                                   Explicitly specify the file encoding to use
@@ -243,6 +245,9 @@ This will show the list of validation options.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
+  -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders.
+                                    Not required if variables.txt exists in all -dp directories.
+  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders.
   --help                          Show this message and exit.
 ```
 

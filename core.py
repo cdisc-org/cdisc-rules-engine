@@ -24,6 +24,7 @@ from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.enums.standard_types import StandardTypes
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -66,6 +67,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
         DataFormatTypes.JSON.value,
         DataFormatTypes.NDJSON.value,
         DataFormatTypes.XLSX.value,
+        DataFormatTypes.CSV.value,
     ]
     found_formats = set()
     file_list = []
@@ -104,6 +106,52 @@ def cli():
     pass
 
 
+def _validate_csv_data_paths(
+    dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
+) -> list[str]:
+    """
+    Filters dataset paths based on tables.csv content.
+
+    Raises InvalidCSVFile error if there are no proper tables.csv files in provided path.
+
+    Keeps only datasets listed in tables.csv (Filename column).
+    Always excludes tables.csv and variables.csv from result.
+    """
+    import pandas as pd
+
+    paths = [Path(p) for p in dataset_paths]
+
+    tables_path = [p for p in paths if p.name.lower() == "tables.csv"]
+    if len(tables_path) > 1:
+        raise InvalidCSVFile("There is more than one tables.csv file in provided path.")
+    elif len(tables_path) == 0:
+        raise InvalidCSVFile("There is no tables.csv file in provided path.")
+    else:
+        tables_path = tables_path[0]
+
+    dataset_files = [
+        p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
+    ]
+
+    tables_df = pd.read_csv(tables_path, encoding=encoding)
+
+    if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
+        raise InvalidCSVFile(
+            "Metadata files is malformed. One of [Filename, Label] columns is missing."
+        )
+
+    allowed_datasets = {
+        Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
+    }
+
+    filtered = {
+        str(p)
+        for p in dataset_files
+        if p.suffix.lower() == ".csv" and p.stem.lower() in allowed_datasets
+    }
+    return list(filtered)
+
+
 def _validate_data_directory(
     data: str, logger, filetype: str = None
 ) -> tuple[list, set]:
@@ -127,7 +175,12 @@ def _validate_data_directory(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
-
+    elif DataFormatTypes.CSV.value in found_formats:
+        try:
+            dataset_paths = _validate_csv_data_paths(dataset_paths)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -172,7 +225,24 @@ def _validate_dataset_paths(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
+    elif DataFormatTypes.CSV.value in found_formats:
+        all_files_in_dp = []
 
+        for dp in dataset_path:
+            all_files_in_dp.append(dp)
+            dp_path = Path(dp)
+            all_files_in_dp.extend(
+                [
+                    str(p)
+                    for p in dp_path.parent.glob("*")
+                    if p.is_file() and p.name in {"tables.csv", "variables.csv"}
+                ]
+            )
+        try:
+            dataset_paths = _validate_csv_data_paths(all_files_in_dp)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -203,6 +273,28 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
+def load_custom_dotenv(ctx, param, value):
+    if not value:
+        return value
+    if os.path.exists(value):
+        load_dotenv(value, override=False)
+    return value
+
+
+def load_custom_dotenv_from_data_options(ctx, param, value):
+    if not value:
+        return value
+    if isinstance(value, str):
+        env_path = os.path.join(value, ".env")
+    elif isinstance(value, tuple):
+        env_path = next((os.path.join(Path(v).parent, ".env") for v in value), None)
+    else:
+        return value
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=False)
+    return value
+
+
 @click.command()
 @click.option(
     "-ca",
@@ -218,10 +310,18 @@ def _validate_no_arguments(logger) -> None:
     help="Number of parallel processes for validation",
 )
 @click.option(
+    "-dep",
+    "--dotenv-path",
+    required=False,
+    help="Path to .env file containing custom dotenv values",
+    callback=load_custom_dotenv,
+)
+@click.option(
     "-d",
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-ft",
@@ -236,6 +336,7 @@ def _validate_no_arguments(logger) -> None:
     required=False,
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-l",
@@ -255,6 +356,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="CDISC standard to validate against",
+    envvar="PRODUCT",
 )
 @click.option(
     "-v",
@@ -262,6 +364,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="Standard version to validate against",
+    envvar="VERSION",
 )
 @click.option(
     "-ss",
@@ -269,6 +372,7 @@ def _validate_no_arguments(logger) -> None:
     default=None,
     type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
     help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+    envvar="SUBSTANDARD",
 )
 @click.option(
     "-uc",
@@ -289,6 +393,7 @@ def _validate_no_arguments(logger) -> None:
         "Controlled terminology package to validate against, "
         "can provide more than one"
     ),
+    envvar="CT",
 )
 @click.option(
     "-o",
@@ -372,7 +477,13 @@ def _validate_no_arguments(logger) -> None:
         "is printed."
     ),
 )
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
+@click.option(
+    "-dxp",
+    "--define-xml-path",
+    required=False,
+    help="Path to Define-XML",
+    envvar="DEFINE_XML",
+)
 @click.option(
     "-vx",
     "--validate-xml",
@@ -425,11 +536,24 @@ def _validate_no_arguments(logger) -> None:
         f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
     ),
 )
+@click.option(
+    "-vcp",
+    "--variables-csv-path",
+    required=False,
+    help="Path to variables.csv",
+)
+@click.option(
+    "-tcp",
+    "--tables-csv-path",
+    required=False,
+    help="Path to tables.csv",
+)
 @click.pass_context
 def validate(  # noqa
     ctx,
     cache: str,
     pool_size: int,
+    dotenv_path: str,
     data: str,
     filetype: str,
     dataset_path: tuple[str],
@@ -463,6 +587,8 @@ def validate(  # noqa
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
     encoding: str,
+    variables_csv_path: str,
+    tables_csv_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -474,7 +600,7 @@ def validate(  # noqa
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    load_dotenv()
+    load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if not custom_standard:
@@ -489,7 +615,7 @@ def validate(  # noqa
             )
             ctx.exit(2)
 
-    if raw_report is True:
+    if raw_report:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
@@ -571,6 +697,8 @@ def validate(  # noqa
             max_report_rows,
             max_errors_per_rule,
             encoding,
+            variables_csv_path,
+            tables_csv_path,
         )
     )
 

@@ -21,6 +21,7 @@ from cdisc_rules_engine.services.datasetjson_metadata_reader import (
 from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
     DatasetNDJSONMetadataReader,
 )
+from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
 )
@@ -47,6 +48,8 @@ class LocalDataService(BaseDataService):
         )
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
         self.encoding: str = kwargs.get("encoding")
+        self.variables_csv_path: str = kwargs.get("variables_csv_path")
+        self.tables_csv_path: str = kwargs.get("tables_csv_path")
 
     @classmethod
     def get_instance(
@@ -194,6 +197,7 @@ class LocalDataService(BaseDataService):
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
             DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
+            DataFormatTypes.CSV.value: DatasetCSVMetadataReader,
         }
 
         file_extension = file_name.split(".")[1].upper()
@@ -202,11 +206,16 @@ class LocalDataService(BaseDataService):
             raise ValueError(
                 f"Unsupported file format '{file_extension}' in file '{file_name}'.\n"
                 f"Supported formats: {supported_formats}\n"
-                f"Please provide dataset files in SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX) format."
+                f"Please provide dataset files in SAS V5 XPT, "
+                f"Dataset-JSON (JSON or NDJSON), CSV, or Excel (XLSX) format."
             )
 
         contents_metadata = _metadata_reader_map[file_extension](
-            file_metadata["path"], file_name, encoding=self.encoding
+            file_metadata["path"],
+            file_name,
+            encoding=self.encoding,
+            variables_csv_path=self.variables_csv_path,
+            tables_csv_path=self.tables_csv_path,
         ).read()
         return {
             "file_metadata": file_metadata,
@@ -241,7 +250,9 @@ class LocalDataService(BaseDataService):
         for dataset_path in self.dataset_paths:
             try:
                 dataset_metadata = self.get_raw_dataset_metadata(
-                    dataset_name=dataset_path
+                    dataset_name=dataset_path,
+                    variables_csv_path=self.variables_csv_path,
+                    tables_csv_path=self.tables_csv_path,
                 )
                 datasets.append(dataset_metadata)
             except InvalidDatasetFormat:

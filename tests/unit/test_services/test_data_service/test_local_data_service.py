@@ -64,7 +64,7 @@ def test_get_dataset(dataset_implementation):
     "dataset_implementation",
     [PandasDataset],
 )
-def test_get_variables_metdata(dataset_implementation):
+def test_get_variables_metadata(dataset_implementation):
     dataset_path = (
         f"{os.path.dirname(__file__)}/../../../resources/test_adam_dataset.xpt"
     )

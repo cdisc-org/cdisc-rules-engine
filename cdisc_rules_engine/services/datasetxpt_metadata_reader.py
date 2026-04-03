@@ -16,7 +16,7 @@ class DatasetXPTMetadataReader:
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(
-        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING, **kwargs
     ):
         file_size = os.path.getsize(file_path)
         if file_size > config.get_dataset_size_threshold():
