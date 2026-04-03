@@ -156,7 +156,7 @@ class TestValidate(unittest.TestCase):
             "-of",
             "json",
             "-rr",
-            "-dv",
+            "-dxp",
             os.path.join("tests", "resources", "report_test_data", "define.xml"),
             "--whodrug",
             os.path.join("tests", "resources", "dictionaries", "whodrug"),
@@ -513,7 +513,6 @@ class TestValidate(unittest.TestCase):
             f"--meddra {os.path.join('tests', 'resources', 'dictionaries', 'meddra')} "
             f"-s sdtmig "
             f"-v 3.4 "
-            f"-dv 2.1 "
             f"-dxp {os.path.join('tests', 'resources', 'define.xml')} "
             f"-l error"
         )
@@ -534,7 +533,6 @@ class TestValidate(unittest.TestCase):
             f"--meddra {os.path.join('tests', 'resources', 'dictionaries', 'meddra')} "
             f"-s sdtmig "
             f"-v 3.4 "
-            f"-dv 2.1 "
             f"-dxp {os.path.join('tests', 'resources', 'define.xml')} "
             f"-l error"
         )
@@ -621,7 +619,6 @@ class TestValidate(unittest.TestCase):
             f"python core.py validate "
             f"-s sendig "
             f"-v 3.1 "
-            f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
             f"-vx no"
@@ -634,7 +631,6 @@ class TestValidate(unittest.TestCase):
             f"python core.py validate "
             f"-s sendig "
             f"-v 3.1 "
-            f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
             f"-vx y"

@@ -18,8 +18,6 @@ def generate_report():
         "sdtmig",
         "-v",
         "3-4",
-        "-dv",
-        "2-1",
         "-dxp",
         os.path.join(
             "tests",

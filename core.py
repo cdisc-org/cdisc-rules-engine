@@ -315,12 +315,6 @@ def _validate_no_arguments(logger) -> None:
         "This flag must be used only with --output-format JSON."
     ),
 )
-@click.option(
-    "-dv",
-    "--define-version",
-    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
-    help="Define-XML version used for validation",
-)
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
@@ -443,7 +437,6 @@ def validate(  # noqa
     output: str,
     output_format: tuple[str],
     raw_report: bool,
-    define_version: str,
     whodrug: str,
     meddra: str,
     loinc: str,
@@ -558,7 +551,6 @@ def validate(  # noqa
             output,
             set(output_format),
             raw_report,
-            define_version,
             external_dictionaries,
             rules,
             exclude_rules,

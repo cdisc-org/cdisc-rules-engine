@@ -204,7 +204,6 @@ This will show the list of validation options.
                                   if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
                                   If limit is set to 0, no maximum will be enforced.
                                   No maximum is the default behavior.
-  -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
   -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
