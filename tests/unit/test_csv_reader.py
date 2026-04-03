@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
+from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.services.data_readers.csv_reader import CSVReader
 from core import _validate_csv_data_paths
@@ -369,7 +370,7 @@ class TestCSVReaderFromFile:
     def test_returns_dataframe(self):
         reader = CSVReader()
         df = reader.from_file(str(self.csv_path))
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, PandasDataset)
 
     def test_correct_number_of_rows(self):
         reader = CSVReader()
