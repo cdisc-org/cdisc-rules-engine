@@ -1,6 +1,15 @@
 from business_rules.fields import FIELD_DATAFRAME
 from business_rules.operators import BaseType, type_operator
 
+from cdisc_rules_engine.check_operators.sql.is_valid_meddra_code_reference_operator import (
+    ValidMeddraCodeReferenceOperator,
+)
+from cdisc_rules_engine.check_operators.sql.is_valid_meddra_code_term_pair_operator import (
+    ValidMeddraCodeTermPairsOperator,
+)
+from cdisc_rules_engine.check_operators.sql.is_valid_meddra_term_reference_operator import (
+    ValidMeddraTermReferenceOperator,
+)
 from cdisc_rules_engine.check_operators.sql.not_operator import NotOperator
 
 from .base_sql_operator import log_operator_execution
@@ -159,6 +168,12 @@ class PostgresQLOperators(BaseType):
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
         "is_valid_whodrug_reference": lambda data: IsValidWhodrugReferenceOperator(data),
         "is_not_valid_whodrug_reference": lambda data: NotOperator(data, IsValidWhodrugReferenceOperator),
+        "is_valid_meddra_code_reference": lambda data: ValidMeddraCodeReferenceOperator(data),
+        "is_not_valid_meddra_code_reference": lambda data: NotOperator(data, ValidMeddraCodeReferenceOperator),
+        "is_valid_meddra_term_reference": lambda data: ValidMeddraTermReferenceOperator(data),
+        "is_not_valid_meddra_term_reference": lambda data: NotOperator(data, ValidMeddraTermReferenceOperator),
+        "is_valid_meddra_code_term_pair": lambda data: ValidMeddraCodeTermPairsOperator(data),
+        "is_not_valid_meddra_code_term_pair": lambda data: NotOperator(data, ValidMeddraCodeTermPairsOperator),
     }
 
     def __init__(self, data):
