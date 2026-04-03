@@ -922,7 +922,6 @@ def test_validate(filetype):
                     output,
                     output_format,
                     False,
-                    None,
                     external_dictionaries,
                     [],
                     [],
