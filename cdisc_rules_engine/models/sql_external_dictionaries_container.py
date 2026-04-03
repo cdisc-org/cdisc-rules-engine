@@ -1,10 +1,12 @@
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.readers.external_dictionary_readers.whodrug_reader import WhoDrugReader
+from cdisc_rules_engine.readers.external_dictionary_readers.meddra_reader import MeddraReader
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
 
 
 IMPLEMENTED_DICTIONARY_VALIDATORS = {
     DictionaryTypes.WHODRUG.value: WhoDrugReader,
+    DictionaryTypes.MEDDRA.value: MeddraReader,
 }
 
 UNIMPLEMENTED_DICTIONARIES = [
