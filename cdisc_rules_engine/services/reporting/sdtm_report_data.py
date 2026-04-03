@@ -50,8 +50,9 @@ class SDTMReportData(BaseReportData):
         )
         define_xml_path = args.define_xml_path
         dictionary_versions = self._dictionary_versions or {}
-        if define_xml_path:
-            define_version = self.get_define_version([define_xml_path])
+        define_version = (
+            self.get_define_version([define_xml_path]) if define_xml_path else None
+        )
         controlled_terminology = self._args.controlled_terminology_package
         if not controlled_terminology and define_version:
             if define_xml_path and define_version:
