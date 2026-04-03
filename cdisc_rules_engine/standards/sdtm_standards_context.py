@@ -244,6 +244,7 @@ class SdtmStandardsContext(BaseStandardsContext):
             class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
         else:
             class_name = derived_class
+        IG_domain_details = self._ig_domain_details_standardisation(IG_domain_details)
         model_class_details = get_class_metadata(model_details, class_name)
         # Both custom and standard General Observations pull from model
         if is_custom or class_name in DETECTABLE_CLASSES:
@@ -799,3 +800,23 @@ class SdtmStandardsContext(BaseStandardsContext):
                 return match.group(1)
 
         return dataset
+
+    @staticmethod
+    def _ig_domain_details_standardisation(
+        ig_domain_details: LibraryMetadataContainer,
+    ) -> LibraryMetadataContainer:
+        """
+        rename keys in ig_domain_details to avoid key reference issues
+        """
+
+        if not ig_domain_details:
+            return ig_domain_details
+
+        for i, e in enumerate(ig_domain_details.get("datasetVariables", {})):
+            # TODO get exhausive list of keys to rename and standardise this process with a mapping dict / constants
+            e = {"ordinal" if k == "order_number" else k: v for k, v in e.items()}
+            e = {"ordinal" if k == "library_variable_order_number" else k: v for k, v in e.items()}
+            e = {"name" if k == "library_variable_name" else k: v for k, v in e.items()}
+            ig_domain_details["datasetVariables"][i] = e
+
+        return ig_domain_details

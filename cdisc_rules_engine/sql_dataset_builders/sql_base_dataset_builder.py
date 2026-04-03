@@ -191,6 +191,8 @@ class SqlBaseDatasetBuilder(ABC):
         for key in library_var.keys():
             if f"library_variable_{key}" in LIBRARY_VARIABLES_TYPE.keys():
                 new_var_dict[f"library_variable_{key}"] = library_var[key]
+            elif key in LIBRARY_VARIABLES_TYPE.keys():
+                new_var_dict[key] = library_var[key]
 
         codelist = library_var.get("_links", {}).get("codelist")
         if codelist:
