@@ -56,6 +56,8 @@ class SQLRuleProcessor:
                 domain=operation_domain,
                 target=target_variable,
                 standards_context=standards_context,
+                name=operation.get("name"),
+                previous_operations=output_variables,
                 grouping=operation.get("group"),
                 filter=operation.get("filter"),
                 key_name=operation.get("key_name"),
@@ -65,6 +67,7 @@ class SQLRuleProcessor:
                 ct_attribute=operation.get("ct_attribute"),
                 ct_conditions=operation.get("ct_conditions"),
                 attribute_name=operation.get("attribute_name"),
+                subtract=operation.get("subtract"),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)

@@ -12,6 +12,7 @@ from cdisc_rules_engine.sql_operations.day_data_validator import (
 )
 from cdisc_rules_engine.sql_operations.distinct import SqlDistinctOperation
 from cdisc_rules_engine.sql_operations.domain_label import SqlDomainLabelOperation
+from cdisc_rules_engine.sql_operations.minus import SqlMinusOperation
 from cdisc_rules_engine.sql_operations.numeric_operation import (
     SqlNumericOperation,
 )
@@ -59,6 +60,7 @@ class SqlOperationsFactory:
         "mean": lambda params, ds: SqlNumericOperation(params, ds, "AVG"),
         "min": lambda params, ds: SqlNumericOperation(params, ds, "MIN"),
         "min_date": lambda params, ds: SqlDateOperation(params, ds, "MIN"),
+        "minus": SqlMinusOperation,
         "record_count": lambda params, ds: SqlNumericOperation(params, ds, "COUNT"),
         "valid_meddra_code_references": None,
         "whodrug_code_hierarchy": SqlWhodrugHierarchyOperation,

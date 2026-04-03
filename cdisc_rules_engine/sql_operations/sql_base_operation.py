@@ -240,6 +240,9 @@ class SqlBaseOperation:
 
         return query
 
+    def _get_previous_operation(self, operation_name: str) -> Optional[SqlOperationResult]:
+        return self.params.previous_operations.get(operation_name)
+
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [var["name"].replace("--", domain) for var in variables_metadata]
