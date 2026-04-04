@@ -249,6 +249,9 @@ def test_merge_pivot_supp_dataset_single_idvar(dataset_implementation):
     assert "AESPID" in merged_df.columns, "AESPID column should be created from QNAM"
     assert "QNAM" not in merged_df.columns, "QNAM should be dropped after pivot"
     assert "QVAL" not in merged_df.columns, "QVAL should be dropped after pivot"
+
+    # we keep original "AESEQ" column which has int64 type
+    result_data["AESEQ"] = result_data["AESEQ"].astype(str)
     assert result_data[result_data["AESEQ"] == "1"]["AESPID"].values[0] == "SP001"
     assert result_data[result_data["AESEQ"] == "2"]["AESPID"].values[0] == "SP002"
     assert result_data[result_data["AESEQ"] == "3"]["AESPID"].values[0] == "SP003"
