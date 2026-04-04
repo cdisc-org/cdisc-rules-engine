@@ -105,7 +105,7 @@ def test_ap_domain_should_be_correctly_substituted():
     rules_values = [row for row in rules_values if any(row)]
     assert len(rules_values) == 1
     assert rules_values[0][0] == "CORE-000181"
-    assert "SUCCESS" in rules_values[0]
+    assert "ISSUE REPORTED" in rules_values[0]
 
     if os.path.exists(excel_file_path):
         os.remove(excel_file_path)

@@ -1,5 +1,6 @@
 issue_datails_sheet = "Issue Details"
 dataset_details_sheet = "Dataset Details"
+entity_details_sheet = "Entity Details"
 rules_report_sheet = "Rules Report"
 issue_sheet_coreid_column = "A"
 dataset_sheet_dataset_column = "A"

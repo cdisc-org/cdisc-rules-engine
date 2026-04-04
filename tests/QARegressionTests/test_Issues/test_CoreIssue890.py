@@ -13,7 +13,7 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
+@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal

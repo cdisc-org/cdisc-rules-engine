@@ -110,7 +110,7 @@ class TestCoreIssue715(unittest.TestCase):
         ]
         summary_values = [r for r in summary_values if any(r)]
         assert summary_values and summary_values[0][1] == "DDF00081"
-        assert summary_values[0][3] == 1
+        assert summary_values[0][4] == 1
 
         # Issue Details strict checks: now expect one row per error
         issue_details_sheet = workbook[issue_datails_sheet]
@@ -134,6 +134,6 @@ class TestCoreIssue715(unittest.TestCase):
         ][1:]
         rules_rows = [r for r in rules_rows if any(r)]
         assert rules_rows and rules_rows[0][0] == "DDF00081"
-        assert "SUCCESS" in rules_rows[0]
+        assert "ISSUE REPORTED" in rules_rows[0]
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)

@@ -14,7 +14,7 @@ class TerminalCommandTestCase(unittest.TestCase):
             f"{get_python_executable()}",
             "-m",
             "core",
-            "test",
+            "validate",
             "-s",
             "sdtmig",
             "-v",
