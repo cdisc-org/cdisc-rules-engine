@@ -1442,7 +1442,7 @@ def test_validate_dataset_metadata_against_define_xml(
                 pd.DataFrame.from_dict(
                     {
                         "variable_name": [
-                            "TEST",
+                            "TEST2",
                         ],
                         "variable_label": [
                             "TEST Label",
@@ -1494,20 +1494,32 @@ def test_validate_variable_metadata_against_define_xml(
     """
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
     mock_get_variables_metadata.return_value = dataset_mock
-    dataset_metadata = SDTMDatasetMetadata(
-        name="AE",
-        first_record={"DOMAIN": "AE"},
-        filename="test",
-        full_path="CDISC01/test",
+    df = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "TEST": ["TEST", "TEST", "TEST"],
+                "TEST2": ["TEST", "TEST", "TEST"],
+            }
+        )
     )
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
-        dataset_metadata=dataset_metadata,
-        rule=define_xml_variable_validation_rule,
-        datasets=[dataset_metadata],
-    )
-    assert validation_result == expected_validation_result
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+        return_value=df,
+    ):
+        dataset_metadata = SDTMDatasetMetadata(
+            name="AE",
+            first_record={"DOMAIN": "AE"},
+            filename="test",
+            full_path="CDISC01/test/ae.xpt",
+        )
+        validation_result: List[dict] = RulesEngine(
+            standard="sdtmig"
+        ).validate_single_dataset(
+            dataset_metadata=dataset_metadata,
+            rule=define_xml_variable_validation_rule,
+            datasets=[dataset_metadata],
+        )
+        assert validation_result == expected_validation_result
 
 
 @pytest.mark.parametrize(
