@@ -16,7 +16,6 @@ Validation_args = namedtuple(
         "output",
         "output_format",
         "raw_report",
-        "define_version",
         "external_dictionaries",
         "rules",
         "exclude_rules",
