@@ -1,10 +1,7 @@
 {
   "datasetJSONCreationDateTime": "2025-01-28T22:06:12",
   "datasetJSONVersion": "1.1.0",
-  "sourceSystem": {
-    "name": "UCB",
-    "version": "1.0.0"
-  },
+  "sourceSystem": { "name": "UCB", "version": "1.0.0" },
   "studyOID": "UpdatedCDISCPILOT.CDISC SDTM.3.2",
   "metaDataVersionOID": "MDV.UpdatedCDISCPILOT.CDISC SDTM.3.2",
   "itemGroupOID": "IG.EX",
