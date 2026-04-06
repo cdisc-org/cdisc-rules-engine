@@ -138,7 +138,7 @@ This will show the list of validation options.
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
   -ps, --pool-size INTEGER         Number of parallel processes for validation
-  -d, --data TEXT                 Path to directory containing data files
+  -d, --data TEXT                 Path to directory containing data files. Can can only be provided once.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
   -dxp, --define-xml-path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
