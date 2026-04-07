@@ -297,13 +297,13 @@ class SdtmStandardsContext(BaseStandardsContext):
         rule_id = rule.get("core_id", "unknown")
         dataset_name = metadata.name
         domain = self.derive_domain(metadata.name)
+        is_split = self.derive_is_split(metadata.name, domain)
 
         if not self.rule_applies_to_class(metadata, rule, domain):
             reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        # TODO: Need to fix is_split
-        if not self.rule_applies_to_domain(metadata, rule, domain, is_split=False):
+        if not self.rule_applies_to_domain(metadata, rule, domain, is_split=is_split):
             reason = f"Rule skipped - doesn't apply to domain for rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason

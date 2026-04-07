@@ -89,10 +89,6 @@ class SQLRulesEngine:
                 ),
             )
             if is_suitable:
-                # if dataset_metadata.unsplit_name in results and "domains" in rule:
-                #     include_split = rule["domains"].get("include_split_datasets", False)
-                #     if not include_split:
-                #         continue  # handling split datasets
                 results[dataset_metadata.name] = self.validate_single_dataset(rule, dataset_metadata, all_datasets)
             else:
                 logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
