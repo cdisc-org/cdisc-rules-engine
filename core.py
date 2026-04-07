@@ -221,7 +221,8 @@ def _validate_no_arguments(logger) -> None:
     "-d",
     "--data",
     required=False,
-    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE}). "
+    "Should be provided once. If provided more than once, only the last value will be recorded",
 )
 @click.option(
     "-ft",
