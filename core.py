@@ -221,7 +221,6 @@ def _validate_no_arguments(logger) -> None:
     "-d",
     "--data",
     required=False,
-    multiple=True,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
@@ -519,11 +518,6 @@ def validate(  # noqa
     )
     # Validate dataset arguments
     if data:
-        if len(data) != 1:
-            logger.error("Argument --data can only be provided once.")
-            ctx.exit(2)
-        else:
-            data = data[0]
         if dataset_path:
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
