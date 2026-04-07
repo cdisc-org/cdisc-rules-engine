@@ -257,7 +257,7 @@ class SqlVenmoResultHandler(BaseActions):
             row_id = row.get("id")
 
         values = {}
-        for column in sorted(target_columns.keys()):
+        for column in target_columns.keys():
             if not target_columns[column]:
                 values[column] = "Not in dataset"
                 continue
@@ -426,7 +426,7 @@ class SqlVenmoResultHandler(BaseActions):
                     )
                 else:
                     target_names.append(target)
-        return list(set(target_names))
+        return target_names
 
     @staticmethod
     def get_operator_related_pattern(operator: str, target: str) -> Optional[str]:

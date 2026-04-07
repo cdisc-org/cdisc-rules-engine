@@ -37,8 +37,7 @@ class ValidationErrorEntity(BaseValidationEntity):
                 data[key] = val.value
             else:
                 data[key] = val
-        sorted_data = {k: data[k] for k in sorted(data.keys())}
-        return sorted_data
+        return data
 
     def to_representation(self) -> dict:
         representation: dict = {
