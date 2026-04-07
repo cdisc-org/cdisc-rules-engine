@@ -21,6 +21,7 @@ class CSVReader(DataReaderInterface):
         try:
             with open(file_path, "r", encoding=self.encoding) as fp:
                 data = pd.read_csv(fp, sep=",", header=0, index_col=False)
+                data = data.where(data.notna(), None)
             if self.dataset_implementation == PandasDataset:
                 return PandasDataset(data)
             else:
