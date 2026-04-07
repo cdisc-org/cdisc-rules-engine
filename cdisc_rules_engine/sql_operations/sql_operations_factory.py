@@ -37,6 +37,7 @@ from cdisc_rules_engine.sql_operations.get_define_variables_metadata import (
     SqlGetDefineVariablesMetadata,
 )
 from cdisc_rules_engine.sql_operations.whodrug_code_hierarchy import SqlWhodrugHierarchyOperation
+from cdisc_rules_engine.sql_operations.standard_domains import SqlStandardDomainsOperation
 
 
 class SqlOperationsFactory:
@@ -74,6 +75,7 @@ class SqlOperationsFactory:
         "required_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, REQUIRED),
         "expected_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, EXPECTED),
         "permissible_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, PERMISSIBLE),
+        "standard_domains": SqlStandardDomainsOperation,
         "study_domains": SqlStudyDomainsOperation,
         "valid_codelist_dates": SqlValidCodelistDates,
         "label_referenced_variable_metadata": None,

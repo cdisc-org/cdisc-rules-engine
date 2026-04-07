@@ -1,0 +1,43 @@
+# TEST RULE
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Test
+                Document: IG v3.4
+                Section: Test
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG9999
+              Version: "1"
+            Version: "2.0"
+        Version: "3.4"
+Check:
+  all:
+    - name: $NONEXISTENT
+      operator: not_exists
+Core:
+  Id: CORE-999999
+  Status: Published
+  Version: "1"
+Description: Test
+Executability: Fully Executable
+Operations:
+  - operator: standard_domains
+    id: $sd
+Outcome:
+  Message: Test
+  Output Variables:
+    - $sd
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - AE
+  Use Case: INDH
+Sensitivity: Record

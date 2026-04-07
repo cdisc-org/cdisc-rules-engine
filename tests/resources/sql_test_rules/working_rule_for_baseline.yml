@@ -1,0 +1,85 @@
+# Variable: DTHFL
+# Condition:
+# Rule: DTHFL in ('Y',null)
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Should be "Y" or null
+                Document: Model v2.0
+                Item: DTHFL
+                Section: Demographics
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0131
+              Version: "1"
+            Version: "2.0"
+        Version: "3.4"
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: Should be Y or null.
+                Document: Model v1.4
+                Section: 2.2.6
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0131
+              Version: "1"
+            Version: "2.0"
+        Version: "3.2"
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: ' Should be "Y" or null.'
+                Document: Model v1.7
+                Item: DTHFL Description
+                Section: Table 2.2.6
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0131
+              Version: "1"
+            Version: "2.0"
+        Version: "3.3"
+      - Name: TIG
+        References:
+          - Citations:
+              - Cited Guidance: ' Should be "Y" or null.'
+                Document: SDTM v2.1
+                Item: DTHFL
+                Section: Section 3.2.1 Demographics
+            Origin: TIG Conformance Rules
+            Rule Identifier:
+              Id: TIG0381
+              Version: "1"
+            Version: "1.0"
+        Substandard: SDTM
+        Version: "1.0"
+Check:
+  all:
+    - name: DTHFL
+      operator: not_equal_to
+      value: Y
+    - name: DTHFL
+      operator: non_empty
+Core:
+  Id: CORE-000006
+  Status: Published
+  Version: "1"
+Description: Raise an error when DTHFL ^= "Y" and not null
+Executability: Fully Executable
+Outcome:
+  Message: DTHFL is not "Y" or null
+  Output Variables:
+    - DTHFL
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - SPECIAL PURPOSE
+  Domains:
+    Include:
+      - DM
+  Use Case: INDH
+Sensitivity: Record
