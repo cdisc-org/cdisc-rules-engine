@@ -11,8 +11,8 @@ class DataReaderInterface:
         self, dataset_implementation=PandasDataset, encoding: str = DEFAULT_ENCODING
     ):
         """
-        :param dataset_implementation DatasetInterface: The dataset type to return.
-        :param encoding str: The encoding to use when reading files. Defaults to DEFAULT_ENCODING (e.g. utf-8).
+        :param DatasetInterface dataset_implementation : The dataset type to return.
+        :param str encoding : The encoding to use when reading files. Defaults to DEFAULT_ENCODING (e.g. utf-8).
         """
         self.dataset_implementation = dataset_implementation
         self.encoding = encoding
@@ -25,4 +25,8 @@ class DataReaderInterface:
         raise NotImplementedError
 
     def from_file(self, file_path):
+        raise NotImplementedError
+
+    def to_parquet(self, file_path) -> tuple[int, str]:
+        """Returns number of rows and path to the parquet file"""
         raise NotImplementedError
