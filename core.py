@@ -121,7 +121,7 @@ def _validate_csv_data_paths(
 
     paths = [Path(p) for p in dataset_paths]
 
-    tables_path = [p for p in paths if p.name.lower() == "tables.csv"]
+    tables_path = list({p for p in paths if p.name.lower() == "tables.csv"})
     if len(tables_path) > 1:
         raise InvalidCSVFile("There is more than one tables.csv file in provided path.")
     elif len(tables_path) == 0:
