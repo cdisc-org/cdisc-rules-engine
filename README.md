@@ -157,6 +157,7 @@ This will show the list of validation options.
   -uc, --use-case TEXT            Use Case for TIG Validation
                                   "INDH", "PROD", "NONCLIN", or "ANALYSIS"
                                   [required for TIG]
+                                  USE_CASE environment variable can be used to pass value.
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one

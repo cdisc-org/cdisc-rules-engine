@@ -384,6 +384,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
         "CDISC TIG Use Case for scoping a TIG Validation."
         "Any of INDH, PROD, NONCLIN, or ANALYSIS."
     ),
+    envvar="USE_CASE",
 )
 @click.option(
     "-ct",
