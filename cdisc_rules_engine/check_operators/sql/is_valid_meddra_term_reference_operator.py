@@ -21,7 +21,7 @@ class ValidMeddraTermReferenceOperator(BaseSqlOperator):
 
         query = f"""
             CASE
-                WHEN {self._column_sql(target_column, alias=False)} IN (
+                WHEN CAST({self._column_sql(target_column, alias=False)} AS TEXT) IN (
                     SELECT term_name
                     FROM {StaticTables.MEDDRA_TABLE_NAME.value}
                     WHERE term_type = '{term_type}'

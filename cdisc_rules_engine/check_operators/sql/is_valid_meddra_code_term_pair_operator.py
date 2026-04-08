@@ -48,8 +48,8 @@ class ValidMeddraCodeTermPairsOperator(BaseSqlOperator):
                 WHEN EXISTS (
                     SELECT 1
                     FROM {StaticTables.MEDDRA_TABLE_NAME.value}
-                    WHERE term_code = {self._column_sql(code_col, alias=False)}
-                      AND term_name = {self._column_sql(term_col, alias=False)}
+                    WHERE term_code = CAST({self._column_sql(code_col, alias=False)} AS TEXT)
+                      AND term_name = CAST({self._column_sql(term_col, alias=False)} AS TEXT)
                       AND term_type = '{term_type}'
                 ) THEN TRUE
                 ELSE FALSE
