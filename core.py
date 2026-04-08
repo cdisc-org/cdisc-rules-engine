@@ -24,6 +24,7 @@ from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.enums.standard_types import StandardTypes
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -82,7 +83,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
 
     if ignored_files:
         logger = logging.getLogger("validator")
-        logger.warning(
+        logger.info(
             f"Ignoring {len(ignored_files)} file(s) with unsupported formats: {', '.join(ignored_files[:5])}"
             + ("..." if len(ignored_files) > 5 else "")
         )
@@ -105,11 +106,13 @@ def cli():
     pass
 
 
-def _filter_dataset_paths(
+def _validate_csv_data_paths(
     dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
 ) -> list[str]:
     """
-    Filters dataset paths based on tables.csv content (if exists).
+    Filters dataset paths based on tables.csv content.
+
+    Raises InvalidCSVFile error if there are no proper tables.csv files in provided path.
 
     Keeps only datasets listed in tables.csv (Filename column).
     Always excludes tables.csv and variables.csv from result.
@@ -117,19 +120,25 @@ def _filter_dataset_paths(
     import pandas as pd
 
     paths = [Path(p) for p in dataset_paths]
-    tables_path = next((p for p in paths if p.name.lower() == "tables.csv"), None)
+
+    tables_path = list({p for p in paths if p.name.lower() == "tables.csv"})
+    if len(tables_path) > 1:
+        raise InvalidCSVFile("There is more than one tables.csv file in provided path.")
+    elif len(tables_path) == 0:
+        raise InvalidCSVFile("There is no tables.csv file in provided path.")
+    else:
+        tables_path = tables_path[0]
 
     dataset_files = [
         p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
     ]
 
-    if not tables_path:
-        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
-
     tables_df = pd.read_csv(tables_path, encoding=encoding)
 
-    if "Filename" not in tables_df.columns:
-        return [str(p) for p in dataset_files if p.suffix.lower() == ".csv"]
+    if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
+        raise InvalidCSVFile(
+            "Metadata files is malformed. One of [Filename, Label] columns is missing."
+        )
 
     allowed_datasets = {
         Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
@@ -167,7 +176,11 @@ def _validate_data_directory(
         )
         return [], set()
     elif DataFormatTypes.CSV.value in found_formats:
-        dataset_paths = _filter_dataset_paths(dataset_paths)
+        try:
+            dataset_paths = _validate_csv_data_paths(dataset_paths)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -212,7 +225,24 @@ def _validate_dataset_paths(
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
         return [], set()
+    elif DataFormatTypes.CSV.value in found_formats:
+        all_files_in_dp = []
 
+        for dp in dataset_path:
+            all_files_in_dp.append(dp)
+            dp_path = Path(dp)
+            all_files_in_dp.extend(
+                [
+                    str(p)
+                    for p in dp_path.parent.glob("*")
+                    if p.is_file() and p.name in {"tables.csv", "variables.csv"}
+                ]
+            )
+        try:
+            dataset_paths = _validate_csv_data_paths(all_files_in_dp)
+        except InvalidCSVFile as e:
+            logger.error(e)
+            return [], set()
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
@@ -243,6 +273,28 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
+def load_custom_dotenv(ctx, param, value):
+    if not value:
+        return value
+    if os.path.exists(value):
+        load_dotenv(value, override=False)
+    return value
+
+
+def load_custom_dotenv_from_data_options(ctx, param, value):
+    if not value:
+        return value
+    if isinstance(value, str):
+        env_path = os.path.join(value, ".env")
+    elif isinstance(value, tuple):
+        env_path = next((os.path.join(Path(v).parent, ".env") for v in value), None)
+    else:
+        return value
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=False)
+    return value
+
+
 @click.command()
 @click.option(
     "-ca",
@@ -258,11 +310,18 @@ def _validate_no_arguments(logger) -> None:
     help="Number of parallel processes for validation",
 )
 @click.option(
+    "-dep",
+    "--dotenv-path",
+    required=False,
+    help="Path to .env file containing custom dotenv values",
+    callback=load_custom_dotenv,
+)
+@click.option(
     "-d",
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
-    envvar="DATA_DIR",
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-ft",
@@ -277,7 +336,7 @@ def _validate_no_arguments(logger) -> None:
     required=False,
     multiple=True,
     help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
-    envvar="DATASET_PATH",
+    callback=load_custom_dotenv_from_data_options,
 )
 @click.option(
     "-l",
@@ -297,7 +356,7 @@ def _validate_no_arguments(logger) -> None:
     required=True,
     default=None,
     help="CDISC standard to validate against",
-    envvar="STANDARD",
+    envvar="PRODUCT",
 )
 @click.option(
     "-v",
@@ -334,7 +393,7 @@ def _validate_no_arguments(logger) -> None:
         "Controlled terminology package to validate against, "
         "can provide more than one"
     ),
-    envvar="CONTROLLED_TERMINOLOGY_PACKAGE",
+    envvar="CT",
 )
 @click.option(
     "-o",
@@ -361,13 +420,6 @@ def _validate_no_arguments(logger) -> None:
         "This flag must be used only with --output-format JSON."
     ),
 )
-@click.option(
-    "-dv",
-    "--define-version",
-    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
-    help="Define-XML version used for validation",
-    envvar="DEFINE_VERSION",
-)
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
@@ -385,14 +437,12 @@ def _validate_no_arguments(logger) -> None:
     "-r",
     multiple=True,
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
-    envvar="RULES",
 )
 @click.option(
     "--exclude-rules",
     "-er",
     multiple=True,
     help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
-    envvar="EXCLUDE_RULES",
 )
 @click.option(
     "--local-rules",
@@ -401,7 +451,6 @@ def _validate_no_arguments(logger) -> None:
     type=click.Path(exists=True, readable=True, resolve_path=True),
     help="Path to directory containing local rules.",
     multiple=True,
-    envvar="LOCAL_RULES",
 )
 @click.option(
     "--custom-standard",
@@ -427,7 +476,7 @@ def _validate_no_arguments(logger) -> None:
     "--define-xml-path",
     required=False,
     help="Path to Define-XML",
-    envvar="DEFINE",
+    envvar="DEFINE_XML",
 )
 @click.option(
     "-vx",
@@ -481,11 +530,24 @@ def _validate_no_arguments(logger) -> None:
         f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
     ),
 )
+@click.option(
+    "-vcp",
+    "--variables-csv-path",
+    required=False,
+    help="Path to variables.csv",
+)
+@click.option(
+    "-tcp",
+    "--tables-csv-path",
+    required=False,
+    help="Path to tables.csv",
+)
 @click.pass_context
 def validate(  # noqa
     ctx,
     cache: str,
     pool_size: int,
+    dotenv_path: str,
     data: str,
     filetype: str,
     dataset_path: tuple[str],
@@ -499,7 +561,6 @@ def validate(  # noqa
     output: str,
     output_format: tuple[str],
     raw_report: bool,
-    define_version: str,
     whodrug: str,
     meddra: str,
     loinc: str,
@@ -519,6 +580,8 @@ def validate(  # noqa
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
     encoding: str,
+    variables_csv_path: str,
+    tables_csv_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -530,7 +593,7 @@ def validate(  # noqa
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    load_dotenv()
+    load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if not custom_standard:
@@ -545,7 +608,7 @@ def validate(  # noqa
             )
             ctx.exit(2)
 
-    if raw_report is True:
+    if raw_report:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
@@ -614,7 +677,6 @@ def validate(  # noqa
             output,
             set(output_format),
             raw_report,
-            define_version,
             external_dictionaries,
             rules,
             exclude_rules,
@@ -627,6 +689,8 @@ def validate(  # noqa
             max_report_rows,
             max_errors_per_rule,
             encoding,
+            variables_csv_path,
+            tables_csv_path,
         )
     )
 
@@ -787,7 +851,6 @@ def update_cache(
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
-    envvar="RULEID",
 )
 @click.pass_context
 def list_rules(
@@ -987,7 +1050,6 @@ def test_validate(filetype):
                     output,
                     output_format,
                     False,
-                    None,
                     external_dictionaries,
                     [],
                     [],

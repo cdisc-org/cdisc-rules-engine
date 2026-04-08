@@ -6,6 +6,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
     NameReferencedVariableMetadata,
 )
@@ -67,7 +68,7 @@ def test_get_name_referenced_variable_metadata(
     }
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "domains": {
+        "dataset_names": {
             "HO",
             "CO",
             "SU",
@@ -190,7 +191,7 @@ def test_get_name_referenced_variable_metadata(
     )
 
     def mock_cached_method(*args, **kwargs):
-        return operation_params.dataframe
+        return SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
 
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
@@ -205,6 +206,7 @@ def test_get_name_referenced_variable_metadata(
         "$name_referenced_variable_name",
         "$name_referenced_variable_role",
         "$name_referenced_variable_ordinal",
+        "$name_referenced_variable_core",
         "$name_referenced_variable_label",
     ]
 

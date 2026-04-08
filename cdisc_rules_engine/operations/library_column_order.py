@@ -1,6 +1,5 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from typing import List
-from collections import OrderedDict
 
 
 class LibraryColumnOrder(BaseOperation):
@@ -16,13 +15,28 @@ class LibraryColumnOrder(BaseOperation):
         Length of Series is equal to the length of given dataframe.
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
-        """
 
-        # get variables metadata , for custom domains from model; for non-custom from IG and model
+        If key_name and key_value are provided, filter variables based on specified criteria.
+
+        Optional parameters:
+        - key_name: The metadata key to filter by (e.g., "role", "type", etc.)
+        - key_value: The value to match for the filter key (e.g., "Timing", "Identifier", etc.)
+        """
+        # Get variables metadata from the standard model for the current domain
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
-        # create a list of variable names in accordance to the "ordinal" key
-        variable_names_list = [
-            var["name"].replace("--", self.params.domain) for var in variables_metadata
-        ]
-        return list(OrderedDict.fromkeys(variable_names_list))
+        # Filter variables based on the specified criteria
+
+        if self.params.key_name:
+            variables_metadata = [
+                var
+                for var in variables_metadata
+                if var.get(self.params.key_name) == self.params.key_value
+            ]
+
+        # Replace variable wildcards with actual domain names
+        variable_names_list = self._replace_variable_wildcards(
+            variables_metadata, self.params.domain
+        )
+
+        return variable_names_list

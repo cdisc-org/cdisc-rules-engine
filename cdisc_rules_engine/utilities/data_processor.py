@@ -17,6 +17,7 @@ from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
     DummyDataService,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
 )
@@ -142,18 +143,24 @@ class DataProcessor:
                 variables_with_wildcards["USUBJID"],
             ]
         else:
-            left_on = ["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]]
+            left_on = ["STUDYID", "USUBJID", "RELREC.IDVAR"]
             right_on = [
                 variables_with_wildcards["STUDYID"],
                 variables_with_wildcards["USUBJID"],
-                variables_with_wildcards[relrec_row["IDVAR_RIGHT"]],
+                "RELREC.IDVAR",
             ]
+            left_subset["RELREC.IDVAR"] = left_subset[relrec_row["IDVAR_LEFT"]].astype(
+                str
+            )
+            right_subset["RELREC.IDVAR"] = right_subset[
+                relrec_row["IDVAR_RIGHT"]
+            ].astype(str)
         right_subset = right_subset.rename(columns=variables_with_wildcards)
         result = left_subset.merge(
             other=right_subset.data,
             left_on=left_on,
             right_on=right_on,
-        )
+        ).drop(["RELREC.IDVAR"], axis=1, errors="ignore")
         return result
 
     @staticmethod
@@ -181,15 +188,17 @@ class DataProcessor:
         relrec_for_domain = DataProcessor.filter_relrec_for_domain(
             left_dataset_domain_name, relrec_dataset
         )
-
-        # TODO: FIX
         objs = [
             DataProcessor.merge_on_relrec_record(
                 relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
             )
             for _, relrec_row in relrec_for_domain.iterrows()
         ]
-        result = objs[0].concat(objs[1:], ignore_index=True)
+        result = (
+            objs[0].concat(objs[1:], ignore_index=True)
+            if objs
+            else left_dataset.__class__()
+        )
         return result
 
     @staticmethod
@@ -331,7 +340,7 @@ class DataProcessor:
             validation_keys.append(idvar_for_qnam)
             grouped = qnam_check.groupby(validation_keys).size()
             if (grouped > 1).any():
-                raise ValueError(
+                raise PreprocessingError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record"
                 )
         return result_dataset
@@ -351,14 +360,20 @@ class DataProcessor:
         columns_to_drop = [
             col for col in ["QNAM", "QVAL", "QLABEL"] if col in supp_dataset.columns
         ]
-        if "RDOMAIN" in supp_dataset.columns and supp_dataset["RDOMAIN"][0] == "DM":
-            excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
-            group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
-            supp_dataset = PandasDataset(
-                supp_dataset.data.groupby(group_cols, dropna=False, as_index=False).agg(
-                    lambda x: (x.dropna().iloc[0] if not x.dropna().empty else pd.NA)
-                )
+        excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
+        group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
+        grouped = supp_dataset.data.groupby(
+            group_cols + ["QNAM"], dropna=False, as_index=False
+        ).size()
+        if (grouped["size"] > 1).any():
+            raise PreprocessingError(
+                "Multiple records with the same QNAM match a single parent record"
             )
+        supp_dataset = PandasDataset(
+            supp_dataset.data.groupby(group_cols, dropna=False, as_index=False).agg(
+                lambda x: (x.dropna().iloc[0] if not x.dropna().empty else pd.NA)
+            )
+        )
         if columns_to_drop:
             supp_dataset = supp_dataset.drop(labels=columns_to_drop, axis=1)
         return supp_dataset
@@ -377,7 +392,7 @@ class DataProcessor:
                 continue
             grouped = qnam_check.groupby(common_keys).size()
             if (grouped > 1).any():
-                raise ValueError(
+                raise PreprocessingError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record"
                 )
 
@@ -397,7 +412,7 @@ class DataProcessor:
             problem_groups = grouped_counts[grouped_counts > 1]
             problem_groups_computed = problem_groups.compute()
             if len(problem_groups_computed) > 0:
-                raise ValueError(
+                raise PreprocessingError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record. "
                 )
 

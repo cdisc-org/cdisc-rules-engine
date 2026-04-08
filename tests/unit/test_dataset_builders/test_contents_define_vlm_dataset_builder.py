@@ -3,7 +3,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import pytest
 from unittest.mock import MagicMock, patch
-from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder import (  # noqa: E501
+from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder import (
     ContentsDefineVLMDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService

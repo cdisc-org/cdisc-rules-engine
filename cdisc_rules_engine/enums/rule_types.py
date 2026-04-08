@@ -2,20 +2,13 @@ from cdisc_rules_engine.enums.base_enum import BaseEnum
 
 
 class RuleTypes(BaseEnum):
-    DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY = (
-        "Dataset Contents Check against Define XML and Library Metadata"
-    )
+    RECORD_CHECK = "Record Data"
     DATASET_CONTENTS_CHECK_AGAINST_DEFINE = "Dataset Contents Check against Define XML"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
-    DEFINE_ITEM_GROUP_METADATA_CHECK = "Define Item Group Metadata Check"
-    DEFINE_ITEM_METADATA_CHECK = "Define Item Metadata Check"
     DOMAIN_PRESENCE_CHECK = "Domain Presence Check"
     DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE = "Domain Presence Check against Define XML"
     JSONATA = "JSONata"
-    VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE = (
-        "Value Level Metadata Check against Define XML"
-    )
     VARIABLE_METADATA_CHECK = "Variable Metadata Check"
     VARIABLE_METADATA_CHECK_AGAINST_DEFINE = (
         "Variable Metadata Check against Define XML"

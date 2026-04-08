@@ -86,6 +86,10 @@ ItemGroupDef.ItemDef.CodeListRef exists
 
 ItemGroupDef.ItemDef.CommentOID exists
 
+## define_variable_has_method
+
+ItemGroupDef.ItemRef.MethodOID exists
+
 ## define_variable_has_no_data
 
 ItemGroupDef.ItemRef.HasNoData
@@ -221,6 +225,14 @@ ordinal attribute of a variable from the CDISC Library
 ## library_variable_role
 
 role attribute of a variable from the CDISC Library
+
+## library_variable_ccode
+
+ccode attribute of a variable from the CDISC Library
+
+## library_variable_has_codelist
+
+Indicates whether a variable has an associated codelist in the CDISC Library
 
 ## row_number
 

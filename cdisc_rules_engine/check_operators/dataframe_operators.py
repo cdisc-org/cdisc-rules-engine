@@ -1152,6 +1152,10 @@ class DataframeType(BaseType):
     def is_inconsistent_across_dataset(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
+        regex = other_value.get("regex")
+        if isinstance(regex, list) and regex:
+            regex = regex[0]
+
         grouping_cols = []
         if isinstance(comparator, str):
             if comparator in self.value.columns:
@@ -1162,6 +1166,22 @@ class DataframeType(BaseType):
                     grouping_cols.append(col)
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
+        if regex:
+            try:
+                pattern = re.compile(regex)
+            except re.error:
+                raise ValueError(
+                    f"Invalid regex: {regex}. Remove parameter or fix the regex."
+                )
+            if pattern.groups == 0:
+                regex = f"({regex})"
+            extracted = df_check[target].astype(str).str.extract(regex, expand=True)[0]
+            df_check[target] = extracted.fillna(df_check[target])
+        results = self._check_inconsistency(df_check, grouping_cols, target)
+        return results
+
+    @staticmethod
+    def _check_inconsistency(df_check, grouping_cols: list[Any], target):
         results = pd.Series(False, index=df_check.index)
         for name, group in df_check.groupby(grouping_cols, dropna=False):
             if group[target].nunique() > 1:
@@ -1373,48 +1393,6 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def non_conformant_value_data_type(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and not vlm["type_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results.values)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def non_conformant_value_length(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and not vlm["length_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def conformant_value_data_type(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["type_check"](row),
-                axis=1,
-                meta=pd.Series([True, False], dtype=bool),
-            ).fillna(False)
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def conformant_value_length(self, other_value):
-        results = False
-        for vlm in self.value_level_metadata:
-            results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["length_check"](row), axis=1
-            )
-        return self.value.convert_to_series(results)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
     def has_next_corresponding_record(self, other_value: dict):
         """
         The operator ensures that value of target in current row
@@ -1533,21 +1511,6 @@ class DataframeType(BaseType):
             return False
 
         return df.apply(check_inconsistency, axis=1)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def references_correct_codelist(self, other_value: dict):
-        target = other_value.get("target")
-        comparator = other_value.get("comparator")
-        result = self.value.apply(
-            lambda row: self.valid_codelist_reference(row[target], row[comparator]),
-            axis=1,
-        )
-        return result
-
-    @type_operator(FIELD_DATAFRAME)
-    def does_not_reference_correct_codelist(self, other_value: dict):
-        return ~self.references_correct_codelist(other_value)
 
     def next_column_exists_and_previous_is_null(self, row) -> bool:
         row.reset_index(drop=True, inplace=True)

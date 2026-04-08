@@ -1,9 +1,7 @@
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from .base_operation import BaseOperation
-import os
 
 
 class DefineVariableMetadata(BaseOperation):
@@ -32,9 +30,7 @@ class DefineVariableMetadata(BaseOperation):
                     ...
                 }
         """
-        define_contents = self.data_service.get_define_xml_contents(
-            dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
-        )
+        define_contents = self._get_define_contents()
         define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
         variables_metadata = define_reader.extract_variables_metadata(
             self.params.domain

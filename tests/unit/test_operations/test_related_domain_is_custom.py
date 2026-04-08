@@ -71,7 +71,7 @@ def test_related_domain_is_custom(
     """
 
     library_metadata = LibraryMetadataContainer(
-        standard_metadata={"domains": standard_domains}
+        standard_metadata={"dataset_names": standard_domains}
     )
     params = DummyParams(datasets=study_datasets, domain=domain)
 

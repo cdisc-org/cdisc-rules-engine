@@ -19,7 +19,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
-from cdisc_rules_engine.utilities.utils import is_supp_domain
+from cdisc_rules_engine.utilities.sdtm_utilities import is_supp_domain
 
 
 @dataclass
@@ -171,7 +171,7 @@ class BaseDefineXMLReader(ABC):
         self, domain_name: str = None, name: str = None
     ) -> List[dict]:
         logger.info(
-            f"Extracting variables metadata from Define-XML. domain_name={domain_name}"
+            f"Extracting variables metadata from Define-XML. name={name}, domain_name={domain_name}"
         )
         try:
             metadata = self._odm_loader.MetaDataVersion()
@@ -279,9 +279,9 @@ class BaseDefineXMLReader(ABC):
                 f"Dataset {dataset_name} is not found in Define XML"
             )
 
-    def _get_domain_metadata(self, metadata, domain_name, name: str = None):
+    def _get_domain_metadata(self, metadata, domain_name: str = None, name: str = None):
         try:
-            if name:
+            if name and domain_name:
                 domain_metadata = next(
                     item
                     for item in metadata.ItemGroupDef
@@ -289,12 +289,14 @@ class BaseDefineXMLReader(ABC):
                 )
             else:
                 domain_metadata = next(
-                    item for item in metadata.ItemGroupDef if item.Domain == domain_name
+                    item
+                    for item in metadata.ItemGroupDef
+                    if item.Name == name or item.Domain == domain_name
                 )
             return domain_metadata
         except StopIteration:
             raise DomainNotFoundInDefineXMLError(
-                f"Domain {domain_name} is not found in Define XML"
+                f"name={name}, domain={domain_name} is not found in Define XML"
             )
 
     def _get_all_dataset_and_supp_metadata(self, metadata, dataset_name):
@@ -382,6 +384,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_codelist_coded_codes": [],
             "define_variable_mandatory": None,
             "define_variable_has_comment": False,
+            "define_variable_has_method": False,
         }
         if itemdef:
             data["define_variable_mandatory"] = itemref.Mandatory
@@ -418,6 +421,7 @@ class BaseDefineXMLReader(ABC):
                 itemref, index
             )
             data["define_variable_has_comment"] = itemdef.CommentOID is not None
+            data["define_variable_has_method"] = itemref.MethodOID is not None
         return data
 
     def _get_codelist_ccode(self, codelist):

@@ -1,4 +1,5 @@
 import os
+from os.path import basename
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
@@ -23,7 +24,6 @@ from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
-    extract_file_name_from_path_string,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 from .base_data_service import BaseDataService, cached_dataset
@@ -48,6 +48,8 @@ class LocalDataService(BaseDataService):
         )
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
         self.encoding: str = kwargs.get("encoding")
+        self.variables_csv_path: str = kwargs.get("variables_csv_path")
+        self.tables_csv_path: str = kwargs.get("tables_csv_path")
 
     @classmethod
     def get_instance(
@@ -100,7 +102,7 @@ class LocalDataService(BaseDataService):
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         reader = self._reader_factory.get_service(
-            extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
+            basename(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
         return df
@@ -170,7 +172,7 @@ class LocalDataService(BaseDataService):
         self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
     ) -> dict:
         file_size = os.path.getsize(file_path)
-        file_name = extract_file_name_from_path_string(file_path)
+        file_name = basename(file_path)
         file_metadata = {
             "path": file_path,
             "name": file_name,
@@ -181,7 +183,7 @@ class LocalDataService(BaseDataService):
                 if obj.full_path == file_path:
                     file_metadata = {
                         "path": obj.original_path,
-                        "name": extract_file_name_from_path_string(obj.original_path),
+                        "name": basename(obj.original_path),
                         "file_size": os.path.getsize(obj.original_path),
                     }
                     file_name = obj.filename
@@ -204,11 +206,16 @@ class LocalDataService(BaseDataService):
             raise ValueError(
                 f"Unsupported file format '{file_extension}' in file '{file_name}'.\n"
                 f"Supported formats: {supported_formats}\n"
-                f"Please provide dataset files in SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX) format."
+                f"Please provide dataset files in SAS V5 XPT, "
+                f"Dataset-JSON (JSON or NDJSON), CSV, or Excel (XLSX) format."
             )
 
         contents_metadata = _metadata_reader_map[file_extension](
-            file_metadata["path"], file_name, encoding=self.encoding
+            file_metadata["path"],
+            file_name,
+            encoding=self.encoding,
+            variables_csv_path=self.variables_csv_path,
+            tables_csv_path=self.tables_csv_path,
         ).read()
         return {
             "file_metadata": file_metadata,
@@ -234,7 +241,7 @@ class LocalDataService(BaseDataService):
 
     def to_parquet(self, file_path: str) -> str:
         reader = self._reader_factory.get_service(
-            extract_file_name_from_path_string(file_path).split(".")[1].upper()
+            basename(file_path).split(".")[1].upper()
         )
         return reader.to_parquet(file_path)
 
@@ -243,7 +250,9 @@ class LocalDataService(BaseDataService):
         for dataset_path in self.dataset_paths:
             try:
                 dataset_metadata = self.get_raw_dataset_metadata(
-                    dataset_name=dataset_path
+                    dataset_name=dataset_path,
+                    variables_csv_path=self.variables_csv_path,
+                    tables_csv_path=self.tables_csv_path,
                 )
                 datasets.append(dataset_metadata)
             except InvalidDatasetFormat:

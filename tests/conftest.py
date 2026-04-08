@@ -58,6 +58,7 @@ def get_matches_regex_pattern_rule(pattern: str) -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["AE"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -112,6 +113,7 @@ def dataset_rule_greater_than() -> dict:
                 },
             }
         ],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
     }
 
 
@@ -120,6 +122,7 @@ def dataset_rule_multiple_conditions() -> dict:
     return {
         "core_id": "DatasetRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["EC"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -155,6 +158,7 @@ def dataset_rule_has_equal_length() -> dict:
     return {
         "core_id": "DatasetRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["EC"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -183,6 +187,7 @@ def dataset_rule_has_not_equal_length() -> dict:
     return {
         "core_id": "DatasetRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["EC"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -210,6 +215,7 @@ def dataset_rule_has_not_equal_length() -> dict:
 def mock_record_rule_equal_to_string_prefix():
     return {
         "core_id": "MockRule",
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "domains": {"Include": ["AE"]},
         "output_variables": ["AESTDY"],
@@ -246,6 +252,7 @@ def mock_ae_record_rule_equal_to_suffix() -> dict:
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "domains": {"Include": ["AE"]},
         "output_variables": ["AESTDY"],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
                 "all": [
@@ -286,6 +293,7 @@ def rule_equal_to_with_extract_metadata_operation() -> dict:
                 "id": "$dataset_name",
             }
         ],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
                 "all": [
@@ -320,6 +328,7 @@ def mock_rule_distinct_operation():
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["AE"]},
         "operations": [
             {
@@ -359,6 +368,7 @@ def rule_distinct_operation_is_not_contained_by() -> dict:
     return {
         "core_id": "CDISC.SDTMIG.CG0178",
         "severity": "warning",
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["IE"]},
@@ -398,6 +408,7 @@ def dataset_rule_equal_to() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
         "datasets": [
@@ -441,6 +452,7 @@ def dataset_rule_equal_to_compare_same_value() -> dict:
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "datasets": [
             {"domain_name": "AE", "match_key": ["STUDYID", "USUBJID"]},
         ],
@@ -479,6 +491,7 @@ def dataset_rule_equal_to_error_objects() -> dict:
     """
     return {
         "core_id": "MockRule",
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "severity": "Warning",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "output_variables": ["AESTDY"],
@@ -518,6 +531,7 @@ def dataset_rule_not_equal_to_error_objects() -> dict:
     return {
         "core_id": "MockRule",
         "severity": "Warning",
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "output_variables": ["AESTDY"],
         "domains": {
@@ -560,6 +574,7 @@ def dataset_rule_one_to_one_related() -> dict:
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "domains": {"Include": ["EC"]},
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "datasets": [
             {
                 "domain_name": "AE",
@@ -807,6 +822,7 @@ def define_xml_variable_validation_rule() -> dict:
                         "operator": "not_equal_to",
                         "value": {
                             "target": "variable_size",
+                            "comparator": "define_variable_size",
                         },
                     }
                 ]
@@ -827,42 +843,6 @@ def define_xml_variable_validation_rule() -> dict:
 
 
 @pytest.fixture
-def define_xml_value_level_metadata_validation_rule() -> dict:
-    """
-    Rule that validates Define XML variable metadata against dataset metadata.
-    """
-    return {
-        "core_id": "TEST1",
-        "severity": "Error",
-        "standards": [],
-        "domains": {"Include": [ALL_KEYWORD]},
-        "rule_type": RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value,
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "non_conformant_value_length",
-                        "value": {},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {
-                    "message": (
-                        "Variable data does not match length "
-                        "specified by value level metadata in define.xml"
-                    ),
-                },
-            }
-        ],
-    }
-
-
-@pytest.fixture
 def dataset_rule_record_in_parent_domain_equal_to() -> dict:
     """
     A sample rule that can be used to check values in several datasets.
@@ -872,6 +852,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "datasets": [
             {
                 "domain_name": "SUPPEC",
@@ -916,6 +897,7 @@ def dataset_rule_inconsistent_enumerated_columns() -> dict:
         "core_id": "CDISC.SDTMIG.CG0262",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "classes": {"Include": [ALL_KEYWORD]},
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "domains": {"Include": ["TS"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -949,6 +931,7 @@ def mock_validation_results() -> list[RuleValidationResult]:
                 "core_id": "CORE1",
                 "executability": "Fully Executable",
                 "actions": [{"params": {"message": "TEST RULE 1"}}],
+                "rule_type": RuleTypes.RECORD_CHECK.value,
                 "authorities": [
                     {
                         "Organization": "CDISC",
@@ -1008,6 +991,7 @@ def mock_validation_results() -> list[RuleValidationResult]:
                 "core_id": "CORE2",
                 "executability": "Partially Executable",
                 "actions": [{"params": {"message": "TEST RULE 2"}}],
+                "rule_type": RuleTypes.RECORD_CHECK.value,
                 "authorities": [
                     {
                         "Organization": "CDISC",
@@ -1057,28 +1041,6 @@ def mock_validation_results() -> list[RuleValidationResult]:
             ],
         ),
     ]
-
-
-@pytest.fixture(scope="function")
-def rule_check_dataset_against_library_and_define() -> dict:
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": [ALL_KEYWORD]},
-        "domains": {"Include": ["AE"]},
-        "rule_type": "Dataset Contents Check against Define XML and Library Metadata",
-        "variable_origin_type": "Collected",
-        "variable_core_status": "Perm",
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {"any": [{"name": "get_dataset", "operator": "empty"}]}
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "Variable metadata is wrong."},
-            }
-        ],
-    }
 
 
 @pytest.fixture(scope="function")
@@ -1144,6 +1106,7 @@ def dataset_rule_get_variable_names_in_given_standard() -> dict:
                 ]
             }
         ),
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
@@ -1185,6 +1148,7 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
                 ]
             }
         ),
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
@@ -1208,6 +1172,7 @@ def rule_validate_columns_order_against_library_metadata() -> dict:
         "classes": {"Include": ["EVENTS"]},
         "domains": {"Include": ["AE"]},
         "sensitivity": Sensitivity.DATASET.value,
+        "rule_type": RuleTypes.RECORD_CHECK.value,
         "operations": [
             {
                 "operator": "get_column_order_from_dataset",

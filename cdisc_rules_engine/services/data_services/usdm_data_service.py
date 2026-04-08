@@ -1,4 +1,5 @@
 import os
+from os.path import basename
 from io import IOBase
 from typing import List, Sequence, Any
 from dataclasses import dataclass
@@ -22,9 +23,6 @@ from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
-from cdisc_rules_engine.utilities.utils import (
-    extract_file_name_from_path_string,
-)
 from .base_data_service import BaseDataService, cached_dataset
 
 
@@ -150,7 +148,7 @@ class USDMDataService(BaseDataService):
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
-            filename=extract_file_name_from_path_string(dataset_name),
+            filename=basename(dataset_name),
             full_path=dataset_name,
             file_size=0,
             record_count=len(dataset),
@@ -182,7 +180,7 @@ class USDMDataService(BaseDataService):
     def read_metadata(self, dataset_name: str) -> dict:
         np_json_type_map: dict = {"O": "string", "float64": "float"}
         file_size = os.path.getsize(self.dataset_path)
-        file_name = extract_file_name_from_path_string(self.dataset_path)
+        file_name = basename(self.dataset_path)
         file_metadata = {
             "path": self.dataset_path,
             "name": file_name,
@@ -476,7 +474,7 @@ class USDMDataService(BaseDataService):
         return os.path.join(self.dataset_path, "{}.json".format(domain_name))
 
     def __get_domain_from_dataset_name(self, dataset_name: str) -> str:
-        return extract_file_name_from_path_string(dataset_name).split(".")[0]
+        return basename(dataset_name).split(".")[0]
 
     @staticmethod
     def is_valid_data(dataset_paths: Sequence[str], encoding: str = None):

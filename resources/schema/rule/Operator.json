@@ -14,16 +14,6 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "conformant_value_data_type" } },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "conformant_value_length" } },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
       "properties": { "operator": { "const": "contains" } },
       "required": ["operator", "value"],
       "type": "object"
@@ -92,13 +82,6 @@
         "operator": { "const": "does_not_have_next_corresponding_record" }
       },
       "required": ["operator", "ordering", "value", "within"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": { "const": "does_not_reference_correct_codelist" }
-      },
-      "required": ["operator", "value"],
       "type": "object"
     },
     {
@@ -300,18 +283,6 @@
       "type": "object"
     },
     {
-      "properties": {
-        "operator": { "const": "non_conformant_value_data_type" }
-      },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "non_conformant_value_length" } },
-      "required": ["operator"],
-      "type": "object"
-    },
-    {
       "properties": { "operator": { "const": "non_empty" } },
       "required": ["operator"],
       "type": "object"
@@ -405,11 +376,6 @@
         "operator": { "const": "present_on_multiple_rows_within" }
       },
       "required": ["operator", "within"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "references_correct_codelist" } },
-      "required": ["operator", "value"],
       "type": "object"
     },
     {

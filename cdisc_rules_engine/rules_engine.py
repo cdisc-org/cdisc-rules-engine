@@ -344,54 +344,7 @@ class RulesEngine:
             kwargs["codelist_term_maps"] = (
                 self.library_metadata.get_all_ct_package_metadata()
             )
-        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
-            if self.library_metadata:
-                kwargs["variable_codelist_map"] = (
-                    self.library_metadata.variable_codelist_map
-                )
-                kwargs["codelist_term_maps"] = (
-                    self.library_metadata.get_all_ct_package_metadata()
-                )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            self.rule_processor.add_comparator_to_rule_conditions(
-                rule, comparator=None, target_prefix="define_"
-            )
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_metadata.full_path, dataset_metadata.unsplit_name
-            )
-            kwargs["value_level_metadata"] = value_level_metadata
-
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
-        ):
-            library_metadata: dict = self.library_metadata.variables_metadata.get(
-                dataset_metadata.domain, {}
-            )
-            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
-            targets: List[str] = (
-                self.data_processor.filter_dataset_columns_by_metadata_and_rule(
-                    dataset.columns.tolist(), define_metadata, library_metadata, rule
-                )
-            )
-            rule_copy = deepcopy(rule)
-            updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
-                rule_copy["conditions"], targets
-            )
-            rule_copy["conditions"].set_conditions(updated_conditions)
-            # When duplicating conditions,
-            # rule should be copied to prevent updates to concurrent rule executions
-            return self.execute_rule(
-                rule_copy, dataset, datasets, dataset_metadata, **kwargs
-            )
-        elif rule.get("rule_type") == RuleTypes.JSONATA.value:
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
                 rule, dataset, self.jsonata_custom_functions
             )
@@ -438,18 +391,39 @@ class RulesEngine:
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
-            dataset_metadata.unsplit_name,
+            dataset_metadata,
             datasets,
-            dataset_metadata.full_path,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
+            define_xml_path=self.define_xml_path,
         )
+        if dataset.empty:
+            rule_id = rule.get("core_id", "unknown")
+            reason = (
+                f"Dataset skipped - Dataset is empty after preprocessing and operations. "
+                f"rule id={rule_id}, dataset={dataset_metadata.name}"
+            )
+            logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
+            error_obj = FailedValidationEntity(
+                dataset=dataset_metadata.filename,
+                error=SkippedReason.EMPTY_DATASET.value,
+                message=reason,
+            )
+            return [
+                ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
+                    message=reason,
+                    dataset=dataset_metadata.filename,
+                    domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
+                    errors=[error_obj],
+                ).to_representation()
+            ]
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": dataset_metadata.domain_cleaned},
+            column_prefix_map={"--": dataset_metadata.wildcard_replacement},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,
@@ -575,10 +549,11 @@ class RulesEngine:
             )
 
         elif isinstance(exception, OperationError):
+            error_msg = getattr(exception, "message", None) or str(exception)
             error_obj = FailedValidationEntity(
                 dataset=filename,
                 error=OperationError.description,
-                message=str(exception),
+                message=error_msg,
             )
             message = "rule evaluation error - operation failed"
             errors = [error_obj]

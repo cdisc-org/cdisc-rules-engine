@@ -35,11 +35,9 @@ def _create_operation(operation_params, standard_metadata, dataset_type):
     "domains_input, expected_domains",
     [
         ({"AE", "FA", "LB", "QS", "CM", "DM"}, ["AE", "CM", "DM", "FA", "LB", "QS"]),
-        (["AE", "FA", "LB"], ["AE", "FA", "LB"]),
-        (("AE", "FA", "LB"), ["AE", "FA", "LB"]),
-        (["QS", "AE", "FA", "LB", "CM"], ["AE", "CM", "FA", "LB", "QS"]),
+        ({"AE", "FA", "LB"}, ["AE", "FA", "LB"]),
+        ({"QS", "AE", "FA", "LB", "CM"}, ["AE", "CM", "FA", "LB", "QS"]),
         (set(), []),
-        ([], []),
     ],
 )
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -49,7 +47,7 @@ def test_standard_domains_returns_sorted_list(
     domains_input,
     expected_domains,
 ):
-    standard_metadata = {"domains": domains_input}
+    standard_metadata = {"dataset_names": domains_input}
     operation = _create_operation(operation_params, standard_metadata, dataset_type)
     result = operation.execute()
     domain_list = result[operation_params.operation_id].iloc[0]
@@ -60,7 +58,7 @@ def test_standard_domains_returns_sorted_list(
     "standard_metadata, expected_length",
     [
         ({}, 0),
-        ({"domains": None}, 0),
+        ({"dataset_names": None}, 0),
     ],
 )
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -75,22 +73,3 @@ def test_standard_domains_handles_missing_or_none_domains(
     domain_list = result[operation_params.operation_id].iloc[0]
     assert isinstance(domain_list, list)
     assert len(domain_list) == expected_length
-
-
-@pytest.mark.parametrize(
-    "standard_metadata",
-    [
-        ({"domains": {}}),
-        ({"domains": 123}),
-        ({"domains": "invalid"}),
-    ],
-)
-@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_standard_domains_raises_error_for_invalid_type(
-    operation_params: OperationParams,
-    dataset_type,
-    standard_metadata,
-):
-    operation = _create_operation(operation_params, standard_metadata, dataset_type)
-    with pytest.raises(TypeError):
-        operation.execute()

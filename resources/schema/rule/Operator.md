@@ -992,9 +992,16 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.  When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists — i.e., two or more values are tied for the highest frequency — all records in that group are flagged.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists — i.e., two or more values are tied for the highest frequency — all records in that group are flagged.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
+
+If a regex parameter is provided, it is applied to the values of the target variable before the consistency check. The first capture group of the regex is used as the normalized value for comparison. This can be useful when only part of the value should be considered during comparison (for example, comparing only the date portion of a datetime value).
+
+- regex is optional.
+- The pattern must include at least one capture group(or whole regex will be wrapped to capture group).
+- Only the first capture group is used for comparison.
+- If the pattern does not match a value, the original value is used.
 
 ```yaml
 - name: "BGSTRESU"
@@ -1143,31 +1150,3 @@ Complement of `target_is_sorted_by`
 ## Define.XML
 
 Validation operators specifically for checking compliance with Define.XML metadata specifications, including data type conformance, length validation, and codelist references.
-
-### conformant_value_data_type
-
-Value Level Metadata Check against Define XML
-
-True if the types in the row match the VLM types specified in the define.xml
-
-### non_conformant_value_data_type
-
-Complement of `conformant_value_data_type`
-
-### conformant_value_length
-
-Value Level Metadata Check against Define XML
-
-True if the lengths in the row match the VLM lengths specified in the define.xml
-
-### non_conformant_value_length
-
-Complement of `conformant_value_length`
-
-### references_correct_codelist
-
-True if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.
-
-### does_not_reference_correct_codelist
-
-Complement of `references_correct_codelist`
