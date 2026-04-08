@@ -17,7 +17,7 @@ class DatasetNDJSONMetadataReader:
     """
 
     def __init__(
-        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING, **kwargs
     ):
         self._metadata_container = {}
         self._file_path = file_path
