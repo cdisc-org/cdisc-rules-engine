@@ -1,7 +1,6 @@
 import os
 import subprocess
 import unittest
-
 import pytest
 import json
 from conftest import get_python_executable
@@ -17,9 +16,9 @@ class TestCoreIssue1501(unittest.TestCase):
             "core",
             "validate",
             "-s",
-            "send",
+            "sendig",
             "-v",
-            "1-0",
+            "3-1",
             "-dp",
             os.path.join(
                 "tests",

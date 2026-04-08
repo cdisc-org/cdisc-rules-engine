@@ -320,7 +320,8 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-d",
     "--data",
     required=False,
-    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE}). "
+    "Should be provided once. If provided more than once, only the last value will be recorded",
     callback=load_custom_dotenv_from_data_options,
 )
 @click.option(

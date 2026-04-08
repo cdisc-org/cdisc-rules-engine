@@ -137,9 +137,9 @@ This will show the list of validation options.
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
-  -ps, --pool-size INTEGER        Number of parallel processes for validation
-  -dep, --dotenv-path             Path to the .env file used to set environment variables.
-  -d, --data TEXT                 Path to directory containing data files.
+  -ps, --pool-size INTEGER         Number of parallel processes for validation
+   -dep, --dotenv-path             Path to the .env file used to set environment variables.
+  -d, --data TEXT                 Path to directory containing data files. Should only be provided once. If provided more than once, only the last value will be recorded.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
   -dxp, --define-xml-path TEXT    Path to Define-XML. DEFINE_XML environment variable can be used to pass value.
   -l, --log-level [info|debug|error|critical|disabled|warn]
