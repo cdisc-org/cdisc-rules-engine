@@ -2,6 +2,7 @@ from abc import abstractmethod
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.services.data_services import cached_dataset
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
@@ -36,6 +37,7 @@ class BaseDatasetBuilder:
     ):
         self.data_service = data_service
         self.cache = cache_service
+        self.cache_service = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
         self.dataset_path = dataset_path
@@ -69,6 +71,7 @@ class BaseDatasetBuilder:
         finally:
             self.dataset_path = original_path
 
+    @cached_dataset("contents")
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
         if self.dataset_metadata.is_split:
