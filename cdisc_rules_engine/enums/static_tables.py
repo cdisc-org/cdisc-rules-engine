@@ -7,3 +7,5 @@ class StaticTables(BaseEnum):
     IG_VARIABLES_TABLE_NAME = "ig_variables"
     WHODRUG_TABLE_NAME = "ex_whodrug"
     MEDDRA_TABLE_NAME = "ex_meddra"
+    UNII_TABLE_NAME = "ex_unii"
+    MEDRT_TABLE_NAME = "ex_medrt"

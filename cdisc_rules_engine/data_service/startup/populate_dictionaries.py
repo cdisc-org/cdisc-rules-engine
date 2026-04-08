@@ -32,9 +32,28 @@ def _meddra_schema(metadata=None) -> SqlTableSchema:
     return table
 
 
+def _unii_schema(metadata=None) -> SqlTableSchema:
+    # metadata object is not currently used but will be relevant when I plan to implement more version logic
+    table = SqlTableSchema.static(StaticTables.UNII_TABLE_NAME.value)
+    table.add_column(SqlColumnSchema(name="term_code", hash="term_code", type="Char"))
+    table.add_column(SqlColumnSchema(name="term_name", hash="term_name", type="Char"))
+    return table
+
+
+def _medrt_schema(metadata=None) -> SqlTableSchema:
+    # metadata object is not currently used but will be relevant when I plan to implement more version logic
+    table = SqlTableSchema.static(StaticTables.MEDRT_TABLE_NAME.value)
+    table.add_column(SqlColumnSchema(name="term_code", hash="term_code", type="Char"))
+    table.add_column(SqlColumnSchema(name="term_tag", hash="term_tag", type="Char"))
+    table.add_column(SqlColumnSchema(name="term_name", hash="term_name", type="Char"))
+    return table
+
+
 _SCHEMA_MAP = {
     DictionaryTypes.WHODRUG.value: _whodrug_schema,
     DictionaryTypes.MEDDRA.value: _meddra_schema,
+    DictionaryTypes.UNII.value: _unii_schema,
+    DictionaryTypes.MEDRT.value: _medrt_schema,
 }
 
 
