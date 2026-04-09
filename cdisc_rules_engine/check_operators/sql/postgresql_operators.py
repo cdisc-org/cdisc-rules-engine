@@ -1,16 +1,8 @@
 from business_rules.fields import FIELD_DATAFRAME
 from business_rules.operators import BaseType, type_operator
 
-from cdisc_rules_engine.check_operators.sql.is_valid_meddra_code_reference_operator import (
-    ValidMeddraCodeReferenceOperator,
-)
-from cdisc_rules_engine.check_operators.sql.is_valid_meddra_code_term_pair_operator import (
-    ValidMeddraCodeTermPairsOperator,
-)
-from cdisc_rules_engine.check_operators.sql.is_valid_meddra_term_reference_operator import (
-    ValidMeddraTermReferenceOperator,
-)
 from cdisc_rules_engine.check_operators.sql.not_operator import NotOperator
+from cdisc_rules_engine.enums.static_tables import StaticTables
 
 from .base_sql_operator import log_operator_execution
 from .conformant_value_data_type_operator import ConformantValueDataTypeOperator
@@ -39,6 +31,9 @@ from .is_ordered_by_operator import IsOrderedByOperator
 from .is_ordered_set_operator import IsOrderedSetOperator
 from .is_ordered_subset_of_operator import IsOrderedSubsetOfOperator
 from .is_unique_set_operator import IsUniqueSetOperator
+from .is_valid_external_dict_term_reference_operator import ValidExDictTermReferenceOperator
+from .is_valid_external_dict_code_reference_operator import ValidExDictCodeReferenceOperator
+from .is_valid_external_dict_code_term_pair_operator import ValidExDictCodeTermPairsOperator
 from .matches_regex_operator import MatchesRegexOperator
 from .numeric_comparison_operator import NumericComparisonOperator
 from .prefix_matches_regex_operator import PrefixMatchesRegexOperator
@@ -55,6 +50,21 @@ from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
 from .variable_metadata_equal_to_operator import VariableMetadataEqualToOperator
 from .is_valid_whodrug_reference_operator import IsValidWhodrugReferenceOperator
+
+MEDDRA_CODE_SUFFIX_MAP = {"SOCCD": "SOC", "HLGTCD": "HLGT", "HLTCD": "HLT", "PTCD": "PT", "LLTCD": "LLT"}
+MEDDRA_TERM_SUFFIX_MAP = {"SOC": "SOC", "HLGT": "HLGT", "HLT": "HLT", "DECOD": "PT", "LLT": "LLT"}
+MEDDRA_PAIR_MAP = {
+    "SOC": ("SOC", "SOCCD"),
+    "SOCCD": ("SOC", "SOC"),
+    "LLT": ("LLT", "LLTCD"),
+    "LLTCD": ("LLT", "LLT"),
+    "HLGT": ("HLGT", "HLGTCD"),
+    "HLGTCD": ("HLGT", "HLGT"),
+    "HLT": ("HLT", "HLTCD"),
+    "HLTCD": ("HLT", "HLT"),
+    "PTCD": ("PT", "DECOD"),
+    "DECOD": ("PT", "PTCD"),
+}
 
 
 class PostgresQLOperators(BaseType):
@@ -168,12 +178,62 @@ class PostgresQLOperators(BaseType):
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
         "is_valid_whodrug_reference": lambda data: IsValidWhodrugReferenceOperator(data),
         "is_not_valid_whodrug_reference": lambda data: NotOperator(data, IsValidWhodrugReferenceOperator),
-        "is_valid_meddra_code_reference": lambda data: ValidMeddraCodeReferenceOperator(data),
-        "is_not_valid_meddra_code_reference": lambda data: NotOperator(data, ValidMeddraCodeReferenceOperator),
-        "is_valid_meddra_term_reference": lambda data: ValidMeddraTermReferenceOperator(data),
-        "is_not_valid_meddra_term_reference": lambda data: NotOperator(data, ValidMeddraTermReferenceOperator),
-        "is_valid_meddra_code_term_pair": lambda data: ValidMeddraCodeTermPairsOperator(data),
-        "is_not_valid_meddra_code_term_pair": lambda data: NotOperator(data, ValidMeddraCodeTermPairsOperator),
+        "is_valid_meddra_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_TERM_SUFFIX_MAP
+        ),
+        "is_not_valid_meddra_term_reference": lambda data: NotOperator(
+            data,
+            lambda d: ValidExDictTermReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_TERM_SUFFIX_MAP),
+        ),
+        "is_valid_meddra_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_CODE_SUFFIX_MAP
+        ),
+        "is_not_valid_meddra_code_reference": lambda data: NotOperator(
+            data,
+            lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_CODE_SUFFIX_MAP),
+        ),
+        "is_valid_meddra_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_PAIR_MAP
+        ),
+        "is_not_valid_meddra_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_PAIR_MAP)
+        ),
+        "is_valid_medrt_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.MEDRT_TABLE_NAME.value
+        ),
+        "is_not_valid_medrt_term_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictTermReferenceOperator(d, StaticTables.MEDRT_TABLE_NAME.value)
+        ),
+        "is_valid_medrt_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.MEDRT_TABLE_NAME.value
+        ),
+        "is_not_valid_medrt_code_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.MEDRT_TABLE_NAME.value)
+        ),
+        "is_valid_medrt_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.MEDRT_TABLE_NAME.value
+        ),
+        "is_not_valid_medrt_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.MEDRT_TABLE_NAME.value)
+        ),
+        "is_valid_unii_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.UNII_TABLE_NAME.value
+        ),
+        "is_not_valid_unii_term_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictTermReferenceOperator(d, StaticTables.UNII_TABLE_NAME.value)
+        ),
+        "is_valid_unii_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.UNII_TABLE_NAME.value
+        ),
+        "is_not_valid_unii_code_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.UNII_TABLE_NAME.value)
+        ),
+        "is_valid_unii_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.UNII_TABLE_NAME.value
+        ),
+        "is_not_valid_unii_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.UNII_TABLE_NAME.value)
+        ),
     }
 
     def __init__(self, data):

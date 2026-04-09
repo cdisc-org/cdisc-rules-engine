@@ -1,0 +1,21 @@
+1-Compartment [PK]	N0000000060	MED-RT
+Acetylcholine Activity Alteration [PE]	N0000008290	MED-RT
+Acetylcholine Release Inhibitors [MoA]	N0000175770	MED-RT
+Actinomycin [EPC]	N0000180850	MED-RT
+Activin Signaling Inhibitor [EPC]	N0000194100	MED-RT
+Adeno-associated Virus Vector [EPC]	N0000193790	MED-RT
+Adrenergic alpha2-Antagonists [MoA]	N0000009920	MED-RT
+Adsorbed Diphtheria and Tetanus Toxoids, and Acellular Pertussis Vaccine [EPC]	N0000194180	MED-RT
+Aldosterone Antagonists [MoA]	N0000011310	MED-RT
+Allergenic Extract [APC]	N0000193890	MED-RT
+Amino Acid [EPC]	N0000175780	MED-RT
+Amphenicol-class Antibacterial [EPC]	N0000175480	MED-RT
+Amylin Analog [EPC]	N0000177910	MED-RT
+Amyloid Beta-directed Antibody Interactions [MoA]	N0000193950	MED-RT
+Androgen Receptor Inhibitor [EPC]	N0000175560	MED-RT
+Anesthetics [TC]	N0000193810	MED-RT
+Angiotensin 2 Receptor Antagonists [MoA]	N0000000070	MED-RT
+Anti-anginal Agent [TC]	N0000178310	MED-RT
+Anti-coagulant [EPC]	N0000175980	MED-RT
+Antibacterial [APC]	N0000193880	MED-RT
+Antihistamine [EPC]	N0000175750	MED-RT

@@ -1,0 +1,4009 @@
+September 2024 MED-RT (version name 2024.09.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2026.03.02)
+
+	RxNorm (2026.03.02.25AB)
+
+	MeSH (2026_2026.01.01)
+
+	SNOMED CT US Edition (2026.03.25AB)
+
+	UMLS Metathesaurus (2025AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2026.03.02): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2026.04.06): 3679
+
+	EPC concepts: 800
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+There were 27 new concepts manually added for this release to the Established Pharmacologic Classes hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+March 2026 MED-RT (version name 2026.03.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2026.01.14)
+
+	RxNorm (2026.02.02.25AB)
+
+	MeSH (2026_2026.01.01)
+
+	SNOMED CT US Edition (2025.09.25AA)
+
+	UMLS Metathesaurus (2025AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2026.02.02): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2026.03.02): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+February 2026 MED-RT (version name 2026.02.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2026.01.14)
+
+	RxNorm (2026.01.05.25AB)
+
+	MeSH (2026_2026.01.01)
+
+	SNOMED CT US Edition (2025.09.25AA)
+
+	UMLS Metathesaurus (2025AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2026.01.05): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2026.02.02): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2026 MED-RT (version name 2026.01.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.12.04)
+
+	RxNorm (2025.12.01.25AB)
+
+	MeSH (2025_2025.07.01)
+
+	SNOMED CT US Edition (2025.09.25AA)
+
+	UMLS Metathesaurus (2025AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.11.03): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2026.01.05): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+November 2025 MED-RT (version name 2025.11.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.08.25)
+
+	RxNorm (2025.10.06.25AA)
+
+	MeSH (2025_2025.07.01)
+
+	SNOMED CT US Edition (2025.09.25AA)
+
+	UMLS Metathesaurus (2025AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.10.06): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.11.03): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2025 MED-RT (version name 2025.10.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.08.25)
+
+	RxNorm (2025.09.02.25AA)
+
+	MeSH (2025_2025.07.01)
+
+	SNOMED CT US Edition (2025.09.25AA)
+
+	UMLS Metathesaurus (2025AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.09.02): 3652
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.10.06): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+August/September 2025 MED-RT (version name 2025.09.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.08.01)
+
+	RxNorm (2025.08.04.25AA)
+
+	MeSH (2025_2025.07.01)
+
+	SNOMED CT US Edition (2025.03.24AB)
+
+	UMLS Metathesaurus (2025AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.07.07): 3640
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.09.02): 3652
+
+	EPC concepts: 773
+
+	APC concepts: 44	
+
+	MoA concepts: 776
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+There were 12 new concepts manually added for this release including 6 added to Established Pharmacologic Classes and 6 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+July 2025 MED-RT (version name 2025.07.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.05.19)
+
+	RxNorm (2025.06.02.25AA)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2025.03.24AB)
+
+	UMLS Metathesaurus (2025AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.06.02): 3619
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.07.07): 3640
+
+	EPC concepts: 767
+
+	APC concepts: 44	
+
+	MoA concepts: 770
+
+	PE concepts:  1873
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 30
+
+	HC concepts:  31
+
+
+
+There were 21 new concepts manually added for this release including 12 added to Established Pharmacologic Classes, 5 added to the Mechanism of Action hierarchy, 2 added to the Physiological Effects hierarchy and 2 added to the Terminology Extensions for Classification hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+June 2025 MED-RT (version name 2025.06.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.05.19)
+
+	RxNorm (2025.05.05.25AA)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2025.03.24AB)
+
+	UMLS Metathesaurus (2025AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.05.05): 3614
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.06.02): 3619
+
+	EPC concepts: 755
+
+	APC concepts: 44	
+
+	MoA concepts: 765
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+There were 5 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+May 2025 MED-RT (version name 2025.05.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.02.21)
+
+	RxNorm (2025.04.07.24AB)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2025.03.24AB)
+
+	UMLS Metathesaurus (2024AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.04.07): 3613
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.05.05): 3614
+
+	EPC concepts: 752
+
+	APC concepts: 44	
+
+	MoA concepts: 763
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+There was 1 new concept manually added for this release to the Established Pharmacologic Classes hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+April 2025 MED-RT (version name 2025.04.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.02.21)
+
+	RxNorm (2025.03.03.24AB)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2025.03.24AB)
+
+	UMLS Metathesaurus (2024AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.03.03): 3613
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.04.07): 3613
+
+	EPC concepts: 751
+
+	APC concepts: 44	
+
+	MoA concepts: 763
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+March 2025 MED-RT (version name 2025.03.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2025.02.07)
+
+	RxNorm (2025.02.03.24AB)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2024.09.24AA)
+
+	UMLS Metathesaurus (2024AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.02.03): 3611
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.03.03): 3613
+
+	EPC concepts: 751
+
+	APC concepts: 44	
+
+	MoA concepts: 763
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+There were 2 new concepts manually added for this release including 1 added to Established Pharmacologic Classes and 1 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+February 2025 MED-RT (version name 2025.02.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.11.26)
+
+	RxNorm (2025.01.06.24AB)
+
+	MeSH (2025_2025.01.01)
+
+	SNOMED CT US Edition (2024.09.24AA)
+
+	UMLS Metathesaurus (2024AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2025.01.06): 3611
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.02.03): 3611
+
+	EPC concepts: 750
+
+	APC concepts: 44	
+
+	MoA concepts: 762
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2025 MED-RT (version name 2025.01.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.11.26)
+
+	RxNorm (2024.12.02.24AB)
+
+	MeSH (2024_2024.07.01)
+
+	SNOMED CT US Edition (2024.09.24AA)
+
+	UMLS Metathesaurus (2024AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.11.04): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2025.01.06): 3611
+
+	EPC concepts: 750
+
+	APC concepts: 44	
+
+	MoA concepts: 762
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+There were 34 new concepts manually added for this release including 17 added to Established Pharmacologic Classes and 17 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+November 2024 MED-RT (version name 2024.11.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.10.07.24AA)
+
+	MeSH (2024_2024.07.01)
+
+	SNOMED CT US Edition (2024.09.24AA)
+
+	UMLS Metathesaurus (2024AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.10.07): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.11.04): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+October 2024 MED-RT (version name 2024.10.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.09.03.24AA)
+
+	MeSH (2024_2024.07.01)
+
+	SNOMED CT US Edition (2024.09.24AA)
+
+	UMLS Metathesaurus (2024AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.09.03): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.10.07): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+August/September 2024 MED-RT (version name 2024.09.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.08.05.24AA)
+
+	MeSH (2024_2024.07.01)
+
+	SNOMED CT US Edition (2024.03.23AB)
+
+	UMLS Metathesaurus (2024AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.07.01): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.09.03): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+July 2024 MED-RT (version name 2024.07.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.06.03.24AA)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2024.03.23AB)
+
+	UMLS Metathesaurus (2024AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.06.03): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.07.01): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+June 2024 MED-RT (version name 2024.06.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.05.06.24AA)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2024.03.23AB)
+
+	UMLS Metathesaurus (2024AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.05.06): 3577
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.06.03): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+May 2024 MED-RT (version name 2024.05.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.04.01.23AB)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2024.03.23AB)
+
+	UMLS Metathesaurus (2023AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.04.01): 3574
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.05.06): 3577
+
+	EPC concepts: 733
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 28
+
+	HC concepts:  31
+
+
+
+There were 3 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 1 added to the Terminology Extensions for Classification hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+April 2024 MED-RT (version name 2024.04.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2024.03.11)
+
+	RxNorm (2024.03.04.23AB)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2024.03.23AB)
+
+	UMLS Metathesaurus (2023AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.03.04): 3574
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.04.01): 3574
+
+	EPC concepts: 731
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 27
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+March 2024 MED-RT (version name 2024.03.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.12.05)
+
+	RxNorm (2024.02.05.23AB)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2023.09.23AA)
+
+	UMLS Metathesaurus (2023AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.02.05): 3574
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.03.04): 3574
+
+	EPC concepts: 731
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 27
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+February 2024 MED-RT (version name 2024.02.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.12.05)
+
+	RxNorm (2024.01.02.23AB)
+
+	MeSH (2024_2024.01.01)
+
+	SNOMED CT US Edition (2023.09.23AA)
+
+	UMLS Metathesaurus (2023AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2024.01.02): 3561
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.02.05): 3574
+
+	EPC concepts: 731
+
+	APC concepts: 44	
+
+	MoA concepts: 745
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 27
+
+	HC concepts:  31
+
+
+
+There were 13 new concepts manually added for this release including 5 added to Established Pharmacologic Classes and 8 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+December/January 2024 MED-RT (version name 2024.01.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.12.05)
+
+	RxNorm (2023.12.04.23AB)
+
+	MeSH (2023_2023.07.01)
+
+	SNOMED CT US Edition (2023.09.23AA)
+
+	UMLS Metathesaurus (2023AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.11.06): 3551
+
+TOTAL CONCEPTS IN CURRENT VERSION (2024.01.02): 3561
+
+	EPC concepts: 726
+
+	APC concepts: 44	
+
+	MoA concepts: 737
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 27
+
+	HC concepts:  31
+
+
+
+There were 10 new concepts manually added for this release including 8 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+November 2023 MED-RT (version name 2023.11.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.10.04)
+
+	RxNorm (2023.10.02.23AA)
+
+	MeSH (2023_2023.07.01)
+
+	SNOMED CT US Edition (2023.09.23AA)
+
+	UMLS Metathesaurus (2023AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.10.02): 3542
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.11.06): 3551
+
+	EPC concepts: 718
+
+	APC concepts: 44	
+
+	MoA concepts: 735
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 27
+
+	HC concepts:  31
+
+
+
+There were 9 new concepts manually added for this release including 5 added to Established Pharmacologic Classes, 3 added to Additional Pharmacologic Classes, and 1 added to the Terminology Extensions for Classification hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2023 MED-RT (version name 2023.10.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.08.17)
+
+	RxNorm (2023.09.05.23AA)
+
+	MeSH (2023_2023.07.01)
+
+	SNOMED CT US Edition (2023.09.23AA)
+
+	UMLS Metathesaurus (2023AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.09.05): 3538
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.10.02): 3542
+
+	EPC concepts: 713
+
+	APC concepts: 41	
+
+	MoA concepts: 735
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 4 new concepts manually added for this release including 1 added to Established Pharmacologic Classes and 3 added to the Mechanism of Action hierarchy.
+
+ 
+
+------------------------------------------------------------------------------------------
+
+August/September 2023 MED-RT (version name 2023.09.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.08.17)
+
+	RxNorm (2023.08.07.23AA)
+
+	MeSH (2023_2023.07.01)
+
+	SNOMED CT US Edition (2023.03.22AB)
+
+	UMLS Metathesaurus (2023AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.07.03): 3524
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.09.05): 3538
+
+	EPC concepts: 712
+
+	APC concepts: 41	
+
+	MoA concepts: 732
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 14 new concepts manually added for this release including 6 added to Established Pharmacologic Classes and 8 added to the Mechanism of Action hierarchy.
+
+ 
+
+------------------------------------------------------------------------------------------
+
+July 2023 MED-RT (version name 2023.07.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.05.29)
+
+	RxNorm (2023.06.05.23AA)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2023.03.22AB)
+
+	UMLS Metathesaurus (2023AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.06.05): 3516
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.07.03): 3524
+
+	EPC concepts: 706
+
+	APC concepts: 41	
+
+	MoA concepts: 724
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 8 new concepts manually added for this release including 4 added to Established Pharmacologic Classes and 4 added to the Mechanism of Action hierarchy.
+
+ 
+
+------------------------------------------------------------------------------------------
+
+June 2023 MED-RT (version name 2023.06.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.05.17)
+
+	RxNorm (2023.05.01.23AA)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2023.03.22AB)
+
+	UMLS Metathesaurus (2023AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.05.01): 3501
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.06.05): 3516
+
+	EPC concepts: 702
+
+	APC concepts: 41	
+
+	MoA concepts: 720
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 15 new concepts manually added for this release including 7 added to Established Pharmacologic Classes and 8 added to the Mechanism of Action hierarchy.
+
+ 
+
+------------------------------------------------------------------------------------------
+
+May 2023 MED-RT (version name 2023.05.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.04.20)
+
+	RxNorm (2023.04.03.22AB)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2023.03.22AB)
+
+	UMLS Metathesaurus (2022AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.04.03): 3501
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.05.01): 3501
+
+	EPC concepts: 695
+
+	APC concepts: 41	
+
+	MoA concepts: 712
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+ 
+
+------------------------------------------------------------------------------------------
+
+April 2023 MED-RT (version name 2023.04.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.02.07)
+
+	RxNorm (2023.03.06.22AB)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2023.03.22AB)
+
+	UMLS Metathesaurus (2022AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.03.06): 3500
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.04.03): 3501
+
+	EPC concepts: 695
+
+	APC concepts: 41	
+
+	MoA concepts: 712
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There was 1 new concept manually added to the Established Pharmacologic Classes hierarchy for this release. 
+
+------------------------------------------------------------------------------------------
+
+March 2023 MED-RT (version name 2023.03.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.02.07)
+
+	RxNorm (2023.02.06.22AB)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2022.09.22AA)
+
+	UMLS Metathesaurus (2022AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.02.06): 3495
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.03.06): 3500
+
+	EPC concepts: 694
+
+	APC concepts: 41	
+
+	MoA concepts: 712
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 5 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+February 2023 MED-RT (version name 2023.02.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2023.01.16)
+
+	RxNorm (2023.01.03.22AB)
+
+	MeSH (2023_2023.01.01)
+
+	SNOMED CT US Edition (2022.09.22AA)
+
+	UMLS Metathesaurus (2022AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2023.01.03): 3490
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.02.06): 3495
+
+	EPC concepts: 691
+
+	APC concepts: 41	
+
+	MoA concepts: 710
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 5 new concepts manually added for this release including 4 added to Established Pharmacologic Classes and 1 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2023 MED-RT (version name 2023.01.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.09.05)
+
+	RxNorm (2022.12.05.22AB)
+
+	MeSH (2022_2022.07.01)
+
+	SNOMED CT US Edition (2022.09.22AA)
+
+	UMLS Metathesaurus (2022AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.11.07): 3490
+
+TOTAL CONCEPTS IN CURRENT VERSION (2023.01.03): 3490
+
+	EPC concepts: 687
+
+	APC concepts: 41	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+November 2022 MED-RT (version name 2022.11.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.09.05)
+
+	RxNorm (2022.10.03.22AA)
+
+	MeSH (2022_2022.07.01)
+
+	SNOMED CT US Edition (2022.09.22AA)
+
+	UMLS Metathesaurus (2022AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.10.03): 3490
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.11.07): 3490
+
+	EPC concepts: 687
+
+	APC concepts: 41	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2022 MED-RT (version name 2022.10.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.09.05)
+
+	RxNorm (2022.09.06.22AA)
+
+	MeSH (2022_2022.07.01)
+
+	SNOMED CT US Edition (2022.09.22AA)
+
+	UMLS Metathesaurus (2022AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.09.06): 3490
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.10.03): 3490
+
+	EPC concepts: 687
+
+	APC concepts: 41	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+August/September 2022 MED-RT (version name 2022.09.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.08.08)
+
+	RxNorm (2022.08.01.22AA)
+
+	MeSH (2022_2022.07.01)
+
+	SNOMED CT US Edition (2022.03.21AB)
+
+	UMLS Metathesaurus (2022AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.07.05): 3489
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.09.06): 3490
+
+	EPC concepts: 687
+
+	APC concepts: 41	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There was 1 Additional Pharmacologic Class (APC) concept added manually for this release.
+
+
+
+------------------------------------------------------------------------------------------
+
+July 2022 MED-RT (version name 2022.07.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.05.06)
+
+	RxNorm (2022.06.06.22AA)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2022.03.21AB)
+
+	UMLS Metathesaurus (2022AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.06.06): 3489
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.07.05): 3489
+
+	EPC concepts: 687
+
+	APC concepts: 40	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+June 2022 MED-RT (version name 2022.06.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.05.06)
+
+	RxNorm (2022.05.02.22AA)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2022.03.21AB)
+
+	UMLS Metathesaurus (2022AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.05.02): 3489
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.06.06): 3489
+
+	EPC concepts: 687
+
+	APC concepts: 40	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+May 2022 MED-RT (version name 2022.05.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.04.08)
+
+	RxNorm (2022.04.04.21AB)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2022.03.21AB)
+
+	UMLS Metathesaurus (2021AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.04.04): 3472
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.05.02): 3489
+
+	EPC concepts: 687
+
+	APC concepts: 40	
+
+	MoA concepts: 709
+
+	PE concepts:  1871
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+
+
+There were 17 new concepts manually added for this release including 7 added to Established Pharmacologic Classes, 9 added to the Mechanism of Action hierarchy and 1 added to the Physiological Effects hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+April 2022 MED-RT (version name 2022.04.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.03.23)
+
+	RxNorm (2022.03.07.21AB)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2022.03.21AB)
+
+	UMLS Metathesaurus (2021AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.03.07): 3466
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.04.04): 3472
+
+	EPC concepts: 680
+
+	APC concepts: 40	
+
+	MoA concepts: 700
+
+	PE concepts:  1870
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+
+
+There were 6 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 3 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+March 2022 MED-RT (version name 2022.03.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.02.11)
+
+	RxNorm (2022.02.07.21AB)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2021.09.21AA)
+
+	UMLS Metathesaurus (2021AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.02.07): 3461
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.03.07): 3466
+
+	EPC concepts: 677
+
+	APC concepts: 40	
+
+	MoA concepts: 697
+
+	PE concepts:  1870
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+
+
+There were 5 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 3 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+February 2022 MED-RT (version name 2022.02.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2022.01.24)
+
+	RxNorm (2022.01.03.21AB)
+
+	MeSH (2022_2022.01.01)
+
+	SNOMED CT US Edition (2021.09.21AA)
+
+	UMLS Metathesaurus (2021AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2022.01.03): 3457
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.02.07): 3461
+
+	EPC concepts: 675
+
+	APC concepts: 40	
+
+	MoA concepts: 694
+
+	PE concepts:  1870
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+
+
+There were 4 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 1 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+December/January 2022 MED-RT (version name 2022.01.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2021.12.08)
+
+	RxNorm (2021.12.06.21AB)
+
+	MeSH (2021_2021.07.01)
+
+	SNOMED CT US Edition (2021.09.21AA)
+
+	UMLS Metathesaurus (2021AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.11.01): 3448
+
+TOTAL CONCEPTS IN CURRENT VERSION (2022.01.03): 3457
+
+	EPC concepts: 672
+
+	APC concepts: 40	
+
+	MoA concepts: 693
+
+	PE concepts:  1870
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+
+
+There were 9 new concepts manually added for this release including 3 added to Established Pharmacologic Classes, 4 added to the Mechanism of Action hierarchy and 2 added to the Physiological Effects hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+November 2021 MED-RT (version name 2021.11.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2021.09.07)
+
+	RxNorm (2021.10.04.21AA)
+
+	MeSH (2021_2021.07.01)
+
+	SNOMED CT US Edition (2021.09.21AA)
+
+	UMLS Metathesaurus (2021AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.10.04): 3446
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.11.01): 3448
+
+	EPC concepts: 669
+
+	APC concepts: 40	
+
+	MoA concepts: 689
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2021 MED-RT (version name 2021.10.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2021.09.07)
+
+	RxNorm (2021.09.07.21AA)
+
+	MeSH (2021_2021.07.01)
+
+	SNOMED CT US Edition (2021.09.21AA)
+
+	UMLS Metathesaurus (2021AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.09.07): 3446
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.10.04): 3446
+
+	EPC concepts: 666
+
+	APC concepts: 41	
+
+	MoA concepts: 689
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+August/September 2021 MED-RT (version name 2021.09.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2021.08.24)
+
+	RxNorm (2021.08.02.21AA)
+
+	MeSH (2021_2021.07.01)
+
+	SNOMED CT US Edition (2021.03.20AB)
+
+	UMLS Metathesaurus (2021AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.07.06): 3426
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.09.07): 3446
+
+	EPC concepts: 666
+
+	APC concepts: 41	
+
+	MoA concepts: 689
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 20 new concepts manually added for this release including 9 added to Established Pharmacologic Classes and 11 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+July 2021 MED-RT (version name 2021.07.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2021.06.15)
+
+	RxNorm (2021.06.07.21AA)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2021.03.20AB)
+
+	UMLS Metathesaurus (2021AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.06.07): 3411
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.07.06): 3426
+
+	EPC concepts: 657
+
+	APC concepts: 41	
+
+	MoA concepts: 678
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 15 new concepts manually added for this release including 4 added to Established Pharmacologic Classes, 1 added to Additional Pharmacologic Classes, and 10 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+June 2021 MED-RT (version name 2021.06.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2021.05.03.21AA)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2021.03.20AB)
+
+	UMLS Metathesaurus (2021AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.05.03): 3392
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.06.07): 3411
+
+	EPC concepts: 653
+
+	APC concepts: 40	
+
+	MoA concepts: 668
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 26
+
+	HC concepts:  31
+
+
+
+There were 19 new concepts manually added for this release including 5 added to Established Pharmacologic Classes, 13 added to the Mechanism of Action hierarchy, and 1 added to the Terminology Extensions for Classification hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+May 2021 MED-RT (version name 2021.05.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2021.04.05.20AB)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2021.03.20AB)
+
+	UMLS Metathesaurus (2020AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.04.05): 3392
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.05.03): 3392
+
+	EPC concepts: 648
+
+	APC concepts: 40	
+
+	MoA concepts: 655
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+April 2021 MED-RT (version name 2021.04.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2021.03.01.20AB)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2021.03.20AB)
+
+	UMLS Metathesaurus (2020AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.03.01): 3392
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.04.05): 3392
+
+	EPC concepts: 648
+
+	APC concepts: 40	
+
+	MoA concepts: 655
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+March 2021 MED-RT (version name 2021.03.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2021.02.01.20AB)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2020.09.20AA)
+
+	UMLS Metathesaurus (2020AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.02.01): 3392
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.03.01): 3392
+
+	EPC concepts: 648
+
+	APC concepts: 40	
+
+	MoA concepts: 655
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+February 2021 MED-RT (version name 2021.02.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2021.01.04.20AB)
+
+	MeSH (2021_2021.01.01)
+
+	SNOMED CT US Edition (2020.09.20AA)
+
+	UMLS Metathesaurus (2020AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2021.01.04): 3390
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.02.01): 3392
+
+	EPC concepts: 648
+
+	APC concepts: 40	
+
+	MoA concepts: 655
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+There were 2 new concepts manually added for this release including 1 added to Established Pharmacologic Classes and 1 added to the Mechanism of Action hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2021 MED-RT (version name 2021.01.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2020.12.07.20AB)
+
+	MeSH (2020_2020.07.01)
+
+	SNOMED CT US Edition (2020.09.20AA)
+
+	UMLS Metathesaurus (2020AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.11.02): 3390
+
+TOTAL CONCEPTS IN CURRENT VERSION (2021.01.04): 3390
+
+	EPC concepts: 647
+
+	APC concepts: 40	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+November 2020 MED-RT (version name 2020.11.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2020.10.05.20AA)
+
+	MeSH (2020_2020.07.01)
+
+	SNOMED CT US Edition (2020.09.20AA)
+
+	UMLS Metathesaurus (2020AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.10.05): 3390
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.11.02): 3390
+
+	EPC concepts: 647
+
+	APC concepts: 40	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2020 MED-RT (version name 2020.10.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2020.09.08.20AA)
+
+	MeSH (2020_2020.07.01)
+
+	SNOMED CT US Edition (2020.09.20AA)
+
+	UMLS Metathesaurus (2020AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.09.08): 3390
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.10.05): 3390
+
+	EPC concepts: 647
+
+	APC concepts: 40	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+August/September 2020 MED-RT (version name 2020.09.08)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.07.22)
+
+	RxNorm (2020.08.03.20AA)
+
+	MeSH (2020_2020.07.01)
+
+	SNOMED CT US Edition (2020.03.19AB)
+
+	UMLS Metathesaurus (2020AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.07.06): 3366
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.09.08): 3390
+
+	EPC concepts: 647
+
+	APC concepts: 40	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+This release includes eighteen newly restructured EPC hierarchies. The hierarchies are included as children of the 'Preprations by FDA Established Pharmacologic Class' concept. 
+
+
+
+There were 24 Additional Pharmacologic Class concepts manually added for this release to the Established Pharmacologic Class hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+July 2020 MED-RT (version name 2020.07.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.04.28)
+
+	RxNorm (2020.06.01.20AA)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2020.03.19AB)
+
+	UMLS Metathesaurus (2020AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.06.01): 3355
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.07.06): 3366
+
+	EPC concepts: 647
+
+	APC concepts: 16	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+This release includes five newly restructured EPC hierarchy that can be found beneath the following concepts: "Anesthetic [APC]", "Anti-infective [APC]", "Enzyme [APC]", "Growth Factor [APC]", and "Receptor Interaction [APC]" 
+
+
+
+There were 11 Additional Pharmacologic Class concepts manually added for this release to the Established Pharmacologic Class hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+June 2020 MED-RT (version name 2020.06.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.04.28)
+
+	RxNorm (2020.05.04.20AA)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2020.03.19AB)
+
+	UMLS Metathesaurus (2020AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.05.04): 3355
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.06.01): 3355
+
+	EPC concepts: 647
+
+	APC concepts: 5	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+------------------------------------------------------------------------------------------
+
+May 2020 MED-RT (version name 2020.05.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.03.03)
+
+	RxNorm (2020.04.06.19AB)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2020.03.19AB)
+
+	UMLS Metathesaurus (2019AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.04.06): 3349
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.05.04): 3355
+
+	EPC concepts: 647
+
+	APC concepts: 5	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  31
+
+
+
+This release includes two notable changes:
+
+1.) Established Pharmacologic Class concepts that are not linked to an actively marketed drug in the FDA Structured Product Labeling have been placed beneath a new concept "Inactive Preparations by FDA Established Pharmacologic Class". 
+
+2.) Established Pharmacologic Class concepts are in the process of being restructured to create a more comprehensive hierarchy of the classes. A new CTY of APC (Additional Pharmacologic Class) has been created to support the addition of grouper concepts for this effort. This release includes five newly restructured EPC hierarchies that can be found beneath the following concepts: "Antibody or Antibody Fragment [APC]", "Diuretic [APC]", "Hormone [APC]", "Imaging Agent [APC]", and "Vitamin or Mineral [APC]".    
+
+
+
+There were 6 new concepts manually added for this release including 1 Hierarchical Concept and 5 Additional Pharmacologic Class concepts added to the Established Pharmacologic Class hierarchy.
+
+------------------------------------------------------------------------------------------
+
+April 2020 MED-RT (version name 2020.04.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2020.03.03)
+
+	RxNorm (2020.03.02.19AB)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2020.03.19AB)
+
+	UMLS Metathesaurus (2019AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.03.02): 3345
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.04.06): 3349
+
+	EPC concepts: 647	
+
+	MoA concepts: 654
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 4 new concepts manually added for this release including 1 added to Established Pharmacologic Classes and 3 added to the Mechanism of Action hierarchy.
+
+------------------------------------------------------------------------------------------
+
+March 2020 MED-RT (version name 2020.03.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.11.13)
+
+	RxNorm (2020.02.03.19AB)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2019.09.19AA)
+
+	UMLS Metathesaurus (2019AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.02.03): 3345
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.03.02): 3345
+
+	EPC concepts: 646	
+
+	MoA concepts: 651
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+------------------------------------------------------------------------------------------
+
+February 2020 MED-RT (version name 2020.02.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.11.13)
+
+	RxNorm (2020.01.06.19AB)
+
+	MeSH (2020_2020.01.01)
+
+	SNOMED CT US Edition (2019.09.19AA)
+
+	UMLS Metathesaurus (2019AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2020.01.06): 3341
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.02.03): 3345
+
+	EPC concepts: 646	
+
+	MoA concepts: 651
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 4 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2020 MED-RT (version name 2020.01.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.11.13)
+
+	RxNorm (2019.12.02.19AB)
+
+	MeSH (2019_2019.07.01)
+
+	SNOMED CT US Edition (2019.09.19AA)
+
+	UMLS Metathesaurus (2019AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.11.04): 3339
+
+TOTAL CONCEPTS IN CURRENT VERSION (2020.01.06): 3341
+
+	EPC concepts: 644	
+
+	MoA concepts: 649
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 2 new concepts manually added to Established Pharmacologic Classes hierarchy for this release.
+
+------------------------------------------------------------------------------------------
+
+November 2019 MED-RT (version name 2019.11.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.07.15)
+
+	RxNorm (2019.10.07.19AA)
+
+	MeSH (2019_2019.07.01)
+
+	SNOMED CT US Edition (2019.09.19AA)
+
+	UMLS Metathesaurus (2019AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.10.07): 3339
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.11.04): 3339
+
+	EPC concepts: 642	
+
+	MoA concepts: 649
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+------------------------------------------------------------------------------------------
+
+October 2019 MED-RT (version name 2019.10.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.07.15)
+
+	RxNorm (2019.09.03.19AA)
+
+	MeSH (2019_2019.07.01)
+
+	SNOMED CT US Edition (2019.09.19AA)
+
+	UMLS Metathesaurus (2019AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.09.03): 3332
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.10.07): 3339
+
+	EPC concepts: 642	
+
+	MoA concepts: 649
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 7 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 4 added to the Mechanism of Action hierarchy.
+
+	
+
+------------------------------------------------------------------------------------------
+
+August/September 2019 MED-RT (version name 2019.09.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.07.15)
+
+	RxNorm (2019.08.05.19AA)
+
+	MeSH (2019_2019.07.01)
+
+	SNOMED CT US Edition (2019.03.18AB)
+
+	UMLS Metathesaurus (2019AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.07.01): 3332
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.09.03): 3332
+
+	EPC concepts: 639	
+
+	MoA concepts: 645
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+July 2019 MED-RT (version name 2019.07.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.04.22)
+
+	RxNorm (2019.06.03.19AA)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2019.03.18AB)
+
+	UMLS Metathesaurus (2019AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.06.03): 3332
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.07.01): 3332
+
+	EPC concepts: 639	
+
+	MoA concepts: 645
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+June 2019 MED-RT (version name 2019.06.03)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.04.22)
+
+	RxNorm (2019.05.06.19AA)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2019.03.18AB)
+
+	UMLS Metathesaurus (2019AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.05.06): 3332
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.06.03): 3332
+
+	EPC concepts: 639	
+
+	MoA concepts: 645
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+May 2019 MED-RT (version name 2019.05.06)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.03.12)
+
+	RxNorm (2019.04.01.18AB)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2019.03.18AB)
+
+	UMLS Metathesaurus (2018AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.04.01): 3332
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.05.06): 3332
+
+	EPC concepts: 639	
+
+	MoA concepts: 645
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+April 2019 MED-RT (version name 2019.04.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.03.12)
+
+	RxNorm (2019.03.04.18AB)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2019.03.18AB)
+
+	UMLS Metathesaurus (2018AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.03.04): 3328
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.04.01): 3332
+
+	EPC concepts: 639	
+
+	MoA concepts: 645
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 4 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+	
+
+------------------------------------------------------------------------------------------
+
+
+
+March 2019 MED-RT (version name 2019.03.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2019.02.04)
+
+	RxNorm (2019.02.04.18AB)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2018.09.18AA)
+
+	UMLS Metathesaurus (2018AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.02.04): 3328
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.03.04): 3328
+
+	EPC concepts: 637	
+
+	MoA concepts: 643
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+
+
+February 2019 MED-RT (version name 2019.02.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.11.30)
+
+	RxNorm (2019.01.07.18AB)
+
+	MeSH (2019_2019.01.01)
+
+	SNOMED CT US Edition (2018.09.18AA)
+
+	UMLS Metathesaurus (2018AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2019.01.07): 3322
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.02.04): 3328
+
+	EPC concepts: 637	
+
+	MoA concepts: 643
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 25
+
+	HC concepts:  30
+
+
+
+There were 6 new concepts manually added for this release including 3 added to Established Pharmacologic Classes, 2 added to the Mechanism of Action hierarchy, and 1 added to the Terminology Extensions for Classification hierarchy.
+
+	
+
+------------------------------------------------------------------------------------------
+
+
+
+December/January 2019 MED-RT (version name 2019.01.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.11.30)
+
+	RxNorm (2018.12.03.18AB)
+
+	MeSH (2018_2018.07.01)
+
+	SNOMED CT US Edition (2018.09.18AA)
+
+	UMLS Metathesaurus (2018AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.11.05): 3322
+
+TOTAL CONCEPTS IN CURRENT VERSION (2019.01.07): 3322
+
+	EPC concepts: 634	
+
+	MoA concepts: 641
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+
+
+November 2018 MED-RT (version name 2018.11.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.06.05)
+
+	RxNorm (2018.10.01.18AA)
+
+	MeSH (2018_2018.07.01)
+
+	SNOMED CT US Edition (2018.09.18AA)
+
+	UMLS Metathesaurus (2018AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.10.01): 3322
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.11.05): 3322
+
+	EPC concepts: 634	
+
+	MoA concepts: 641
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+	
+
+------------------------------------------------------------------------------------------
+
+October 2018 MED-RT (version name 2018.10.01)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.06.05)
+
+	RxNorm (2018.09.04.18AA)
+
+	MeSH (2018_2018.07.01)
+
+	SNOMED CT US Edition (2018.09.18AA)
+
+	UMLS Metathesaurus (2018AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.09.04): 3286
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.10.01): 3322
+
+	EPC concepts: 634	
+
+	MoA concepts: 641
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  66
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+There were 36 new concepts manually added for this release to the Therapeutic Categories hierarchy. This release also includes new relationships added by MED-RT SMEs for the following relationship types:
+
+	CI_ChemClass
+
+	CI_MoA
+
+	CI_PE
+
+	CI_with
+
+	has_MoA
+
+	has_PE
+
+	has_TC
+
+	may_prevent
+
+	may_treat
+
+	
+
+------------------------------------------------------------------------------------------
+
+August/September 2018 MED-RT (version name 2018.09.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.06.05)
+
+	RxNorm (2018.08.06.18AA)
+
+	MeSH (2018_2018.07.01)
+
+	SNOMED CT US Edition (2018.03.17AB)
+
+	UMLS Metathesaurus (2018AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.07.02): 3286
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.09.04): 3286
+
+	EPC concepts: 634	
+
+	MoA concepts: 641
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+July 2018 MED-RT (version name 2018.07.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	FDA SPL (2018.06.05)
+
+	RxNorm (2018.06.04.18AA)
+
+	MeSH (2018_2018.01.01)
+
+	SNOMED CT US Edition (2018.03.17AB)
+
+	UMLS Metathesaurus (2017AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.06.04): 3282
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.07.02): 3286
+
+	EPC concepts: 634	
+
+	MoA concepts: 641
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+There were 4 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy. 
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+June 2018 MED-RT (version name 2018.06.04)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources:
+
+	RxNorm (2018.05.07.18AA)
+
+	MeSH (2018_2018.01.01)
+
+	SNOMED CT US Edition (2018.03.17AB)
+
+	UMLS Metathesaurus (2017AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.05.07): 3282
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.06.04): 3282
+
+	EPC concepts: 632	
+
+	MoA concepts: 639
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+A new authority with a value of 'NLMUMLS' was added to this release to support relationships from RxNorm ingredients to MeSH structural classes as defined by the UMLS Metathesaurus. 
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+May 2018 MED-RT (version name 2018.05.07)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources and updated using the FDA SPL file dated 3/16/18:
+
+	RxNorm (2018.04.02.17AB)
+
+	MeSH (2018_2018.01.01)
+
+	SNOMED CT US Edition (2018.03.17AB)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.04.02): 3277
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.05.07): 3282
+
+	EPC concepts: 632	
+
+	MoA concepts: 639
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+There were 5 new concepts manually added for this release including 3 added to Established Pharmacologic Classes and 2 added to the Mechanism of Action hierarchy.
+
+
+
+The following relationship names have been changed in this release:
+
+has_Ingredient -> Synonym Of                                
+
+has_Chemical_Structure -> has_SC
+
+has_SNOMED_parent -> Child Of   
+
+has_SNOMED_child -> Parent Of                           
+
+has_SNOMED_synonym -> Synonym Of               
+
+
+
+Please see the full MED-RT documentation for additional relationship information.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+April 2018 MED-RT (version name 2018.04.02)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them.  
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources and updated using the FDA SPL file dated 3/14/18:
+
+	RxNorm (2018.03.05.17AB)
+
+	MeSH (2018_2018.01.01)
+
+	SNOMED CT US Edition (2017.09.17AA)
+
+
+
+TOTAL CONCEPTS IN PREVIOUS VERSION (2018.03.05): 3267
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.04.02): 3277
+
+	EPC concepts: 629	
+
+	MoA concepts: 637
+
+	PE concepts:  1868
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+There were 10 new concepts manually added for this release including 2 added to Established Pharmacologic Classes, 6 added to the Mechanism of Action hierarchy, and 2 added to the Physiological Effects hierarchy.
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+March 2018 MED-RT (version name 2018.03.05)
+
+
+
+The Medication Reference Terminology (MED-RT) is the evolutionary successor to the Veterans Health Administration National Drug File – Reference Terminology (VHA NDF-RT™). Both are formal ontological representations of medication terminology, pharmacologic classifications, and asserted authoritative relationships between them. Distribution of MED-RT is through the same channels on the same monthly schedule as its predecessor NDF-RT, in XML and other formats. 
+
+
+
+Content in this version of MED-RT represents revisions based on data in the following sources and updated using the FDA SPL file dated 2/5/18:
+
+	NDF-RT (2018.02.05.17AB)
+
+	RxNorm (2018.02.05.17AB)
+
+	MeSH (2017_2017.09.19)
+
+	SNOMED CT US Edition (2017.09.17AA)
+
+
+
+TOTAL CONCEPTS IN CURRENT VERSION (2018.03.05): 3267
+
+	EPC concepts: 627	
+
+	MoA concepts: 631
+
+	PE concepts:  1866
+
+	PK concepts:  59
+
+	TC concepts:  30
+
+	EXT concepts: 24
+
+	HC concepts:  30
+
+
+
+There were 5 new concepts manually added for this release including 2 added to Established Pharmacologic Classes and 3 added to the Mechanism of Action hierarchy.
