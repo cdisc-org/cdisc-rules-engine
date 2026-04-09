@@ -47,6 +47,10 @@
       "title": "Content data at value level and define xml metadata at value level"
     },
     {
+      "const": "Value Check against Library Metadata",
+      "title": "Content data at value level and Library Metadata at value level"
+    },
+    {
       "const": "Variable Metadata Check",
       "title": "Content metadata at variable level"
     },
