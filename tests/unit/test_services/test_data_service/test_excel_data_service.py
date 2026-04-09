@@ -109,7 +109,7 @@ def test_get_dataset_metadata(expected_result):
     "dataset_name",
     ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
 )
-def test_get_variables_metdata(dataset_name):
+def test_get_variables_metadata(dataset_name):
     dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_datasets.xlsx"
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None

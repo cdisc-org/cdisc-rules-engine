@@ -5,6 +5,7 @@ import openpyxl
 import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
+    entity_details_sheet,
     issue_datails_sheet,
     rules_report_sheet,
     issue_sheet_record_column,
@@ -80,7 +81,7 @@ class TestGetXHTMLErrors(unittest.TestCase):
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)
 
-    def test_negaive_dataset(self):
+    def test_negative_dataset(self):
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -115,11 +116,11 @@ class TestGetXHTMLErrors(unittest.TestCase):
         workbook = openpyxl.load_workbook(excel_file_path)
 
         # --- Dataset Details ---
-        dataset_sheet = workbook["Dataset Details"]
+        dataset_sheet = workbook[entity_details_sheet]
         dataset_values = [row for row in dataset_sheet.iter_rows(values_only=True)][1:]
         dataset_values = [row for row in dataset_values if any(row)]
         assert len(dataset_values) > 0
-        assert dataset_values[0][0] == "NarrativeContentItem.xpt"
+        assert dataset_values[0][0] == "NarrativeContentItem"
         assert dataset_values[0][-1] == 170
 
         # --- Issue Summary ---
@@ -130,7 +131,7 @@ class TestGetXHTMLErrors(unittest.TestCase):
         summary_values = [row for row in summary_values if any(row)]
         assert len(summary_values) > 0
         assert summary_values[0][1] == "CORE-000409"
-        assert summary_values[0][3] == 4
+        assert summary_values[0][4] == 4
 
         # --- Issue Details ---
         issue_details_sheet = workbook["Issue Details"]
@@ -148,7 +149,7 @@ class TestGetXHTMLErrors(unittest.TestCase):
         rules_values = [row for row in rules_values if any(row)]
         assert len(rules_values) > 0
         assert rules_values[0][0] == "CORE-000409"
-        assert rules_values[0][-1] == "SUCCESS"
+        assert rules_values[0][-1] == "ISSUE REPORTED"
 
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)

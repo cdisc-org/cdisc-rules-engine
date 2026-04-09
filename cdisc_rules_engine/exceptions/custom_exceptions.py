@@ -82,6 +82,11 @@ class CTPackageNotFoundError(EngineError):
     description = "Controlled terminology package(s) not found"
 
 
+class InvalidCSVFile(EngineError):
+    code = 400
+    description = "CSV data is malformed."
+
+
 class NumberOfAttemptsExceeded(EngineError):
     pass
 
