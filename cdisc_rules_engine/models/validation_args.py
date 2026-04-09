@@ -28,5 +28,7 @@ Validation_args = namedtuple(
         "max_report_rows",
         "max_errors_per_rule",
         "encoding",
+        "variables_csv_path",
+        "tables_csv_path",
     ],
 )
