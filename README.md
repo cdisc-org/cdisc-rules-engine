@@ -247,7 +247,7 @@ This will show the list of validation options.
   -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
   -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders.
                                     Not required if variables.txt exists in all -dp directories.
-  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders.
+  -dcp, --datasets-csv-path         Path to datasets.csv. Required when multiple dataset paths are provided and refer to different folders.
   --help                          Show this message and exit.
 ```
 
