@@ -2,7 +2,6 @@ from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
-import os
 from collections import Counter
 from typing import List
 from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
@@ -44,9 +43,7 @@ class VariableValueCount(BaseOperation):
             )
         else:
             data: DatasetInterface = self.data_service.get_dataset(
-                dataset_name=os.path.join(
-                    self.params.directory_path, dataset_metadata.filename
-                )
+                dataset_name=dataset_metadata.name
             )
             data = tag_source(data, dataset_metadata)
         target_variable = BaseOperation._replace_variable_wildcard(

@@ -6,9 +6,7 @@ class VariableIsNull(BaseOperation):
         if self.params.source == "submission":
             if self.params.level == "row":
                 raise ValueError("level: row may only be used with source: evaluation")
-            dataframe = self.data_service.get_dataset(
-                dataset_name=self.params.dataset_path
-            )
+            dataframe = self.data_service.get_dataset(dataset_name=self.params.domain)
         else:
             dataframe = self.evaluation_dataset
 

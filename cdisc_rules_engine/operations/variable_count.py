@@ -1,4 +1,3 @@
-import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import asyncio
@@ -35,9 +34,7 @@ class VariableCount(BaseOperation):
     async def _get_dataset_variable_count(
         self, dataset: SDTMDatasetMetadata
     ) -> Counter:
-        data: pd.DataFrame = self.data_service.get_dataset(
-            dataset_name=dataset.full_path
-        )
+        data = self.data_service.get_dataset(dataset_name=dataset.name)
         target_variable = BaseOperation._replace_variable_wildcard(
             self.params.original_target, dataset.wildcard_replacement
         )

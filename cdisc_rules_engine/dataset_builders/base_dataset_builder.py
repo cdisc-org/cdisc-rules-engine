@@ -56,18 +56,20 @@ class BaseDatasetBuilder:
         """
         pass
 
-    def build_split_datasets(self, dataset_name, **kwargs) -> DatasetInterface:
+    def build_split_datasets(self, dataset_name: str, **kwargs) -> DatasetInterface:
         """
         Returns correct dataframe to operate on.
-        Default implementation that temporarily sets dataset_path to dataset_name and calls build().
+        Default implementation that temporarily sets dataset_metadata and calls build().
         """
-        original_path = self.dataset_path
+        original_dataset_metadata = self.dataset_metadata
         try:
-            self.dataset_path = dataset_name
+            self.dataset_metadata = self.data_service.get_raw_dataset_metadata(
+                dataset_name=dataset_name
+            )
             result = self.build(**kwargs)
             return result
         finally:
-            self.dataset_path = original_path
+            self.dataset_metadata = original_dataset_metadata
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
@@ -102,7 +104,7 @@ class BaseDatasetBuilder:
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.data_service.get_dataset(
-                dataset_name=self.dataset_path
+                dataset_name=self.dataset_metadata.name
             )
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset

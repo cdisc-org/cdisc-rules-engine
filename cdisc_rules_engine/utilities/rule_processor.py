@@ -1,6 +1,5 @@
 import re
 import copy
-import os
 
 from typing import Iterable, List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
@@ -40,7 +39,7 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
-    search_in_list_of_dicts,
+    search_in_list,
 )
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
@@ -349,7 +348,7 @@ class RuleProcessor:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
             target: str = original_target
-            domain: str = operation.get("domain", dataset_metadata.unsplit_name)
+            domain: str = operation.get("domain", dataset_metadata.name)
             wildcard_replacement: str = operation.get(
                 "domain", dataset_metadata.wildcard_replacement
             )
@@ -469,7 +468,7 @@ class RuleProcessor:
             operation_params.dataframe, operation_params.domain
         ):
             # download other domain
-            domain_details: dict = search_in_list_of_dicts(
+            dataset_metadata: DatasetMetadata = search_in_list(
                 operation_params.datasets,
                 lambda item: (
                     item.unsplit_name == operation_params.domain
@@ -479,7 +478,7 @@ class RuleProcessor:
                     )
                 ),
             )
-            if domain_details is None:
+            if dataset_metadata is None:
                 raise DomainNotFoundError(
                     f"Failed to execute rule operation. "
                     f"Domain {operation_params.domain} does not exist. "
@@ -487,12 +486,8 @@ class RuleProcessor:
                     f"Target: {operation_params.target}, "
                     f"Core ID: {operation_params.core_id}"
                 )
-            file_path: str = os.path.join(
-                get_directory_path(operation_params.dataset_path),
-                domain_details.data_service_identifier,
-            )
             operation_params.dataframe = self.data_service.get_dataset(
-                dataset_name=file_path
+                dataset_metadata.name
             )
 
         # call the operation

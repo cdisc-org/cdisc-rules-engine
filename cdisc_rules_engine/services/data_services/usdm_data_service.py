@@ -71,18 +71,13 @@ class USDMDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
-        super(USDMDataService, self).__init__(
-            cache_service, reader_factory, config, **kwargs
-        )
         self.dataset_path: str = kwargs.get("dataset_path", "")
         self.encoding: str = kwargs.get("encoding")
 
         with open(os.path.join("resources", "schema", "USDM.yaml")) as entity_dict:
             self.entity_dict: dict = safe_load(entity_dict)
 
-        self.json = self._reader_factory.get_service("USDM").from_file(
-            self.dataset_path
-        )
+        self.json = reader_factory.get_service("USDM").from_file(self.dataset_path)
 
         # Build the id lookup dict once for fast reference resolution
         self._id_lookup = self.__build_id_lookup(self.json)
@@ -92,6 +87,10 @@ class USDMDataService(BaseDataService):
         )
 
         self._jsonpath_cache = {}
+
+        super(USDMDataService, self).__init__(
+            cache_service, reader_factory, config, **kwargs
+        )
 
     @classmethod
     def get_instance(
@@ -132,27 +131,34 @@ class USDMDataService(BaseDataService):
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         return self.__get_dataset(dataset_name)
 
-    @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
-    ) -> SDTMDatasetMetadata:
+    def _initialize_datasets_metadata(self, **kwargs) -> dict[str, SDTMDatasetMetadata]:
         """
-        Returns dataset metadata as DatasetMetadata instance.
+        Initialize the dataset metadata by reading metadata for all datasets in the USDM JSON.
+
+        Returns:
+            Dictionary mapping dataset name to SDTMDatasetMetadata
         """
-        dataset = self.get_dataset(dataset_name=dataset_name)
-        domain = self.__get_domain_from_dataset_name(dataset_name)
-        return SDTMDatasetMetadata(
-            name=domain,
-            first_record={"DOMAIN": domain},
-            label=domain,
-            modification_date=datetime.fromtimestamp(
-                os.path.getmtime(self.dataset_path)
-            ).isoformat(),
-            filename=basename(dataset_name),
-            full_path=dataset_name,
-            file_size=0,
-            record_count=len(dataset),
-        )
+        result = {}
+        for dataset_info in self.dataset_content_index:
+            dataset_name = dataset_info.get("dataset_name")
+            if not dataset_name:
+                continue
+            dataset = self.__get_dataset(dataset_name)
+            domain = self.__get_domain_from_dataset_name(dataset_name)
+            metadata = SDTMDatasetMetadata(
+                name=domain,
+                first_record={"DOMAIN": domain},
+                label=domain,
+                modification_date=datetime.fromtimestamp(
+                    os.path.getmtime(self.dataset_path)
+                ).isoformat(),
+                filename=basename(dataset_name),
+                full_path=dataset_name,
+                file_size=0,
+                record_count=len(dataset),
+            )
+            result[domain] = metadata
+        return result
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
     def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
@@ -216,18 +222,6 @@ class USDMDataService(BaseDataService):
 
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
-
-    def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset in self.dataset_content_index:
-            dataset_name = dataset.get("dataset_name")
-            if not dataset_name:
-                continue
-            dataset_metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
-                dataset_name=dataset_name
-            )
-            datasets.append(dataset_metadata)
-        return datasets
 
     def to_parquet(self, file_path: str) -> str:
         """

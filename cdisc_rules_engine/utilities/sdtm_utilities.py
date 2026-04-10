@@ -14,7 +14,7 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
-    search_in_list_of_dicts,
+    search_in_list,
 )
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
@@ -74,13 +74,13 @@ def get_class_and_dataset_metadata(
 
     """
     for c in library_metadata.standard_metadata.get("classes", []):
-        dataset_details = search_in_list_of_dicts(
+        dataset_details = search_in_list(
             c.get("datasets", []), lambda item: item["name"] == dataset_name
         )
         if dataset_details:
             return c, dataset_details
     for c in library_metadata.model_metadata.get("classes", []):
-        dataset_details = search_in_list_of_dicts(
+        dataset_details = search_in_list(
             c.get("datasets", []), lambda item: item["name"] == dataset_name
         )
         if dataset_details:
@@ -139,7 +139,7 @@ def get_variables_metadata_from_standard(  # noqa
         )
     else:
         class_name = data_service._handle_custom_domains(
-            data_service.get_dataset(dataset_name=dataset_metadata.full_path),
+            data_service.get_dataset(dataset_metadata.name),
             dataset_metadata,
             dataset_path,
             datasets,
@@ -306,7 +306,7 @@ def get_class_metadata(
             }
 
     """
-    class_metadata: Optional[dict] = search_in_list_of_dicts(
+    class_metadata: Optional[dict] = search_in_list(
         model_details.get("classes", []),
         lambda item: convert_library_class_name_to_ct_class(item["name"])
         == dataset_class,
@@ -480,7 +480,7 @@ def get_variables_metadata_from_standard_model(  # noqa
 
 def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
     # Get domain metadata from model
-    domain_details: Optional[dict] = search_in_list_of_dicts(
+    domain_details: Optional[dict] = search_in_list(
         model_details.get("datasets", []), lambda item: item["name"] == domain_name
     )
 

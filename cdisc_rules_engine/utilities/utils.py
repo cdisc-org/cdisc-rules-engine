@@ -320,9 +320,9 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
     return f"meddra_valid_code_term_pairs_{meddra_path}"
 
 
-def get_item_index_by_condition(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[int]:
+def get_item_index_by_condition[
+    T
+](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
@@ -332,9 +332,9 @@ def get_item_index_by_condition(
             return index
 
 
-def search_in_list_of_dicts(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[dict]:
+def search_in_list[
+    T
+](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[T]:
     """
     Returns an element of unsorted list that applies to the condition.
     """
