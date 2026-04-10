@@ -51,9 +51,18 @@ from .value_has_multiple_references_operator import ValueHasMultipleReferencesOp
 from .variable_metadata_equal_to_operator import VariableMetadataEqualToOperator
 from .is_valid_whodrug_reference_operator import IsValidWhodrugReferenceOperator
 
-MEDDRA_CODE_SUFFIX_MAP = {"SOCCD": "SOC", "HLGTCD": "HLGT", "HLTCD": "HLT", "PTCD": "PT", "LLTCD": "LLT"}
-MEDDRA_TERM_SUFFIX_MAP = {"SOC": "SOC", "HLGT": "HLGT", "HLT": "HLT", "DECOD": "PT", "LLT": "LLT"}
+MEDDRA_CODE_SUFFIX_MAP = {
+    "BDSYCD": "SOC",
+    "SOCCD": "SOC",
+    "HLGTCD": "HLGT",
+    "HLTCD": "HLT",
+    "PTCD": "PT",
+    "LLTCD": "LLT",
+}
+MEDDRA_TERM_SUFFIX_MAP = {"BODSYS": "SOC", "SOC": "SOC", "HLGT": "HLGT", "HLT": "HLT", "DECOD": "PT", "LLT": "LLT"}
 MEDDRA_PAIR_MAP = {
+    "BODSYS": ("SOC", "SOCCD"),
+    "BDSYCD": ("SOC", "SOC"),
     "SOC": ("SOC", "SOCCD"),
     "SOCCD": ("SOC", "SOC"),
     "LLT": ("LLT", "LLTCD"),
