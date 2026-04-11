@@ -468,3 +468,22 @@ def load_json_with_optional_encoding(path: str, encoding: str | None = None) -> 
     tried_msg = ", ".join(enc for enc, _ in tried)
 
     raise ValueError(f"Unable to load JSON file '{path}'. Tried encodings: {tried_msg}")
+
+
+def custom_str_conversion(x):
+    """used to normalize numeric representations i.e. treat 200.00 as 200 for comparisons"""
+    if pd.notna(x):
+        if isinstance(x, str):
+            try:
+                float_val = float(x)
+                if float_val.is_integer():
+                    return str(int(float_val)).strip()
+                else:
+                    return str(float_val).strip()
+            except (ValueError, TypeError):
+                return x.strip()
+        elif isinstance(x, int):
+            return str(x).strip()
+        elif isinstance(x, float):
+            return f"{x:.0f}" if x.is_integer() else str(x).strip()
+    return x

@@ -17,7 +17,11 @@ from cdisc_rules_engine.check_operators.helpers import (
 )
 from cdisc_rules_engine.enums.dataset_title_case import DatasetTitleCase
 from cdisc_rules_engine.constants import NULL_FLAVORS
-from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
+from cdisc_rules_engine.utilities.utils import (
+    dates_overlap,
+    parse_date,
+    custom_str_conversion,
+)
 import numpy as np
 import dask.dataframe as dd
 import pandas as pd
@@ -93,24 +97,6 @@ class DataframeType(BaseType):
         """
         if pd.notna(x):
             if isinstance(x, int):
-                return str(x).strip()
-            elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()
-        return x
-
-    def _custom_str_conversion(self, x):
-        """used to normalize numeric representations i.e. treat 200.00 as 200 for comparisons"""
-        if pd.notna(x):
-            if isinstance(x, str):
-                try:
-                    float_val = float(x)
-                    if float_val.is_integer():
-                        return str(int(float_val)).strip()
-                    else:
-                        return str(float_val).strip()
-                except (ValueError, TypeError):
-                    return x.strip()
-            elif isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
                 return f"{x:.0f}" if x.is_integer() else str(x).strip()
@@ -239,8 +225,8 @@ class DataframeType(BaseType):
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(target_val)
-            comparison_val = self._custom_str_conversion(comparison_val)
+            target_val = custom_str_conversion(target_val)
+            comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
@@ -286,8 +272,8 @@ class DataframeType(BaseType):
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(target_val)
-            comparison_val = self._custom_str_conversion(comparison_val)
+            target_val = custom_str_conversion(target_val)
+            comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
@@ -1152,6 +1138,10 @@ class DataframeType(BaseType):
     def is_inconsistent_across_dataset(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
+        regex = other_value.get("regex")
+        if isinstance(regex, list) and regex:
+            regex = regex[0]
+
         grouping_cols = []
         if isinstance(comparator, str):
             if comparator in self.value.columns:
@@ -1162,6 +1152,22 @@ class DataframeType(BaseType):
                     grouping_cols.append(col)
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
+        if regex:
+            try:
+                pattern = re.compile(regex)
+            except re.error:
+                raise ValueError(
+                    f"Invalid regex: {regex}. Remove parameter or fix the regex."
+                )
+            if pattern.groups == 0:
+                regex = f"({regex})"
+            extracted = df_check[target].astype(str).str.extract(regex, expand=True)[0]
+            df_check[target] = extracted.fillna(df_check[target])
+        results = self._check_inconsistency(df_check, grouping_cols, target)
+        return results
+
+    @staticmethod
+    def _check_inconsistency(df_check, grouping_cols: list[Any], target):
         results = pd.Series(False, index=df_check.index)
         for name, group in df_check.groupby(grouping_cols, dropna=False):
             if group[target].nunique() > 1:

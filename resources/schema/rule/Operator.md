@@ -996,6 +996,13 @@ Checks if a variable maintains consistent values within groups defined by one or
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
+If a regex parameter is provided, it is applied to the values of the target variable before the consistency check. The first capture group of the regex is used as the normalized value for comparison. This can be useful when only part of the value should be considered during comparison (for example, comparing only the date portion of a datetime value).
+
+- regex is optional.
+- The pattern must include at least one capture group(or whole regex will be wrapped to capture group).
+- Only the first capture group is used for comparison.
+- If the pattern does not match a value, the original value is used.
+
 ```yaml
 - name: "BGSTRESU"
   operator: is_inconsistent_across_dataset
