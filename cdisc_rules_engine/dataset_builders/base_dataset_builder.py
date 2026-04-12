@@ -77,6 +77,9 @@ class BaseDatasetBuilder:
         if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
+            kwargs.pop(
+                "dataset_name", None
+            )  # to prevent downstream duplicate keys error
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
                 datasets_metadata=get_corresponding_datasets(

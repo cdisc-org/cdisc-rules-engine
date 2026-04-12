@@ -26,6 +26,11 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
+@pytest.fixture(autouse=True)
+def clear_lru_cache():
+    RulesEngine(standard="sdtmig").cache.clear_all()
+
+
 def test_get_schema():
     schema = RulesEngine().get_schema()
     assert "variables" in schema
