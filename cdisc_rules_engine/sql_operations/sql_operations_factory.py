@@ -36,6 +36,9 @@ from cdisc_rules_engine.sql_operations.get_codelist_attributes import SqlGetCode
 from cdisc_rules_engine.sql_operations.get_define_variables_metadata import (
     SqlGetDefineVariablesMetadata,
 )
+from cdisc_rules_engine.sql_operations.define_exdict_version_operation import (
+    SqlDefineExternalDictionaryVersionOperation,
+)
 from cdisc_rules_engine.sql_operations.whodrug_code_hierarchy import SqlWhodrugHierarchyOperation
 from cdisc_rules_engine.sql_operations.standard_domains import SqlStandardDomainsOperation
 
@@ -85,6 +88,7 @@ class SqlOperationsFactory:
         "valid_external_dictionary_code": None,
         "valid_external_dictionary_code_term_pair": None,
         "valid_define_external_dictionary_version": None,
+        "get_define_external_dictionary_version": SqlDefineExternalDictionaryVersionOperation,
         "get_dataset_filtered_variables": None,
     }
 

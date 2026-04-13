@@ -30,6 +30,7 @@ class SqlOperationParams:
     ct_conditions: dict = None
     attribute_name: str = None
     subtract: str = None
+    external_dictionary_type: str = None
 
     # standard_substandard: str = None
     # attribute_name: str = None
@@ -45,7 +46,6 @@ class SqlOperationParams:
     # dictionary_term_type: str = None
     # external_dictionaries: ExternalDictionariesContainer = None
     # external_dictionary_term_variable: str = None
-    # external_dictionary_type: str = None
     # filter: dict = None
     # grouping: List[str] = None
     # grouping_aliases: List[str] = None

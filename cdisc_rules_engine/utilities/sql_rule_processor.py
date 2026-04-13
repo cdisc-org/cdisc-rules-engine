@@ -68,6 +68,7 @@ class SQLRuleProcessor:
                 ct_conditions=operation.get("ct_conditions"),
                 attribute_name=operation.get("attribute_name"),
                 subtract=operation.get("subtract"),
+                external_dictionary_type=operation.get("external_dictionary_type"),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)
