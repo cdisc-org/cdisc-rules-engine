@@ -243,6 +243,24 @@ class PostgresQLOperators(BaseType):
         "is_not_valid_unii_code_term_pair": lambda data: NotOperator(
             data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.UNII_TABLE_NAME.value)
         ),
+        "is_valid_loinc_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.LOINC_TABLE_NAME.value
+        ),
+        "is_not_valid_loinc_term_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictTermReferenceOperator(d, StaticTables.LOINC_TABLE_NAME.value)
+        ),
+        "is_valid_loinc_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.LOINC_TABLE_NAME.value
+        ),
+        "is_not_valid_loinc_code_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.LOINC_TABLE_NAME.value)
+        ),
+        "is_valid_loinc_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.LOINC_TABLE_NAME.value
+        ),
+        "is_not_valid_loinc_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.LOINC_TABLE_NAME.value)
+        ),
     }
 
     def __init__(self, data):

@@ -3,6 +3,7 @@ from cdisc_rules_engine.readers.external_dictionary_readers.whodrug_reader impor
 from cdisc_rules_engine.readers.external_dictionary_readers.meddra_reader import MeddraReader
 from cdisc_rules_engine.readers.external_dictionary_readers.unii_reader import UniiReader
 from cdisc_rules_engine.readers.external_dictionary_readers.medrt_reader import MedRTReader
+from cdisc_rules_engine.readers.external_dictionary_readers.loinc_reader import LoincReader
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
 
 
@@ -11,10 +12,10 @@ IMPLEMENTED_DICTIONARY_VALIDATORS = {
     DictionaryTypes.MEDDRA.value: MeddraReader,
     DictionaryTypes.UNII.value: UniiReader,
     DictionaryTypes.MEDRT.value: MedRTReader,
+    DictionaryTypes.LOINC.value: LoincReader,
 }
 
 UNIMPLEMENTED_DICTIONARIES = [
-    DictionaryTypes.LOINC.value,
     DictionaryTypes.SNOMED.value,
 ]
 

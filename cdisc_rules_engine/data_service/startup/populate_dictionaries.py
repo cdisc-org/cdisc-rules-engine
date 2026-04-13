@@ -7,45 +7,50 @@ from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.sql_external_dictionaries_container import SqlExternalDictionariesContainer
 
 
+def _add_char_columns(table: SqlTableSchema, *column_names: str):
+    for col in column_names:
+        table.add_column(SqlColumnSchema(name=col, hash=col, type="Char"))
+
+
+def _create_standard_term_schema(table_name: str) -> SqlTableSchema:
+    table = SqlTableSchema.static(table_name)
+    _add_char_columns(table, "term_code", "term_name")
+    return table
+
+
 def _whodrug_schema(metadata=None) -> SqlTableSchema:
     table = SqlTableSchema.static(StaticTables.WHODRUG_TABLE_NAME.value)
-    table.add_column(SqlColumnSchema(name="atc_code", hash="atc_code", type="Char"))
-    table.add_column(SqlColumnSchema(name="level_1", hash="level_1", type="Char"))
-    table.add_column(SqlColumnSchema(name="level_2", hash="level_2", type="Char"))
-    table.add_column(SqlColumnSchema(name="level_3", hash="level_3", type="Char"))
-    table.add_column(SqlColumnSchema(name="level_4", hash="level_4", type="Char"))
+    _add_char_columns(table, "atc_code", "level_1", "level_2", "level_3", "level_4")
+
     if metadata:
         if metadata.format == WhoDrugFormats.C3.value:
             table.add_column(SqlColumnSchema(name="med_prod_id", hash="med_prod_id", type="Num"))
         elif metadata.format == WhoDrugFormats.B3.value:
             table.add_column(SqlColumnSchema(name="drug_rec_num", hash="drug_rec_num", type="Num"))
-    table.add_column(SqlColumnSchema(name="drug_name", hash="drug_name", type="Char"))
+
+    _add_char_columns(table, "drug_name")
     return table
 
 
 def _meddra_schema(metadata=None) -> SqlTableSchema:
-    # metadata object is not currently used but will be relevant when I plan to implement more version logic
-    table = SqlTableSchema.static(StaticTables.MEDDRA_TABLE_NAME.value)
-    table.add_column(SqlColumnSchema(name="term_code", hash="term_code", type="Char"))
-    table.add_column(SqlColumnSchema(name="term_name", hash="term_name", type="Char"))
-    table.add_column(SqlColumnSchema(name="term_type", hash="term_type", type="Char"))
+    table = _create_standard_term_schema(StaticTables.MEDDRA_TABLE_NAME.value)
+    _add_char_columns(table, "term_type")
     return table
 
 
 def _unii_schema(metadata=None) -> SqlTableSchema:
-    # metadata object is not currently used but will be relevant when I plan to implement more version logic
-    table = SqlTableSchema.static(StaticTables.UNII_TABLE_NAME.value)
-    table.add_column(SqlColumnSchema(name="term_code", hash="term_code", type="Char"))
-    table.add_column(SqlColumnSchema(name="term_name", hash="term_name", type="Char"))
-    return table
+    return _create_standard_term_schema(StaticTables.UNII_TABLE_NAME.value)
 
 
 def _medrt_schema(metadata=None) -> SqlTableSchema:
-    # metadata object is not currently used but will be relevant when I plan to implement more version logic
-    table = SqlTableSchema.static(StaticTables.MEDRT_TABLE_NAME.value)
-    table.add_column(SqlColumnSchema(name="term_code", hash="term_code", type="Char"))
-    table.add_column(SqlColumnSchema(name="term_tag", hash="term_tag", type="Char"))
-    table.add_column(SqlColumnSchema(name="term_name", hash="term_name", type="Char"))
+    table = _create_standard_term_schema(StaticTables.MEDRT_TABLE_NAME.value)
+    _add_char_columns(table, "term_tag")
+    return table
+
+
+def _loinc_schema(metadata=None) -> SqlTableSchema:
+    table = _create_standard_term_schema(StaticTables.LOINC_TABLE_NAME.value)
+    _add_char_columns(table, "version")
     return table
 
 
@@ -54,6 +59,7 @@ _SCHEMA_MAP = {
     DictionaryTypes.MEDDRA.value: _meddra_schema,
     DictionaryTypes.UNII.value: _unii_schema,
     DictionaryTypes.MEDRT.value: _medrt_schema,
+    DictionaryTypes.LOINC.value: _loinc_schema,
 }
 
 
