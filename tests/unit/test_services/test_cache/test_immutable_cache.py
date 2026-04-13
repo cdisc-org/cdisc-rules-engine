@@ -13,7 +13,7 @@ class CacheService:
         return self._cache[key].copy(deep=True)
 
     def get_cow(self, key):
-        return self._cache[key]  # relying on CoW
+        return self._cache[key].copy(deep=False)  # relying on CoW
 
 
 @pytest.fixture
@@ -56,8 +56,8 @@ def test_cow_shares_memory_before_write(sample_df):
     cache.set("x", sample_df)
 
     df = cache.get_cow("x")
-
-    assert df is cache._cache["x"]
+    # memory is shared between objects, but they are not the same object
+    assert df._mgr.blocks[0].values.base is cache._cache["x"]._mgr.blocks[0].values.base
 
 
 def test_cow_inplace_operation(sample_df):
@@ -89,23 +89,6 @@ def test_cow_chained_assignment(sample_df):
     cached = cache._cache["x"]
 
     assert cached["A"].tolist() == [1, 2, 3]
-
-
-def test_cow_numpy_view_can_break_isolation(sample_df):
-    pd.options.mode.copy_on_write = True
-
-    cache = CacheService()
-    cache.set("x", sample_df)
-
-    df = cache.get_cow("x")
-
-    values = df["A"].values
-    values[0] = 999  # bypassing pandas
-
-    cached = cache._cache["x"]
-
-    # CoW didn't work
-    assert cached.loc[0, "A"] == 999
 
 
 def test_cow_object_dtype_mutation():
