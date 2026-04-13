@@ -50,6 +50,14 @@ class BaseDatasetBuilder:
         self.standard_substandard = standard_substandard
         self.library_metadata = library_metadata
         self.dataset_implementation = self.data_service.dataset_implementation
+        if isinstance(dataset_metadata, SDTMDatasetMetadata):
+            self.domain = (
+                f"SUPP{dataset_metadata.rdomain}"
+                if dataset_metadata.rdomain
+                else dataset_metadata.domain
+            )
+            self.dataset_name = dataset_metadata.name
+        self.name = self.__class__.__name__
 
     @abstractmethod
     def build(self) -> DatasetInterface:

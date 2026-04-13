@@ -326,11 +326,7 @@ class RulesEngine:
         kwargs = {}
         builder = self.get_dataset_builder(rule, datasets, dataset_metadata)
         try:
-            dataset = builder.get_dataset(
-                domain_name=dataset_metadata.domain,
-                dataset_name=dataset_metadata.name,
-                name=builder.__class__.__name__,
-            )
+            dataset = builder.get_dataset()
         except Exception as e:
             raise DatasetBuilderError(
                 f"Failed to build dataset for rule validation. "

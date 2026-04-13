@@ -93,6 +93,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         "cdisc_rules_engine.services.data_services.USDMDataService.get_dataset",
         return_value=dataset_mock,
     ):
+        RulesEngine(standard="sdtmig").cache.clear_all()
         validation_result: List[dict] = RulesEngine(
             standard="usdm", dataset_paths=[dataset_path]
         ).validate_single_dataset(
