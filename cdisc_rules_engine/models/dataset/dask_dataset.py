@@ -80,9 +80,9 @@ class DaskDataset(PandasDataset):
             array_values = da.from_array(value, chunks=tuple(chunks))
             self._data[key] = array_values
         elif isinstance(value, pd.Series):
-            self._data = self._data.reset_index()
-            self._data = self._data.set_index("index")
-            self._data[key] = value
+            chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
+            array_values = da.from_array(value.values, chunks=tuple(chunks))
+            self._data[key] = array_values
         elif isinstance(value, dd.DataFrame):
             for column in value:
                 self._data[column] = value[column]
