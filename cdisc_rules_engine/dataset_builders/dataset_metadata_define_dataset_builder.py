@@ -136,18 +136,18 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
             datasets = self.dataset_implementation()
-            for dataset in self.datasets:
+            for dataset_metadata in self.datasets:
                 ds_metadata = None
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
-                        dataset_name=dataset.filename
+                        dataset_name=dataset_metadata.name
                     )
                     ds_metadata.data["dataset_domain"] = getattr(
-                        dataset, "domain", None
+                        dataset_metadata, "domain", None
                     )
-                    if dataset.first_record:
+                    if dataset_metadata.first_record:
                         ds_metadata.data["dataset_columns"] = [
-                            list(dataset.first_record.keys())
+                            list(dataset_metadata.first_record.keys())
                         ]
                     else:
                         ds_metadata.data["dataset_columns"] = [[]]

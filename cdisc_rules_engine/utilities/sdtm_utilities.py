@@ -139,7 +139,7 @@ def get_variables_metadata_from_standard(  # noqa
         )
     else:
         class_name = data_service._handle_custom_domains(
-            data_service.get_dataset(dataset_metadata.name),
+            data_service.get_dataset(dataset_name=dataset_metadata.name),
             dataset_metadata,
             dataset_path,
             datasets,

@@ -246,7 +246,6 @@ class RuleProcessor:
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
-                dataset_metadata.full_path,
                 datasets,
                 dataset_metadata,
             )
@@ -260,7 +259,6 @@ class RuleProcessor:
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
-                dataset_metadata.full_path,
                 datasets,
                 dataset_metadata,
             )
@@ -486,7 +484,7 @@ class RuleProcessor:
                     f"Core ID: {operation_params.core_id}"
                 )
             operation_params.dataframe = self.data_service.get_dataset(
-                dataset_metadata.name
+                dataset_name=dataset_metadata.name
             )
 
         # call the operation

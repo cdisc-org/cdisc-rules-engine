@@ -112,7 +112,9 @@ class DataProcessor:
         if not dataset_metadata:
             return DatasetInterface()
         right_dataset: DatasetInterface = (
-            dataset_preprocessor._data_service.get_dataset(dataset_metadata.name)
+            dataset_preprocessor._data_service.get_dataset(
+                dataset_name=dataset_metadata.name
+            )
         )
         variables_with_wildcards = {
             source: f"RELREC.{target}"

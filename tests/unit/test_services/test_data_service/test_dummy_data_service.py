@@ -50,7 +50,7 @@ def test_get_dataset():
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
-    dataset = data_service.get_dataset("AE")
+    dataset = data_service.get_dataset(dataset_name="AE")
     assert dataset["AESEQ"].to_list() == [
         1,
         2,

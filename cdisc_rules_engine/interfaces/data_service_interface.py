@@ -107,7 +107,6 @@ class DataServiceInterface(ABC):
     def get_dataset_class(
         self,
         dataset: DatasetInterface,
-        file_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:

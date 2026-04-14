@@ -127,7 +127,7 @@ class DatasetPreprocessor:
                 # Try to download the dataset
                 try:
                     other_dataset: DatasetInterface = self._data_service.get_dataset(
-                        dataset_metadata.name
+                        dataset_name=dataset_metadata.name
                     )
                 except Exception as e:
                     raise PreprocessingError(
