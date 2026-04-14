@@ -27,7 +27,9 @@ from scripts.script_utils import (
 )
 
 
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService._LocalDataService__read_metadata"
+)
 def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: dict):
     # mock file read
     mock_read_metadata.return_value = dataset_metadata
@@ -36,9 +38,11 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     cache_mock = MagicMock()
     cache_mock.get = lambda cache_key: None
 
-    data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
+    data_service = LocalDataService(
+        cache_mock, MagicMock(), MagicMock(), dataset_paths=["dataset_path"]
+    )
     actual_metadata: PandasDataset = data_service.get_dataset_metadata(
-        dataset_name="dataset_name"
+        dataset_name=dataset_metadata["contents_metadata"]["dataset_name"]
     )
     assert actual_metadata.equals(
         PandasDataset.from_dict(
@@ -57,7 +61,9 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     )
 
 
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService._LocalDataService__read_metadata"
+)
 def test_get_raw_dataset_metadata(
     mock_read_metadata: MagicMock, dataset_metadata: dict
 ):
@@ -68,9 +74,11 @@ def test_get_raw_dataset_metadata(
     cache_mock = MagicMock()
     cache_mock.get_dataset = lambda cache_key: None
 
-    data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
+    data_service = LocalDataService(
+        cache_mock, MagicMock(), MagicMock(), dataset_paths=["dataset_path"]
+    )
     actual_metadata: SDTMDatasetMetadata = data_service.get_raw_dataset_metadata(
-        dataset_name="dataset_name"
+        dataset_name=dataset_metadata["contents_metadata"]["dataset_name"]
     )
     expected_metadata = SDTMDatasetMetadata(
         name=dataset_metadata["contents_metadata"]["dataset_name"],
@@ -221,7 +229,6 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
     )
     class_name = data_service.get_dataset_class(
         df,
-        dataset_metadata.get("filename"),
         [SDTMDatasetMetadata(**dataset_metadata)],
         SDTMDatasetMetadata(**dataset_metadata),
     )
@@ -239,9 +246,7 @@ def test_get_dataset_class_without_standard_and_version():
         first_record={"DOMAIN": "DM"}, filename="dm.xpt"
     )
     with pytest.raises(Exception):
-        data_service.get_dataset_class(
-            df, "dm.xpt", [dataset_metadata], dataset_metadata
-        )
+        data_service.get_dataset_class(df, [dataset_metadata], dataset_metadata)
 
 
 def test_get_dataset_class_associated_domains():
@@ -249,18 +254,18 @@ def test_get_dataset_class_associated_domains():
         SDTMDatasetMetadata(**dataset)
         for dataset in [
             {
+                "name": "APDM",
                 "first_record": {"DOMAIN": "APDM", "APID": "AP001"},
                 "filename": "apdm.xpt",
             },
-            {"first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
+            {"name": "DM", "first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
         ]
     ]
     ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APDM"], "APID": ["test"]})
     ce_dataset = PandasDataset.from_dict({"DOMAIN": ["DM"]})
-    data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
-        os.path.join(data_bundle_path, "apdm.xpt"): ap_dataset,
-        os.path.join(data_bundle_path, "dm.xpt"): ce_dataset,
+        "APDM": ap_dataset,
+        "DM": ce_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -306,10 +311,8 @@ def test_get_dataset_class_associated_domains():
             standard_version="3-4",
             library_metadata=library_metadata,
         )
-        filepath = f"{data_bundle_path}/apdm.xpt"
         class_name = data_service.get_dataset_class(
             ap_dataset,
-            filepath,
             datasets,
             datasets[0],
         )

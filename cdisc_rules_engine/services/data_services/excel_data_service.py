@@ -206,9 +206,14 @@ class ExcelDataService(BaseDataService):
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
+        # Get the sheet name from metadata
+        dataset_metadata = self._datasets_metadata.get(dataset_name)
+        if dataset_metadata is None:
+            return PandasDataset.from_dict({})
+
         dataframe = pd.read_excel(
             self.dataset_path,
-            sheet_name=dataset_name,
+            sheet_name=dataset_metadata.filename,
             header=None,
             nrows=4,
             na_values=[""],

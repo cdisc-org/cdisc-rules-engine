@@ -117,6 +117,7 @@ def test_get_parent_column_order_from_library(
 ):
     datasets: List[SDTMDatasetMetadata] = [
         SDTMDatasetMetadata(
+            name="AE",
             first_record={"DOMAIN": "AE"},
             filename="ae.xpt",
             full_path="ae.xpt",
@@ -129,7 +130,7 @@ def test_get_parent_column_order_from_library(
             "AESEQ": [1, 2, 3],
         }
     )
-    path_to_dataset_map: dict = {"ae.xpt": ae}
+    path_to_dataset_map: dict = {"AE": ae}
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
@@ -300,11 +301,13 @@ def test_get_parent_findings_class_column_order_from_library(
 ):
     datasets: List[dict] = [
         {
+            "name": "AE",
             "first_record": {"DOMAIN": "AE"},
             "filename": "ae.xpt",
             "full_path": "ae.xpt",
         },
         {
+            "name": "EC",
             "first_record": {"DOMAIN": "EC"},
             "filename": "ec.xpt",
             "full_path": "ec.xpt",
@@ -336,8 +339,8 @@ def test_get_parent_findings_class_column_order_from_library(
         }
     )
     path_to_dataset_map: dict = {
-        "ae.xpt": ae,
-        "ec.xpt": ec,
+        "AE": ae,
+        "EC": ec,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",

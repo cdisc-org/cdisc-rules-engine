@@ -235,8 +235,8 @@ def test_validate_rule_cross_dataset_check(
     mock_get_dataset_class.return_value = None
     # mock blob storage call
     path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae_dataset,
-        os.path.join("path", "ec.xpt"): ec_dataset,
+        "AE": ae_dataset,
+        "EC": ec_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -350,8 +350,8 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         )
     )
     path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae_dataset,
-        os.path.join("path", "ec.xpt"): ec_dataset,
+        "AE": ae_dataset,
+        "EC": ec_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -492,8 +492,8 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
     )
 
     path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae_dataset,
-        os.path.join("path", "dm.xpt"): dm_dataset,
+        "AE": ae_dataset,
+        "DM": dm_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -1016,7 +1016,10 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     df = PandasDataset(pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59]}))
     mock_get_dataset.return_value = df
     dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "AE"}, filename="bundle", full_path="study/bundle"
+        name="AE",
+        first_record={"DOMAIN": "AE"},
+        filename="bundle",
+        full_path="study/bundle",
     )
     validation_result: List[dict] = RulesEngine(
         standard="sdtmig"
@@ -1135,6 +1138,7 @@ def test_validate_single_dataset(dataset_rule_equal_to_error_objects: dict):
     ):
         datasets = [
             SDTMDatasetMetadata(
+                name="AE",
                 first_record={"DOMAIN": "AE"},
                 filename="bundle",
                 full_path="study/bundle",
@@ -1221,6 +1225,7 @@ def test_validate_single_dataset_not_equal_to(
         return_value=df,
     ):
         dataset_metadata = SDTMDatasetMetadata(
+            name="AE",
             first_record={"DOMAIN": "AE"},
             filename="data_bundle",
             full_path="study/data_bundle",
@@ -1905,8 +1910,8 @@ def test_validate_record_in_parent_domain(
         )
     )
     path_to_dataset_map: dict = {
-        os.path.join("path", "ec.xpt"): ec_dataset,
-        os.path.join("path", "suppec.xpt"): suppec_dataset,
+        "EC": ec_dataset,
+        "SUPPEC": suppec_dataset,
     }
     mock_get_dataset_class.return_value = None
     with patch(
@@ -1988,6 +1993,7 @@ def test_validate_additional_columns(
         return_value=dataset,
     ):
         datset_metadata = SDTMDatasetMetadata(
+            name="TS",
             first_record={"DOMAIN": "TS"},
             filename="ts.xpt",
             full_path="CDISC01/test/ts.xpt",
@@ -2077,8 +2083,8 @@ def test_validate_single_dataset_operation_dataset_larger_than_target_dataset(
     )
 
     path_to_dataset_map: dict = {
-        os.path.join("study_id", "data_bundle_id", "ie.xpt"): target_dataset,
-        os.path.join("study_id", "data_bundle_id", "ti.xpt"): operation_result_dataset,
+        "IE": target_dataset,
+        "TI": operation_result_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -2250,7 +2256,10 @@ def test_dataset_references_invalid_whodrug_terms(
         {"classes": [{"name": "EVENTS", "datasets": [{"name": "AE"}]}]},
     )
     dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "AE"}, filename="dataset_path", full_path="dataset_path"
+        name="AE",
+        first_record={"DOMAIN": "AE"},
+        filename="dataset_path",
+        full_path="dataset_path",
     )
 
     # run validation
@@ -2464,6 +2473,7 @@ def test_validate_variables_order_against_library_metadata(
         model_metadata=cache_data, standard_metadata=standard_data
     )
     dataset_metadata = SDTMDatasetMetadata(
+        name="AE",
         first_record={"DOMAIN": "AE"},
         filename="dataset_path",
         full_path="dataset_path",

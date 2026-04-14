@@ -28,9 +28,8 @@ class TestListDatasetMetadata(unittest.TestCase):
                 os.path.join("tests", "resources", dataset_file),
             ],
         )
-        expected_output = """[
-    {
-        "domain": null,
+        expected_output = """{
+        "domain": "null",
         "filename": "USDM_EliLilly_NCT03421379_Diabetes.json","""
         self.assertEqual(result.exit_code, 0)
         self.assertIn(expected_output, result.output)
@@ -58,8 +57,7 @@ def test_get_dataset(domain_name, record_count):
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
-    dataset_name = os.path.join(dataset_path, "{}.json".format(domain_name))
-    data = data_service.get_dataset(dataset_name=dataset_name)
+    data = data_service.get_dataset(dataset_name=domain_name)
     assert isinstance(data, PandasDataset)
     assert len(data) == record_count
 
@@ -71,9 +69,7 @@ def test_get_raw_dataset_metadata():
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=cache, dataset_path=dataset_path
     )
-    data = data_service.get_raw_dataset_metadata(
-        dataset_name=os.path.join(dataset_path, "Code.json")
-    )
+    data = data_service.get_raw_dataset_metadata(dataset_name="Code")
     assert data.record_count == 117
 
 
@@ -136,9 +132,7 @@ def test_get_variables_metadata():
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
-    data = data_service.get_variables_metadata(
-        dataset_name=os.path.join(dataset_path, "StudyIdentifier.json")
-    )
+    data = data_service.get_variables_metadata(dataset_name="StudyIdentifier")
     assert isinstance(data, PandasDataset)
     expected_keys = [
         "variable_name",

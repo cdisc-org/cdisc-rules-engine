@@ -11,12 +11,12 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
         """
         return self.data_service.get_dataset(dataset_name=self.dataset_metadata.name)
 
-    def build_split_datasets(self, dataset_metadata, **kwargs):
+    def build_split_datasets(self, dataset_name, **kwargs):
         """
         Returns the contents of a file as a dataframe for evaluation.
         """
         return self.data_service.get_dataset(
-            dataset_name=dataset_metadata.name, datasets=self.datasets
+            dataset_name=dataset_name, datasets=self.datasets
         )
 
     def get_dataset(self, **kwargs):

@@ -15,7 +15,9 @@ def test_read_metadata():
     """
     dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_dataset.xpt"
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
-    metadata = data_service.read_metadata(dataset_path)
+    metadata = data_service._LocalDataService__read_metadata(  # pyright: ignore[reportAttributeAccessIssue]
+        dataset_path
+    )
     assert "file_metadata" in metadata
     assert metadata["file_metadata"].get("name") == "test_dataset.xpt"
     assert metadata["file_metadata"].get("file_size") == 823120
@@ -55,8 +57,11 @@ def test_get_dataset(dataset_implementation):
         config=ConfigService(),
         cache_service=mock_cache,
         dataset_implementation=dataset_implementation,
+        dataset_paths=[dataset_path],
     )
-    data = data_service.get_dataset(dataset_name=dataset_path)
+    # Get the dataset name from metadata
+    dataset_name = list(data_service._datasets_metadata.keys())[0]
+    data = data_service.get_dataset(dataset_name=dataset_name)
     assert isinstance(data, dataset_implementation)
 
 
@@ -74,8 +79,11 @@ def test_get_variables_metadata(dataset_implementation):
         config=ConfigService(),
         cache_service=mock_cache,
         dataset_implementation=dataset_implementation,
+        dataset_paths=[dataset_path],
     )
-    data = data_service.get_variables_metadata(dataset_name=dataset_path, datasets=[])
+    data = data_service.get_variables_metadata(
+        dataset_name="TEST_ADAM_DATASET", datasets=[]
+    )
     assert isinstance(data, dataset_implementation)
     expected_keys = [
         "variable_name",

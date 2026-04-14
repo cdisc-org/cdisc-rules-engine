@@ -95,7 +95,7 @@ def test_get_dataset_metadata(expected_result):
         cache_mock, MagicMock(), MagicMock(), dataset_path=dataset_path
     )
     metadata = data_service.get_dataset_metadata(
-        dataset_name=expected_result["dataset_location"]
+        dataset_name=expected_result["dataset_name"]
     )
     assert metadata["dataset_label"][0] == expected_result["dataset_label"]
     assert metadata["dataset_name"][0] == expected_result["dataset_name"]
@@ -106,7 +106,7 @@ def test_get_dataset_metadata(expected_result):
 
 @pytest.mark.parametrize(
     "dataset_name",
-    ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
+    ("ECAA", "ECBB", "SUPPEC"),
 )
 def test_get_variables_metadata(dataset_name):
     dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_datasets.xlsx"
@@ -184,7 +184,7 @@ def test_na_value_preserved_not_converted_to_nan():
         )
 
         # Get the dataset
-        dataset = data_service.get_dataset(dataset_name="test.xpt")
+        dataset = data_service.get_dataset(dataset_name="TEST")
 
         # Assertions
         assert isinstance(dataset, PandasDataset)

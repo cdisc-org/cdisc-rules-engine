@@ -238,12 +238,11 @@ class RuleProcessor:
         excluded_classes = classes.get("Exclude", [])
         is_included = True
         is_excluded = False
-        dataset_name = dataset_metadata.full_path
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_name, datasets=datasets
+                dataset_name=dataset_metadata.name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
@@ -257,7 +256,7 @@ class RuleProcessor:
                 is_included = False
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_name, datasets=datasets
+                dataset_name=dataset_metadata.name, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,

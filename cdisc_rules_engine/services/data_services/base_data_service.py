@@ -155,7 +155,9 @@ class BaseDataService(DataServiceInterface, ABC):
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
             func_to_call,
-            dataset_names=[dataset.name for dataset in datasets_metadata],
+            dataset_names=[
+                dataset_metadata.name for dataset_metadata in datasets_metadata
+            ],
             **kwargs,
         )
         full_dataset = self.dataset_implementation()

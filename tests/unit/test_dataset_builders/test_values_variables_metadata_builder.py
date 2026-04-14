@@ -133,9 +133,14 @@ def test_concat_with_split_datasets():
     )
 
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    # Set up metadata in the data service
+    data_service._datasets_metadata = {
+        "AE1": ae1_metadata,
+        "AE2": ae2_metadata,
+    }
     data_service.get_dataset = MagicMock(
         side_effect=lambda dataset_name, **kwargs: PandasDataset(
-            ae1_data if dataset_name == "ae1.xpt" else ae2_data
+            ae1_data if dataset_name == "AE1" else ae2_data
         )
     )
     metadata_df = pd.DataFrame.from_dict(

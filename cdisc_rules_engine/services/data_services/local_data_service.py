@@ -46,6 +46,7 @@ class LocalDataService(BaseDataService):
         self.encoding: str = kwargs.get("encoding")
         self.variables_csv_path: str = kwargs.get("variables_csv_path")
         self.tables_csv_path: str = kwargs.get("tables_csv_path")
+        self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths") or []
         super(LocalDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
         )
@@ -60,9 +61,8 @@ class LocalDataService(BaseDataService):
         Returns:
             Dictionary mapping dataset name to SDTMDatasetMetadata
         """
-        dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
         result = {}
-        for dataset_path in dataset_paths:
+        for dataset_path in self.dataset_paths:
             try:
                 file_metadata, contents_metadata = self.__get_dataset_metadata(
                     dataset_path
@@ -99,8 +99,14 @@ class LocalDataService(BaseDataService):
         runs multiple times with different encodings in the same process).
         """
         encoding = kwargs.get("encoding")
-        if cls._instance is None or (
-            encoding is not None and cls._instance.encoding != encoding
+        dataset_paths = kwargs.get("dataset_paths")
+        if (
+            cls._instance is None
+            or (encoding is not None and cls._instance.encoding != encoding)
+            or (
+                dataset_paths is not None
+                and cls._instance.dataset_paths != dataset_paths
+            )
         ):
             service = cls(
                 cache_service=cache_service,
@@ -150,7 +156,9 @@ class LocalDataService(BaseDataService):
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.read_metadata(dataset_name, datasets=datasets)
+        metadata: dict = self.__read_metadata(
+            self._datasets_metadata[dataset_name].full_path, datasets=datasets
+        )
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -183,7 +191,7 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(
+    def __read_metadata(
         self,
         dataset_path: str,
         datasets: Optional[Iterable[SDTMDatasetMetadata]] = None,
@@ -247,7 +255,7 @@ class LocalDataService(BaseDataService):
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
-        metadata: dict = self.read_metadata(dataset_path, kwargs.get("datasets"))
+        metadata: dict = self.__read_metadata(dataset_path, kwargs.get("datasets"))
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed

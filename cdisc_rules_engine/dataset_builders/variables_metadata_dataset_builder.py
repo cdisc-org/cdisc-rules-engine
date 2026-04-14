@@ -14,5 +14,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_format
         """
         return self.data_service.get_variables_metadata(
-            dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
+            dataset_name=self.dataset_metadata.name,
+            datasets=self.datasets,
+            drop_duplicates=True,
         )

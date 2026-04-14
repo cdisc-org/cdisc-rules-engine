@@ -614,8 +614,8 @@ def test_preprocess(
 
     # mock blob storage call
     path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae_dataset,
-        os.path.join("path", "ts.xpt"): ts_dataset,
+        "AE": ae_dataset,
+        "TS": ts_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -634,7 +634,9 @@ def test_preprocess(
     preprocessor = DatasetPreprocessor(
         ec_dataset,
         SDTMDatasetMetadata(
-            first_record={"DOMAIN": "EC"}, full_path=os.path.join("path", "ec.xpt")
+            name="EC",
+            first_record={"DOMAIN": "EC"},
+            full_path=os.path.join("path", "ec.xpt"),
         ),
         data_service,
         InMemoryCacheService(),
@@ -642,8 +644,12 @@ def test_preprocess(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to,
         [
-            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
-            SDTMDatasetMetadata(first_record={"DOMAIN": "TS"}, filename="ts.xpt"),
+            SDTMDatasetMetadata(
+                name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+            ),
+            SDTMDatasetMetadata(
+                name="TS", first_record={"DOMAIN": "TS"}, filename="ts.xpt"
+            ),
         ],
     )
     assert preprocessed_dataset.data.equals(expected_dataset.data)
@@ -854,8 +860,8 @@ def test_preprocess_relrec_dataset(
 
     # mock blob storage call
     path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae_dataset,
-        os.path.join("path", "relrec.xpt"): relrec_dataset,
+        "AE": ae_dataset,
+        "RELREC": relrec_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -877,6 +883,7 @@ def test_preprocess_relrec_dataset(
     preprocessor = DatasetPreprocessor(
         ec_dataset,
         SDTMDatasetMetadata(
+            name="EC",
             first_record={"DOMAIN": "EC"},
             full_path=os.path.join("path", "ec.xpt"),
         ),
@@ -886,7 +893,9 @@ def test_preprocess_relrec_dataset(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         relrec_rule,
         [
-            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(
+                name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+            ),
             SDTMDatasetMetadata(name="RELREC", filename="relrec.xpt"),
         ],
     )
@@ -938,8 +947,8 @@ def test_preprocess_with_merge_comparison(
     )
 
     path_to_dataset_map: dict = {
-        os.path.join("study_id", "data_bundle_id", "ae.xpt"): match_dataset,
-        os.path.join("study_id", "data_bundle_id", "ec.xpt"): target_dataset,
+        "AE": match_dataset,
+        "EC": target_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -949,6 +958,7 @@ def test_preprocess_with_merge_comparison(
     preprocessor = DatasetPreprocessor(
         target_dataset,
         SDTMDatasetMetadata(
+            name="EC",
             first_record={"DOMAIN": "EC"},
             full_path=os.path.join("study_id", "data_bundle_id", "ec.xpt"),
         ),
@@ -958,8 +968,12 @@ def test_preprocess_with_merge_comparison(
     result: pd.DataFrame = preprocessor.preprocess(
         rule=dataset_rule_equal_to_compare_same_value,
         datasets=[
-            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec.xpt"),
+            SDTMDatasetMetadata(
+                name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+            ),
+            SDTMDatasetMetadata(
+                name="EC", first_record={"DOMAIN": "EC"}, filename="ec.xpt"
+            ),
         ],
     )
     assert "NOTVISIT" in result
@@ -995,7 +1009,7 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         main_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
+        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}, full_path="path"),
         data_service,
         InMemoryCacheService(),
     )
@@ -1106,7 +1120,9 @@ def test_preprocess_supp_wildcard_matches_all_supp_datasets(
     preprocessor = DatasetPreprocessor(
         ae_dataset,
         SDTMDatasetMetadata(
-            first_record={"DOMAIN": "AE"}, full_path=os.path.join("path", "ae.xpt")
+            name="AE",
+            first_record={"DOMAIN": "AE"},
+            full_path=os.path.join("path", "ae.xpt"),
         ),
         data_service,
         InMemoryCacheService(),
@@ -1183,7 +1199,7 @@ def test_preprocess_specific_suppae_dataset(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ae_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
+        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}, full_path="path"),
         data_service,
         InMemoryCacheService(),
     )

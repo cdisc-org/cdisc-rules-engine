@@ -111,6 +111,15 @@ def test_build_split_datasets(mock_build):
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     original_get_metadata = data_service.get_dataset_metadata
 
+    data_service._datasets_metadata = {
+        "DM": SDTMDatasetMetadata(
+            name="DM",
+            label="Demographics",
+            full_path="/path/to/dm.xpt",
+            filename="dm.xpt",
+        )
+    }
+
     metadata_df = pd.DataFrame(
         [
             {
@@ -142,7 +151,7 @@ def test_build_split_datasets(mock_build):
             standard_version="",
             standard_substandard=None,
         )
-        result = builder.build_split_datasets("dm.xpt")
+        result = builder.build_split_datasets("DM")
 
         assert data_service.get_dataset_metadata.called
         expected_columns = {
