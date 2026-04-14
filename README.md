@@ -466,7 +466,7 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 - Install the requirements.
 
-`python -m pip install -r requirements-dev.txt` # From the root directory
+`pip install -e . && pip install --group dev` # From the root directory
 
 ### Creating an executable version
 
@@ -522,7 +522,7 @@ To upload built distributive to pypi
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements-dev.txt_.
+Both dependencies are added to the `dev` dependency group in _pyproject.toml_.
 
 Setting up `pre-commit` requires one extra step. After installing it you have to run
 
