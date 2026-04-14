@@ -427,8 +427,19 @@ class USDMDataService(BaseDataService):
         }
 
     @staticmethod
-    def __get_full_path(node: DatumInContext):
-        return f"{node.full_path}".replace(".[", "[")
+    def __get_full_path(node: DatumInContext) -> str:
+        parts = []
+        current = node
+        while current is not None and current.context is not None:
+            parts.append(str(current.path))
+            current = current.context
+        result = ""
+        for part in reversed(parts):
+            if part.startswith("["):
+                result += part
+            else:
+                result = (result + "." if result else "") + part
+        return result
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def __get_datasets_content_index(self, dataset_name: str, json) -> List[dict]:
