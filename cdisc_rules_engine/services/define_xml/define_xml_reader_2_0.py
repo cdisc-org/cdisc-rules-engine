@@ -3,6 +3,7 @@ from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
     BaseDefineXMLReader,
     DefineXMLVersion,
 )
+from typing import Optional
 
 
 class DefineXMLReader20(BaseDefineXMLReader):
@@ -34,6 +35,8 @@ class DefineXMLReader20(BaseDefineXMLReader):
         """
         Returns metadata as dictionary.
         """
+        has_no_data: Optional[str] = getattr(metadata, "HasNoData", "")
+        has_no_data = has_no_data or ""
         return {
             "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
@@ -43,6 +46,7 @@ class DefineXMLReader20(BaseDefineXMLReader):
             "define_dataset_structure": str(metadata.Structure),
             # v2.0 does not support is_non_standard. Default to blank
             "define_dataset_is_non_standard": "",
+            "define_dataset_has_no_data": bool(has_no_data.lower() == "yes"),
         }
 
     def get_extensible_codelist_mappings(self):

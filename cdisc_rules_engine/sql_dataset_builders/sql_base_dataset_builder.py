@@ -47,6 +47,7 @@ DEFINE_DATASETS_TYPE = {
     "define_dataset_class": "Char",
     "define_dataset_structure": "Char",
     "define_dataset_is_non_standard": "Char",
+    "define_dataset_has_no_data": "Bool",
     "define_dataset_variables": "Char",
     "define_dataset_key_sequence": "Char",
     "define_dataset_variable_order": "Char",
@@ -161,6 +162,12 @@ class SqlBaseDatasetBuilder(ABC):
                 continue
 
         return define_ds_metadata
+
+    def get_define_metadata(self):
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
+        )
+        return define_xml_reader.read()
 
     def get_define_vlms(self) -> List[dict]:
         define_reader = DefineXMLReaderFactory.get_define_xml_reader(

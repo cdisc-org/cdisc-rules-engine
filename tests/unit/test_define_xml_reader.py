@@ -74,6 +74,7 @@ def test_read_define_xml():
                 "define_dataset_class",
                 "define_dataset_structure",
                 "define_dataset_is_non_standard",
+                "define_dataset_has_no_data",
             ]
 
 
@@ -94,6 +95,7 @@ def test_extract_domain_metadata(filename):
             "define_dataset_class": "TRIAL DESIGN",
             "define_dataset_structure": "One record per trial summary parameter value",
             "define_dataset_is_non_standard": "",
+            "define_dataset_has_no_data": False,
             "define_dataset_variables": [
                 "STUDYID",
                 "DOMAIN",
