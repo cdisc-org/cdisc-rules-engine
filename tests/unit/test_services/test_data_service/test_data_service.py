@@ -395,7 +395,7 @@ def test_cached_cache_hit_call_count():
     result = func(instance, dataset_name="ae.xpt", name="Builder", domain_name="AE")
 
     assert result is expected_data
-    assert func_mock.call_count == 0  # 🔥 ключевая проверка
+    assert func_mock.call_count == 0
 
 
 def test_cached_cache_miss_call_count():
