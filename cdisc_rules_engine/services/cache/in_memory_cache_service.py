@@ -5,7 +5,7 @@ import sys
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
-from cdisc_rules_engine.models.dataset import DatasetInterface
+from cdisc_rules_engine.models.dataset import DatasetInterface, PandasDataset
 from cachetools import LRUCache
 import psutil
 from multiprocessing import Lock
@@ -66,7 +66,10 @@ class InMemoryCacheService(CacheServiceInterface):
             self.dataset_cache[cache_key] = data
 
     def get_dataset(self, cache_key):
-        return self.dataset_cache.get(cache_key, None)
+        cached = self.dataset_cache.get(cache_key)
+        if isinstance(cached, PandasDataset):
+            cached.data = cached.data.copy(deep=False)
+        return cached
 
     def add_batch(
         self,
@@ -82,7 +85,10 @@ class InMemoryCacheService(CacheServiceInterface):
             self.add(prefix + cache_key, item)
 
     def get(self, cache_key):
-        return self.cache.get(cache_key, None)
+        cached = self.cache.get(cache_key)
+        if isinstance(cached, PandasDataset):
+            cached.data = cached.data.copy(deep=False)
+        return cached
 
     def get_all(self, cache_keys: List[str]):
         return [self.cache.get(key) for key in cache_keys]
