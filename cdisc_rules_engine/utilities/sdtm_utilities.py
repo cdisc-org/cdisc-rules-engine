@@ -138,10 +138,9 @@ def get_variables_metadata_from_standard(  # noqa
             IG_class_details.get("name")
         )
     else:
-        class_name = data_service._handle_custom_domains(
+        class_name = data_service.handle_custom_domains(
             data_service.get_dataset(dataset_name=dataset_metadata.name),
             dataset_metadata,
-            dataset_path,
             datasets,
         )
     model_class_details = get_class_metadata(model_details, class_name)
@@ -382,8 +381,8 @@ def get_variables_metadata_from_standard_model(  # noqa
             IG_class_details.get("name")
         )
     else:
-        class_name = data_service._handle_custom_domains(
-            dataframe, dataset_metadata, dataset_path, datasets
+        class_name = data_service.handle_custom_domains(
+            dataframe, dataset_metadata, datasets
         )
     if class_name in DETECTABLE_CLASSES:
         model_class_details = get_class_metadata(model_details, class_name)

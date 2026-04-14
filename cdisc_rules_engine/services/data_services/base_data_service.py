@@ -189,7 +189,7 @@ class BaseDataService(DataServiceInterface, ABC):
             name = class_data.get("name")
             if name:
                 return convert_library_class_name_to_ct_class(name)
-        return self._handle_custom_domains(dataset, dataset_metadata, datasets)
+        return self.handle_custom_domains(dataset, dataset_metadata, datasets)
 
     def get_data_structure(
         self,
@@ -276,7 +276,7 @@ class BaseDataService(DataServiceInterface, ABC):
             Dictionary mapping dataset name to SDTMDatasetMetadata
         """
 
-    def _handle_custom_domains(
+    def handle_custom_domains(
         self,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,

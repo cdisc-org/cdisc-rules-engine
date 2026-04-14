@@ -29,7 +29,7 @@ def library_metadata():
 def mock_data_service():
     """Mock data service for tests that require it."""
     mock_service = Mock()
-    mock_service._handle_custom_domains = Mock(return_value=None)
+    mock_service.handle_custom_domains = Mock(return_value=None)
     return mock_service
 
 
@@ -225,7 +225,7 @@ def test_ap_domain_from_model(library_metadata, mock_data_service, mock_datasets
 def test_custom_domain_events_class(library_metadata, mock_data_service, mock_datasets):
     """Test custom domain detection and variable metadata retrieval for EVENTS class."""
     dataset_metadata = SDTMDatasetMetadata(name="ZZ", first_record={"DOMAIN": "ZZ"})
-    mock_data_service._handle_custom_domains = Mock(return_value="EVENTS")
+    mock_data_service.handle_custom_domains = Mock(return_value="EVENTS")
     variables = get_variables_metadata_from_standard(
         library_metadata,
         mock_data_service,
@@ -233,7 +233,7 @@ def test_custom_domain_events_class(library_metadata, mock_data_service, mock_da
         "/path/to/zz.xpt",
         mock_datasets,
     )
-    mock_data_service._handle_custom_domains.assert_called_once()
+    mock_data_service.handle_custom_domains.assert_called_once()
     assert any(var["name"] == "STUDYID" for var in variables)
     assert any(var["name"] == "DOMAIN" for var in variables)
     assert any(var["name"] == "ZZTERM" for var in variables)
@@ -245,7 +245,7 @@ def test_custom_domain_findings_class(
 ):
     """Test custom domain detection and variable metadata retrieval for FINDINGS class."""
     dataset_metadata = SDTMDatasetMetadata(name="XX", first_record={"DOMAIN": "XX"})
-    mock_data_service._handle_custom_domains = Mock(return_value="FINDINGS")
+    mock_data_service.handle_custom_domains = Mock(return_value="FINDINGS")
     variables = get_variables_metadata_from_standard(
         library_metadata,
         mock_data_service,
@@ -253,7 +253,7 @@ def test_custom_domain_findings_class(
         "/path/to/xx.xpt",
         mock_datasets,
     )
-    mock_data_service._handle_custom_domains.assert_called_once()
+    mock_data_service.handle_custom_domains.assert_called_once()
     assert any(var["name"] == "STUDYID" for var in variables)
     assert any(var["name"] == "DOMAIN" for var in variables)
     assert any(var["name"] == "USUBJID" for var in variables)

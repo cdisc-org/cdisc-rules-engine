@@ -131,6 +131,17 @@ class DataServiceInterface(ABC):
         Converts a given file_path to parquet. Returns path to new file
         """
 
+    @abstractmethod
+    def handle_custom_domains(
+        self,
+        dataset: DatasetInterface,
+        dataset_metadata: SDTMDatasetMetadata,
+        datasets: Iterable[SDTMDatasetMetadata],
+    ) -> str | None:
+        """
+        Handles custom domains by returning the appropriate class name based on the dataset contents.
+        """
+
     @staticmethod
     @abstractmethod
     def is_valid_data(dataset_paths: Sequence[str]) -> bool:
