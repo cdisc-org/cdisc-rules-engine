@@ -56,7 +56,7 @@ class DatasetXPTMetadataReader:
             "variable_labels": list(metadata.column_labels),
             "variable_names": list(metadata.column_names),
             "variable_formats": [
-                "" if data_type == "NULL" else data_type
+                "" if (data_type == "NULL" or data_type is None) else data_type
                 for data_type in metadata.original_variable_types.values()
             ],
             "variable_name_to_label_map": metadata.column_names_to_labels,
