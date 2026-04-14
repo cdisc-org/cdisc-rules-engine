@@ -214,14 +214,12 @@ def _validate_no_arguments(logger) -> None:
     "-s",
     "--standard",
     required=True,
-    default=None,
     help="CDISC standard to validate against",
 )
 @click.option(
     "-v",
     "--version",
     required=True,
-    default=None,
     help="Standard version to validate against",
 )
 @click.option(
