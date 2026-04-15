@@ -45,9 +45,6 @@ from cdisc_rules_engine.models.validation_error_container import (
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_services import DataServiceFactory
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-    DefineXMLReaderFactory,
-)
 from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
@@ -441,17 +438,6 @@ class RulesEngine:
             ),
         )
         return results
-
-    def get_define_xml_value_level_metadata(
-        self, dataset_path: str, domain_name: str
-    ) -> List[dict]:
-        """
-        Gets Define XML variable metadata and returns it as dataframe.
-        """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            dataset_path, self.define_xml_path, self.data_service, self.cache
-        )
-        return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 
     def handle_validation_exceptions(  # noqa
         self, exception, filename: str
