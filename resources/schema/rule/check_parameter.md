@@ -277,6 +277,10 @@ Reference to another operation result, used as the second operand in operations 
   subtract: $dataset_variables
 ```
 
+### order_insensitive
+
+Optional boolean parameter for the `minus` operator. When set to `true`, `minus` performs a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) operation, ignoring the order of elements. When `false` or not specified, `minus` considers element order and only removes elements from `name` that follow the same order as in `subtract`.
+
 ### term_code
 
 Terminology code value used in controlled terminology operations for code-based lookups.
