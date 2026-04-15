@@ -193,8 +193,6 @@ class BaseDataService(DataServiceInterface, ABC):
 
     def get_data_structure(
         self,
-        file_path: str,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         # TODO: look at defineXML if applicable for more accurate data structure detection

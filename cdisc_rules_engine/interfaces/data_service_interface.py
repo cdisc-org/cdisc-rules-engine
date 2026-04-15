@@ -117,8 +117,6 @@ class DataServiceInterface(ABC):
     @abstractmethod
     def get_data_structure(
         self,
-        file_path: str,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """

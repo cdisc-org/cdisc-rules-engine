@@ -188,7 +188,7 @@ class RuleProcessor:
         )
 
     def rule_applies_to_data_structure(
-        self, rule, datasets, dataset_metadata: SDTMDatasetMetadata
+        self, rule, dataset_metadata: SDTMDatasetMetadata
     ):
         datastructures = rule.get("data_structures") or {}
         included_datastructures = datastructures.get("Include", [])
@@ -201,8 +201,6 @@ class RuleProcessor:
             if ALL_KEYWORD in included_datastructures:
                 return True
         ds = self.data_service.get_data_structure(
-            dataset_metadata.full_path,
-            datasets,
             dataset_metadata,
         )
         if ds and (ds not in included_datastructures):
@@ -675,7 +673,7 @@ class RuleProcessor:
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        if not self.rule_applies_to_data_structure(rule, datasets, dataset_metadata):
+        if not self.rule_applies_to_data_structure(rule, dataset_metadata):
             reason = (
                 f"Rule skipped - doesn't apply to data structure for "
                 f"rule id={rule_id}, dataset={dataset_name}"
