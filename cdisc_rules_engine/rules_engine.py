@@ -245,7 +245,7 @@ class RulesEngine:
                     # No errors were generated, create success error container
                     return [
                         ValidationErrorContainer(
-                            dataset=dataset_metadata.filename,
+                            dataset=dataset_metadata.name,
                             domain=dataset_metadata.domain or dataset_metadata.rdomain,
                             errors=[],
                         ).to_representation()
@@ -255,7 +255,7 @@ class RulesEngine:
                     f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
                 error_obj = FailedValidationEntity(
-                    dataset=dataset_metadata.filename,
+                    dataset=dataset_metadata.name,
                     error=SkippedReason.OUTSIDE_SCOPE.value,
                     message=reason,
                 )
@@ -263,7 +263,7 @@ class RulesEngine:
                     ValidationErrorContainer(
                         status=ExecutionStatus.SKIPPED.value,
                         message=reason,
-                        dataset=dataset_metadata.filename,
+                        dataset=dataset_metadata.name,
                         domain=dataset_metadata.domain
                         or dataset_metadata.rdomain
                         or "",
@@ -283,7 +283,7 @@ class RulesEngine:
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
-                e, dataset_metadata.filename
+                e, dataset_metadata.name
             )
             error_obj.domain = dataset_metadata.domain or dataset_metadata.rdomain or ""
             # this wrapping into a list is necessary to keep return type consistent
@@ -408,7 +408,7 @@ class RulesEngine:
             )
             logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
             error_obj = FailedValidationEntity(
-                dataset=dataset_metadata.filename,
+                dataset=dataset_metadata.name,
                 error=SkippedReason.EMPTY_DATASET.value,
                 message=reason,
             )
@@ -416,7 +416,7 @@ class RulesEngine:
                 ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value,
                     message=reason,
-                    dataset=dataset_metadata.filename,
+                    dataset=dataset_metadata.name,
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                     errors=[error_obj],
                 ).to_representation()

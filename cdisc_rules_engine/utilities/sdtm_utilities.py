@@ -7,7 +7,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
+    SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
@@ -561,8 +561,8 @@ def tag_source(
 ) -> DatasetInterface:
     """
     For sdtm split datasets,
-    Adds source filename and row number to dataset
+    Adds source dataset name and row number to dataset
     """
-    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_DATASET_NAME] = dataset_metadata.name
     dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
     return dataset

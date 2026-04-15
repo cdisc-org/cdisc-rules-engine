@@ -105,19 +105,19 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         assert validation_result == [
             {
                 "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
-                "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
+                "dataset": "EC",
                 "domain": "EC",
                 "variables": ["ECCOOLVAR"],
                 "message": "Value for ECCOOLVAR greater than 30.",
                 "errors": [
                     {
                         "value": {"ECCOOLVAR": 100},
-                        "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
+                        "dataset": "EC",
                         "row": 2,
                     },
                     {
                         "value": {"ECCOOLVAR": 34},
-                        "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
+                        "dataset": "EC",
                         "row": 4,
                     },
                 ],
