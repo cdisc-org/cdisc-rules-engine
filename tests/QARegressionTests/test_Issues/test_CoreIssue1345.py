@@ -78,7 +78,7 @@ class TestCoreIssue1345:
         dm_related_issues = [
             issue
             for issue in json_report.get("Issue_Details", [])
-            if issue.get("dataset", "").lower() in {"dm.json", "suppdm.json"}
+            if issue.get("dataset", "") in {"DM", "SUPPDM"}
         ]
 
         assert not dm_related_issues, (
@@ -88,7 +88,7 @@ class TestCoreIssue1345:
         dm_related_summary = [
             s
             for s in json_report.get("Issue_Summary", [])
-            if s.get("dataset", "").lower() in {"dm.json", "suppdm.json"}
+            if s.get("dataset", "") in {"DM", "SUPPDM"}
         ]
 
         assert not dm_related_summary, (
@@ -99,7 +99,7 @@ class TestCoreIssue1345:
         ec_detail_issues = [
             i
             for i in json_report.get("Issue_Details", [])
-            if i.get("dataset", "").lower() == "ec.json"
+            if i.get("dataset", "") in {"EC"}
         ]
 
         assert (
@@ -112,7 +112,7 @@ class TestCoreIssue1345:
         ec_summary_issues = [
             s
             for s in json_report.get("Issue_Summary", [])
-            if s.get("dataset", "").lower() == "ec.json"
+            if s.get("dataset", "") in {"EC"}
         ]
 
         assert (
@@ -147,7 +147,7 @@ class TestCoreIssue1345:
         relrec_issues = [
             i
             for i in json_report.get("Issue_Details", [])
-            if i.get("dataset", "").lower() == "relrec.json"
+            if i.get("dataset", "") in {"RELREC"}
         ]
         assert (
             len(relrec_issues) == 2
@@ -157,7 +157,7 @@ class TestCoreIssue1345:
         ec_detail_issues = [
             i
             for i in json_report.get("Issue_Details", [])
-            if i.get("dataset", "").lower() == "ec.json"
+            if i.get("dataset", "") in {"EC"}
         ]
         assert (
             len(ec_detail_issues) == 2
