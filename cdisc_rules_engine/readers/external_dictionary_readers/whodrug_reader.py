@@ -150,4 +150,5 @@ class WhoDrugReader:
         else:
             raise ValueError(f"Unsupported format: {metadata.format}")
 
+        final_df = final_df.rename(columns={"atc_code": "term_code", "drug_name": "term_name"})
         return final_df

@@ -1,6 +1,9 @@
 from business_rules.fields import FIELD_DATAFRAME
 from business_rules.operators import BaseType, type_operator
 
+from cdisc_rules_engine.check_operators.sql.is_valid_whodrug_level_reference_operator import (
+    ValidWHODrugLevelReferenceOperator,
+)
 from cdisc_rules_engine.check_operators.sql.not_operator import NotOperator
 from cdisc_rules_engine.enums.static_tables import StaticTables
 
@@ -49,7 +52,6 @@ from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
 from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
 from .variable_metadata_equal_to_operator import VariableMetadataEqualToOperator
-from .is_valid_whodrug_reference_operator import IsValidWhodrugReferenceOperator
 
 MEDDRA_CODE_SUFFIX_MAP = {
     "BDSYCD": "SOC",
@@ -185,27 +187,45 @@ class PostgresQLOperators(BaseType):
         "shares_no_elements_with": lambda data: SharesElementsWithOperator(data, operation_type="no_elements"),
         "is_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data),
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
-        "is_valid_whodrug_reference": lambda data: IsValidWhodrugReferenceOperator(data),
-        "is_not_valid_whodrug_reference": lambda data: NotOperator(data, IsValidWhodrugReferenceOperator),
+        "is_valid_whodrug_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.WHODRUG_TABLE_NAME.value
+        ),
+        "is_not_valid_whodrug_term_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictTermReferenceOperator(d, StaticTables.WHODRUG_TABLE_NAME.value)
+        ),
+        "is_valid_whodrug_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.WHODRUG_TABLE_NAME.value
+        ),
+        "is_not_valid_whodrug_code_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.WHODRUG_TABLE_NAME.value)
+        ),
+        "is_valid_whodrug_level_reference": lambda data: ValidWHODrugLevelReferenceOperator(data),
+        "is_not_valid_whodrug_level_reference": lambda data: NotOperator(data, ValidWHODrugLevelReferenceOperator),
+        "is_valid_whodrug_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.WHODRUG_TABLE_NAME.value
+        ),
+        "is_not_valid_whodrug_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.WHODRUG_TABLE_NAME.value)
+        ),
         "is_valid_meddra_term_reference": lambda data: ValidExDictTermReferenceOperator(
-            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_TERM_SUFFIX_MAP
+            data, StaticTables.MEDDRA_TABLE_NAME.value
         ),
         "is_not_valid_meddra_term_reference": lambda data: NotOperator(
             data,
-            lambda d: ValidExDictTermReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_TERM_SUFFIX_MAP),
+            lambda d: ValidExDictTermReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value),
         ),
         "is_valid_meddra_code_reference": lambda data: ValidExDictCodeReferenceOperator(
-            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_CODE_SUFFIX_MAP
+            data, StaticTables.MEDDRA_TABLE_NAME.value
         ),
         "is_not_valid_meddra_code_reference": lambda data: NotOperator(
             data,
-            lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_CODE_SUFFIX_MAP),
+            lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.MEDDRA_TABLE_NAME.value),
         ),
         "is_valid_meddra_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
-            data, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_PAIR_MAP
+            data, StaticTables.MEDDRA_TABLE_NAME.value
         ),
         "is_not_valid_meddra_code_term_pair": lambda data: NotOperator(
-            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.MEDDRA_TABLE_NAME.value, MEDDRA_PAIR_MAP)
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.MEDDRA_TABLE_NAME.value)
         ),
         "is_valid_medrt_term_reference": lambda data: ValidExDictTermReferenceOperator(
             data, StaticTables.MEDRT_TABLE_NAME.value

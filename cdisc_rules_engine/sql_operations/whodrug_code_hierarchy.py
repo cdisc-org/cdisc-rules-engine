@@ -24,29 +24,29 @@ class SqlWhodrugHierarchyOperation(SqlBaseOperation):
                         END
                     ELSE
                         CASE
-                            WHEN em.drug_name IS NOT NULL THEN TRUE
+                            WHEN em.term_name IS NOT NULL THEN TRUE
                             ELSE FALSE
                         END
                 END AS value
             FROM {dataset_id}
             LEFT JOIN (
                 SELECT
-                    drug_name,
+                    term_name,
                     COUNT(*) AS instance_count
                 FROM {StaticTables.WHODRUG_TABLE_NAME.value}
-                GROUP BY drug_name
+                GROUP BY term_name
             ) dc
-                ON {decod_col} = dc.drug_name
+                ON {decod_col} = dc.term_name
             LEFT JOIN (
                 SELECT DISTINCT
-                    drug_name,
+                    term_name,
                     level_4,
-                    atc_code
+                    term_code
                 FROM {StaticTables.WHODRUG_TABLE_NAME.value}
             ) em
-                ON {decod_col} = em.drug_name
+                ON {decod_col} = em.term_name
                 AND {clas_col} = em.level_4
-                AND {clascd_col} = em.atc_code
+                AND {clascd_col} = em.term_code
         """
 
         return SqlOperationResult(query=query, type="collection", subtype="Bool")

@@ -1,36 +1,39 @@
+from cdisc_rules_engine.enums.static_tables import StaticTables
+
 from .base_sql_operator import BaseSqlOperator
 
 
 class ValidExDictCodeReferenceOperator(BaseSqlOperator):
     """Validates terminology codes against a reference external dictionary."""
 
-    def __init__(self, data, table_name, suffix_map=None):
+    def __init__(self, data, table_name):
         super().__init__(data)
         self.table_name = table_name
-        self.suffix_map = suffix_map
 
     def execute_operator(self, other_value):
         target_column = self.replace_prefix(other_value.get("target")).lower()
+        filter_attribute, filter_value = self._filter_params(other_value, self.table_name)
 
-        type_condition = ""
-        if self.suffix_map:
-            term_type = None
-            for suffix, dict_type in self.suffix_map.items():
-                if target_column.upper().endswith(suffix):
-                    term_type = dict_type
-                    break
+        filter_conditions = []
+        whodrug_condition = ""
 
-            if not term_type:
-                raise ValueError(f"Could not determine term type for code column '{target_column}'")
-            type_condition = f"WHERE term_type = '{term_type}'"
+        if filter_attribute and filter_value:
+            filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
+
+        if self.table_name == StaticTables.WHODRUG_TABLE_NAME.value:
+            if filter_attribute == "class":
+                filter_conditions.append(f"('{filter_value}' IN (level_1, level_2, level_3, level_4))")
+
+            whodrug_condition = f"WHEN {self._column_sql(target_column, alias=False)} = 'MULTIPLE' THEN TRUE"
 
         query = f"""
             CASE
                 WHEN CAST({self._column_sql(target_column, alias=False)} AS TEXT) IN (
                     SELECT term_code
                     FROM {self.table_name}
-                    {type_condition}
+                    {'WHERE ' + ' AND '.join(filter_conditions) if filter_conditions else ''}
                 ) THEN TRUE
+                {whodrug_condition}
                 ELSE FALSE
             END
         """

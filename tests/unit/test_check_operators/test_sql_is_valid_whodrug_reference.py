@@ -9,12 +9,12 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
 
 
 @pytest.mark.parametrize(
-    "domain, target, attribute_name, data, result",
+    "domain, target, operator, data, result",
     [
         (
             "CM",
             "CMCLASCD",
-            "code",
+            "is_valid_whodrug_code_reference",
             {
                 "CMCLASCD": ["A01AA", "B01AA"],
             },
@@ -23,7 +23,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "CM",
             "CMCLASCD",
-            "code",
+            "is_valid_whodrug_code_reference",
             {
                 "CMCLASCD": ["C01AA", "D01AA"],
             },
@@ -32,7 +32,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "CM",
             "CMDECOD",
-            "name",
+            "is_valid_whodrug_term_reference",
             {
                 "CMDECOD": ["DUMMYDRUGNAMEA", "DUMMYDRUGNAMEB"],
             },
@@ -41,7 +41,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "CM",
             "CMDECOD",
-            "name",
+            "is_valid_whodrug_term_reference",
             {
                 "CMDECOD": ["DUMMYDRUGNAMEC", "DUMMYDRUGNAMED"],
             },
@@ -50,7 +50,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "CM",
             "CMCLAS",
-            "class",
+            "is_valid_whodrug_level_reference",
             {
                 "CMCLAS": ["DUMMYALEVEL4", "DUMMYBLEVEL4"],
             },
@@ -59,7 +59,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "CM",
             "CMCLAS",
-            "class",
+            "is_valid_whodrug_level_reference",
             {
                 "CMCLAS": ["DUMMYCLEVEL4", "DUMMYDLEVEL4"],
             },
@@ -67,7 +67,7 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         ),
     ],
 )
-def test_is_valid_whodrug_reference(sdtm_standards_context, domain, target, attribute_name, data, result):
+def test_is_valid_whodrug_reference(sdtm_standards_context, domain, target, operator, data, result):
     data_service = PostgresQLDataService.instance(
         external_dictionaries=SqlExternalDictionariesContainer(
             {DictionaryTypes.WHODRUG.value: "tests/resources/dictionaries/whodrug"}
@@ -81,7 +81,5 @@ def test_is_valid_whodrug_reference(sdtm_standards_context, domain, target, attr
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_whodrug_reference(
-        {"target": target, "attribute_name": attribute_name}
-    )
+    op_result = getattr(PostgresQLOperators(config), operator)({"target": target})
     assert_series_equals(op_result, result)

@@ -19,16 +19,14 @@ def _create_standard_term_schema(table_name: str) -> SqlTableSchema:
 
 
 def _whodrug_schema(metadata=None) -> SqlTableSchema:
-    table = SqlTableSchema.static(StaticTables.WHODRUG_TABLE_NAME.value)
-    _add_char_columns(table, "atc_code", "level_1", "level_2", "level_3", "level_4")
-
+    table = _create_standard_term_schema(StaticTables.WHODRUG_TABLE_NAME.value)
+    _add_char_columns(table, "level_1", "level_2", "level_3", "level_4")
     if metadata:
         if metadata.format == WhoDrugFormats.C3.value:
             table.add_column(SqlColumnSchema(name="med_prod_id", hash="med_prod_id", type="Num"))
         elif metadata.format == WhoDrugFormats.B3.value:
             table.add_column(SqlColumnSchema(name="drug_rec_num", hash="drug_rec_num", type="Num"))
 
-    _add_char_columns(table, "drug_name")
     return table
 
 

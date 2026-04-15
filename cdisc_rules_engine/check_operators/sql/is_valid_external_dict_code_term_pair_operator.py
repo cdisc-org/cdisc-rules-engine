@@ -1,59 +1,50 @@
+from cdisc_rules_engine.enums.static_tables import StaticTables
+
 from .base_sql_operator import BaseSqlOperator
 
 
 class ValidExDictCodeTermPairsOperator(BaseSqlOperator):
     """Validates corresponding code-term pairs simultaneously against an external dictionary."""
 
-    def __init__(self, data, table_name, pair_map=None):
+    def __init__(self, data, table_name):
         super().__init__(data)
         self.table_name = table_name
-        self.pair_map = pair_map
 
     def execute_operator(self, other_value):
         target_column = self.replace_prefix(other_value.get("target")).lower()
+        comparator_column = self.replace_prefix(other_value.get("comparator")).lower()
 
-        term_type = None
-        code_col = None
-        term_col = None
-        type_condition = ""
-
-        if self.pair_map:
-            for suffix, (dict_type, counterpart_suffix) in self.pair_map.items():
-                if target_column.upper().endswith(suffix):
-                    term_type = dict_type
-                    base_prefix = target_column[: -len(suffix)]
-                    counterpart_column = base_prefix + counterpart_suffix.lower()
-
-                    if suffix.endswith("CD"):
-                        code_col = target_column
-                        term_col = counterpart_column
-                    else:
-                        term_col = target_column
-                        code_col = counterpart_column
-                    break
-
-            if not term_type:
-                raise ValueError(f"Could not determine pair types for column '{target_column}'")
-
-            type_condition = f"AND term_type = '{term_type}'"
+        if comparator_column.endswith("cd"):
+            code_column = comparator_column
+            term_column = target_column
         else:
-            comparator_column = self.replace_prefix(other_value.get("comparator")).lower()
-            if target_column.endswith("cd"):
-                code_col = target_column
-                term_col = comparator_column
-            else:
-                term_col = target_column
-                code_col = comparator_column
+            code_column = target_column
+            term_column = comparator_column
+
+        filter_attribute, filter_value = self._filter_params(other_value, self.table_name)
+
+        filter_conditions = []
+        whodrug_condition = ""
+
+        if filter_attribute and filter_value:
+            filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
+
+        if self.table_name == StaticTables.WHODRUG_TABLE_NAME.value:
+            if filter_attribute == "class":
+                filter_conditions.append(f"('{filter_value}' IN (level_1, level_2, level_3, level_4))")
+
+            whodrug_condition = f"WHEN {self._column_sql(target_column, alias=False)} = 'MULTIPLE' THEN TRUE"
 
         query = f"""
             CASE
                 WHEN EXISTS (
                     SELECT 1
                     FROM {self.table_name}
-                    WHERE term_code = CAST({self._column_sql(code_col, alias=False)} AS TEXT)
-                      AND term_name = CAST({self._column_sql(term_col, alias=False)} AS TEXT)
-                      {type_condition}
+                    WHERE term_code = CAST({self._column_sql(code_column, alias=False)} AS TEXT)
+                      AND term_name = CAST({self._column_sql(term_column, alias=False)} AS TEXT)
+                        {'AND ' + ' AND '.join(filter_conditions) if filter_conditions else ''}
                 ) THEN TRUE
+                {whodrug_condition}
                 ELSE FALSE
             END
         """

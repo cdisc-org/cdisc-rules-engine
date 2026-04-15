@@ -9,11 +9,13 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
 
 
 @pytest.mark.parametrize(
-    "domain, target, data, result",
+    "domain, target, filter_attribute, filter_value, data, result",
     [
         (
             "AE",
             "AESOCCD",
+            "term_type",
+            "SOC",
             {
                 "AESOCCD": ["SOC1", "SOC2", "INVALIDSOC"],
             },
@@ -22,6 +24,8 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "AE",
             "AEPTCD",
+            "term_type",
+            "PT",
             {
                 "AEPTCD": ["PT1", "PT2", "INVALIDPT"],
             },
@@ -30,6 +34,8 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         (
             "MH",
             "MHLLTCD",
+            "term_type",
+            "LLT",
             {
                 "MHLLTCD": ["LLT1", "LLT2", "INVALIDLLT"],
             },
@@ -37,7 +43,9 @@ from cdisc_rules_engine.models.sql_external_dictionaries_container import (
         ),
     ],
 )
-def test_valid_meddra_code_references(sdtm_standards_context, domain, target, data, result):
+def test_valid_meddra_code_references(
+    sdtm_standards_context, domain, target, filter_attribute, filter_value, data, result
+):
     data_service = PostgresQLDataService.instance(
         external_dictionaries=SqlExternalDictionariesContainer(
             {DictionaryTypes.MEDDRA.value: "tests/resources/dictionaries/meddra"}
@@ -51,16 +59,20 @@ def test_valid_meddra_code_references(sdtm_standards_context, domain, target, da
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_code_reference({"target": target})
+    op_result = PostgresQLOperators(config).is_valid_meddra_code_reference(
+        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    )
     assert_series_equals(op_result, result)
 
 
 @pytest.mark.parametrize(
-    "domain, target, data, result",
+    "domain, target, filter_attribute, filter_value, data, result",
     [
         (
             "AE",
             "AESOC",
+            "term_type",
+            "SOC",
             {
                 "AESOC": ["TESTSOC1", "TESTSOC2", "INVALID SOC TERM"],
             },
@@ -69,6 +81,8 @@ def test_valid_meddra_code_references(sdtm_standards_context, domain, target, da
         (
             "AE",
             "AEDECOD",
+            "term_type",
+            "PT",
             {
                 "AEDECOD": ["TESTPT1", "TESTPT2", "INVALID PT TERM"],
             },
@@ -77,6 +91,8 @@ def test_valid_meddra_code_references(sdtm_standards_context, domain, target, da
         (
             "MH",
             "MHHLGT",
+            "term_type",
+            "HLGT",
             {
                 "MHHLGT": ["TESTHLGT1", "TESTHLGT2", "INVALID HLGT TERM"],
             },
@@ -84,7 +100,9 @@ def test_valid_meddra_code_references(sdtm_standards_context, domain, target, da
         ),
     ],
 )
-def test_valid_meddra_term_references(sdtm_standards_context, domain, target, data, result):
+def test_valid_meddra_term_references(
+    sdtm_standards_context, domain, target, filter_attribute, filter_value, data, result
+):
     data_service = PostgresQLDataService.instance(
         external_dictionaries=SqlExternalDictionariesContainer(
             {DictionaryTypes.MEDDRA.value: "tests/resources/dictionaries/meddra"}
@@ -98,16 +116,21 @@ def test_valid_meddra_term_references(sdtm_standards_context, domain, target, da
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_term_reference({"target": target})
+    op_result = PostgresQLOperators(config).is_valid_meddra_term_reference(
+        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    )
     assert_series_equals(op_result, result)
 
 
 @pytest.mark.parametrize(
-    "domain, target, data, result",
+    "domain, target, comparator, filter_attribute, filter_value, data, result",
     [
         (
             "AE",
             "AEPTCD",
+            "AEDECOD",
+            "term_type",
+            "PT",
             {
                 "AEPTCD": ["PT1", "PT2", "PT3"],
                 "AEDECOD": ["TESTPT1", "TESTPT2", "INVALID PT TERM"],
@@ -117,6 +140,9 @@ def test_valid_meddra_term_references(sdtm_standards_context, domain, target, da
         (
             "AE",
             "AEDECOD",
+            "AEPTCD",
+            "term_type",
+            "PT",
             {
                 "AEPTCD": ["PT1", "PT2", "INVALIDPT"],
                 "AEDECOD": ["TESTPT1", "TESTPT2", "TESTPT3"],
@@ -126,6 +152,9 @@ def test_valid_meddra_term_references(sdtm_standards_context, domain, target, da
         (
             "CE",
             "CESOCCD",
+            "CESOC",
+            "term_type",
+            "SOC",
             {
                 "CESOCCD": ["SOC1", "SOC2", "INVALID SOC CODE"],
                 "CESOC": ["TESTSOC1", "TESTSOC2", "INVALID SOC TERM"],
@@ -134,7 +163,9 @@ def test_valid_meddra_term_references(sdtm_standards_context, domain, target, da
         ),
     ],
 )
-def test_valid_meddra_code_term_pairs(sdtm_standards_context, domain, target, data, result):
+def test_valid_meddra_code_term_pairs(
+    sdtm_standards_context, domain, target, comparator, filter_attribute, filter_value, data, result
+):
     data_service = PostgresQLDataService.instance(
         external_dictionaries=SqlExternalDictionariesContainer(
             {DictionaryTypes.MEDDRA.value: "tests/resources/dictionaries/meddra"}
@@ -148,5 +179,7 @@ def test_valid_meddra_code_term_pairs(sdtm_standards_context, domain, target, da
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_code_term_pair({"target": target})
+    op_result = PostgresQLOperators(config).is_valid_meddra_code_term_pair(
+        {"target": target, "comparator": comparator, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    )
     assert_series_equals(op_result, result)
