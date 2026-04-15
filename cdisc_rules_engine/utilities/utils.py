@@ -10,6 +10,7 @@ import os
 import re
 import ast
 import pandas as pd
+from dataclasses import fields
 from datetime import datetime
 from typing import Callable, List, Optional, Union
 from uuid import UUID
@@ -19,6 +20,22 @@ from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
+
+
+def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) -> T:
+    """
+    Convert a dataclass subclass instance to its superclass by copying all fields.
+
+    Args:
+        instance: The subclass instance to convert
+        superclass: The target superclass type
+
+    Returns:
+        A new instance of the superclass with fields copied from the subclass instance
+    """
+    return superclass(
+        **{field.name: getattr(instance, field.name) for field in fields(superclass)}
+    )
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:

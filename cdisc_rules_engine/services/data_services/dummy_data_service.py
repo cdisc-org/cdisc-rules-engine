@@ -1,4 +1,3 @@
-from datetime import datetime
 from io import IOBase
 from typing import List, Optional, Sequence
 
@@ -13,6 +12,7 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.constants import DEFAULT_ENCODING
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.utilities.utils import convert_dataclass_to_superclass
 
 
 class DummyDataService(BaseDataService):
@@ -27,7 +27,11 @@ class DummyDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
+        self.encoding = kwargs.get("encoding") or DEFAULT_ENCODING
+        self.dataset_path: str | None = kwargs.get("dataset_path")
         self.data: List[DummyDataset] = kwargs.get("data")
+        if self.data is None and self.dataset_path is not None:
+            self.data = self.get_data()
         self.define_xml: str = kwargs.get("define_xml")
         super(DummyDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
@@ -72,21 +76,10 @@ class DummyDataService(BaseDataService):
         Returns:
             Dictionary mapping dataset name to SDTMDatasetMetadata
         """
-        result = {}
-        for dataset in self.data:
-            dataset_metadata_dict: dict = dataset.get_metadata()
-            metadata = SDTMDatasetMetadata(
-                name=dataset_metadata_dict["dataset_name"][0],
-                first_record={"DOMAIN": dataset_metadata_dict["dataset_name"][0]},
-                label=dataset_metadata_dict["dataset_label"][0],
-                modification_date=datetime.now().isoformat(),
-                filename=dataset_metadata_dict["filename"][0],
-                file_size=dataset_metadata_dict["dataset_size"][0],
-                full_path=dataset_metadata_dict["filename"][0],
-                record_count=dataset_metadata_dict["record_count"][0],
-            )
-            result[metadata.name] = metadata
-        return result
+        return {
+            dataset.name: convert_dataclass_to_superclass(dataset, SDTMDatasetMetadata)
+            for dataset in self.data
+        }
 
     def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
         metadata_to_return = {
@@ -170,11 +163,8 @@ class DummyDataService(BaseDataService):
                 return len(df.index), temp_file.name
         return 0, ""
 
-    @staticmethod
-    def get_data(dataset_paths: Sequence[str], encoding: str = DEFAULT_ENCODING):
-        json = JSONReader(encoding=encoding or DEFAULT_ENCODING).from_file(
-            dataset_paths[0]
-        )
+    def get_data(self):
+        json = JSONReader(encoding=self.encoding).from_file(self.dataset_path)
         return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod

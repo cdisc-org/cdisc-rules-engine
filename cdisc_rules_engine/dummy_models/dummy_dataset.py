@@ -45,14 +45,5 @@ class DummyDataset(SDTMDatasetMetadata):
 
             self.record_count = len(self.data.index)
 
-    def get_metadata(self):
-        return {
-            "dataset_size": [self.file_size or 1000],
-            "dataset_name": [self.name or "test"],
-            "dataset_label": [self.label or "test"],
-            "filename": [self.filename],
-            "record_count": [self.record_count],
-        }
-
     def __repr__(self):
         return asdict(self).__repr__()
