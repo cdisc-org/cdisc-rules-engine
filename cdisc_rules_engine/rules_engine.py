@@ -34,6 +34,7 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
+from cdisc_rules_engine.models.dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
@@ -385,6 +386,8 @@ class RulesEngine:
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
         # preprocess dataset
+        if isinstance(dataset, DaskDataset):
+            dataset = deepcopy(dataset)
         dataset_preprocessor = DatasetPreprocessor(
             dataset, dataset_metadata, self.data_service, self.cache
         )

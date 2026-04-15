@@ -67,7 +67,8 @@ class InMemoryCacheService(CacheServiceInterface):
 
     def get_dataset(self, cache_key):
         cached = self.dataset_cache.get(cache_key)
-        if isinstance(cached, PandasDataset):
+        # Adding DaskDataset will cause downstream issues since Dask does not support copy-on-write.
+        if type(cached) is PandasDataset:
             cached.data = cached.data.copy(deep=False)
         return cached
 
@@ -86,7 +87,7 @@ class InMemoryCacheService(CacheServiceInterface):
 
     def get(self, cache_key):
         cached = self.cache.get(cache_key)
-        if isinstance(cached, PandasDataset):
+        if type(cached) is PandasDataset:
             cached.data = cached.data.copy(deep=False)
         return cached
 
