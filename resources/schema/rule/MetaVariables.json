@@ -159,6 +159,7 @@
     { "const": "variable_has_empty_values" },
     { "const": "variable_is_empty" },
     { "const": "variable_label" },
+    { "const": "variable_max_size" },
     { "const": "variable_name" },
     {
       "const": "variable_order_number"
