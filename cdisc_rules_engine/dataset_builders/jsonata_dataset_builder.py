@@ -1,5 +1,6 @@
 from json import load
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+from cdisc_rules_engine.utilities.decorators import cached
 
 
 def add_json_pointer_paths(node, path=""):
@@ -19,6 +20,7 @@ def add_json_pointer_paths(node, path=""):
 
 class JSONataDatasetBuilder(BaseDatasetBuilder):
 
+    @cached("get_dataset")
     def get_dataset(self, **kwargs):
         if not self.dataset_metadata.full_path:
             return None
