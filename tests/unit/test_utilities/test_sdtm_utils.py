@@ -45,7 +45,6 @@ def test_standard_domain_ae(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/ae.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "STUDYID" for var in variables)
@@ -59,7 +58,6 @@ def test_standard_domain_dm(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/dm.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "USUBJID" for var in variables)
@@ -73,7 +71,6 @@ def test_findings_domain_lb(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/lb.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "STUDYID" for var in variables)
@@ -88,7 +85,6 @@ def test_supp_domain(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/suppae.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "STUDYID" for var in variables)
@@ -102,7 +98,6 @@ def test_sq_domain(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/sqae.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "STUDYID" for var in variables)
@@ -116,7 +111,6 @@ def test_ap_domain(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/apdm.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "APID" for var in variables)
@@ -134,7 +128,6 @@ def test_sqap_domain(library_metadata, mock_data_service, mock_datasets):
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/sqapmh.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "APID" for var in variables)
@@ -149,7 +142,6 @@ def test_findings_about_domain_fa(library_metadata, mock_data_service, mock_data
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/fa.xpt",
         mock_datasets,
     )
     assert any(var["name"] == "FATEST" for var in variables)
@@ -163,7 +155,6 @@ def test_findings_domain_from_model(library_metadata, mock_data_service, mock_da
     variables = get_variables_metadata_from_standard_model(
         dataframe=mock_dataframe,
         datasets=mock_datasets,
-        dataset_path="/path/to/lb.xpt",
         data_service=mock_data_service,
         library_metadata=library_metadata,
         dataset_metadata=dataset_metadata,
@@ -179,7 +170,6 @@ def test_supp_domain_from_model(library_metadata, mock_data_service, mock_datase
     variables = get_variables_metadata_from_standard_model(
         dataframe=mock_dataframe,
         datasets=mock_datasets,
-        dataset_path="/path/to/suppae.xpt",
         data_service=mock_data_service,
         library_metadata=library_metadata,
         dataset_metadata=dataset_metadata,
@@ -195,7 +185,6 @@ def test_sqap_domain_from_model(library_metadata, mock_data_service, mock_datase
     variables = get_variables_metadata_from_standard_model(
         dataframe=mock_dataframe,
         datasets=mock_datasets,
-        dataset_path="/path/to/suppae.xpt",
         data_service=mock_data_service,
         library_metadata=library_metadata,
         dataset_metadata=dataset_metadata,
@@ -211,7 +200,6 @@ def test_ap_domain_from_model(library_metadata, mock_data_service, mock_datasets
     variables = get_variables_metadata_from_standard_model(
         dataframe=mock_dataframe,
         datasets=mock_datasets,
-        dataset_path="/path/to/apdm.xpt",
         data_service=mock_data_service,
         library_metadata=library_metadata,
         dataset_metadata=dataset_metadata,
@@ -230,7 +218,6 @@ def test_custom_domain_events_class(library_metadata, mock_data_service, mock_da
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/zz.xpt",
         mock_datasets,
     )
     mock_data_service.handle_custom_domains.assert_called_once()
@@ -250,7 +237,6 @@ def test_custom_domain_findings_class(
         library_metadata,
         mock_data_service,
         dataset_metadata,
-        "/path/to/xx.xpt",
         mock_datasets,
     )
     mock_data_service.handle_custom_domains.assert_called_once()

@@ -265,10 +265,6 @@ def get_operations_cache_key(
     return key
 
 
-def get_directory_path(dataset_path):
-    return os.path.dirname(dataset_path)
-
-
 def serialize_rule(rule: dict) -> dict:
     """
     Converts rule "conditions" to dict.

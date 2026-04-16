@@ -80,7 +80,10 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             logger.info(f"No define_metadata is provided for {__name__}.")
             return self.dataset_implementation(columns=define_col_order)
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         enriched_metadata = []
         for basic_metadata in define_metadata:

@@ -107,7 +107,6 @@ def get_variables_metadata_from_standard(  # noqa
     library_metadata,
     data_service,
     dataset_metadata: SDTMDatasetMetadata,
-    dataset_path: str,
     datasets: Iterable[SDTMDatasetMetadata],
 ):
     add_AP = False
@@ -343,7 +342,6 @@ def group_class_variables_by_role(
 def get_variables_metadata_from_standard_model(  # noqa
     dataframe,
     datasets: Iterable[SDTMDatasetMetadata],
-    dataset_path: str,
     data_service: DataServiceInterface,
     library_metadata: LibraryMetadataContainer,
     dataset_metadata: SDTMDatasetMetadata,

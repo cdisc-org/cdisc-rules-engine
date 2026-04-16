@@ -326,7 +326,6 @@ def test_domain_list_with_define_dataset_builder(
         cache_service=None,
         rule_processor=None,
         data_processor=None,
-        dataset_path="ae.xpt",
         datasets=mock_datasets,
         dataset_metadata=SDTMDatasetMetadata(full_path="ae.xpt"),
         define_xml_path=None,

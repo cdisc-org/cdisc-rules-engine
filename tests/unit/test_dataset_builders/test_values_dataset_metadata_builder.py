@@ -60,7 +60,6 @@ def test_build_with_dataset_metadata(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=rule_processor_mock,
             data_processor=None,
-            dataset_path="ae.xpt",
             datasets=[],
             dataset_metadata=SDTMDatasetMetadata(
                 name="AE", first_record={"DOMAIN": "AE"}
@@ -143,7 +142,6 @@ def test_build_split_datasets(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=rule_processor_mock,
             data_processor=None,
-            dataset_path="",
             datasets=[],
             dataset_metadata=None,
             define_xml_path="",

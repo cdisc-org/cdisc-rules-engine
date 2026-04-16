@@ -61,13 +61,12 @@ def create_mock_reader_with_metadata(item_group_defs, item_defs=None):
     return mock_reader
 
 
-def create_builder_instance(dataset_metadata, dataset_path="/path/to/dataset.xpt"):
+def create_builder_instance(dataset_metadata):
     """
     Helper function to create a ConcreteDatasetBuilder instance.
 
     Args:
         dataset_metadata: SDTMDatasetMetadata instance
-        dataset_path: Path to the dataset file
 
     Returns:
         ConcreteDatasetBuilder instance
@@ -78,7 +77,6 @@ def create_builder_instance(dataset_metadata, dataset_path="/path/to/dataset.xpt
         cache_service=MagicMock(),
         rule_processor=MagicMock(),
         data_processor=MagicMock(),
-        dataset_path=dataset_path,
         datasets=[dataset_metadata],
         dataset_metadata=dataset_metadata,
         define_xml_path="/path/to/define.xml",
@@ -171,10 +169,11 @@ def test_get_define_xml_variables_metadata(
         filename=f"{dataset_name.lower()}.xpt",
         label=f"{dataset_name} Label",
         first_record=first_record,
+        full_path="/path/to/dataset.xpt",
     )
 
     # Create builder instance
-    builder = create_builder_instance(dataset_metadata, "/path/to/dataset.xpt")
+    builder = create_builder_instance(dataset_metadata)
 
     # Call the method
     result = builder.get_define_xml_variables_metadata()
@@ -221,10 +220,11 @@ def test_get_define_xml_variables_metadata_domain_not_found(
         filename="ae.xpt",
         label="Adverse Events",
         first_record={"DOMAIN": "AE"},
+        full_path="/path/to/ae.xpt",
     )
 
     # Create builder instance
-    builder = create_builder_instance(dataset_metadata, "/path/to/ae.xpt")
+    builder = create_builder_instance(dataset_metadata)
 
     # Verify that DomainNotFoundInDefineXMLError is raised
     with pytest.raises(

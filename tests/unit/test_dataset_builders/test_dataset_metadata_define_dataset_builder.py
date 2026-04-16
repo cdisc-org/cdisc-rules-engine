@@ -124,7 +124,6 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
         cache_service=None,
         rule_processor=None,
         data_processor=None,
-        dataset_path=dataset_path,
         datasets=[data_metadata],
         dataset_metadata=SDTMDatasetMetadata(full_path=dataset_path),
         define_xml_path=None,

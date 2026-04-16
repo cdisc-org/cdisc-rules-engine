@@ -25,7 +25,6 @@ class BaseDatasetBuilder:
         cache_service,
         rule_processor: RuleProcessor,
         data_processor,
-        dataset_path,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         define_xml_path,
@@ -38,7 +37,6 @@ class BaseDatasetBuilder:
         self.cache = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
-        self.dataset_path = dataset_path
         self.datasets = datasets
         self.dataset_metadata = dataset_metadata
         self.rule = rule
@@ -128,7 +126,10 @@ class BaseDatasetBuilder:
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_dataset_metadata(
             dataset_metadata["dataset_name"]
@@ -151,7 +152,10 @@ class BaseDatasetBuilder:
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
@@ -166,7 +170,10 @@ class BaseDatasetBuilder:
         | SUPPDM | DM     |
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         domain = self.dataset_metadata.domain or self.dataset_metadata.rdomain
         return define_xml_reader.extract_variables_metadata(
@@ -178,7 +185,10 @@ class BaseDatasetBuilder:
         Gets Define XML value level metadata and returns it as dataframe.
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_value_level_metadata(
             domain_name=self.dataset_metadata.domain
@@ -190,7 +200,10 @@ class BaseDatasetBuilder:
 
     def get_define_metadata(self):
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.read()
 
@@ -209,7 +222,6 @@ class BaseDatasetBuilder:
             data_service=self.data_service,
             datasets=self.datasets,
             dataset_metadata=self.dataset_metadata,
-            dataset_path=self.dataset_path,
         )
         variables_metadata: dict = self.library_metadata.variables_metadata.get(
             domain, {}

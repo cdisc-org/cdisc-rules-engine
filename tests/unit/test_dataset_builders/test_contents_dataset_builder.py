@@ -377,7 +377,6 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path="",
         datasets=datasets,
         dataset_metadata=DummyDataset(test_data.get("datasets", {})[0]),
         define_xml_path=None,

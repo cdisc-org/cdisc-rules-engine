@@ -1,6 +1,7 @@
 import re
 import copy
 
+from os.path import dirname
 from typing import Iterable, List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
@@ -37,7 +38,6 @@ from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
-    get_directory_path,
     get_operations_cache_key,
     search_in_list,
 )
@@ -376,7 +376,7 @@ class RuleProcessor:
                 datasets=datasets,
                 delimiter=operation.get("delimiter"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
-                directory_path=get_directory_path(dataset_metadata.full_path),
+                directory_path=dirname(dataset_metadata.full_path),
                 domain=domain,
                 domain_class=operation.get("domain_class"),
                 external_dictionaries=external_dictionaries,
