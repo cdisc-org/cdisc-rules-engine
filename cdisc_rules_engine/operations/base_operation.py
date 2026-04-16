@@ -278,7 +278,7 @@ class BaseOperation:
             data_service=self.data_service,
             library_metadata=self.library_metadata,
             dataset_metadata=self.data_service.get_raw_dataset_metadata(
-                dataset_name=self.params.dataset_path, datasets=self.params.datasets
+                dataset_name=self.params.domain, datasets=self.params.datasets
             ),
         )
 
