@@ -25,6 +25,7 @@ class ValidExDictCodeTermPairsOperator(BaseSqlOperator):
 
         filter_conditions = []
         whodrug_condition = ""
+        case_insensitive = other_value.get("case_insensitive", False)
 
         if filter_attribute and filter_value:
             filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
@@ -35,13 +36,23 @@ class ValidExDictCodeTermPairsOperator(BaseSqlOperator):
 
             whodrug_condition = f"WHEN {self._column_sql(target_column, alias=False)} = 'MULTIPLE' THEN TRUE"
 
+        if case_insensitive:
+            comp_expr = f"""
+            LOWER(term_code) = LOWER(CAST({self._column_sql(code_column, alias=False)} AS TEXT))
+            AND LOWER(term_name) = LOWER(CAST({self._column_sql(term_column, alias=False)} AS TEXT))
+            """
+        else:
+            comp_expr = f"""
+            term_code = CAST({self._column_sql(code_column, alias=False)} AS TEXT)
+            AND term_name = CAST({self._column_sql(term_column, alias=False)} AS TEXT)
+            """
+
         query = f"""
             CASE
                 WHEN EXISTS (
                     SELECT 1
                     FROM {self.table_name}
-                    WHERE term_code = CAST({self._column_sql(code_column, alias=False)} AS TEXT)
-                      AND term_name = CAST({self._column_sql(term_column, alias=False)} AS TEXT)
+                    WHERE {comp_expr}
                         {'AND ' + ' AND '.join(filter_conditions) if filter_conditions else ''}
                 ) THEN TRUE
                 {whodrug_condition}

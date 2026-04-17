@@ -17,6 +17,7 @@ class ValidExDictTermReferenceOperator(BaseSqlOperator):
 
         filter_conditions = []
         whodrug_condition = ""
+        case_insensitive = other_value.get("case_insensitive", False)
 
         if filter_attribute and filter_value:
             filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
@@ -27,10 +28,16 @@ class ValidExDictTermReferenceOperator(BaseSqlOperator):
 
             whodrug_condition = f"WHEN {self._column_sql(target_column, alias=False)} = 'MULTIPLE' THEN TRUE"
 
+        cast_expr = f"CAST({self._column_sql(target_column, alias=False)} AS TEXT)"
+        term_expr = "TRIM(regexp_split_to_table(term_name, '[,;]'))"
+        if case_insensitive:
+            cast_expr = f"LOWER({cast_expr})"
+            term_expr = f"LOWER({term_expr})"
+
         query = f"""
             CASE
-                WHEN CAST({self._column_sql(target_column, alias=False)} AS TEXT) IN (
-                    SELECT TRIM(regexp_split_to_table(term_name, '[,;]'))
+                WHEN {cast_expr} IN (
+                    SELECT {term_expr}
                     FROM {self.table_name}
                     {'WHERE ' + ' AND '.join(filter_conditions) if filter_conditions else ''}
                 ) THEN TRUE

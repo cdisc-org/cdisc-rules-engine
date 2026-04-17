@@ -13,3 +13,6 @@ class OptionalConditionParameters(BaseEnum):
     METADATA = "metadata"
     VALUE_IS_REFERENCE = "value_is_reference"
     TYPE_INSENSITIVE = "type_insensitive"
+    CASE_INSENSITIVE = "case_insensitive"
+    FILTER_ATTRIBUTE = "filter_attribute"
+    FILTER_VALUE = "filter_value"
