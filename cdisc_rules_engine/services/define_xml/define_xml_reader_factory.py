@@ -2,7 +2,8 @@ import os
 from xml.etree import ElementTree
 from re import compile
 from typing import Union
-
+import re
+import tempfile
 from cdisc_rules_engine.constants.define_xml_constants import (
     DEFINE_XML_FILE_NAME,
     ODM_NAMESPACE,
@@ -45,12 +46,29 @@ class DefineXMLReaderFactory:
         """
         Inits a DefineXMLReader object from file.
         """
+
         logger.info(f"Reading Define-XML from file name. filename={filename}")
+        define_version_pattern = r'(def:DefineVersion=")(2\.1\.\d+)(")'
+        with open(filename, "r", encoding="utf-8") as f:
+            xml_content = f.read()
+
+        match = re.search(define_version_pattern, xml_content)
+        original_version = None
+
+        if match:
+            original_version = match.group(2)
+            xml_content = re.sub(define_version_pattern, r"\g<1>2.1\3", xml_content)
+
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".xml", delete=False) as tmp:
+            tmp.write(xml_content)
+            tmp_filename = tmp.name
+
         define_xml_reader_class: type = cls._get_define_xml_reader(
-            ElementTree.parse(filename).getroot()
+            ElementTree.parse(tmp_filename).getroot()
         )
         reader: BaseDefineXMLReader = define_xml_reader_class()
-        reader._odm_loader.open_odm_document(filename)
+        reader._original_define_version = original_version
+        reader._odm_loader.open_odm_document(tmp_filename)
         return reader
 
     @classmethod
