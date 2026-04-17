@@ -140,7 +140,6 @@ def test_get_parent_column_order_from_library(
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.dataset_path = "suppae.xpt"
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()
@@ -351,7 +350,6 @@ def test_get_parent_findings_class_column_order_from_library(
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.dataset_path = "suppae.xpt"
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()

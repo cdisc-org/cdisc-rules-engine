@@ -129,45 +129,7 @@ def is_valid_iso_date(date_to_validate: str) -> bool:
     return is_valid
 
 
-def get_dataset_path(
-    study_id: str, data_bundle_id: str = None, filename: str = None
-) -> str:
-    """
-    Returns a path to dataset in the blob storage.
-    """
-    path: str = study_id
-    if data_bundle_id:
-        path = os.path.join(path, data_bundle_id)
-    if filename:
-        path = os.path.join(path, filename)
-    return path
-
-
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
-
-
-def get_dataset_cache_key_from_study(
-    study_id: str,
-    data_bundle_id: str = None,
-    filename: str = None,
-    dataset_type: str = None,
-) -> str:
-    """
-    Creates a cache key for a dataset.
-    Usually, template of a dataset cache key is {dataset_path}_{dataset_type}.
-    Ex.: CDISC01/test/ae.xpt_contents or CDISC01/test/ae.xpt_metadata.
-    So, the function also builds the path.
-
-    If dataset_type parameter is not passed, the returned key
-    can be used to clean several values with matching key pattern.
-    dataset_type param can be: contents, metadata, variables_metadata.
-    """
-    dataset_path: str = get_dataset_path(study_id, data_bundle_id, filename)
-    if dataset_type:
-        dataset_path = DATASET_CACHE_KEY_TEMPLATE.format(
-            dataset_path=dataset_path, dataset_type=dataset_type
-        )
-    return dataset_path
 
 
 def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str:
@@ -246,19 +208,24 @@ def replace_pattern_in_list_of_strings(
 
 def get_operations_cache_key(
     core_id: str,
-    directory_path: str,
     operation_id: str,
     domain: str = None,
     operation_name: str = None,
+    evaluation_dataset_name: str = None,
     grouping: str = None,
     target_variable: str = None,
-    dataset_path: str = None,
 ) -> str:
     """
     Creates the cache key for operations.
     """
-    key = f"operations/{core_id}/{directory_path}/{operation_id}"
-    optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
+    key = f"operations/{core_id}/{operation_id}"
+    optional_items = [
+        domain,
+        operation_name,
+        evaluation_dataset_name,
+        grouping,
+        target_variable,
+    ]
     for item in optional_items:
         if item:
             key = f"{key}/{item}"

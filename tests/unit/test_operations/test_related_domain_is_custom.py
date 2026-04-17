@@ -81,7 +81,7 @@ def test_related_domain_is_custom(
     op = RelatedDomainIsCustom(
         params=params,
         library_metadata=library_metadata,
-        original_dataset=None,
+        evaluation_dataset=None,
         cache_service=None,
         data_service=data_service,
     )

@@ -28,7 +28,6 @@ def test_variable_value_count(
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
-    dataset_path = os.path.join("study", "bundle", "blah")
     datasets_map = {
         "AE": dataset_type.from_dict(
             {"STUDYID": [4, 7, 9], "AESEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
@@ -73,7 +72,6 @@ def test_variable_value_count(
     )
     mock_data_service.get_datasets = lambda: datasets
     operation_params.original_target = target
-    operation_params.dataset_path = dataset_path
     result = VariableValueCount(
         operation_params,
         datasets_map["AE"],

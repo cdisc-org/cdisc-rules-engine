@@ -1,7 +1,6 @@
 import re
 import copy
 
-from os.path import dirname
 from typing import List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
@@ -366,12 +365,12 @@ class RuleProcessor:
                 ct_version=operation.get("version"),
                 define_xml_path=kwargs.get("define_xml_path"),
                 dataframe=dataset_copy,
-                dataset_path=dataset_metadata.full_path,
+                dataframe_metadata=dataset_metadata,
                 delimiter=operation.get("delimiter"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
-                directory_path=dirname(dataset_metadata.full_path),
                 domain=domain,
                 domain_class=operation.get("domain_class"),
+                evaluation_dataset_metadata=dataset_metadata,
                 external_dictionaries=external_dictionaries,
                 external_dictionary_term_variable=operation.get(
                     "external_dictionary_term_variable"
@@ -427,7 +426,7 @@ class RuleProcessor:
     def _execute_operation(
         self,
         operation_params: OperationParams,
-        dataset: DatasetInterface,
+        evaluation_dataset: DatasetInterface,
         previous_operations: List[str] = [],
     ):
         """
@@ -438,12 +437,11 @@ class RuleProcessor:
         # check cache
         cache_key = get_operations_cache_key(
             core_id=operation_params.core_id,
-            directory_path=operation_params.directory_path,
             operation_name=operation_params.operation_name,
+            evaluation_dataset_name=operation_params.evaluation_dataset_metadata.name,
             domain=operation_params.domain,
             grouping=";".join(operation_params.grouping),
             target_variable=operation_params.target,
-            dataset_path=operation_params.dataset_path,
             operation_id=operation_params.operation_id,
         )
         if previous_operations:
@@ -477,12 +475,13 @@ class RuleProcessor:
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=dataset_metadata.name
             )
+            operation_params.dataframe_metadata = dataset_metadata
 
         # call the operation
         operation = operations_factory.get_service(
             operation_params.operation_name,
             operation_params=operation_params,
-            original_dataset=dataset,
+            evaluation_dataset=evaluation_dataset,
             cache=self.cache,
             data_service=self.data_service,
             library_metadata=self.library_metadata,

@@ -1276,8 +1276,6 @@ def operation_params() -> OperationParams:
         dataframe=PandasDataset.from_dict({}),
         target="target",
         domain="domain",
-        dataset_path="dataset_path",
-        directory_path="directory_path",
         standard="standard",
         standard_version="standard_version",
         external_dictionaries=ExternalDictionariesContainer(

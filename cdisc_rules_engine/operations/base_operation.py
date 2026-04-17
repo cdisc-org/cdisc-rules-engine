@@ -1,4 +1,4 @@
-import os
+from os.path import dirname, exists, join
 
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -42,7 +42,7 @@ class BaseOperation:
     def __init__(
         self,
         params: OperationParams,
-        original_dataset: DatasetInterface,
+        evaluation_dataset: DatasetInterface,
         cache_service: CacheServiceInterface,
         data_service: DataServiceInterface,
         library_metadata: LibraryMetadataContainer = LibraryMetadataContainer(),
@@ -50,7 +50,7 @@ class BaseOperation:
         self.params = params
         self.cache = cache_service
         self.data_service = data_service
-        self.evaluation_dataset = original_dataset
+        self.evaluation_dataset = evaluation_dataset
         self.library_metadata = library_metadata
 
     @abstractmethod
@@ -304,9 +304,15 @@ class BaseOperation:
         define_path = (
             self.params.define_xml_path
             if self.params.define_xml_path
-            else os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
+            else join(
+                dirname(
+                    self.params.evaluation_dataset_metadata.original_path
+                    or self.params.evaluation_dataset_metadata.full_path
+                ),
+                DEFINE_XML_FILE_NAME,
+            )
         )
-        if not os.path.exists(define_path):
+        if not exists(define_path):
             raise FileNotFoundError(f"Define XML file {define_path} not found")
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=define_path

@@ -775,8 +775,6 @@ def test_preprocess_operation_params_wildcard_replacement(mock_data_service):
         target="--SEQ",
         original_target="--SEQ",
         domain="AE",
-        dataset_path="test/ae.xpt",
-        directory_path="test/",
         standard="sdtmig",
         standard_version="3-4",
         grouping=["--SEQ", "--DTC", "USUBJID"],
@@ -807,8 +805,6 @@ def test_preprocess_operation_params_supp_domain_uses_rdomain(mock_data_service)
         target="--SEQ",
         original_target="--SEQ",
         domain=None,
-        dataset_path="test/suppae.xpt",
-        directory_path="test/",
         standard="sdtmig",
         standard_version="3-4",
     )
