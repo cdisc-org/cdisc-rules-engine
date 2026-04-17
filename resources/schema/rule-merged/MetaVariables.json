@@ -255,6 +255,10 @@
       "markdownDescription": "\nVariable long label\n"
     },
     {
+      "const": "variable_max_size",
+      "markdownDescription": "\nMaximum length of actual data values in the variable\n"
+    },
+    {
       "const": "variable_name",
       "markdownDescription": "\nVariable short name\n"
     },

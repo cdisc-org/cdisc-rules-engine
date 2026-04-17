@@ -258,6 +258,10 @@ True/False value indicating whether a variable is completely empty
 
 Variable long label
 
+## variable_max_size
+
+Maximum length of actual data values in the variable
+
 ## variable_name
 
 Variable short name
