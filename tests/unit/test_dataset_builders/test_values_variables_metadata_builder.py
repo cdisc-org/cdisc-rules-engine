@@ -59,7 +59,6 @@ def test_build_with_variable_metadata(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=None,
             data_processor=None,
-            datasets=[],
             dataset_metadata=SDTMDatasetMetadata(
                 name="AE", first_record={"DOMAIN": "AE"}
             ),
@@ -161,7 +160,6 @@ def test_concat_with_split_datasets():
         cache_service=InMemoryCacheService(),
         rule_processor=None,
         data_processor=None,
-        datasets=[],
         dataset_metadata=SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}),
         define_xml_path="",
         standard="",

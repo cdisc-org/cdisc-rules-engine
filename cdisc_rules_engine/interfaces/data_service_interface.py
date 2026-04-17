@@ -107,7 +107,6 @@ class DataServiceInterface(ABC):
     def get_dataset_class(
         self,
         dataset: DatasetInterface,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """
@@ -134,7 +133,6 @@ class DataServiceInterface(ABC):
         self,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
-        datasets: Iterable[SDTMDatasetMetadata],
     ) -> str | None:
         """
         Handles custom domains by returning the appropriate class name based on the dataset contents.

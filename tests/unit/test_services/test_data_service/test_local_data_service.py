@@ -81,9 +81,7 @@ def test_get_variables_metadata(dataset_implementation):
         dataset_implementation=dataset_implementation,
         dataset_paths=[dataset_path],
     )
-    data = data_service.get_variables_metadata(
-        dataset_name="TEST_ADAM_DATASET", datasets=[]
-    )
+    data = data_service.get_variables_metadata(dataset_name="TEST_ADAM_DATASET")
     assert isinstance(data, dataset_implementation)
     expected_keys = [
         "variable_name",

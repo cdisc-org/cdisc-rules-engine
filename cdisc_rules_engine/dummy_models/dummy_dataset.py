@@ -7,7 +7,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 class DummyDataset(SDTMDatasetMetadata):
-    def __init__(self, dataset_data: dict):
+    def __init__(self, dataset_data: dict | SDTMDatasetMetadata):
         # with XPT in test, we pass the dataset_data as an instance of SDTMDatasetMetadata
         if isinstance(dataset_data, SDTMDatasetMetadata):
             super().__init__(

@@ -83,7 +83,7 @@ def test_day_data_calculation(
     mock_data_service.get_dataset.side_effect = lambda **kwargs: datasets_map.get(
         kwargs.get("dataset_name")
     )
-    operation_params.datasets = datasets
+    mock_data_service.get_datasets.return_value = datasets
     operation_params.dataframe = PandasDataset.from_dict(data)
     operation_params.target = "values"
     result = DayDataValidator(

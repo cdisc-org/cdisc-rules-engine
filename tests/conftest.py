@@ -1278,7 +1278,6 @@ def operation_params() -> OperationParams:
         domain="domain",
         dataset_path="dataset_path",
         directory_path="directory_path",
-        datasets=[],
         standard="standard",
         standard_version="standard_version",
         external_dictionaries=ExternalDictionariesContainer(

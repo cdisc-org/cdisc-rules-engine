@@ -2,7 +2,7 @@ import re
 import copy
 
 from os.path import dirname
-from typing import Iterable, List, Optional, Union, Tuple
+from typing import List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -212,7 +212,6 @@ class RuleProcessor:
     def rule_applies_to_class(
         self,
         rule,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
         """
@@ -240,11 +239,10 @@ class RuleProcessor:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.name, datasets=datasets
+                dataset_name=dataset_metadata.name
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
-                datasets,
                 dataset_metadata,
             )
             if (class_name not in included_classes) and not (
@@ -253,11 +251,10 @@ class RuleProcessor:
                 is_included = False
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.name, datasets=datasets
+                dataset_name=dataset_metadata.name
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables,
-                datasets,
                 dataset_metadata,
             )
             if class_name and (
@@ -269,10 +266,8 @@ class RuleProcessor:
 
     def rule_applies_to_use_case(
         self,
-        dataset_metadata: SDTMDatasetMetadata,
         rule: dict,
         standard: str,
-        standard_substandard: str,
         use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
@@ -321,7 +316,6 @@ class RuleProcessor:
         rule: dict,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
-        datasets: Iterable[SDTMDatasetMetadata],
         standard: str,
         standard_version: str,
         standard_substandard: str,
@@ -373,7 +367,6 @@ class RuleProcessor:
                 define_xml_path=kwargs.get("define_xml_path"),
                 dataframe=dataset_copy,
                 dataset_path=dataset_metadata.full_path,
-                datasets=datasets,
                 delimiter=operation.get("delimiter"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 directory_path=dirname(dataset_metadata.full_path),
@@ -464,7 +457,7 @@ class RuleProcessor:
         ):
             # download other domain
             dataset_metadata: DatasetMetadata = search_in_list(
-                operation_params.datasets,
+                self.data_service.get_datasets(),
                 lambda item: (
                     item.unsplit_name == operation_params.domain
                     or (
@@ -576,7 +569,7 @@ class RuleProcessor:
         if domain_details.is_supp:
             current_domain = domain_details.rdomain
         for param_name in vars(params_copy):
-            if param_name in ("datasets", "dataframe"):
+            if param_name in ("dataframe"):
                 continue
             param_value = getattr(params_copy, param_name)
             updated_value = self._replace_wildcards_in_value(
@@ -643,9 +636,7 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
-        datasets: Iterable[SDTMDatasetMetadata],
         standard,
-        standard_substandard: str,
         use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
@@ -661,10 +652,8 @@ class RuleProcessor:
         ):
             return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
-            dataset_metadata,
             rule,
             standard,
-            standard_substandard,
             use_case,
         ):
             reason = (
@@ -687,7 +676,7 @@ class RuleProcessor:
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
+        if not self.rule_applies_to_class(rule, dataset_metadata):
             reason = (
                 f"Rule skipped - doesn't apply to class for "
                 f"rule id={rule_id}, dataset={dataset_name}"

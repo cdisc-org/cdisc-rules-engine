@@ -77,7 +77,6 @@ def create_builder_instance(dataset_metadata):
         cache_service=MagicMock(),
         rule_processor=MagicMock(),
         data_processor=MagicMock(),
-        datasets=[dataset_metadata],
         dataset_metadata=dataset_metadata,
         define_xml_path="/path/to/define.xml",
         standard="sdtmig",

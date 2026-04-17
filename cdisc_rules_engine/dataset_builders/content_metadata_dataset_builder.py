@@ -16,5 +16,4 @@ class ContentMetadataDatasetBuilder(BaseDatasetBuilder):
         return self.data_service.get_dataset_metadata(
             dataset_name=self.dataset_metadata.name,
             size_unit=size_unit,
-            datasets=self.datasets,
         )

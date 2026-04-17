@@ -134,12 +134,12 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             "ap_suffix",
         ]
 
-        if len(self.datasets) == 0:
+        if len(self.data_service.get_datasets()) == 0:
             dataset_df = self.dataset_implementation(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
             datasets = self.dataset_implementation()
-            for dataset_metadata in self.datasets:
+            for dataset_metadata in self.data_service.get_datasets():
                 ds_metadata = None
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(

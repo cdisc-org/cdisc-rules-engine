@@ -93,7 +93,6 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             standard="usdm", dataset_paths=[dataset_path]
         ).validate_single_dataset(
             dataset_rule_greater_than,
-            [],
             SDTMDatasetMetadata(
                 name="EC",
                 first_record={"DOMAIN": "EC"},

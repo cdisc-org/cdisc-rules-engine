@@ -150,14 +150,12 @@ class LocalDataService(BaseDataService):
         return df
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(
-        self, dataset_name: str, datasets: list, **params
-    ) -> DatasetInterface:
+    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
         metadata: dict = self.__read_metadata(
-            self._datasets_metadata[dataset_name].full_path, datasets=datasets
+            self._datasets_metadata[dataset_name].full_path
         )
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
@@ -194,7 +192,6 @@ class LocalDataService(BaseDataService):
     def __read_metadata(
         self,
         dataset_path: str,
-        datasets: Optional[Iterable[SDTMDatasetMetadata]] = None,
     ) -> dict:
         file_size = os.path.getsize(dataset_path)
         file_name = basename(dataset_path)
@@ -203,8 +200,8 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "file_size": file_size,
         }
-        if file_name.endswith(".parquet") and datasets:
-            for obj in datasets:
+        if file_name.endswith(".parquet") and self.get_datasets():
+            for obj in self.get_datasets():
                 if obj.full_path == dataset_path:
                     file_metadata = {
                         "path": obj.original_path,
@@ -255,7 +252,7 @@ class LocalDataService(BaseDataService):
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
-        metadata: dict = self.__read_metadata(dataset_path, kwargs.get("datasets"))
+        metadata: dict = self.__read_metadata(dataset_path)
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed

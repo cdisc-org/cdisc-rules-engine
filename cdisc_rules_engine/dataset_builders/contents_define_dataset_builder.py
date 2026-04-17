@@ -38,7 +38,6 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         dataset_metadata = self.data_service.get_dataset_metadata(
             dataset_name=self.dataset_metadata.name,
             size_unit=size_unit,
-            datasets=self.datasets,
         ).to_dict(orient="records")[0]
         # Build define xml dataframe
         define = self.get_define_xml_item_group_metadata_for_dataset(dataset_metadata)

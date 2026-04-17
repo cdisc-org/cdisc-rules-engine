@@ -140,7 +140,6 @@ def test_build_combined_metadata(
         cache_service=InMemoryCacheService(),
         rule_processor=None,
         data_processor=None,
-        datasets=[],
         dataset_metadata=SDTMDatasetMetadata(
             name="AE",
             first_record={"DOMAIN": "AE"},

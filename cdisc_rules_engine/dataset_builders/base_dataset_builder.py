@@ -9,7 +9,7 @@ from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datase
 from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
 )
-from typing import List, Iterable, Optional
+from typing import List, Optional
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -25,7 +25,6 @@ class BaseDatasetBuilder:
         cache_service,
         rule_processor: RuleProcessor,
         data_processor,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         define_xml_path,
         standard,
@@ -37,7 +36,6 @@ class BaseDatasetBuilder:
         self.cache = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
-        self.datasets = datasets
         self.dataset_metadata = dataset_metadata
         self.rule = rule
         self.define_xml_path = define_xml_path
@@ -77,7 +75,7 @@ class BaseDatasetBuilder:
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
                 datasets_metadata=get_corresponding_datasets(
-                    self.datasets, self.dataset_metadata
+                    self.data_service.get_datasets(), self.dataset_metadata
                 ),
                 **kwargs,
             )
@@ -95,7 +93,7 @@ class BaseDatasetBuilder:
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.data_service.get_dataset,
                 datasets_metadata=get_corresponding_datasets(
-                    self.datasets, self.dataset_metadata
+                    self.data_service.get_datasets(), self.dataset_metadata
                 ),
                 **kwargs,
             )
@@ -220,7 +218,6 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            datasets=self.datasets,
             dataset_metadata=self.dataset_metadata,
         )
         variables_metadata: dict = self.library_metadata.variables_metadata.get(

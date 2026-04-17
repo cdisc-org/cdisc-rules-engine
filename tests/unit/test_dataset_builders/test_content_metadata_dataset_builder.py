@@ -298,7 +298,6 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        datasets=test_data.get("datasets", {}),
         dataset_metadata=SDTMDatasetMetadata(
             name="QSCG",
         ),
@@ -326,7 +325,6 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        datasets=test_data.get("datasets", {}),
         dataset_metadata=SDTMDatasetMetadata(
             name="QSPG",
         ),

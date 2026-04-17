@@ -140,7 +140,6 @@ def test_get_parent_column_order_from_library(
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.datasets = datasets
         operation_params.dataset_path = "suppae.xpt"
 
         # save model metadata to cache
@@ -157,6 +156,7 @@ def test_get_parent_column_order_from_library(
             standard_version="3-4",
             library_metadata=library_metadata,
         )
+        data_service.get_datasets = lambda: datasets
 
         def mock_get_raw_metadata(dataset_name, **kwargs):
             if "ae" in dataset_name.lower():
@@ -351,9 +351,6 @@ def test_get_parent_findings_class_column_order_from_library(
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.datasets = [
-            SDTMDatasetMetadata(**dataset) for dataset in datasets
-        ]
         operation_params.dataset_path = "suppae.xpt"
 
         # save model metadata to cache
@@ -371,6 +368,9 @@ def test_get_parent_findings_class_column_order_from_library(
             standard_version="3-4",
             library_metadata=library_metadata,
         )
+        data_service.get_datasets = lambda: [
+            SDTMDatasetMetadata(**dataset) for dataset in datasets
+        ]
 
         def mock_get_raw_metadata(dataset_name, **kwargs):
             if "ae" in dataset_name.lower():

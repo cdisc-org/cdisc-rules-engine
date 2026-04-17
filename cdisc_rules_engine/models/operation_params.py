@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Iterable, List
+from typing import List
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 import pandas as pd
 
@@ -19,7 +18,6 @@ class OperationParams:
     core_id: str
     dataframe: pd.DataFrame
     dataset_path: str
-    datasets: Iterable[SDTMDatasetMetadata]
     domain: str
     directory_path: str
     operation_id: str

@@ -230,9 +230,8 @@ class BaseOperation:
             library_metadata=self.library_metadata,
             data_service=self.data_service,
             dataset_metadata=self.data_service.get_raw_dataset_metadata(
-                dataset_name=self.params.domain, datasets=self.params.datasets
+                dataset_name=self.params.domain
             ),
-            datasets=self.params.datasets,
         )
 
     def _get_variable_names_list(self, domain, dataframe):
@@ -274,11 +273,10 @@ class BaseOperation:
 
         return sdtm_utilities.get_variables_metadata_from_standard_model(
             dataframe=dataframe,
-            datasets=self.params.datasets,
             data_service=self.data_service,
             library_metadata=self.library_metadata,
             dataset_metadata=self.data_service.get_raw_dataset_metadata(
-                dataset_name=self.params.domain, datasets=self.params.datasets
+                dataset_name=self.params.domain
             ),
         )
 

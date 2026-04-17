@@ -1,4 +1,4 @@
-from typing import Iterable, List, Union
+from typing import List, Union
 
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -45,9 +45,7 @@ class DatasetPreprocessor:
         self._data_service = data_service
         self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
-    def preprocess(  # noqa
-        self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
-    ) -> DatasetInterface:
+    def preprocess(self, rule: dict) -> DatasetInterface:  # noqa
         """
         Preprocesses the dataset by merging it with the
         datasets from the provided rule.
@@ -78,7 +76,7 @@ class DatasetPreprocessor:
                     ):
                         dataset_metadatas: list[SDTMDatasetMetadata] = [
                             item
-                            for item in datasets
+                            for item in self._data_service.get_datasets()
                             if (item.domain == self._dataset_metadata.rdomain)
                         ]
                 # find parent of other datasets
@@ -87,7 +85,7 @@ class DatasetPreprocessor:
                     or domain_name == self._dataset_metadata.name
                 ):
                     dataset_metadatas: list[SDTMDatasetMetadata] = (
-                        self._find_parent_dataset(datasets, domain_details)
+                        self._find_parent_dataset(domain_details)
                     )
             else:
                 if self._is_split_domain(domain_name):
@@ -97,7 +95,7 @@ class DatasetPreprocessor:
                 )
                 dataset_metadatas: list[SDTMDatasetMetadata] = [
                     item
-                    for item in datasets
+                    for item in self._data_service.get_datasets()
                     if (
                         item.domain == domain_name
                         or item.name == domain_name
@@ -157,7 +155,6 @@ class DatasetPreprocessor:
                         right_dataset=other_dataset,
                         right_dataset_domain_name=dataset_metadata.domain,
                         match_keys=domain_details.get("match_key"),
-                        datasets=datasets,
                     )
                     merged_domains.add(dataset_metadata.domain)
                 else:
@@ -166,7 +163,6 @@ class DatasetPreprocessor:
                         left_dataset_domain_name=self._dataset_metadata.domain,
                         right_dataset=other_dataset,
                         right_dataset_domain_details=domain_details,
-                        datasets=datasets,
                     )
                     merged_domains.add(
                         dataset_metadata.domain
@@ -175,20 +171,18 @@ class DatasetPreprocessor:
                     )
         return result
 
-    def _find_parent_dataset(
-        self, datasets: Iterable[SDTMDatasetMetadata], domain_details: dict
-    ) -> SDTMDatasetMetadata:
+    def _find_parent_dataset(self, domain_details: dict) -> SDTMDatasetMetadata:
         matching_datasets = []
         try:
             if "RDOMAIN" in self._dataset.columns:
                 rdomain_column = self._dataset.data["RDOMAIN"]
                 unique_domains = set(rdomain_column.unique())
-                for dataset in datasets:
+                for dataset in self._data_service.get_datasets():
                     if dataset.domain in unique_domains:
                         matching_datasets.append(dataset)
             else:
                 match_keys = domain_details.get("match_key")
-                for dataset in datasets:
+                for dataset in self._data_service.get_datasets():
                     has_all_match_keys = all(
                         match_key in dataset.first_record for match_key in match_keys
                     )
@@ -217,7 +211,6 @@ class DatasetPreprocessor:
         right_dataset: DatasetInterface,
         right_dataset_domain_name: str,
         match_keys: List[str],
-        datasets: Iterable[SDTMDatasetMetadata] = None,
     ) -> DatasetInterface:
         is_supplemental, rdomain_dataset = self._classify_dataset(
             left_dataset, self._dataset_metadata
@@ -508,7 +501,6 @@ class DatasetPreprocessor:
         left_dataset_domain_name: str,
         right_dataset: DatasetInterface,
         right_dataset_domain_details: dict,
-        datasets: List[dict],
     ) -> DatasetInterface:
         """
         Merges datasets on their match keys.
@@ -537,7 +529,7 @@ class DatasetPreprocessor:
                     left_dataset=left_dataset,
                     left_dataset_domain_name=left_dataset_domain_name,
                     relrec_dataset=right_dataset,
-                    datasets=datasets,
+                    datasets=self._data_service.get_datasets(),
                     dataset_preprocessor=self,
                     wildcard=right_dataset_domain_details.get("wildcard"),
                 )

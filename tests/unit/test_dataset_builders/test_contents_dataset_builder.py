@@ -62,8 +62,7 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    data_metadata = test_data
-    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
+    datasets = [DummyDataset(data) for data in test_data.get("datasets", [])]
     expected_output = {
         "STUDYID": {
             "0": "CDISCCORE01",
@@ -377,7 +376,6 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        datasets=datasets,
         dataset_metadata=DummyDataset(test_data.get("datasets", {})[0]),
         define_xml_path=None,
         standard="sdtmig",

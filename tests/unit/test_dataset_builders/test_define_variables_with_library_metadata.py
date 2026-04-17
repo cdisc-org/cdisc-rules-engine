@@ -184,7 +184,6 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         cache_service=cache,
         rule_processor=None,
         data_processor=None,
-        datasets=[],
         dataset_metadata=DummyDataset(
             {
                 "filename": "ae.xpt",

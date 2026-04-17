@@ -227,9 +227,9 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
         standard_version="3-4",
         library_metadata=library_metadata,
     )
+    data_service.get_datasets = lambda: [SDTMDatasetMetadata(**dataset_metadata)]
     class_name = data_service.get_dataset_class(
         df,
-        [SDTMDatasetMetadata(**dataset_metadata)],
         SDTMDatasetMetadata(**dataset_metadata),
     )
     assert class_name == expected_class
@@ -267,10 +267,16 @@ def test_get_dataset_class_associated_domains():
         "APDM": ap_dataset,
         "DM": ce_dataset,
     }
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=ap_dataset,
-        side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
+    with (
+        patch(
+            "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+            return_value=ap_dataset,
+            side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
+        ),
+        patch(
+            "cdisc_rules_engine.services.data_services.LocalDataService.get_datasets",
+            return_value=datasets,
+        ),
     ):
         library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
             Validation_args(
@@ -313,7 +319,6 @@ def test_get_dataset_class_associated_domains():
         )
         class_name = data_service.get_dataset_class(
             ap_dataset,
-            datasets,
             datasets[0],
         )
         assert class_name == SPECIAL_PURPOSE

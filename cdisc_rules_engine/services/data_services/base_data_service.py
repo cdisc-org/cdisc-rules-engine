@@ -178,7 +178,6 @@ class BaseDataService(DataServiceInterface, ABC):
     def get_dataset_class(
         self,
         dataset: DatasetInterface,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         if self.library_metadata.standard_metadata:
@@ -189,7 +188,7 @@ class BaseDataService(DataServiceInterface, ABC):
             name = class_data.get("name")
             if name:
                 return convert_library_class_name_to_ct_class(name)
-        return self.handle_custom_domains(dataset, dataset_metadata, datasets)
+        return self.handle_custom_domains(dataset, dataset_metadata)
 
     def get_data_structure(
         self,
@@ -278,7 +277,6 @@ class BaseDataService(DataServiceInterface, ABC):
         self,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
-        datasets: Iterable[SDTMDatasetMetadata],
     ):
         if self._contains_topic_variable(dataset, dataset_metadata.domain, "TERM"):
             return EVENTS
@@ -291,14 +289,11 @@ class BaseDataService(DataServiceInterface, ABC):
                 return FINDINGS_ABOUT
             return FINDINGS
         if dataset_metadata.is_ap:
-            return self._get_associated_persons_inherit_class(
-                datasets, dataset_metadata
-            )
+            return self._get_associated_persons_inherit_class(dataset_metadata)
         return None
 
     def _get_associated_persons_inherit_class(
         self,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
         """
@@ -307,6 +302,7 @@ class BaseDataService(DataServiceInterface, ABC):
         ap_suffix = dataset_metadata.ap_suffix
         if not ap_suffix:
             return None
+        datasets = self.get_datasets()
         if len(datasets) > 1:
             new_dataset_metadata: SDTMDatasetMetadata = search_in_list(
                 datasets, lambda item: item.domain == ap_suffix
@@ -319,7 +315,6 @@ class BaseDataService(DataServiceInterface, ABC):
                 raise ValueError("Filename for domain doesn't exist")
             return self.get_dataset_class(
                 new_dataset,
-                datasets,
                 new_dataset_metadata,
             )
         else:

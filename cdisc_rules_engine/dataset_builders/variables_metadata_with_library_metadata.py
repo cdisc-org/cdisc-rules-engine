@@ -27,7 +27,6 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         content_variables_metadata: DatasetInterface = (
             self.data_service.get_variables_metadata(
                 dataset_name=self.dataset_metadata.name,
-                datasets=self.datasets,
                 drop_duplicates=True,
             )
         )

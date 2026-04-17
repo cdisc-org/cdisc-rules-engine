@@ -68,10 +68,18 @@ define_metadata = [
     [
         (
             [
-                MagicMock(unsplit_name="AE", filename="ae.xpt"),
-                MagicMock(unsplit_name="DM", filename="dm.xpt"),
-                MagicMock(unsplit_name="SE", filename="se.xpt"),
-                MagicMock(unsplit_name="EC", filename="ec.xpt"),
+                SDTMDatasetMetadata(
+                    name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+                ),
+                SDTMDatasetMetadata(
+                    name="DM", first_record={"DOMAIN": "DM"}, filename="dm.xpt"
+                ),
+                SDTMDatasetMetadata(
+                    name="SE", first_record={"DOMAIN": "SE"}, filename="se.xpt"
+                ),
+                SDTMDatasetMetadata(
+                    name="EC", first_record={"DOMAIN": "EC"}, filename="ec.xpt"
+                ),
             ],
             define_metadata,
             pd.DataFrame(
@@ -153,9 +161,15 @@ define_metadata = [
         ),
         (
             [
-                MagicMock(unsplit_name="AE", filename="ae.xpt"),
-                MagicMock(unsplit_name="DM", filename="dm.xpt"),
-                MagicMock(unsplit_name="EC", filename="ec.xpt"),
+                SDTMDatasetMetadata(
+                    name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+                ),
+                SDTMDatasetMetadata(
+                    name="DM", first_record={"DOMAIN": "DM"}, filename="dm.xpt"
+                ),
+                SDTMDatasetMetadata(
+                    name="EC", first_record={"DOMAIN": "EC"}, filename="ec.xpt"
+                ),
             ],
             define_metadata,
             pd.DataFrame(
@@ -322,11 +336,15 @@ def test_domain_list_with_define_dataset_builder(
 ):
     builder = DomainListWithDefineDatasetBuilder(
         rule=None,
-        data_service=DummyDataService(MagicMock(), MagicMock(), MagicMock(), data=[]),
+        data_service=DummyDataService(
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            data=mock_datasets,
+        ),
         cache_service=None,
         rule_processor=None,
         data_processor=None,
-        datasets=mock_datasets,
         dataset_metadata=SDTMDatasetMetadata(full_path="ae.xpt"),
         define_xml_path=None,
         standard="sdtmig",

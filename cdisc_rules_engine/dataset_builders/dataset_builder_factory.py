@@ -106,7 +106,6 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("cache_service"),
             kwargs.get("rule_processor"),
             kwargs.get("data_processor"),
-            kwargs.get("datasets"),
             kwargs.get("dataset_metadata", ""),
             kwargs.get("define_xml_path"),
             kwargs.get("standard"),

@@ -36,7 +36,7 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
 
     def _get_domain_to_datasets(self):
         domain_to_datasets = defaultdict(list)
-        for dataset in self.params.datasets:
+        for dataset in self.data_service.get_datasets():
             domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 

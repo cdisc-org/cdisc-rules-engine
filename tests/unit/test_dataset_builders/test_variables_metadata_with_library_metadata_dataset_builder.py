@@ -130,7 +130,6 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         cache_service=cache,
         rule_processor=None,
         data_processor=None,
-        datasets=[],
         dataset_metadata=DummyDataset(
             {
                 "filename": "ae.xpt",
@@ -353,7 +352,6 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         cache_service=cache,
         rule_processor=None,
         data_processor=None,
-        datasets=[],
         dataset_metadata=DummyDataset(
             {
                 "filename": "ae.xpt",

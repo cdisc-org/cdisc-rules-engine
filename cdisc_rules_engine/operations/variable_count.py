@@ -22,7 +22,10 @@ class VariableCount(BaseOperation):
         of times that value appears as a variable in the study.
         """
         datasets_with_unique_domains = list(
-            {dataset.unsplit_name: dataset for dataset in self.params.datasets}.values()
+            {
+                dataset.unsplit_name: dataset
+                for dataset in self.data_service.get_datasets()
+            }.values()
         )
         coroutines = [
             self._get_dataset_variable_count(dataset)

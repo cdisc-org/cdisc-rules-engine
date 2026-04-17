@@ -71,7 +71,7 @@ def test_variable_value_count(
     mock_data_service.concat_split_datasets.side_effect = (
         lambda func, files: dataset_type().concat([func(f) for f in files])
     )
-    operation_params.datasets = datasets
+    mock_data_service.get_datasets = lambda: datasets
     operation_params.original_target = target
     operation_params.dataset_path = dataset_path
     result = VariableValueCount(

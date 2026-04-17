@@ -107,7 +107,6 @@ def get_variables_metadata_from_standard(  # noqa
     library_metadata,
     data_service,
     dataset_metadata: SDTMDatasetMetadata,
-    datasets: Iterable[SDTMDatasetMetadata],
 ):
     add_AP = False
     domain = dataset_metadata.unsplit_name
@@ -140,7 +139,6 @@ def get_variables_metadata_from_standard(  # noqa
         class_name = data_service.handle_custom_domains(
             data_service.get_dataset(dataset_name=dataset_metadata.name),
             dataset_metadata,
-            datasets,
         )
     model_class_details = get_class_metadata(model_details, class_name)
     # Both custom and standard General Observations pull from model
@@ -341,7 +339,6 @@ def group_class_variables_by_role(
 
 def get_variables_metadata_from_standard_model(  # noqa
     dataframe,
-    datasets: Iterable[SDTMDatasetMetadata],
     data_service: DataServiceInterface,
     library_metadata: LibraryMetadataContainer,
     dataset_metadata: SDTMDatasetMetadata,
@@ -379,9 +376,7 @@ def get_variables_metadata_from_standard_model(  # noqa
             IG_class_details.get("name")
         )
     else:
-        class_name = data_service.handle_custom_domains(
-            dataframe, dataset_metadata, datasets
-        )
+        class_name = data_service.handle_custom_domains(dataframe, dataset_metadata)
     if class_name in DETECTABLE_CLASSES:
         model_class_details = get_class_metadata(model_details, class_name)
         (
