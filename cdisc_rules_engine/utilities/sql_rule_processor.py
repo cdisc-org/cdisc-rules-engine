@@ -69,8 +69,6 @@ class SQLRuleProcessor:
                 attribute_name=operation.get("attribute_name"),
                 subtract=operation.get("subtract"),
                 external_dictionary_type=operation.get("external_dictionary_type"),
-                filter_attribute=operation.get("filter_attribute"),
-                filter_value=operation.get("filter_value"),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)
