@@ -26,7 +26,7 @@ class ContentsLibraryVariablesDatasetBuilder(ValuesDatasetBuilder):
         # merge dataset contents with library variable metadata
         merged = data_contents_long_df.merge(
             variables_metadata.data,
-            how="outer",
+            how="left",
             left_on="variable_name",
             right_on="library_variable_name",
         )

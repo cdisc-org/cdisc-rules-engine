@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 
 from cdisc_rules_engine.dataset_builders.contents_library_variables_dataset_builder import (
@@ -26,7 +25,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                 "library_variable_ccode": ["VAR1 CCODE", "VAR3 CCODE"],
             },
             {
-                "row_number": [1, 2, 3, 1, 2, 3, np.nan],
+                "row_number": [1, 2, 3, 1, 2, 3],
                 "variable_name": [
                     "VAR1",
                     "VAR1",
@@ -34,9 +33,8 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "VAR2",
                     "VAR2",
                     "VAR2",
-                    None,
                 ],
-                "variable_value": ["1A", "1B", "1C", "2A", "2B", "2C", None],
+                "variable_value": ["1A", "1B", "1C", "2A", "2B", "2C"],
                 "library_variable_name": [
                     "VAR1",
                     "VAR1",
@@ -44,7 +42,6 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     None,
                     None,
                     None,
-                    "VAR3",
                 ],
                 "library_variable_label": [
                     "VAR1 Label",
@@ -53,7 +50,6 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     None,
                     None,
                     None,
-                    "VAR3 Label",
                 ],
                 "library_variable_role": [
                     "VAR1 ROLE",
@@ -62,7 +58,6 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     None,
                     None,
                     None,
-                    "VAR3 ROLE",
                 ],
                 "library_variable_ccode": [
                     "VAR1 CCODE",
@@ -71,7 +66,6 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     None,
                     None,
                     None,
-                    "VAR3 CCODE",
                 ],
             },
         ),
