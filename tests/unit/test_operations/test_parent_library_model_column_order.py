@@ -135,11 +135,12 @@ def test_get_parent_column_order_from_library(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        # Set evaluation_dataset instead of dataframe
-        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
+        operation_params.dataframe_metadata = SDTMDatasetMetadata(
+            first_record={"RDOMAIN": "AE"}
+        )
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()
@@ -345,11 +346,12 @@ def test_get_parent_findings_class_column_order_from_library(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        # Set evaluation_dataset instead of dataframe
-        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
+        operation_params.dataframe_metadata = SDTMDatasetMetadata(
+            first_record={"RDOMAIN": "AE"},
+        )
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()

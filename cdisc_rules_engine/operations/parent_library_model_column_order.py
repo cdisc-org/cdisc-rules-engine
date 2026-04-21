@@ -50,4 +50,9 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         parent_dataframe = self.data_service.get_dataset(
             dataset_name=parent_datasets[0].name
         )
-        return self._get_variable_names_list(rdomain, parent_dataframe)
+        parent_dataframe_metadata = self.data_service.get_raw_dataset_metadata(
+            dataset_name=parent_datasets[0].name
+        )
+        return self._get_variable_names_list(
+            parent_dataframe_metadata, parent_dataframe
+        )

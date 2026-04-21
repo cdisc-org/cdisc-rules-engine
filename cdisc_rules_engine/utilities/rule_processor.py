@@ -336,7 +336,7 @@ class RuleProcessor:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
             target: str = original_target
-            domain: str = operation.get("domain", dataset_metadata.name)
+            domain: str = operation.get("domain", dataset_metadata.unsplit_name)
             wildcard_replacement: str = operation.get(
                 "domain", dataset_metadata.wildcard_replacement
             )

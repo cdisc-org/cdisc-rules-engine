@@ -229,23 +229,25 @@ class BaseOperation:
         return sdtm_utilities.get_variables_metadata_from_standard(
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            dataset_metadata=self.data_service.get_raw_dataset_metadata(
-                dataset_name=self.params.domain
-            ),
+            dataset_metadata=self.params.dataframe_metadata,
         )
 
-    def _get_variable_names_list(self, domain, dataframe):
+    def _get_variable_names_list(self, dataset_metadata, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[dict] = (
-            self._get_variables_metadata_from_standard_model(dataframe)
+            self._get_variables_metadata_from_standard_model(
+                dataset_metadata, dataframe
+            )
         )
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
-            variables_metadata, domain
+            variables_metadata, dataset_metadata.wildcard_replacement
         )
         return list(OrderedDict.fromkeys(variable_names_list))
 
-    def _get_variables_metadata_from_standard_model(self, dataframe) -> List[dict]:
+    def _get_variables_metadata_from_standard_model(
+        self, dataset_metadata, dataframe
+    ) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -275,9 +277,7 @@ class BaseOperation:
             dataframe=dataframe,
             data_service=self.data_service,
             library_metadata=self.library_metadata,
-            dataset_metadata=self.data_service.get_raw_dataset_metadata(
-                dataset_name=self.params.domain
-            ),
+            dataset_metadata=dataset_metadata,
         )
 
     @staticmethod
