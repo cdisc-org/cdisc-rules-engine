@@ -1,13 +1,14 @@
 import pandas as pd
 
+from cdisc_rules_engine.models.dataset import DatasetInterface
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
 class ExtractMetadata(BaseOperation):
     def _execute_operation(self):
         # get metadata
-        metadata: pd.DataFrame = self.data_service.get_dataset_metadata(
-            dataset_name=self.params.domain
+        metadata: DatasetInterface = self.data_service.get_dataset_metadata(
+            dataset_name=self.params.dataframe_metadata.name
         )
 
         # extract target value. Metadata df always has one row
