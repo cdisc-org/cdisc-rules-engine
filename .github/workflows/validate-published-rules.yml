@@ -1,0 +1,190 @@
+# ==============================================================================
+# This workflow:
+#   1. Checks out cdisc-rules-engine (the engine itself)
+#   2. Checks out cdisc-open-rules (rules + test data) into ./open-rules/
+#   3. Installs engine Python dependencies
+#   4. Iterates every Published/ rule from cdisc-open-rules
+#   5. Runs the engine against each test case
+#   6. Compares output with committed results.csv baseline
+#   7. Publishes a Markdown report to Job Summary and as an artifact
+# ==============================================================================
+name: Validate Published Rules
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      rules_ref:
+        description: 'Branch/tag/SHA of cdisc-open-rules to validate against'
+        required: false
+        default: 'main'
+      engine_ref:
+        description: 'Branch/tag/SHA of cdisc-rules-engine to use'
+        required: false
+        default: 'main'
+
+jobs:
+  validate-published-rules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout cdisc-rules-engine
+      # -----------------------------------------------------------------------
+      - name: Checkout cdisc-rules-engine
+        uses: actions/checkout@v6
+        with:
+          repository: cdisc-org/cdisc-rules-engine
+          ref: ${{ inputs.engine_ref || github.sha }}
+          path: engine
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 2. Checkout cdisc-open-rules (rules + test data + helper scripts)
+      # -----------------------------------------------------------------------
+      - name: Checkout cdisc-open-rules
+        uses: actions/checkout@v6
+        with:
+          repository: cdisc-org/cdisc-open-rules
+          ref: ${{ inputs.rules_ref || 'main' }}
+          path: open-rules
+          # If cdisc-open-rules is private, add a PAT secret:
+          # token: ${{ secrets.CDISC_OPEN_RULES_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 3. Set up Python
+      # -----------------------------------------------------------------------
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      # -----------------------------------------------------------------------
+      # 4. Install engine dependencies
+      # -----------------------------------------------------------------------
+      - name: Install engine dependencies
+        run: |
+          python -m venv venv
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r engine/requirements.txt
+
+      # -----------------------------------------------------------------------
+      # 5. Run validation for every Published rule
+      # -----------------------------------------------------------------------
+      - name: Run validation for all Published rules
+        id: validate
+        continue-on-error: true
+        run: |
+          chmod +x open-rules/.github/scripts/run_validation.sh
+
+          PYTHON_CMD="$(pwd)/venv/bin/python"
+          ENGINE_DIR="$(pwd)/engine"
+          RULES_ROOT="$(pwd)/open-rules"
+          PUBLISHED_DIR="$RULES_ROOT/Published"
+          SCRIPTS_DIR="$RULES_ROOT/.github/scripts"
+          SUMMARY_REPORT="$(pwd)/validation_report.md"
+
+          OVERALL_EXIT=0
+          RULE_PASS=0
+          RULE_FAIL=0
+
+          mapfile -t RULE_DIRS < <(find "$PUBLISHED_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
+
+          if [ ${#RULE_DIRS[@]} -eq 0 ]; then
+            echo "::warning::No rule directories found under Published/"
+            exit 0
+          fi
+
+          echo "Found ${#RULE_DIRS[@]} rule(s) under Published/"
+
+          {
+            echo "# Published Rules Validation Report"
+            echo ""
+          } > "$SUMMARY_REPORT"
+
+          for RULE_DIR in "${RULE_DIRS[@]}"; do
+            RULE_ID=$(basename "$RULE_DIR")
+            RULE_REL_PATH="Published/$RULE_ID"
+
+            RULE_YML=$(find "$RULE_DIR" -maxdepth 1 -name "*.yml" | head -1)
+            if [ -z "$RULE_YML" ]; then
+              echo "::warning::Skipping $RULE_ID — no .yml file found"
+              continue
+            fi
+
+            echo "========================================"
+            echo " Validating $RULE_ID"
+            echo "========================================"
+
+            RULE_EXIT=0
+            # Pass ENGINE_DIR explicitly so run_validation.sh knows where core.py is
+            ENGINE_DIR_OVERRIDE="$ENGINE_DIR" \
+            bash "$SCRIPTS_DIR/run_validation.sh" \
+              "$RULE_REL_PATH" \
+              "$PYTHON_CMD" \
+              "$RULES_ROOT" \
+              || RULE_EXIT=$?
+
+            if [ -f "$RULES_ROOT/validation_report.md" ]; then
+              cat "$RULES_ROOT/validation_report.md" >> "$SUMMARY_REPORT"
+              echo -e "\n---\n" >> "$SUMMARY_REPORT"
+              rm -f "$RULES_ROOT/validation_report.md"
+            fi
+
+            if [ $RULE_EXIT -eq 0 ]; then
+              RULE_PASS=$((RULE_PASS + 1))
+              echo "  → $RULE_ID: PASSED"
+            else
+              RULE_FAIL=$((RULE_FAIL + 1))
+              OVERALL_EXIT=1
+              echo "  → $RULE_ID: FAILED"
+            fi
+          done
+
+          # Insert summary totals after the H1 heading
+          {
+            echo "**Total:** $((RULE_PASS + RULE_FAIL))  |  ✅ Passed: $RULE_PASS  |  ❌ Failed: $RULE_FAIL"
+            echo ""
+            echo "---"
+            echo ""
+          } > /tmp/totals.md
+          head -2 "$SUMMARY_REPORT"          > /tmp/final_report.md
+          cat /tmp/totals.md                >> /tmp/final_report.md
+          tail -n +3 "$SUMMARY_REPORT"      >> /tmp/final_report.md
+          mv /tmp/final_report.md "$SUMMARY_REPORT"
+
+          exit $OVERALL_EXIT
+
+      # -----------------------------------------------------------------------
+      # 6. Upload report + results.json as artifacts
+      # -----------------------------------------------------------------------
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: published-rules-validation-${{ github.run_id }}
+          path: |
+            open-rules/Published/**/results/results.json
+            validation_report.md
+          if-no-files-found: warn
+
+      # -----------------------------------------------------------------------
+      # 7. Write report to GitHub Actions Job Summary
+      # -----------------------------------------------------------------------
+      - name: Write report to workflow summary
+        if: always()
+        run: |
+          [ -f validation_report.md ] && cat validation_report.md >> $GITHUB_STEP_SUMMARY || true
+
+      # -----------------------------------------------------------------------
+      # 8. Fail the job if any rule failed
+      # -----------------------------------------------------------------------
+      - name: Check overall status
+        if: steps.validate.outcome == 'failure'
+        run: |
+          echo "One or more published rules failed validation — see the report above."
+          exit 1
+
