@@ -18,14 +18,14 @@ DEFAULT_ENCODING = "utf-8"
 
 
 def test_no_datasets_csv_raises_error():
-    paths = ["/data/variables.csv", "/data/dm.csv"]
+    paths = ["/data/_variables.csv", "/data/dm.csv"]
     with pytest.raises(InvalidCSVFile):
         _validate_csv_data_paths(paths)
 
 
 class TestDatasetsCsvMissingFilenameColumn:
     def test_non_csv_files_excluded_when_no_filename_col(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Name": ["dm"]}).to_csv(datasets_csv, index=False)
 
         dm = tmp_path / "dm.csv"
@@ -38,7 +38,7 @@ class TestDatasetsCsvMissingFilenameColumn:
 
 class TestDatasetsCsvWithFilenameColumn:
     def test_keeps_only_allowed_datasets(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame(
             {"Filename": ["dm.csv", "customers.csv"], "Label": ["test1", "test2"]}
         ).to_csv(datasets_csv, index=False)
@@ -56,11 +56,11 @@ class TestDatasetsCsvWithFilenameColumn:
         assert str(orders) not in result
 
     def test_variables_csv_excluded_even_if_listed(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame(
-            {"Filename": ["variables.csv", "dm.csv"], "Label": ["test1", "test2"]}
+            {"Filename": ["_variables.csv", "dm.csv"], "Label": ["test1", "test2"]}
         ).to_csv(datasets_csv, index=False)
-        variables = tmp_path / "variables.csv"
+        variables = tmp_path / "_variables.csv"
         dm = tmp_path / "dm.csv"
         variables.touch()
         dm.touch()
@@ -71,7 +71,7 @@ class TestDatasetsCsvWithFilenameColumn:
 
     def test_filename_with_path_prefix_uses_stem_matching(self, tmp_path):
         """Filename 'subdir/dm.csv' -> stem 'dm' -> matches 'dm.csv' on disk."""
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["subdir/dm.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -82,7 +82,7 @@ class TestDatasetsCsvWithFilenameColumn:
         assert str(dm) in result
 
     def test_nan_filenames_are_ignored(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["dm.csv", None], "Label": ["test1", None]}).to_csv(
             datasets_csv, index=False
         )
@@ -96,7 +96,7 @@ class TestDatasetsCsvWithFilenameColumn:
         assert str(unknown) not in result
 
     def test_no_matching_files_returns_empty(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["nonexistent.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -106,7 +106,7 @@ class TestDatasetsCsvWithFilenameColumn:
         assert _validate_csv_data_paths([str(datasets_csv), str(dm)]) == []
 
     def test_non_csv_files_excluded_even_if_stem_matches(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["dm.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -117,7 +117,7 @@ class TestDatasetsCsvWithFilenameColumn:
         assert _validate_csv_data_paths([str(datasets_csv), str(dm_xlsx)]) == []
 
     def test_encoding_is_forwarded_to_read_csv(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["dm.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -132,7 +132,7 @@ class TestDatasetsCsvWithFilenameColumn:
 
 class TestEdgeCases:
     def test_only_datasets_csv_in_input(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["dm.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -140,10 +140,10 @@ class TestEdgeCases:
 
     def test_only_variables_csv_in_input(self):
         with pytest.raises(InvalidCSVFile):
-            _validate_csv_data_paths(["/data/variables.csv"])
+            _validate_csv_data_paths(["/data/_variables.csv"])
 
     def test_empty_filename_column_returns_empty(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame(
             {"Filename": pd.Series([], dtype=str), "Label": pd.Series([], dtype=str)}
         ).to_csv(datasets_csv, index=False)
@@ -153,7 +153,7 @@ class TestEdgeCases:
         assert _validate_csv_data_paths([str(datasets_csv), str(dm)]) == []
 
     def test_all_filename_values_nan_returns_empty(self, tmp_path):
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": [None, None], "Label": [None, None]}).to_csv(
             datasets_csv, index=False
         )
@@ -164,7 +164,7 @@ class TestEdgeCases:
 
     def test_duplicate_paths_removed(self, tmp_path):
         """The function does not deduplicate; duplicates in -> duplicates out."""
-        datasets_csv = tmp_path / "datasets.csv"
+        datasets_csv = tmp_path / "_datasets.csv"
         pd.DataFrame({"Filename": ["dm.csv"], "Label": ["test1"]}).to_csv(
             datasets_csv, index=False
         )
@@ -215,7 +215,7 @@ class TestDatasetCSVMetadataReaderRead:
         _write(self.data_path, DATA_CSV)
 
     def _variables_path(self):
-        return Path(self.tmpdir) / "variables.csv"
+        return Path(self.tmpdir) / "_variables.csv"
 
     def test_returns_dict_with_expected_keys(self):
         _write(self._variables_path(), VARIABLES_CSV)
@@ -315,7 +315,7 @@ class TestDatasetCSVMetadataReaderRead:
         assert sizes["id"] is None
 
     def test_dataset_name_lookup_is_case_insensitive(self):
-        """File name with mixed case should still match variables.csv entry."""
+        """File name with mixed case should still match _variables.csv entry."""
         variables_upper = VARIABLES_CSV.replace("patients.csv", "PATIENTS.CSV")
         _write(self._variables_path(), variables_upper)
         reader = DatasetCSVMetadataReader(str(self.data_path), "PATIENTS.CSV")
@@ -338,7 +338,7 @@ class TestDatasetCSVMetadataReaderRead:
 
     def test_dataset_label_added_when_datasets_csv_present(self):
         _write(self._variables_path(), VARIABLES_CSV)
-        _write(Path(self.tmpdir) / "datasets.csv", DATASETS_CSV)
+        _write(Path(self.tmpdir) / "_datasets.csv", DATASETS_CSV)
         reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
         result = reader.read()
         assert result.get("dataset_label") == "Patient Dataset"

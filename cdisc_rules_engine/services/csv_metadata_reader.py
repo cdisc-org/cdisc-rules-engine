@@ -23,12 +23,12 @@ class DatasetCSVMetadataReader:
         self.variables_csv_path = (
             Path(variables_csv_path)
             if variables_csv_path
-            else Path(self.file_path).parent / "variables.csv"
+            else Path(self.file_path).parent / "_variables.csv"
         )
         self.datasets_csv_path = (
             Path(datasets_csv_path)
             if datasets_csv_path
-            else Path(self.file_path).parent / "datasets.csv"
+            else Path(self.file_path).parent / "_datasets.csv"
         )
 
     def read(self) -> dict:

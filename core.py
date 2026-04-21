@@ -110,29 +110,29 @@ def _validate_csv_data_paths(
     dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
 ) -> list[str]:
     """
-    Filters dataset paths based on datasets.csv content.
+    Filters dataset paths based on _datasets.csv content.
 
-    Raises InvalidCSVFile error if there are no proper datasets.csv files in provided path.
+    Raises InvalidCSVFile error if there are no proper _datasets.csv files in provided path.
 
-    Keeps only datasets listed in datasets.csv (Filename column).
-    Always excludes datasets.csv and variables.csv from result.
+    Keeps only datasets listed in _datasets.csv (Filename column).
+    Always excludes _datasets.csv and _variables.csv from result.
     """
     import pandas as pd
 
     paths = [Path(p) for p in dataset_paths]
 
-    datasets_path = list({p for p in paths if p.name.lower() == "datasets.csv"})
+    datasets_path = list({p for p in paths if p.name.lower() == "_datasets.csv"})
     if len(datasets_path) > 1:
         raise InvalidCSVFile(
-            "There is more than one datasets.csv file in provided path."
+            "There is more than one _datasets.csv file in provided path."
         )
     elif len(datasets_path) == 0:
-        raise InvalidCSVFile("There is no datasets.csv file in provided path.")
+        raise InvalidCSVFile("There is no _datasets.csv file in provided path.")
     else:
         datasets_path = datasets_path[0]
 
     dataset_files = [
-        p for p in paths if p.name.lower() not in ("datasets.csv", "variables.csv")
+        p for p in paths if p.name.lower() not in ("_datasets.csv", "_variables.csv")
     ]
 
     datasets_df = pd.read_csv(datasets_path, encoding=encoding)
@@ -538,13 +538,13 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-vcp",
     "--variables-csv-path",
     required=False,
-    help="Path to variables.csv",
+    help="Path to _variables.csv",
 )
 @click.option(
     "-dcp",
     "--datasets-csv-path",
     required=False,
-    help="Path to datasets.csv",
+    help="Path to _datasets.csv",
 )
 @click.pass_context
 def validate(  # noqa
