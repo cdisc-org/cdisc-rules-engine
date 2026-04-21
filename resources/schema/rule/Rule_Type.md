@@ -209,6 +209,7 @@ Pairs record-level data values from the submission datasets with dataset metadat
 - `variable_size`
 - `variable_data_type`
 - `variable_format`
+- `variable_max_size` (if needed by the rule)
 
 #### Rule Macro
 
