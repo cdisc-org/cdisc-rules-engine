@@ -2,6 +2,8 @@ on:
   push:
     branches: [main]
 
+permissions: {}
+
 jobs:
   dispatch:
     runs-on: ubuntu-latest
