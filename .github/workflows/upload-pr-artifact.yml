@@ -1,4 +1,4 @@
-name: Upload PR Artifact
+name: Upload-PR-Artifact
 on:
   pull_request:
     branches:
