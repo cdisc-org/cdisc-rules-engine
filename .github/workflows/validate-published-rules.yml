@@ -58,6 +58,20 @@ jobs:
           # token: ${{ secrets.CDISC_OPEN_RULES_TOKEN }}
 
       # -----------------------------------------------------------------------
+      # 2b. Debug — verify directory layout
+      # -----------------------------------------------------------------------
+      - name: Debug — list workspace layout
+        run: |
+          echo "=== Workspace root ==="
+          ls -la
+          echo "=== open-rules/ ==="
+          ls -la open-rules/ || echo "open-rules/ NOT FOUND"
+          echo "=== open-rules/Published/ (first 10) ==="
+          ls open-rules/Published/ 2>/dev/null | head -10 || echo "Published/ NOT FOUND"
+          echo "=== engine/ ==="
+          ls engine/ | head -10 || echo "engine/ NOT FOUND"
+
+      # -----------------------------------------------------------------------
       # 3. Set up Python
       # -----------------------------------------------------------------------
       - name: Set up Python 3.12
