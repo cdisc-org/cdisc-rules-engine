@@ -1,3 +1,5 @@
+name: Open Rules Submodule Dispatch
+
 on:
   push:
     branches: [main]
