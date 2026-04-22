@@ -21,6 +21,11 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
         define_vars = self.get_define_vars()
         define_vars_by_name = {v.get("define_variable_name", "").upper(): v for v in define_vars}
 
+        dataset_var_names = [var.name.upper() for var in self.dataset_metadata.variables]
+        define_and_dataset_vars = list(define_vars_by_name.keys()) + [
+            v for v in dataset_var_names if v not in define_vars_by_name
+        ]
+
         library_vars = self.get_library_vars()
         library_vars_by_name = {var["library_variable_name"].upper(): var for var in library_vars}
 
@@ -35,10 +40,9 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
 
         rows = []
 
-        # adjust to define first check (ie vars in define but NOT in dataset will get included - note that therefore vars in dataset but not in define WILL NOT be included) # noqa
-        for define_var, _ in define_vars_by_name.items():
-            define_var_name = define_var.upper() if define_var else ""
-            var = next((v for v in self.dataset_metadata.variables if v.name.upper() == define_var_name), None)
+        for variable in define_and_dataset_vars:
+            var_name = variable.upper() if variable else ""
+            var = next((v for v in self.dataset_metadata.variables if v.name.upper() == var_name), None)
             has_empty = self._has_empty_values(source_table_id, source_table_hash, var, table_is_empty)
             var_count = self._value_count(source_table_id, source_table_hash, var) if var else 0
             row = {
@@ -51,27 +55,8 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
                 "variable_count": var_count,
                 "variable_is_empty": True if var_count == 0 else False,
             }
-            row.update(define_vars_by_name.get(define_var_name, {k: None for k in DEFINE_VARIABLES_TYPE}))
-            row.update(library_vars_by_name.get(define_var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
-
-            # leaving previous implementation of dataset first as a comment for now
-            # for var in self.dataset_metadata.variables:
-            #     var_name = var.name.upper() if var else ""
-            #     has_empty = self._has_empty_values(source_table_id, source_table_hash, var, table_is_empty)
-            #     var_count = self._value_count(source_table_id, source_table_hash, var)
-
-            #     row = {
-            #         "variable_name": var.name.upper() if var else "",
-            #         "variable_order_number": var.order if var else 0,
-            #         "variable_label": var.label if var else "",
-            #         "variable_size": var.length if var else 0,
-            #         "variable_data_type": var.type if var else "",
-            #         "variable_has_empty_values": str(has_empty),
-            #         "variable_count": var_count,
-            #         "variable_is_empty": True if var_count == 0 else False,
-            #     }
-            #     row.update(define_vars_by_name.get(var_name, {k: None for k in DEFINE_VARIABLES_TYPE}))
-            #     row.update(library_vars_by_name.get(var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
+            row.update(define_vars_by_name.get(var_name, {k: None for k in DEFINE_VARIABLES_TYPE}))
+            row.update(library_vars_by_name.get(var_name, {k: None for k in LIBRARY_VARIABLES_TYPE}))
 
             rows.append(row)
 
