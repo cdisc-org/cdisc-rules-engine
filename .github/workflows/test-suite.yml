@@ -1,9 +1,10 @@
 name: CORE Test Suite Validation
+
 on:
   workflow_run:
     workflows: ["Upload-PR-Artifact"]
     types: [completed]
-    branches: [main]
+
   workflow_dispatch:
     inputs:
       pr_number:
