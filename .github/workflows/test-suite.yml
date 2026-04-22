@@ -1,26 +1,42 @@
 name: CORE Test Suite Validation
 on:
+  workflow_run:
+    workflows: ["Upload PR Artifact"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       pr_number:
         description: "PR number to test (for forked repositories) (leave empty for current branch)"
         required: false
         type: string
-  pull_request_target:
   push:
     branches:
       - main
 
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # Only run if the workflow_run was successful or if manually triggered/pushed
+    if: |
+      github.event_name == 'push' || 
+      github.event_name == 'workflow_dispatch' || 
+      github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Get Engine Changes
+      - name: Download PR engine artifact
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v8
+        with:
+          name: pr-engine-${{ github.event.workflow_run.pull_requests[0].number }}
+
+      - name: Checkout current branch (for push/manual)
+        if: github.event_name != 'workflow_run'
         uses: actions/checkout@v6
         with:
-          ref: ${{ (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
+          ref: ${{ (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.ref }}
+
       - name: Get Test Suite Repository
         uses: actions/checkout@v6
         with:

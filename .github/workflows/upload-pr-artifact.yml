@@ -1,0 +1,22 @@
+name: Upload PR Artifact
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v6
+
+      - name: Upload engine artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-engine-${{ github.event.pull_request.number }}
+          path: .
+          retention-days: 1

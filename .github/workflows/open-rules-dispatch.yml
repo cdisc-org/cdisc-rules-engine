@@ -8,8 +8,7 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/repository-dispatch@v3
-        with:
-          token: ${{ secrets.OPEN_RULES_PAT }}
-          repository: cdisc-org/cdisc-open-rules
-          event-type: engine-updated
+      - name: Dispatch to cdisc-open-rules
+        run: gh api repos/cdisc-org/cdisc-open-rules/dispatches -f event_type=engine-updated
+        env:
+          GH_TOKEN: ${{ secrets.OPEN_RULES_PAT }}
