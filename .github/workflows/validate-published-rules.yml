@@ -21,7 +21,7 @@ on:
       rules_ref:
         description: 'Branch/tag/SHA of cdisc-open-rules to validate against'
         required: false
-        default: 'main'
+        default: 'rules_2'
       engine_ref:
         description: 'Branch/tag/SHA of cdisc-rules-engine to use'
         required: false
