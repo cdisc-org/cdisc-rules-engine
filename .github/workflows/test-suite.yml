@@ -22,10 +22,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     # Only run if the workflow_run was successful or if manually triggered/pushed
-    if: >
-      github.event_name == 'push' || 
-      github.event_name == 'workflow_dispatch' || 
-      github.event.workflow_run.conclusion == 'success'
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
     steps:
       - name: Download PR engine artifact
         if: github.event_name == 'workflow_run'
