@@ -11,8 +11,11 @@
 name: Validate Published Rules
 
 on:
+  pull_request:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - 798-test-against-published
   workflow_dispatch:
     inputs:
       rules_ref:
