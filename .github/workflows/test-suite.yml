@@ -23,7 +23,6 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    # Only run if the workflow_run was successful or if manually triggered/pushed
     if: >-
       github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch' ||
