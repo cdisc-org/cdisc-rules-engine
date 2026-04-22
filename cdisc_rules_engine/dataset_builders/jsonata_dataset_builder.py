@@ -21,7 +21,7 @@ def add_json_pointer_paths(node, path=""):
 class JSONataDatasetBuilder(BaseDatasetBuilder):
 
     @cached("get_dataset")
-    def get_dataset(self, **kwargs):
+    def get_dataset(self):
         if not self.dataset_metadata.full_path:
             return None
         with self.data_service.read_data(self.dataset_metadata.full_path) as fp:

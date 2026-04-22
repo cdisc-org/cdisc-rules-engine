@@ -19,8 +19,8 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
             dataset_name=dataset_name, datasets=self.datasets
         )
 
-    def get_dataset(self, **kwargs):
-        dataset = super().get_dataset(**kwargs)
+    def get_dataset(self):
+        dataset = super().get_dataset()
         length = sum(
             [
                 dataset.record_count

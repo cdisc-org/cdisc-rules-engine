@@ -80,7 +80,7 @@ class BaseDatasetBuilder:
             self.dataset_path = original_path
 
     @cached("get_dataset")
-    def get_dataset(self, **kwargs):
+    def get_dataset(self):
         # If validating dataset content, ensure split datasets are handled.
         if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
@@ -90,7 +90,6 @@ class BaseDatasetBuilder:
                 datasets_metadata=get_corresponding_datasets(
                     self.datasets, self.dataset_metadata
                 ),
-                **kwargs,
             )
         else:
             # single dataset. the most common case
@@ -98,7 +97,7 @@ class BaseDatasetBuilder:
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
-    def get_dataset_contents(self, **kwargs):
+    def get_dataset_contents(self):
         # If validating dataset content, ensure split datasets are handled.
         if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
@@ -108,7 +107,6 @@ class BaseDatasetBuilder:
                 datasets_metadata=get_corresponding_datasets(
                     self.datasets, self.dataset_metadata
                 ),
-                **kwargs,
             )
         else:
             # single dataset. the most common case

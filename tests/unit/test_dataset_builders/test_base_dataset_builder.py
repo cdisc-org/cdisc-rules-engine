@@ -232,30 +232,3 @@ def test_get_define_xml_variables_metadata_domain_not_found(
         match=r"name=AE, domain=AE is not found in Define XML",
     ):
         builder.get_define_xml_variables_metadata()
-
-
-def test_get_dataset_kwargs_are_ignored_in_cache(monkeypatch):
-    # Reset singleton cache to isolate test
-    from cdisc_rules_engine.services.cache import InMemoryCacheService
-
-    InMemoryCacheService._instance = None
-    cache_service = InMemoryCacheService.get_instance()
-
-    dataset_metadata = MagicMock()
-    dataset_metadata.is_split = True
-    dataset_metadata.full_path = "dummy_path"
-
-    builder = create_builder_instance(dataset_metadata)
-    builder.cache_service = cache_service
-
-    def fake_concat(*args, **kwargs):
-        return {"value": kwargs.get("param")}
-
-    builder.data_service.concat_split_datasets = MagicMock(side_effect=fake_concat)
-
-    result1 = builder.get_dataset(dataset_name="test", param=1)
-    result2 = builder.get_dataset(dataset_name="test", param=2)
-
-    assert result1 == result2
-
-    assert builder.data_service.concat_split_datasets.call_count == 1
