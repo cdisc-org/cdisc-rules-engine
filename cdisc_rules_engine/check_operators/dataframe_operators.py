@@ -1726,17 +1726,6 @@ class DataframeType(BaseType):
         )
         return is_valid
 
-    def check_target_ascending_in_sorted_group(
-        self, group, target, comparator, ascending, na_pos
-    ):
-        """
-        Check if target values are in ascending order within a group
-        already sorted by comparator.
-        """
-        return self.check_target_ascending_in_sorted_group_with_regex(
-            group, target, comparator, ascending, na_pos
-        )
-
     def check_date_overlaps(self, group, target, comparator):
         comparator_values = group[comparator].tolist()
         is_valid = pd.Series(True, index=group.index)
