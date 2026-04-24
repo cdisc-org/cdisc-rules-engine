@@ -1,0 +1,16 @@
+name: Open Rules Submodule Dispatch
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to cdisc-open-rules
+        run: gh api repos/cdisc-org/cdisc-open-rules/dispatches -f event_type=engine-updated
+        env:
+          GH_TOKEN: ${{ secrets.OPEN_RULES_PAT }}
