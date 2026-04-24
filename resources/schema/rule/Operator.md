@@ -1165,7 +1165,7 @@ Check:
   all:
     - name: MIDS
       operator: target_is_sorted_by
-      regex: ".*?(\\d+)$"  # Extract trailing digits, convert to numeric
+      regex: ".*?(\\d+)$" # Extract trailing digits, convert to numeric
       value:
         - name: SMSTDTC
           sort_order: asc
