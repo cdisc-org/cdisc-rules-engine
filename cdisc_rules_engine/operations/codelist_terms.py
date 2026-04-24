@@ -58,6 +58,12 @@ class CodelistTerms(BaseOperation):
             self.params.ct_package_type, unique_ct_versions
         )
         ct_df = self.evaluation_dataset.__class__.from_dict(ct_data)
+        ct_df = ct_df.astype(
+            {
+                "version": str,
+                "codelist_code": str,
+            }
+        )
         if self.params.codelist_code in self.evaluation_dataset.columns:
             result = self.evaluation_dataset.merge(
                 ct_df.data,
