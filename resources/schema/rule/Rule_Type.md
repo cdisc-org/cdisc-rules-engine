@@ -27,6 +27,7 @@ The combination of data in each rule type.
 |                       | [Value Check with Variable Metadata](#value-check-with-variable-metadata)                                                             |
 |                       | [Value Check against Define XML Variable](#value-check-against-define-xml-variable)                                                   |
 |                       | [Value Check against Define XML VLM](#value-check-against-define-xml-vlm)                                                             |
+|                       | [Value Check against Library Metadata](#value-check-against-library-metadata)                                                         |
 | **Variable Metadata** | [Variable Metadata Check](#variable-metadata-check)                                                                                   |
 |                       | [Variable Metadata Check against Define XML](#variable-metadata-check-against-define-xml)                                             |
 |                       | [Variable Metadata Check against Library Metadata](#variable-metadata-check-against-library-metadata)                                 |
@@ -472,6 +473,46 @@ all:
   - name: define_vlm_mandatory
     operator: equal_to
     value: Yes
+```
+
+## Value Check against Library Metadata
+
+#### Columns
+
+- `row_number`
+- `variable_name`
+- `variable_value`
+- `library_variable__links`
+- `library_variable_core`
+- `library_variable_description`
+- `library_variable_label`
+- `library_variable_name`
+- `library_variable_ordinal`
+- `library_variable_role`
+- `library_variable_simpleDatatype`
+- `library_variable_ccode`
+- `library_variable_has_codelist`
+- `library_variable_valueList`
+- `library_variable_definition`
+- `library_variable_notes`
+- `library_variable_variableCcode`
+- `library_variable_examples`
+- `library_variable_usageRestrictions`
+- `library_variable_describedValueDomain`
+
+#### Rule Macro
+
+Checks individual cell values from submission dataset contents pivoted to a long format, with the matching Library Metadata joined to each row.
+
+#### Example
+
+```yaml
+all:
+  - name: variable_value
+    operator: non_empty
+  - name: library_variable_has_codelist
+    operator: equal_to
+    value: true
 ```
 
 ## Variable Metadata Check against Define XML

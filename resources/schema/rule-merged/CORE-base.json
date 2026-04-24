@@ -9,9 +9,7 @@
               "$ref": "#/$defs/CheckItems"
             }
           },
-          "required": [
-            "all"
-          ],
+          "required": ["all"],
           "type": "object"
         },
         {
@@ -21,9 +19,7 @@
               "$ref": "#/$defs/CheckItems"
             }
           },
-          "required": [
-            "any"
-          ],
+          "required": ["any"],
           "type": "object"
         },
         {
@@ -33,9 +29,7 @@
               "$ref": "#/$defs/CheckItem"
             }
           },
-          "required": [
-            "not"
-          ],
+          "required": ["not"],
           "type": "object"
         }
       ]
@@ -133,18 +127,13 @@
           "$ref": "#/$defs/Domains"
         },
         "include_split_datasets": {
-          "enum": [
-            true
-          ]
+          "enum": [true]
         }
       },
       "type": "object"
     },
     "JoinType": {
-      "enum": [
-        "inner",
-        "left"
-      ],
+      "enum": ["inner", "left"],
       "type": "string"
     },
     "LeftRightKeys": {
@@ -157,10 +146,7 @@
           "$ref": "#/$defs/VariableName"
         }
       },
-      "required": [
-        "Left",
-        "Right"
-      ],
+      "required": ["Left", "Right"],
       "type": "object"
     },
     "PascalCases": {
@@ -245,10 +231,7 @@
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "Document",
-                            "Cited Guidance"
-                          ],
+                          "required": ["Document", "Cited Guidance"],
                           "type": "object"
                         },
                         "type": "array"
@@ -257,14 +240,10 @@
                         "additionalProperties": false,
                         "anyOf": [
                           {
-                            "required": [
-                              "Logical Expression"
-                            ]
+                            "required": ["Logical Expression"]
                           },
                           {
-                            "required": [
-                              "Plain Language Expression"
-                            ]
+                            "required": ["Plain Language Expression"]
                           }
                         ],
                         "properties": {
@@ -278,25 +257,18 @@
                                 "type": "string"
                               }
                             },
-                            "required": [
-                              "Rule"
-                            ],
+                            "required": ["Rule"],
                             "type": "object"
                           },
                           "Plain Language Expression": {
                             "type": "string"
                           },
                           "Type": {
-                            "enum": [
-                              "Failure",
-                              "Success"
-                            ],
+                            "enum": ["Failure", "Success"],
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "Type"
-                        ],
+                        "required": ["Type"],
                         "type": "object"
                       },
                       "Origin": {
@@ -310,18 +282,11 @@
                               "type": "string"
                             },
                             "Relationship": {
-                              "enum": [
-                                "Predecessor",
-                                "Related",
-                                "Successor"
-                              ],
+                              "enum": ["Predecessor", "Related", "Successor"],
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "Id",
-                            "Relationship"
-                          ],
+                          "required": ["Id", "Relationship"],
                           "type": "object"
                         },
                         "type": "array"
@@ -339,9 +304,7 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "Id"
-                        ],
+                        "required": ["Id"],
                         "type": "object"
                       },
                       "Validator Rule Message": {
@@ -351,11 +314,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "Origin",
-                      "Rule Identifier",
-                      "Version"
-                    ],
+                    "required": ["Origin", "Rule Identifier", "Version"],
                     "type": "object"
                   },
                   "minItems": 1,
@@ -368,11 +327,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "Name",
-                "References",
-                "Version"
-              ],
+              "required": ["Name", "References", "Version"],
               "type": "object"
             },
             "minItems": 1,
@@ -395,10 +350,7 @@
             "$ref": "Organization_Custom.json"
           }
         ],
-        "required": [
-          "Organization",
-          "Standards"
-        ],
+        "required": ["Organization", "Standards"],
         "type": "object"
       },
       "minItems": 1,
@@ -438,15 +390,10 @@
               "const": "Published"
             }
           },
-          "required": [
-            "Id"
-          ]
+          "required": ["Id"]
         }
       ],
-      "required": [
-        "Status",
-        "Version"
-      ],
+      "required": ["Status", "Version"],
       "type": "object"
     },
     "Description": {
@@ -492,9 +439,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "Name"
-        ],
+        "required": ["Name"],
         "type": "object"
       },
       "minItems": 1,
@@ -520,9 +465,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "Message"
-      ],
+      "required": ["Message"],
       "type": "object"
     },
     "Rule Type": {
@@ -540,9 +483,7 @@
                   "$ref": "#/$defs/Classes"
                 }
               },
-              "required": [
-                "Include"
-              ],
+              "required": ["Include"],
               "type": "object"
             },
             {
@@ -552,9 +493,7 @@
                   "$ref": "#/$defs/Classes"
                 }
               },
-              "required": [
-                "Exclude"
-              ],
+              "required": ["Exclude"],
               "type": "object"
             }
           ]
@@ -568,9 +507,7 @@
                   "$ref": "#/$defs/DataStructures"
                 }
               },
-              "required": [
-                "Include"
-              ],
+              "required": ["Include"],
               "type": "object"
             },
             {
@@ -580,9 +517,7 @@
                   "$ref": "#/$defs/DataStructures"
                 }
               },
-              "required": [
-                "Exclude"
-              ],
+              "required": ["Exclude"],
               "type": "object"
             }
           ]
@@ -622,14 +557,10 @@
               },
               "anyOf": [
                 {
-                  "required": [
-                    "Exclude"
-                  ]
+                  "required": ["Exclude"]
                 },
                 {
-                  "required": [
-                    "Include"
-                  ]
+                  "required": ["Include"]
                 }
               ],
               "type": "object"
@@ -651,20 +582,13 @@
       },
       "oneOf": [
         {
-          "required": [
-            "Classes",
-            "Domains"
-          ]
+          "required": ["Classes", "Domains"]
         },
         {
-          "required": [
-            "Data Structures"
-          ]
+          "required": ["Data Structures"]
         },
         {
-          "required": [
-            "Entities"
-          ]
+          "required": ["Entities"]
         }
       ],
       "type": "object"
@@ -699,9 +623,7 @@
     }
   },
   "then": {
-    "required": [
-      "Grouping_Variables"
-    ]
+    "required": ["Grouping_Variables"]
   },
   "type": "object"
 }
