@@ -45,7 +45,7 @@ class LocalDataService(BaseDataService):
     ):
         self.encoding: str = kwargs.get("encoding")
         self.variables_csv_path: str = kwargs.get("variables_csv_path")
-        self.tables_csv_path: str = kwargs.get("tables_csv_path")
+        self.datasets_csv_path: str = kwargs.get("datasets_csv_path")
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths") or []
         super(LocalDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
@@ -237,7 +237,7 @@ class LocalDataService(BaseDataService):
             file_name,
             encoding=self.encoding,
             variables_csv_path=self.variables_csv_path,
-            tables_csv_path=self.tables_csv_path,
+            datasets_csv_path=self.datasets_csv_path,
         ).read()
         return {
             "file_metadata": file_metadata,

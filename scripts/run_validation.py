@@ -176,7 +176,7 @@ def run_validation(args: Validation_args):
             library_metadata=library_metadata,
             encoding=args.encoding,
             variables_csv_path=args.variables_csv_path,
-            tables_csv_path=args.tables_csv_path,
+            datasets_csv_path=args.datasets_csv_path,
         ).get_data_service(args.dataset_paths)
         # install dictionaries if needed
         dictionary_versions = fill_cache_with_dictionaries(
