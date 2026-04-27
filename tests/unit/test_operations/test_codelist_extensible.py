@@ -171,12 +171,6 @@ def test_multiple_versions(
     evaluation_dataset = PandasDataset.from_dict(
         {"version": versions, "codelist_code": codelist_codes}
     )
-    evaluation_dataset = evaluation_dataset.astype(
-        {
-            "version": "string",
-            "codelist_code": "string",
-        }
-    )
 
     operation = CodelistExtensible(
         operation_params,

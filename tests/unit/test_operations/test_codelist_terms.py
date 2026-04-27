@@ -349,12 +349,6 @@ def test_empty_dataset_multiple_versions(
             "t_pref_term": [],
         }
     )
-    evaluation_dataset = evaluation_dataset.astype(
-        {
-            "version": "string",
-            "codelist_code": "string",
-        }
-    )
 
     operation = CodelistTerms(
         operation_params,
