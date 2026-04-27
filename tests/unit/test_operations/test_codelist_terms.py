@@ -323,3 +323,45 @@ def test_multiple_versions(
     except RuleExecutionError:
         result = pd.Series(RuleExecutionError)
     assert result.equals(pd.Series(expected))
+
+
+def test_empty_dataset_multiple_versions(
+    operation_params,
+    mock_metadata,
+):
+    operation_params.ct_package_type = "mock_package"
+    operation_params.ct_version = "version"
+    operation_params.codelist_code = "codelist_code"
+    operation_params.term_code = "t_code"
+    operation_params.term_value = None
+    operation_params.term_pref_term = None
+    operation_params.returntype = None
+
+    library_metadata = LibraryMetadataContainer()
+    library_metadata._ct_package_metadata = mock_metadata
+
+    evaluation_dataset = PandasDataset.from_dict(
+        {
+            "version": [],
+            "codelist_code": [],
+            "t_code": [],
+            "t_value": [],
+            "t_pref_term": [],
+        }
+    )
+    evaluation_dataset = evaluation_dataset.astype(
+        {
+            "version": str,
+            "codelist_code": str,
+        }
+    )
+
+    operation = CodelistTerms(
+        operation_params,
+        evaluation_dataset,
+        MagicMock(),
+        MagicMock(),
+        library_metadata,
+    )
+    result = operation._execute_operation()
+    assert result.tolist() == []

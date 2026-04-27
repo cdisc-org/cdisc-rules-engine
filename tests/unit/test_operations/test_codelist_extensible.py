@@ -124,32 +124,44 @@ def test_empty_metadata(operation_params):
 
 
 @mark.parametrize(
-    "package_type, codelist_code, expected",
+    "package_type, codelist_code, versions, codelist_codes, expected",
     [
         (
             "mock_package",
             "codelist_code",
+            ["v1", "v2", "v3"],
+            ["C1", "C2", "C3"],
             [True, False, None],
         ),
         (
             "mock_package",
             "C1",
+            ["v1", "v2", "v3"],
+            ["C1", "C2", "C3"],
             [True, True, True],
         ),
         (
             "missing_package",
             "codelist_code",
+            ["v1", "v2", "v3"],
+            ["C1", "C2", "C3"],
             [None, None, None],
         ),
+        ("mock_package", "codelist_code", [], [], []),
     ],
 )
 def test_multiple_versions(
-    operation_params, mock_metadata, package_type, codelist_code, expected
+    operation_params,
+    mock_metadata,
+    package_type,
+    codelist_code,
+    versions,
+    codelist_codes,
+    expected,
 ):
     operation_params.ct_package_type = package_type
     operation_params.ct_version = "version"
     operation_params.codelist_code = codelist_code
-    versions = ["v1", "v2", "v3"]
 
     library_metadata = LibraryMetadataContainer()
     for version in versions:
@@ -157,7 +169,13 @@ def test_multiple_versions(
     library_metadata._ct_package_metadata = mock_metadata
 
     evaluation_dataset = PandasDataset.from_dict(
-        {"version": versions, "codelist_code": ["C1", "C2", "C3"]}
+        {"version": versions, "codelist_code": codelist_codes}
+    )
+    evaluation_dataset = evaluation_dataset.astype(
+        {
+            "version": str,
+            "codelist_code": str,
+        }
     )
 
     operation = CodelistExtensible(
