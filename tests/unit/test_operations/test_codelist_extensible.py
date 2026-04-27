@@ -173,8 +173,8 @@ def test_multiple_versions(
     )
     evaluation_dataset = evaluation_dataset.astype(
         {
-            "version": str,
-            "codelist_code": str,
+            "version": "string",
+            "codelist_code": "string",
         }
     )
 
