@@ -1,109 +1,105 @@
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.services.cache.in_memory_cache_service import (
+    InMemoryCacheService,
+)
 
-class CacheService:
-    def __init__(self):
-        self._cache = {}
 
-    def set(self, key, df):
-        self._cache[key] = df
-
-    def get_deepcopy(self, key):
-        return self._cache[key].copy(deep=True)
-
-    def get_cow(self, key):
-        return self._cache[key].copy(deep=False)  # relying on CoW
+@pytest.fixture(autouse=True)
+def reset_singleton():
+    InMemoryCacheService._instance = None
+    yield
+    InMemoryCacheService._instance = None
 
 
 @pytest.fixture
-def sample_df():
-    return pd.DataFrame({"A": [1, 2, 3], "B": [10, 20, 30]})
+def cache():
+    return InMemoryCacheService()
 
 
-def test_deepcopy_does_not_modify_cache(sample_df):
-    cache = CacheService()
-    cache.set("x", sample_df)
-
-    df = cache.get_deepcopy("x")
-    df.loc[0, "A"] = 999
-
-    cached = cache._cache["x"]
-
-    assert cached.loc[0, "A"] == 1
-    assert df.loc[0, "A"] == 999
+@pytest.fixture
+def sample_dataset():
+    return PandasDataset(pd.DataFrame({"A": [1, 2, 3], "B": [10, 20, 30]}))
 
 
-def test_cow_does_not_modify_cache(sample_df):
+def test_get_returns_cow_copy(cache, sample_dataset):
+    cache.add("x", sample_dataset)
+    result = cache.get("x")
+    assert result is not sample_dataset
+    assert result.data is not sample_dataset.data
+
+
+def test_get_cow_does_not_modify_cache_on_write(cache, sample_dataset):
     pd.options.mode.copy_on_write = True
+    cache.add("x", sample_dataset)
 
-    cache = CacheService()
-    cache.set("x", sample_df)
+    retrieved = cache.get("x")
+    retrieved.data.loc[0, "A"] = 999
 
-    df = cache.get_cow("x")
-    df.loc[0, "A"] = 999
-
-    cached = cache._cache["x"]
-
-    assert cached.loc[0, "A"] == 1
-    assert df.loc[0, "A"] == 999
+    cached_data = cache.cache["x"].data
+    assert cached_data.loc[0, "A"] == 1
 
 
-def test_cow_shares_memory_before_write(sample_df):
+def test_get_cow_shares_memory_before_write(cache, sample_dataset):
     pd.options.mode.copy_on_write = True
+    cache.add("x", sample_dataset)
+    retrieved = cache.get("x")
+    import numpy as np
 
-    cache = CacheService()
-    cache.set("x", sample_df)
-
-    df = cache.get_cow("x")
-    # memory is shared between objects, but they are not the same object
-    assert df._mgr.blocks[0].values.base is cache._cache["x"]._mgr.blocks[0].values.base
+    assert np.shares_memory(retrieved.data["A"], cache.cache["x"].data["A"])
 
 
-def test_cow_inplace_operation(sample_df):
+def test_get_dataset_returns_cow_copy(cache, sample_dataset):
+    cache.add_dataset("x", sample_dataset)
+    result = cache.get_dataset("x")
+    assert result is not sample_dataset
+    assert result.data is not sample_dataset.data
+
+
+def test_get_dataset_cow_does_not_modify_cache_on_write(cache, sample_dataset):
     pd.options.mode.copy_on_write = True
+    cache.add_dataset("x", sample_dataset)
 
-    cache = CacheService()
-    cache.set("x", sample_df)
+    retrieved = cache.get_dataset("x")
+    retrieved.data.loc[0, "A"] = 999
 
-    df = cache.get_cow("x")
-
-    df["A"].fillna(0, inplace=True)
-
-    cached = cache._cache["x"]
-
-    assert cached.equals(sample_df)
+    cached_data = cache.dataset_cache["x"].data
+    assert cached_data.loc[0, "A"] == 1
 
 
-def test_cow_chained_assignment(sample_df):
-    pd.options.mode.copy_on_write = True
-
-    cache = CacheService()
-    cache.set("x", sample_df)
-
-    df = cache.get_cow("x")
-
-    df_slice = df[df["A"] > 1]
-    df_slice["A"] = 999  # chained assignment
-
-    cached = cache._cache["x"]
-
-    assert cached["A"].tolist() == [1, 2, 3]
-
-
-def test_cow_object_dtype_mutation():
-    pd.options.mode.copy_on_write = True
-
+def test_get_object_dtype_nested_mutation_affects_cache(cache):
+    """CoW can't protect in nested mutations"""
     df = pd.DataFrame({"A": [[1], [2], [3]]})
+    dataset = PandasDataset(df)
+    cache.add("x", dataset)
 
-    cache = CacheService()
-    cache.set("x", df)
+    retrieved = cache.get("x")
+    retrieved.data.loc[0, "A"].append(999)
 
-    df2 = cache.get_cow("x")
+    cached_data = cache.cache["x"].data
+    assert cached_data.loc[0, "A"] == [1, 999]
 
-    df2.loc[0, "A"].append(999)  # mutate nested
 
-    cached = cache._cache["x"]
+def test_get_non_dataset_returns_as_is(cache):
+    cache.add("key", {"some": "dict"})
+    result = cache.get("key")
+    assert result == {"some": "dict"}
 
-    # cache changed
-    assert cached.loc[0, "A"] == [1, 999]
+
+def test_get_returns_new_wrapper_not_cached_object(cache, sample_dataset):
+    """get() должен возвращать новый PandasDataset, а не сам объект из кэша."""
+    cache.add("x", sample_dataset)
+    result = cache.get("x")
+    assert result is not cache.cache["x"]  # новый wrapper
+    assert (
+        result.data is not cache.cache["x"].data
+    )  # новый pd.DataFrame объект (shallow copy)
+
+
+def test_get_dataset_returns_new_wrapper_not_cached_object(cache, sample_dataset):
+    cache.add_dataset("x", sample_dataset)
+    result = cache.get_dataset("x")
+    assert result is not cache.dataset_cache["x"]
+    assert result.data is not cache.dataset_cache["x"].data
