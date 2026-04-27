@@ -1,5 +1,8 @@
 from typing import Type
 
+from cdisc_rules_engine.dataset_builders.contents_library_variables_dataset_builder import (
+    ContentsLibraryVariablesDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
     JsonSchemaCheckDatasetBuilder,
 )
@@ -75,6 +78,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value: ValueCheckVariableMetadataDatasetBuilder,
         RuleTypes.JSONATA.value: JSONataDatasetBuilder,
         RuleTypes.JSON_SCHEMA_CHECK.value: JsonSchemaCheckDatasetBuilder,
+        RuleTypes.VALUE_CHECK_AGAINST_LIBRARY.value: ContentsLibraryVariablesDatasetBuilder,
     }
 
     @classmethod
