@@ -1,22 +1,23 @@
 import os
-from xml.etree import ElementTree
+import re
+from pathlib import Path
 from re import compile
 from typing import Union
-import re
-import tempfile
+from xml.etree import ElementTree
+
 from cdisc_rules_engine.constants.define_xml_constants import (
     DEFINE_XML_FILE_NAME,
     ODM_NAMESPACE,
 )
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
+    BaseDefineXMLReader,
+)
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
     DefineXMLReader20,
 )
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
     DefineXMLReader21,
-)
-from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
-    BaseDefineXMLReader,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 
@@ -40,36 +41,12 @@ class DefineXMLReaderFactory:
         DefineXMLReader20,
         DefineXMLReader21,
     )
+    _DEFINE_VERSION_RE = re.compile(r'(?<=def:DefineVersion=")2\.1\.\d+(?=")')
 
     @classmethod
     def from_filename(cls, filename: str):
-        """
-        Inits a DefineXMLReader object from file.
-        """
-
-        logger.info(f"Reading Define-XML from file name. filename={filename}")
-        define_version_pattern = r'(def:DefineVersion=")(2\.1\.\d+)(")'
-        with open(filename, "r", encoding="utf-8") as f:
-            xml_content = f.read()
-
-        match = re.search(define_version_pattern, xml_content)
-        original_version = None
-
-        if match:
-            original_version = match.group(2)
-            xml_content = re.sub(define_version_pattern, r"\g<1>2.1\3", xml_content)
-
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".xml", delete=False) as tmp:
-            tmp.write(xml_content)
-            tmp_filename = tmp.name
-
-        define_xml_reader_class: type = cls._get_define_xml_reader(
-            ElementTree.parse(tmp_filename).getroot()
-        )
-        reader: BaseDefineXMLReader = define_xml_reader_class()
-        reader._original_define_version = original_version
-        reader._odm_loader.open_odm_document(tmp_filename)
-        return reader
+        logger.info(f"Reading Define-XML from file. filename={filename}")
+        return cls._build_reader(Path(filename).read_text(encoding="utf-8"))
 
     @classmethod
     def from_file_contents(
@@ -83,17 +60,35 @@ class DefineXMLReaderFactory:
         Inits a DefineXMLReader object from file contents.
         """
         logger.info("Reading Define-XML from file contents")
-        define_xml_reader_class: type = cls._get_define_xml_reader(
-            ElementTree.fromstring(file_contents)
+        if isinstance(file_contents, bytes):
+            file_contents: str = file_contents.decode("utf-8")
+        return cls._build_reader(
+            file_contents, cache_service_obj, study_id, data_bundle_id
         )
-        reader: BaseDefineXMLReader = define_xml_reader_class(
-            cache_service_obj, study_id, data_bundle_id
-        )
-        reader._odm_loader.load_odm_string(file_contents)
+
+    @classmethod
+    def _normalize_define_version(cls, content: str) -> tuple[str, str | None]:
+        match = cls._DEFINE_VERSION_RE.search(content)
+        if match:
+            return cls._DEFINE_VERSION_RE.sub("2.1", content), match.group()
+        return content, None
+
+    @classmethod
+    def _build_reader(
+        cls, content: str, cache_service_obj=None, study_id=None, data_bundle_id=None
+    ) -> "BaseDefineXMLReader":
+        content, original_version = cls._normalize_define_version(content)
+        root = ElementTree.fromstring(content)
+        reader_class = cls._get_define_xml_reader(root)
+        reader = reader_class(cache_service_obj, study_id, data_bundle_id)
+        reader._original_define_version = original_version
+        reader._odm_loader.load_odm_string(content)
         return reader
 
     @classmethod
-    def _get_define_xml_reader(cls, root: ElementTree.Element) -> BaseDefineXMLReader:
+    def _get_define_xml_reader(
+        cls, root: ElementTree.Element
+    ) -> type[BaseDefineXMLReader]:
         elt = root.find(
             "Study/MetaDataVersion",
             namespaces={"": ODM_NAMESPACE},
