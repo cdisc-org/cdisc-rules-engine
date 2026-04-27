@@ -141,11 +141,11 @@ class BaseDefineXMLReader(ABC):
         return domain_metadata_dict
 
     @cached("define-variables-metadata")
-    def extract_variables_metadata(self, domain_name: str = None) -> List[dict]:
-        logger.info(f"Extracting variables metadata from Define-XML. domain_name={domain_name}")
+    def extract_variables_metadata(self, domain_name: str = None, name: str = None) -> List[dict]:
+        logger.info(f"Extracting variables metadata from Define-XML. name={name}, domain_name={domain_name}")
         try:
             metadata = self._odm_loader.MetaDataVersion()
-            domain_metadata = self._get_domain_metadata(metadata, domain_name)
+            domain_metadata = self._get_domain_metadata(metadata, domain_name, name)
             variables_metadata = []
             codelist_map = self._get_codelist_def_map(metadata.CodeList)
             for index, itemref in enumerate(domain_metadata.ItemRef):
@@ -224,9 +224,16 @@ class BaseDefineXMLReader(ABC):
         except StopIteration:
             raise DomainNotFoundInDefineXMLError(f"Dataset {dataset_name} is not found in Define XML")
 
-    def _get_domain_metadata(self, metadata, domain_name):
+    def _get_domain_metadata(self, metadata, domain_name: str = None, name: str = None):
         try:
-            domain_metadata = next(item for item in metadata.ItemGroupDef if item.Domain == domain_name)
+            if name and domain_name:
+                domain_metadata = next(
+                    item for item in metadata.ItemGroupDef if item.Domain == domain_name and item.Name == name
+                )
+            else:
+                domain_metadata = next(
+                    item for item in metadata.ItemGroupDef if item.Name == name or item.Domain == domain_name
+                )
             return domain_metadata
         except StopIteration:
             raise DomainNotFoundInDefineXMLError(f"Domain {domain_name} is not found in Define XML")

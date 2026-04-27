@@ -6,7 +6,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundInDefineXMLError
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import DefineXMLReaderFactory
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import DefineXMLReaderFactory, BaseDefineXMLReader
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
 LIBRARY_VARIABLES_TYPE = {
@@ -130,10 +130,12 @@ class SqlBaseDatasetBuilder(ABC):
         try:
             metadata = define_reader.extract_dataset_metadata(self.dataset_metadata.domain)
             metadata = self._format_metadata_dict(metadata)
+            domain = self.standards_context.derive_rdomain(self.dataset_metadata.name)
             if "define_dataset_variable_order" not in metadata.keys():
                 metadata["define_dataset_variable_order"] = self._get_define_dataset_variable_order(
                     reader=define_reader,
-                    domain=self.dataset_metadata.domain,
+                    domain=domain,
+                    name=self.dataset_metadata.name,
                 )
         except DomainNotFoundInDefineXMLError:
             metadata = {}
@@ -185,8 +187,8 @@ class SqlBaseDatasetBuilder(ABC):
             library_metadata[i] = self._format_metadata_dict(library_metadata[i])
         return library_metadata
 
-    def _get_define_dataset_variable_order(self, reader, domain: str) -> str:
-        metadata = reader.extract_variables_metadata(domain)
+    def _get_define_dataset_variable_order(self, reader: BaseDefineXMLReader, domain: str, name: str = None) -> str:
+        metadata = reader.extract_variables_metadata(domain, name)
         vars_order = {var["define_variable_name"]: var["define_variable_order_number"] for var in metadata}
         sorted_vars = sorted(vars_order.items(), key=lambda item: item[1])
         return ",".join([var[0].upper() for var in sorted_vars])
