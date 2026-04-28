@@ -81,7 +81,7 @@ class JSONataProcessor:
                 .get("params", {})
                 .get("message"),
                 status=(
-                    ExecutionStatus.SUCCESS.value
+                    ExecutionStatus.ISSUE_REPORTED.value
                     if results
                     else ExecutionStatus.EXECUTION_ERROR.value
                 ),
