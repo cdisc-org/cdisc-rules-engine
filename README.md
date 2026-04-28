@@ -118,6 +118,11 @@ All examples below use `python core.py` for source code users. **If you're using
 
 ### Running a validation (`validate`)
 
+Pandas Copy-on-Write (CoW) enabled globally when using the rules engine.
+In Pandas 2.x this is an opt-in feature, so it affects the whole process.
+
+Note: in Pandas 3.x, CoW is enabled by default, so this behavior will become standard once the project is upgraded.
+
 Clone the repository and run:
 
 ```bash
