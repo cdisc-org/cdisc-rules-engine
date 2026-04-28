@@ -39,7 +39,7 @@ class DataServiceFactory(FactoryInterface):
         max_dataset_size: int = 0,
         encoding: str = None,
         variables_csv_path: str = None,
-        tables_csv_path=None,
+        datasets_csv_path=None,
     ):
         if config.getValue("DATA_SERVICE_TYPE"):
             self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
@@ -56,7 +56,7 @@ class DataServiceFactory(FactoryInterface):
         self.max_dataset_size = max_dataset_size
         self.encoding = encoding
         self.variables_csv_path = variables_csv_path
-        self.tables_csv_path = tables_csv_path
+        self.datasets_csv_path = datasets_csv_path
         self.dataset_size_threshold = self.config.get_dataset_size_threshold()
 
     def get_data_service(
@@ -103,7 +103,7 @@ class DataServiceFactory(FactoryInterface):
                 dataset_implementation=self.get_dataset_implementation(),
                 encoding=self.encoding,
                 variables_csv_path=self.variables_csv_path,
-                tables_csv_path=self.tables_csv_path,
+                datasets_csv_path=self.datasets_csv_path,
             )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
