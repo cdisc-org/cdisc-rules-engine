@@ -14,7 +14,7 @@ class DatasetCSVMetadataReader:
         file_name: str,
         encoding: str = DEFAULT_ENCODING,
         variables_csv_path: str = None,
-        tables_csv_path: str = None,
+        datasets_csv_path: str = None,
         **kwargs,
     ):
         self.file_path = file_path
@@ -23,12 +23,12 @@ class DatasetCSVMetadataReader:
         self.variables_csv_path = (
             Path(variables_csv_path)
             if variables_csv_path
-            else Path(self.file_path).parent / "variables.csv"
+            else Path(self.file_path).parent / "_variables.csv"
         )
-        self.tables_csv_path = (
-            Path(tables_csv_path)
-            if tables_csv_path
-            else Path(self.file_path).parent / "tables.csv"
+        self.datasets_csv_path = (
+            Path(datasets_csv_path)
+            if datasets_csv_path
+            else Path(self.file_path).parent / "_datasets.csv"
         )
 
     def read(self) -> dict:
@@ -111,11 +111,11 @@ class DatasetCSVMetadataReader:
     def __dataset_label(self) -> dict:
         logger = logging.getLogger("validator")
 
-        if not self.tables_csv_path.exists():
+        if not self.datasets_csv_path.exists():
             return {}
 
         try:
-            tables_df = pd.read_csv(self.tables_csv_path, encoding=self.encoding)
+            datasets_df = pd.read_csv(self.datasets_csv_path, encoding=self.encoding)
         except (UnicodeDecodeError, UnicodeError) as e:
             logger.error(
                 f"\n  Error reading CSV from: {self.file_path}"
@@ -127,15 +127,15 @@ class DatasetCSVMetadataReader:
             logger.error("Error reading CSV file %s. %s", self.file_path, e)
             return {}
 
-        if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
+        if "Filename" not in datasets_df.columns or "Label" not in datasets_df.columns:
             return {}
 
-        tables_df["dataset"] = tables_df["Filename"].apply(
+        datasets_df["dataset"] = datasets_df["Filename"].apply(
             lambda x: Path(str(x)).stem.lower()
         )
 
         current_dataset = Path(self.file_name).stem.lower()
-        match = tables_df[tables_df["dataset"] == current_dataset]
+        match = datasets_df[datasets_df["dataset"] == current_dataset]
 
         if match.empty:
             return {}

@@ -49,7 +49,7 @@ class LocalDataService(BaseDataService):
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
         self.encoding: str = kwargs.get("encoding")
         self.variables_csv_path: str = kwargs.get("variables_csv_path")
-        self.tables_csv_path: str = kwargs.get("tables_csv_path")
+        self.datasets_csv_path: str = kwargs.get("datasets_csv_path")
 
     @classmethod
     def get_instance(
@@ -215,7 +215,7 @@ class LocalDataService(BaseDataService):
             file_name,
             encoding=self.encoding,
             variables_csv_path=self.variables_csv_path,
-            tables_csv_path=self.tables_csv_path,
+            datasets_csv_path=self.datasets_csv_path,
         ).read()
         return {
             "file_metadata": file_metadata,
@@ -252,7 +252,7 @@ class LocalDataService(BaseDataService):
                 dataset_metadata = self.get_raw_dataset_metadata(
                     dataset_name=dataset_path,
                     variables_csv_path=self.variables_csv_path,
-                    tables_csv_path=self.tables_csv_path,
+                    datasets_csv_path=self.datasets_csv_path,
                 )
                 datasets.append(dataset_metadata)
             except InvalidDatasetFormat:
