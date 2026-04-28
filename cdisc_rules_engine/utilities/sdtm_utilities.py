@@ -7,14 +7,14 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
+    SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
-    search_in_list_of_dicts,
+    search_in_list,
 )
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
@@ -74,13 +74,13 @@ def get_class_and_dataset_metadata(
 
     """
     for c in library_metadata.standard_metadata.get("classes", []):
-        dataset_details = search_in_list_of_dicts(
+        dataset_details = search_in_list(
             c.get("datasets", []), lambda item: item["name"] == dataset_name
         )
         if dataset_details:
             return c, dataset_details
     for c in library_metadata.model_metadata.get("classes", []):
-        dataset_details = search_in_list_of_dicts(
+        dataset_details = search_in_list(
             c.get("datasets", []), lambda item: item["name"] == dataset_name
         )
         if dataset_details:
@@ -107,8 +107,6 @@ def get_variables_metadata_from_standard(  # noqa
     library_metadata,
     data_service,
     dataset_metadata: SDTMDatasetMetadata,
-    dataset_path: str,
-    datasets: Iterable[SDTMDatasetMetadata],
 ):
     add_AP = False
     domain = dataset_metadata.unsplit_name
@@ -138,11 +136,9 @@ def get_variables_metadata_from_standard(  # noqa
             IG_class_details.get("name")
         )
     else:
-        class_name = data_service._handle_custom_domains(
-            data_service.get_dataset(dataset_name=dataset_metadata.full_path),
+        class_name = data_service.handle_custom_domains(
+            data_service.get_dataset(dataset_name=dataset_metadata.name),
             dataset_metadata,
-            dataset_path,
-            datasets,
         )
     model_class_details = get_class_metadata(model_details, class_name)
     # Both custom and standard General Observations pull from model
@@ -306,7 +302,7 @@ def get_class_metadata(
             }
 
     """
-    class_metadata: Optional[dict] = search_in_list_of_dicts(
+    class_metadata: Optional[dict] = search_in_list(
         model_details.get("classes", []),
         lambda item: convert_library_class_name_to_ct_class(item["name"])
         == dataset_class,
@@ -343,8 +339,6 @@ def group_class_variables_by_role(
 
 def get_variables_metadata_from_standard_model(  # noqa
     dataframe,
-    datasets: Iterable[SDTMDatasetMetadata],
-    dataset_path: str,
     data_service: DataServiceInterface,
     library_metadata: LibraryMetadataContainer,
     dataset_metadata: SDTMDatasetMetadata,
@@ -382,9 +376,7 @@ def get_variables_metadata_from_standard_model(  # noqa
             IG_class_details.get("name")
         )
     else:
-        class_name = data_service._handle_custom_domains(
-            dataframe, dataset_metadata, dataset_path, datasets
-        )
+        class_name = data_service.handle_custom_domains(dataframe, dataset_metadata)
     if class_name in DETECTABLE_CLASSES:
         model_class_details = get_class_metadata(model_details, class_name)
         (
@@ -480,7 +472,7 @@ def get_variables_metadata_from_standard_model(  # noqa
 
 def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
     # Get domain metadata from model
-    domain_details: Optional[dict] = search_in_list_of_dicts(
+    domain_details: Optional[dict] = search_in_list(
         model_details.get("datasets", []), lambda item: item["name"] == domain_name
     )
 
@@ -562,8 +554,8 @@ def tag_source(
 ) -> DatasetInterface:
     """
     For sdtm split datasets,
-    Adds source filename and row number to dataset
+    Adds source dataset name and row number to dataset
     """
-    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_DATASET_NAME] = dataset_metadata.name
     dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
     return dataset

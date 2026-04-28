@@ -16,4 +16,6 @@ class LibraryModelColumnOrder(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-        return self._get_variable_names_list(self.params.domain, self.params.dataframe)
+        return self._get_variable_names_list(
+            self.params.dataframe_metadata, self.params.dataframe
+        )

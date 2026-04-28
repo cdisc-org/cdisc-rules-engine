@@ -43,13 +43,48 @@ class LocalDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
-        super(LocalDataService, self).__init__(
-            cache_service, reader_factory, config, **kwargs
-        )
-        self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
         self.encoding: str = kwargs.get("encoding")
         self.variables_csv_path: str = kwargs.get("variables_csv_path")
         self.datasets_csv_path: str = kwargs.get("datasets_csv_path")
+        self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths") or []
+        super(LocalDataService, self).__init__(
+            cache_service, reader_factory, config, **kwargs
+        )
+
+    def _initialize_datasets_metadata(self, **kwargs) -> dict[str, SDTMDatasetMetadata]:
+        """
+        Initialize the dataset metadata by reading metadata for all dataset paths.
+
+        Args:
+            **kwargs: Keyword arguments including dataset_paths
+
+        Returns:
+            Dictionary mapping dataset name to SDTMDatasetMetadata
+        """
+        result = {}
+        for dataset_path in self.dataset_paths:
+            try:
+                file_metadata, contents_metadata = self.__get_dataset_metadata(
+                    dataset_path
+                )
+                metadata = SDTMDatasetMetadata(
+                    name=contents_metadata["dataset_name"],
+                    first_record=contents_metadata["first_record"],
+                    label=contents_metadata["dataset_label"],
+                    modification_date=contents_metadata["dataset_modification_date"],
+                    filename=file_metadata["name"],
+                    full_path=file_metadata["path"],
+                    file_size=file_metadata["file_size"],
+                    record_count=contents_metadata["dataset_length"],
+                )
+                result[metadata.name] = metadata
+            except InvalidDatasetFormat:
+                raise
+            except Exception as e:
+                raise InvalidDatasetFormat(
+                    f"Your data file could not be read: {dataset_path}."
+                ) from e
+        return result
 
     @classmethod
     def get_instance(
@@ -64,8 +99,14 @@ class LocalDataService(BaseDataService):
         runs multiple times with different encodings in the same process).
         """
         encoding = kwargs.get("encoding")
-        if cls._instance is None or (
-            encoding is not None and cls._instance.encoding != encoding
+        dataset_paths = kwargs.get("dataset_paths")
+        if (
+            cls._instance is None
+            or (encoding is not None and cls._instance.encoding != encoding)
+            or (
+                dataset_paths is not None
+                and cls._instance.dataset_paths != dataset_paths
+            )
         ):
             service = cls(
                 cache_service=cache_service,
@@ -101,41 +142,21 @@ class LocalDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
+        full_path = self._datasets_metadata[dataset_name].full_path
         reader = self._reader_factory.get_service(
-            basename(dataset_name).split(".")[1].upper()
+            basename(full_path).split(".")[1].upper()
         )
-        df = reader.from_file(dataset_name)
+        df = reader.from_file(full_path)
         return df
 
-    @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
-    ) -> SDTMDatasetMetadata:
-        """
-        Returns dataset metadata as DatasetMetadata instance.
-        """
-        file_metadata, contents_metadata = self.__get_dataset_metadata(
-            dataset_name, **kwargs
-        )
-        return SDTMDatasetMetadata(
-            name=contents_metadata["dataset_name"],
-            first_record=contents_metadata["first_record"],
-            label=contents_metadata["dataset_label"],
-            modification_date=contents_metadata["dataset_modification_date"],
-            filename=file_metadata["name"],
-            full_path=file_metadata["path"],
-            file_size=file_metadata["file_size"],
-            record_count=contents_metadata["dataset_length"],
-        )
-
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(
-        self, dataset_name: str, datasets: list, **params
-    ) -> DatasetInterface:
+    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.read_metadata(dataset_name, datasets=datasets)
+        metadata: dict = self.__read_metadata(
+            self._datasets_metadata[dataset_name].full_path
+        )
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -168,19 +189,20 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(
-        self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
+    def __read_metadata(
+        self,
+        dataset_path: str,
     ) -> dict:
-        file_size = os.path.getsize(file_path)
-        file_name = basename(file_path)
+        file_size = os.path.getsize(dataset_path)
+        file_name = basename(dataset_path)
         file_metadata = {
-            "path": file_path,
+            "path": dataset_path,
             "name": file_name,
             "file_size": file_size,
         }
-        if file_name.endswith(".parquet") and datasets:
-            for obj in datasets:
-                if obj.full_path == file_path:
+        if file_name.endswith(".parquet") and self.get_datasets():
+            for obj in self.get_datasets():
+                if obj.full_path == dataset_path:
                     file_metadata = {
                         "path": obj.original_path,
                         "name": basename(obj.original_path),
@@ -225,12 +247,12 @@ class LocalDataService(BaseDataService):
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
 
-    def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
+    def __get_dataset_metadata(self, dataset_path: str, **kwargs) -> Tuple[dict, dict]:
         """
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
-        metadata: dict = self.read_metadata(dataset_name, kwargs.get("datasets"))
+        metadata: dict = self.__read_metadata(dataset_path)
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed
@@ -244,24 +266,6 @@ class LocalDataService(BaseDataService):
             basename(file_path).split(".")[1].upper()
         )
         return reader.to_parquet(file_path)
-
-    def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset_path in self.dataset_paths:
-            try:
-                dataset_metadata = self.get_raw_dataset_metadata(
-                    dataset_name=dataset_path,
-                    variables_csv_path=self.variables_csv_path,
-                    datasets_csv_path=self.datasets_csv_path,
-                )
-                datasets.append(dataset_metadata)
-            except InvalidDatasetFormat:
-                raise
-            except Exception as e:
-                raise InvalidDatasetFormat(
-                    f"Your data file could not be read: {dataset_path}."
-                ) from e
-        return datasets
 
     @staticmethod
     def is_valid_data(dataset_paths: List[str]) -> bool:

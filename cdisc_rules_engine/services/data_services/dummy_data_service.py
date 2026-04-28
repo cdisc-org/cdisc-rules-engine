@@ -1,14 +1,9 @@
-from datetime import datetime
 from io import IOBase
-from typing import List, Optional, Iterable, Sequence
+from typing import List, Optional, Sequence
 
-import os
 import pandas as pd
 import tempfile
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
-from cdisc_rules_engine.exceptions.custom_exceptions import (
-    DatasetNotFoundError,
-)
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
@@ -17,6 +12,7 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.constants import DEFAULT_ENCODING
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.utilities.utils import convert_dataclass_to_superclass
 
 
 class DummyDataService(BaseDataService):
@@ -31,11 +27,15 @@ class DummyDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
+        self.encoding = kwargs.get("encoding") or DEFAULT_ENCODING
+        self.dataset_path: str | None = kwargs.get("dataset_path")
+        self.data: List[DummyDataset] = kwargs.get("data")
+        if self.data is None and self.dataset_path is not None:
+            self.data = self.get_data()
+        self.define_xml: str = kwargs.get("define_xml")
         super(DummyDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
         )
-        self.data: List[DummyDataset] = kwargs.get("data")
-        self.define_xml: str = kwargs.get("define_xml")
 
     @classmethod
     def get_instance(
@@ -53,15 +53,9 @@ class DummyDataService(BaseDataService):
             **kwargs,
         )
 
-    def check_dataset_exists(self, dataset_name):
-        dataset_name = dataset_name.replace("/", "")
-        if dataset_name not in self.data:
-            raise DatasetNotFoundError("dataset does not exist")
-
     def get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
-        dataset_name = os.path.basename(dataset_name)
         for dataset in self.data:
-            if dataset.filename == dataset_name:
+            if dataset.name == dataset_name:
                 return dataset
         return None
 
@@ -75,20 +69,17 @@ class DummyDataService(BaseDataService):
         else:
             return PandasDataset.from_dict({})
 
-    def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
-    ) -> SDTMDatasetMetadata:
-        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return SDTMDatasetMetadata(
-            name=dataset_metadata["dataset_name"][0],
-            first_record={"DOMAIN": dataset_metadata["dataset_name"][0]},
-            label=dataset_metadata["dataset_label"][0],
-            modification_date=datetime.now().isoformat(),
-            filename=dataset_metadata["filename"][0],
-            file_size=dataset_metadata["dataset_size"][0],
-            full_path=dataset_metadata["filename"][0],
-            record_count=dataset_metadata["record_count"][0],
-        )
+    def _initialize_datasets_metadata(self, **kwargs) -> dict[str, SDTMDatasetMetadata]:
+        """
+        Initialize the dataset metadata by converting DummyDataset objects to SDTMDatasetMetadata.
+
+        Returns:
+            Dictionary mapping dataset name to SDTMDatasetMetadata
+        """
+        return {
+            dataset.name: convert_dataclass_to_superclass(dataset, SDTMDatasetMetadata)
+            for dataset in self.data
+        }
 
     def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
         metadata_to_return = {
@@ -154,13 +145,6 @@ class DummyDataService(BaseDataService):
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
 
-    def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> dict:
-        dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
-        metadata_to_return = {}
-        if dataset:
-            metadata_to_return: dict = dataset.get_metadata()
-        return metadata_to_return
-
     def to_parquet(self, file_path: str) -> str:
         """
         Save the dataset with full_path == file_path to a parquet file.
@@ -179,14 +163,8 @@ class DummyDataService(BaseDataService):
                 return len(df.index), temp_file.name
         return 0, ""
 
-    def get_datasets(self) -> Iterable[SDTMDatasetMetadata]:
-        return self.data
-
-    @staticmethod
-    def get_data(dataset_paths: Sequence[str], encoding: str = DEFAULT_ENCODING):
-        json = JSONReader(encoding=encoding or DEFAULT_ENCODING).from_file(
-            dataset_paths[0]
-        )
+    def get_data(self):
+        json = JSONReader(encoding=self.encoding).from_file(self.dataset_path)
         return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod

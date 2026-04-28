@@ -29,7 +29,7 @@ def test_register_service(operation_params: OperationParams):
         operation_params=operation_params,
         cache=cache,
         data_service=data_service,
-        original_dataset=pd.DataFrame(),
+        evaluation_dataset=pd.DataFrame(),
         library_metadata=LibraryMetadataContainer(),
     )
     assert isinstance(op, DummyOperation)

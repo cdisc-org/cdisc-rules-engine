@@ -1,4 +1,4 @@
-from typing import Iterable, List, Union
+from typing import List, Union
 
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -16,7 +16,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_sided_match_keys,
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
-import os
 import pandas as pd
 
 
@@ -46,9 +45,7 @@ class DatasetPreprocessor:
         self._data_service = data_service
         self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
-    def preprocess(  # noqa
-        self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
-    ) -> DatasetInterface:
+    def preprocess(self, rule: dict) -> DatasetInterface:  # noqa
         """
         Preprocesses the dataset by merging it with the
         datasets from the provided rule.
@@ -66,7 +63,7 @@ class DatasetPreprocessor:
             is_child = bool(domain_details.get("child"))
             # download other datasets from blob storage and merge
             if is_child:
-                file_infos = []
+                dataset_metadatas = []
                 # find parent of SUPP or SQAP dataset
                 if (
                     (domain_name[:4] == "SUPP" or domain_name[:4] == "SQAP")
@@ -77,9 +74,9 @@ class DatasetPreprocessor:
                         domain_name == "SUPP--"
                         or domain_name == self._dataset_metadata.name
                     ):
-                        file_infos: list[SDTMDatasetMetadata] = [
+                        dataset_metadatas: list[SDTMDatasetMetadata] = [
                             item
-                            for item in datasets
+                            for item in self._data_service.get_datasets()
                             if (item.domain == self._dataset_metadata.rdomain)
                         ]
                 # find parent of other datasets
@@ -87,8 +84,8 @@ class DatasetPreprocessor:
                     domain_name == self._dataset_metadata.domain
                     or domain_name == self._dataset_metadata.name
                 ):
-                    file_infos: list[SDTMDatasetMetadata] = self._find_parent_dataset(
-                        datasets, domain_details
+                    dataset_metadatas: list[SDTMDatasetMetadata] = (
+                        self._find_parent_dataset(domain_details)
                     )
             else:
                 if self._is_split_domain(domain_name):
@@ -96,9 +93,9 @@ class DatasetPreprocessor:
                 target_domain_name: str = (
                     self._dataset_metadata.domain or self._dataset_metadata.name
                 )
-                file_infos: list[SDTMDatasetMetadata] = [
+                dataset_metadatas: list[SDTMDatasetMetadata] = [
                     item
-                    for item in datasets
+                    for item in self._data_service.get_datasets()
                     if (
                         item.domain == domain_name
                         or item.name == domain_name
@@ -111,7 +108,7 @@ class DatasetPreprocessor:
                     )
                 ]
 
-            if not file_infos and not (
+            if not dataset_metadatas and not (
                 (self._dataset_metadata.is_supp and domain_name == "SUPP--")
                 or self._dataset_metadata.name == "RELREC"
             ):
@@ -121,18 +118,18 @@ class DatasetPreprocessor:
                 )
                 continue
 
-            for file_info in file_infos:
-                if file_info.domain in merged_domains:
+            for dataset_metadata in dataset_metadatas:
+                if dataset_metadata.domain in merged_domains:
                     continue
 
                 # Try to download the dataset
                 try:
-                    other_dataset: DatasetInterface = self._download_dataset(
-                        file_info.data_service_identifier
+                    other_dataset: DatasetInterface = self._data_service.get_dataset(
+                        dataset_name=dataset_metadata.name
                     )
                 except Exception as e:
                     raise PreprocessingError(
-                        f"Failed to download dataset '{file_info.data_service_identifier}' for preprocessing: {str(e)}"
+                        f"Failed to download dataset '{dataset_metadata.name}' for preprocessing: {str(e)}"
                     )
 
                 referenced_targets = set(
@@ -156,38 +153,36 @@ class DatasetPreprocessor:
                         left_dataset=result,
                         left_dataset_domain_name=self._dataset_metadata.domain,
                         right_dataset=other_dataset,
-                        right_dataset_domain_name=file_info.domain,
+                        right_dataset_domain_name=dataset_metadata.domain,
                         match_keys=domain_details.get("match_key"),
-                        datasets=datasets,
                     )
-                    merged_domains.add(file_info.domain)
+                    merged_domains.add(dataset_metadata.domain)
                 else:
                     result = self._merge_datasets(
                         left_dataset=result,
                         left_dataset_domain_name=self._dataset_metadata.domain,
                         right_dataset=other_dataset,
                         right_dataset_domain_details=domain_details,
-                        datasets=datasets,
                     )
                     merged_domains.add(
-                        file_info.domain if file_info.domain else file_info.name
+                        dataset_metadata.domain
+                        if dataset_metadata.domain
+                        else dataset_metadata.name
                     )
         return result
 
-    def _find_parent_dataset(
-        self, datasets: Iterable[SDTMDatasetMetadata], domain_details: dict
-    ) -> SDTMDatasetMetadata:
+    def _find_parent_dataset(self, domain_details: dict) -> SDTMDatasetMetadata:
         matching_datasets = []
         try:
             if "RDOMAIN" in self._dataset.columns:
                 rdomain_column = self._dataset.data["RDOMAIN"]
                 unique_domains = set(rdomain_column.unique())
-                for dataset in datasets:
+                for dataset in self._data_service.get_datasets():
                     if dataset.domain in unique_domains:
                         matching_datasets.append(dataset)
             else:
                 match_keys = domain_details.get("match_key")
-                for dataset in datasets:
+                for dataset in self._data_service.get_datasets():
                     has_all_match_keys = all(
                         match_key in dataset.first_record for match_key in match_keys
                     )
@@ -209,13 +204,6 @@ class DatasetPreprocessor:
     def _is_split_domain(self, domain: str) -> bool:
         return domain == self._dataset_metadata.unsplit_name
 
-    def _download_dataset(self, filename: str) -> DatasetInterface:
-        return self._data_service.get_dataset(
-            dataset_name=os.path.join(
-                os.path.dirname(self._dataset_metadata.full_path), filename
-            )
-        )
-
     def _child_merge_datasets(
         self,
         left_dataset: DatasetInterface,
@@ -223,7 +211,6 @@ class DatasetPreprocessor:
         right_dataset: DatasetInterface,
         right_dataset_domain_name: str,
         match_keys: List[str],
-        datasets: Iterable[SDTMDatasetMetadata] = None,
     ) -> DatasetInterface:
         is_supplemental, rdomain_dataset = self._classify_dataset(
             left_dataset, self._dataset_metadata
@@ -514,7 +501,6 @@ class DatasetPreprocessor:
         left_dataset_domain_name: str,
         right_dataset: DatasetInterface,
         right_dataset_domain_details: dict,
-        datasets: List[dict],
     ) -> DatasetInterface:
         """
         Merges datasets on their match keys.
@@ -543,7 +529,7 @@ class DatasetPreprocessor:
                     left_dataset=left_dataset,
                     left_dataset_domain_name=left_dataset_domain_name,
                     relrec_dataset=right_dataset,
-                    datasets=datasets,
+                    datasets=self._data_service.get_datasets(),
                     dataset_preprocessor=self,
                     wildcard=right_dataset_domain_details.get("wildcard"),
                 )
