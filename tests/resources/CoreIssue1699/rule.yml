@@ -1,0 +1,170 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: The SDTM allows for the inclusion of a sponsor's non-SDTM
+                  variables using the Supplemental Qualifiers special-purpose
+                  dataset structure
+                Document: IG v3.4
+                Item: NA
+                Section: '2.5'
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0314
+              Version: '1'
+            Version: '2.0'
+        Version: '3.4'
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: 'The SDTM allows for the inclusion of the sponsors non-SDTM
+                  variables using the Supplemental Qualifiers special-purpose
+                  dataset structure, described in Section 8; 8.4, Relating
+                  Non-Standard Variables Values To A Parent Domain.'
+                Document: IG v3.2
+                Section: '2.5'
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0314
+              Version: '1'
+            Version: '2.0'
+        Version: '3.2'
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: The SDTM allows for the inclusion of a sponsor's non-SDTM
+                  variables using the Supplemental Qualifiers special purpose
+                  dataset structure, described in Section 8.4, Relating
+                  Non-Standard Variables Values to a Parent Domain.
+                Document: IG v3.3
+                Section: '2.5'
+              - Cited Guidance: New sponsor-defined variables must not be added, and existing
+                  variables must not be renamed or modified for novel usage.
+                Document: Model v1.7
+                Section: '2.1'
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0314
+              Version: '1'
+            Version: '2.0'
+        Version: '3.3'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.0
+                Item: QNAM CDISC Notes
+                Section: '8.5'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274
+              Version: '1'
+            Version: '5.0'
+        Version: '3.0'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.1
+                Item: QNAM CDISC Notes
+                Section: '8.3'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274.1
+              Version: '1'
+            Version: '5.0'
+        Version: '3.1'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.1.1
+                Item: QNAM CDISC Notes
+                Section: '8.3'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274.1
+              Version: '1'
+            Version: '5.0'
+        Version: 3.1.1
+      - Name: SENDIG-GENETOX
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.1.1
+                Item: QNAM CDISC Notes
+                Section: '8.3'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274.1
+              Version: '1'
+            Version: '5.0'
+        Version: '1.0'
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.1
+                Item: QNAM CDISC Notes
+                Section: '8.3'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274.1
+              Version: '1'
+            Version: '5.0'
+        Version: '1.1'
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: The value in QNAM may not be the same as any variable name
+                  defined in another domain or the SDTM.
+                Document: SENDIG v3.1.1
+                Item: QNAM CDISC Notes
+                Section: '8.3'
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND274.1
+              Version: '1'
+            Version: '5.0'
+        Version: '1.2'
+# Variable: QNAM
+# Condition: SUPP--.QNAM present in dataset
+# Rule: Value of SUPP--.QNAM ^= any variable name defined in the corresponding SDTM version
+Check:
+  all:
+    - name: QNAM
+      operator: is_contained_by
+      value: $model_variables
+Core:
+  Id: CORE-000783
+  Status: Published
+  Version: '1'
+Description: Raise an error when SUPP--.QNAM is present in dataset, but value of
+  SUPP--.QNAM is equal to a variable name defined in the corresponding SDTM
+  version.
+Executability: Fully Executable
+Operations:
+  - id: $model_variables
+    operator: get_parent_model_column_order
+Outcome:
+  Message: SUPP--.QNAM is present in the dataset, but the value of SUPP--.QNAM
+    equals a variable name defined in the corresponding SDTM version.
+  Output Variables:
+    - QNAM
+    - $model_variables
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - RELATIONSHIP
+  Domains:
+    Include:
+      - SUPP--
+Sensitivity: Record

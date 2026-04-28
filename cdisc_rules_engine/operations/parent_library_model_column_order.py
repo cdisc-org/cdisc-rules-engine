@@ -21,17 +21,18 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         in accordance to "ordinal" key of library metadata.
         """
         domain_to_datasets = self._get_domain_to_datasets()
+        rdomain_values = self.evaluation_dataset.get(
+            "RDOMAIN", [None] * len(self.evaluation_dataset)
+        )
+
         rdomain_names_list = {}
-        return self.evaluation_dataset.convert_to_series(
-            Series(
-                rdomain_names_list.setdefault(
-                    rdomain,
-                    self._get_parent_variable_names_list(domain_to_datasets, rdomain),
-                )
-                for rdomain in self.evaluation_dataset.get(
-                    "RDOMAIN", [None] * len(self.evaluation_dataset)
-                )
+        for rdomain in set(rdomain_values):
+            rdomain_names_list[rdomain] = self._get_parent_variable_names_list(
+                domain_to_datasets, rdomain
             )
+
+        return self.evaluation_dataset.convert_to_series(
+            Series(rdomain_names_list[rdomain] for rdomain in rdomain_values)
         )
 
     def _get_domain_to_datasets(self):
@@ -40,7 +41,9 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
             domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 
-    def _get_parent_variable_names_list(self, domain_to_datasets: dict, rdomain: str):
+    def _get_parent_variable_names_list(
+        self, domain_to_datasets: dict, rdomain: str
+    ) -> list[str]:
         parent_datasets = domain_to_datasets.get(rdomain, [])
         if len(parent_datasets) < 1:
             raise DomainNotFoundError(
