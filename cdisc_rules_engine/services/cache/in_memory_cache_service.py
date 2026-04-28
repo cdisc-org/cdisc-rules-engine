@@ -91,24 +91,24 @@ class InMemoryCacheService(CacheServiceInterface):
         return cached
 
     def get_all(self, cache_keys: List[str]):
-        return [self.cache.get(key) for key in cache_keys]
+        return [self.get(key) for key in cache_keys]
 
     def get_all_by_prefix(self, prefix):
         items = []
         for key in self.cache:
             if key.startswith(prefix):
-                items.append(self.cache[key])
+                items.append(self.get(key))
         return items
 
     def dataset_keys(self):
         return self.dataset_cache.keys()
 
     def filter_cache(self, prefix: str) -> dict:
-        return {k: self.cache[k] for k in self.cache.keys() if k.startswith(prefix)}
+        return {k: self.cache.get(k) for k in self.cache.keys() if k.startswith(prefix)}
 
     def get_by_regex(self, regex: str) -> dict:
         regex = regex.replace("*", ".*")
-        return {k: self.cache[k] for k in self.cache.keys() if re.search(regex, k)}
+        return {k: self.get(k) for k in self.cache.keys() if re.search(regex, k)}
 
     def exists(self, cache_key):
         return cache_key in self.cache
