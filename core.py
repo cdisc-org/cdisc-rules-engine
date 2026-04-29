@@ -357,7 +357,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-s",
     "--standard",
     required=True,
-    default=None,
     help="CDISC standard to validate against",
     envvar="PRODUCT",
 )
@@ -365,7 +364,6 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-v",
     "--version",
     required=True,
-    default=None,
     help="Standard version to validate against",
     envvar="VERSION",
 )
