@@ -24,8 +24,6 @@ def test_get_dataset_uses_cache():
         cache_service=cache_service,
         rule_processor=MagicMock(),
         data_processor=MagicMock(),
-        dataset_path="dummy.xpt",
-        datasets=[],
         define_xml_path=None,
         standard="USDM",
         standard_version="4.0",
