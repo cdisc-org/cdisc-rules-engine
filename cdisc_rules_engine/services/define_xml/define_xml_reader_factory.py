@@ -1,6 +1,6 @@
-import os
 import re
 from pathlib import Path
+from os.path import dirname, join
 from re import compile
 from typing import Union
 from xml.etree import ElementTree
@@ -10,16 +10,15 @@ from cdisc_rules_engine.constants.define_xml_constants import (
     ODM_NAMESPACE,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
-    BaseDefineXMLReader,
-)
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
     DefineXMLReader20,
 )
 from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
     DefineXMLReader21,
 )
-from cdisc_rules_engine.utilities.utils import get_directory_path
+from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
+    BaseDefineXMLReader,
+)
 
 
 class DefineXMLReaderFactory:
@@ -116,9 +115,9 @@ class DefineXMLReaderFactory:
     def get_define_xml_reader(
         cls, dataset_path: str, define_xml_path: str, data_service, cache
     ):
-        directory_path = get_directory_path(dataset_path)
+        directory_path = dirname(dataset_path)
         if define_xml_path is None:
-            define_xml_path: str = os.path.join(
+            define_xml_path: str = join(
                 directory_path,
                 DEFINE_XML_FILE_NAME,
             )

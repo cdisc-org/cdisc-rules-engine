@@ -9,7 +9,7 @@ from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datase
 from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
 )
-from typing import List, Iterable, Optional
+from typing import List, Optional
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -25,8 +25,6 @@ class BaseDatasetBuilder:
         cache_service,
         rule_processor: RuleProcessor,
         data_processor,
-        dataset_path,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         define_xml_path,
         standard,
@@ -38,8 +36,6 @@ class BaseDatasetBuilder:
         self.cache = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
-        self.dataset_path = dataset_path
-        self.datasets = datasets
         self.dataset_metadata = dataset_metadata
         self.rule = rule
         self.define_xml_path = define_xml_path
@@ -56,18 +52,20 @@ class BaseDatasetBuilder:
         """
         pass
 
-    def build_split_datasets(self, dataset_name, **kwargs) -> DatasetInterface:
+    def build_split_datasets(self, dataset_name: str, **kwargs) -> DatasetInterface:
         """
         Returns correct dataframe to operate on.
-        Default implementation that temporarily sets dataset_path to dataset_name and calls build().
+        Default implementation that temporarily sets dataset_metadata and calls build().
         """
-        original_path = self.dataset_path
+        original_dataset_metadata = self.dataset_metadata
         try:
-            self.dataset_path = dataset_name
+            self.dataset_metadata = self.data_service.get_raw_dataset_metadata(
+                dataset_name=dataset_name
+            )
             result = self.build(**kwargs)
             return result
         finally:
-            self.dataset_path = original_path
+            self.dataset_metadata = original_dataset_metadata
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
@@ -77,7 +75,7 @@ class BaseDatasetBuilder:
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
                 datasets_metadata=get_corresponding_datasets(
-                    self.datasets, self.dataset_metadata
+                    self.data_service.get_datasets(), self.dataset_metadata
                 ),
                 **kwargs,
             )
@@ -95,14 +93,14 @@ class BaseDatasetBuilder:
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.data_service.get_dataset,
                 datasets_metadata=get_corresponding_datasets(
-                    self.datasets, self.dataset_metadata
+                    self.data_service.get_datasets(), self.dataset_metadata
                 ),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.data_service.get_dataset(
-                dataset_name=self.dataset_path
+                dataset_name=self.dataset_metadata.name
             )
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
@@ -126,7 +124,10 @@ class BaseDatasetBuilder:
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_dataset_metadata(
             dataset_metadata["dataset_name"]
@@ -149,7 +150,10 @@ class BaseDatasetBuilder:
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
@@ -164,7 +168,10 @@ class BaseDatasetBuilder:
         | SUPPDM | DM     |
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         domain = self.dataset_metadata.domain or self.dataset_metadata.rdomain
         return define_xml_reader.extract_variables_metadata(
@@ -176,7 +183,10 @@ class BaseDatasetBuilder:
         Gets Define XML value level metadata and returns it as dataframe.
         """
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.extract_value_level_metadata(
             domain_name=self.dataset_metadata.domain
@@ -188,7 +198,10 @@ class BaseDatasetBuilder:
 
     def get_define_metadata(self):
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         return define_xml_reader.read()
 
@@ -205,9 +218,7 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             library_metadata=self.library_metadata,
             data_service=self.data_service,
-            datasets=self.datasets,
             dataset_metadata=self.dataset_metadata,
-            dataset_path=self.dataset_path,
         )
         variables_metadata: dict = self.library_metadata.variables_metadata.get(
             domain, {}

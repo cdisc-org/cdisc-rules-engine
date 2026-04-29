@@ -44,18 +44,11 @@ def test_get_variable_names_for_given_standard(
             }
         },
     )
-    dataset_path = "study/bundle/blah"
     datasets_map = {
         "AE": dataset_type.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
         "EX": dataset_type.from_dict({"STUDYID": [4, 8, 12], "DOMAIN": [12, 6, 1]}),
         "AE2": dataset_type.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
     }
-
-    datasets = [
-        {"domain": "AE", "filename": "AE"},
-        {"domain": "EX", "filename": "EX"},
-        {"domain": "AE", "filename": "AE2"},
-    ]
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
         name.split("/")[-1]
     )
@@ -63,8 +56,6 @@ def test_get_variable_names_for_given_standard(
         [func(f) for f in files]
     )
     operation_params.target = target
-    operation_params.datasets = datasets
-    operation_params.dataset_path = dataset_path
     operation_params.standard = standard
     operation_params.standard_version = standard_version
     result = VariableNames(

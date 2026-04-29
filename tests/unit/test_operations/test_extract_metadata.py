@@ -32,6 +32,7 @@ def test_extract_metadata_get_dataset_name(
             ],
         }
     )
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="AE")
     operation_params.target = "dataset_name"
     cache = InMemoryCacheService.get_instance()
     # execute operation
@@ -100,6 +101,9 @@ def test_extract_metadata_domain_suffix(
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": [domain_value]}
     )
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        name=dataset_name, first_record=first_record
+    )
     operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
@@ -122,6 +126,7 @@ def test_extract_metadata_domain_suffix_uses_domain(
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APXX"]}
     )
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="APFA")
     operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
@@ -140,6 +145,7 @@ def test_extract_metadata_domain_suffix_empty_metadata(
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APFA"]}
     )
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="APFA")
     operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(

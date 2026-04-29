@@ -28,7 +28,7 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         """
         # get dataset contents and convert it from wide to long
         data_contents_df: DatasetInterface = self.data_service.get_dataset(
-            dataset_name=self.dataset_path
+            dataset_name=self.dataset_metadata.name
         )
         self.add_row_number(data_contents_df)
         data_contents_long_df: DatasetInterface = ValuesDatasetBuilder.build(self)
