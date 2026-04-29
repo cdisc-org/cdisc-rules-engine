@@ -4,12 +4,49 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cdisc-rules-engine"
-dynamic = ["version", "dependencies"]
+dynamic = ["version"]
 description = "Open source offering of the cdisc rules engine"
 readme = "PYPI.md"
 requires-python = ">=3.12, <3.13"
 license = { text = "MIT" }
 authors = [{ name = "cdisc-org", email = "info@cdisc.org" }]
+dependencies = [
+    "business_rules_enhanced >=1.4.8",
+    "cachetools >=6.1.0",
+    "cdisc-library-client >=0.1.6",
+    "click >=8.1.7, <8.3.0",
+    "dask[dataframe,array] >=2024.6.0, <2024.8.1",
+    "fastparquet >=2024.2.0",
+    "importlib-metadata >=8.5.0",
+    "jsonata-python >=0.6.0",
+    "jsonpath-ng >=1.6.1, <1.8.0",
+    "jsonschema >=4.18.5",
+    "lxml >=5.2.1",
+    "numpy >=1.26.0",
+    "odmlib >=0.1.4",
+    "openpyxl >=3.1.5",
+    "pandas >=2.1.4, <2.2.0",
+    "psutil >=6.1.1",
+    "pyinstaller >=6.11.0",
+    "pympler >=1.1",
+    "pyreadstat >=1.2.7, <1.2.9",
+    "python-dotenv >=1.0.0",
+    "pyyaml >=6.0.2",
+    "redis >=4.5.0",
+    "requests >=2.32.3",
+    "setuptools >=75.6.0",
+    "titlecase >=2.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "black >=24.10.0",
+    "flake8 >=6.1.0",
+    "pre-commit >=2.20.0",
+    "pytest >=7.4.0, <8.0.0",
+    "pytest-asyncio >=0.21.0",
+    "pytest-cov >=6.0.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/cdisc-org/cdisc-rules-engine"
@@ -27,4 +64,3 @@ py-modules = ["version"]
 
 [tool.setuptools.dynamic]
 version = { attr = "version.__version__" }
-dependencies = {file = ["requirements.txt"]}

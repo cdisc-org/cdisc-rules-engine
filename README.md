@@ -646,11 +646,7 @@ These steps should be run before running any tests or core commands using the no
 
 - Install the requirements:
 
-  ```bash
-  python -m pip install -r requirements-dev.txt
-  ```
-
-  Run this from the root directory.
+  `pip install -e . && pip install --group dev` # From the root directory
 
 ### Creating an executable version
 
@@ -724,7 +720,7 @@ py -m twine upload --repository {repository_name} dist/*
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements-dev.txt_.
+Both dependencies are added to the `dev` dependency group in _pyproject.toml_.
 
 Setting up `pre-commit` requires one extra step. After installing it you have to run:
 
