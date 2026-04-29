@@ -35,10 +35,10 @@ class ExcelDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
+        self.dataset_path: str = kwargs.get("dataset_path", "")
         super(ExcelDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
         )
-        self.dataset_path: str = kwargs.get("dataset_path", "")
 
     @classmethod
     def get_instance(
@@ -75,8 +75,7 @@ class ExcelDataService(BaseDataService):
                 return f
         return None
 
-    @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
+    def __get_dataset(self, sheet_name: str) -> DatasetInterface:
         dtype_mapping = {
             "Char": str,
             "Num": float,
@@ -86,7 +85,7 @@ class ExcelDataService(BaseDataService):
         }
         header = pd.read_excel(
             self.dataset_path,
-            sheet_name=dataset_name,
+            sheet_name=sheet_name,
             header=None,
             nrows=3,
             na_values=[""],
@@ -96,7 +95,7 @@ class ExcelDataService(BaseDataService):
         dtypes = {key: dtype_mapping.get(value, str) for key, value in dtypes.items()}
         dataframe = pd.read_excel(
             self.dataset_path,
-            sheet_name=dataset_name,
+            sheet_name=sheet_name,
             dtype=dtypes,
             skiprows=(1, 2, 3),
             na_values=[""],
@@ -108,15 +107,21 @@ class ExcelDataService(BaseDataService):
         offending = [col for col in dataframe.columns if col != col.strip()]
         if offending:
             raise ExcelTestDataError(
-                f"Sheet '{dataset_name}' has column headers with leading/trailing whitespace: "
+                f"Sheet '{sheet_name}' has column headers with leading/trailing whitespace: "
                 f"{[repr(c) for c in offending]}."
             )
         dataset = PandasDataset(dataframe)
         return dataset
 
-    def _get_dataset_name(
-        self, metadata: pd.DataFrame, first_record: dict, dataset_filename: str
-    ) -> str:
+    @cached_dataset(DatasetTypes.CONTENTS.value)
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
+        dataset_metadata = self._datasets_metadata.get(dataset_name)
+        if dataset_metadata is None:
+            return PandasDataset.from_dict({})
+        sheet_name = dataset_metadata.filename
+        return self.__get_dataset(sheet_name)
+
+    def _get_dataset_name(self, first_record: dict, dataset_filename: str) -> str:
         if self.standard == "usdm":
             return first_record.get("instanceType", dataset_filename.split(".")[0])
         return dataset_filename.split(".")[0].upper()
@@ -130,47 +135,85 @@ class ExcelDataService(BaseDataService):
             keep_default_na=False,
         )
 
-    @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(
-        self,
-        dataset_name: str,
-        **kwargs,
-    ) -> SDTMDatasetMetadata:
+    def _initialize_datasets_metadata(self, **kwargs) -> dict[str, SDTMDatasetMetadata]:
         """
-        Returns dataset metadata as DatasetMetadata instance.
+        Initialize the dataset metadata by reading metadata for all datasets in the Excel file.
+
+        Returns:
+            Dictionary mapping dataset name to SDTMDatasetMetadata
         """
-        datasets_worksheet = self._get_datasets_worksheet()
-        metadata = datasets_worksheet[
-            datasets_worksheet[ExcelDataSheets.DATASET_FILENAME_COLUMN.value]
-            == dataset_name
-        ]
-        dataset = self.get_dataset(dataset_name=dataset_name)
-        first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
-        return SDTMDatasetMetadata(
-            name=self._get_dataset_name(metadata, first_record, dataset_name),
-            first_record=first_record,
-            label=(
-                metadata[ExcelDataSheets.DATASET_LABEL_COLUMN.value].iloc[0]
-                if not metadata.empty
-                else ""
-            ),
-            modification_date=datetime.fromtimestamp(
-                os.path.getmtime(self.dataset_path)
-            ).isoformat(),
-            filename=dataset_name,
-            full_path=dataset_name,
-            file_size=0,
-            record_count=len(dataset),
+        result = {}
+        try:
+            datasets_worksheet = self._get_datasets_worksheet()
+        except ValueError as e:
+            # Pandas raises ValueError when sheet is not found
+            if "Worksheet named" in str(e):
+                try:
+                    with pd.ExcelFile(self.dataset_path) as xl:
+                        sheet_names = xl.sheet_names
+                        available = ", ".join(repr(s) for s in sheet_names) or "(none)"
+                except Exception:
+                    available = "(unable to read sheet names)"
+                raise ExcelTestDataError(
+                    f"The workbook does not contain a '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet. "
+                    f"Submitted sheet names: {available}."
+                ) from e
+            raise
+
+        # Check for required columns
+        missing_cols = sorted(
+            set(ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value)
+            - set(datasets_worksheet.columns)
         )
+        if missing_cols:
+            raise ExcelTestDataError(
+                f"The '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet is missing a "
+                f"required {ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value} column(s): "
+                f"{missing_cols}. Column headers are case-sensitive. "
+            )
+
+        for dataset_filename in datasets_worksheet[
+            ExcelDataSheets.DATASET_FILENAME_COLUMN.value
+        ]:
+            dataset = self.__get_dataset(dataset_filename)
+            first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
+            metadata_row = datasets_worksheet[
+                datasets_worksheet[ExcelDataSheets.DATASET_FILENAME_COLUMN.value]
+                == dataset_filename
+            ]
+            dataset_name = self._get_dataset_name(first_record, dataset_filename)
+            dataset_metadata = SDTMDatasetMetadata(
+                name=dataset_name,
+                first_record=first_record,
+                label=(
+                    metadata_row[ExcelDataSheets.DATASET_LABEL_COLUMN.value].iloc[0]
+                    if not metadata_row.empty
+                    else ""
+                ),
+                modification_date=datetime.fromtimestamp(
+                    os.path.getmtime(self.dataset_path)
+                ).isoformat(),
+                filename=dataset_filename,
+                full_path=dataset_filename,
+                file_size=0,
+                record_count=len(dataset),
+            )
+            result[dataset_name] = dataset_metadata
+        return result
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
     def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
+        # Get the sheet name from metadata
+        dataset_metadata = self._datasets_metadata.get(dataset_name)
+        if dataset_metadata is None:
+            return PandasDataset.from_dict({})
+
         dataframe = pd.read_excel(
             self.dataset_path,
-            sheet_name=dataset_name,
+            sheet_name=dataset_metadata.filename,
             header=None,
             nrows=4,
             na_values=[""],
@@ -210,46 +253,6 @@ class ExcelDataService(BaseDataService):
 
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
-
-    def get_datasets(self) -> List[dict]:
-        try:
-            with pd.ExcelFile(self.dataset_path) as xl:
-                sheet_names = xl.sheet_names
-                if ExcelDataSheets.DATASETS_SHEET_NAME.value not in sheet_names:
-                    available = ", ".join(repr(s) for s in sheet_names) or "(none)"
-                    raise ExcelTestDataError(
-                        f"The workbook does not contain a '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet. "
-                        f"Submitted sheet names: {available}."
-                    )
-                worksheet = xl.parse(
-                    ExcelDataSheets.DATASETS_SHEET_NAME.value,
-                    na_values=[""],
-                    keep_default_na=False,
-                )
-        except ExcelTestDataError:
-            raise
-        except Exception as e:
-            raise ExcelTestDataError(
-                f"Cannot read the Excel file. Ensure it is a valid .xlsx workbook. "
-                f"Details: {e}"
-            ) from e
-
-        missing_cols = sorted(
-            set(ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value)
-            - set(worksheet.columns)
-        )
-        if missing_cols:
-            raise ExcelTestDataError(
-                f"The '{ExcelDataSheets.DATASETS_SHEET_NAME.value}' sheet is missing a "
-                f"required {ExcelDataSheets.DATASETS_SHEET_REQUIRED_COLUMNS.value} column(s): "
-                f"{missing_cols}. Column headers are case-sensitive. "
-            )
-
-        datasets = [
-            self.get_raw_dataset_metadata(dataset_name=fn)
-            for fn in worksheet[ExcelDataSheets.DATASET_FILENAME_COLUMN.value]
-        ]
-        return datasets
 
     def to_parquet(self, file_path: str) -> str:
         """

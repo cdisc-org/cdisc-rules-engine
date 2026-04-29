@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Iterable, List, Union
+from typing import List, Union
 from dateutil.parser._parser import ParserError
 import traceback
 import pandas as pd
@@ -47,9 +47,6 @@ from cdisc_rules_engine.models.validation_error_container import (
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_services import DataServiceFactory
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-    DefineXMLReaderFactory,
-)
 from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
@@ -130,7 +127,7 @@ class RulesEngine:
         ):
             return self.data_service.dataset_paths[0]
 
-    def validate_single_rule(self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]):
+    def validate_single_rule(self, rule: dict):
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
@@ -138,14 +135,13 @@ class RulesEngine:
         if rule.get("rule_type") == RuleTypes.JSONATA.value:
             results["json"] = self.validate_single_dataset(
                 rule,
-                datasets,
                 SDTMDatasetMetadata(
                     name="json", full_path=self.get_first_dataset_path()
                 ),
             )
         else:
             total_errors = 0
-            for dataset_metadata in datasets:
+            for dataset_metadata in self.data_service.get_datasets():
                 if (
                     self.max_errors_per_rule
                     and not self.errors_per_dataset_flag
@@ -162,7 +158,6 @@ class RulesEngine:
                         continue  # handling split datasets
                 dataset_results = self.validate_single_dataset(
                     rule,
-                    datasets,
                     dataset_metadata,
                 )
                 if self.errors_per_dataset_flag and self.max_errors_per_rule:
@@ -216,7 +211,6 @@ class RulesEngine:
     def validate_single_dataset(
         self,
         rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
@@ -225,20 +219,18 @@ class RulesEngine:
         """
         logger.info(
             f"Validating {dataset_metadata.name}. "
-            f"rule={rule}. dataset_path={dataset_metadata.full_path}. datasets={datasets}."
+            f"rule={rule}. dataset_path={dataset_metadata.full_path}. datasets={self.data_service.get_datasets()}."
         )
         try:
             is_suitable, reason = self.rule_processor.is_suitable_for_validation(
                 rule,
                 dataset_metadata,
-                datasets,
                 self.standard,
-                self.standard_substandard,
                 self.use_case,
             )
             if is_suitable:
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, datasets, dataset_metadata
+                    rule, dataset_metadata
                 )
                 logger.info(
                     f"Validated dataset {dataset_metadata.name}. Result = {result}"
@@ -249,7 +241,7 @@ class RulesEngine:
                     # No errors were generated, create success error container
                     return [
                         ValidationErrorContainer(
-                            dataset=dataset_metadata.filename,
+                            dataset=dataset_metadata.name,
                             domain=dataset_metadata.domain or dataset_metadata.rdomain,
                             errors=[],
                         ).to_representation()
@@ -259,7 +251,7 @@ class RulesEngine:
                     f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
                 error_obj = FailedValidationEntity(
-                    dataset=dataset_metadata.filename,
+                    dataset=dataset_metadata.name,
                     error=SkippedReason.OUTSIDE_SCOPE.value,
                     message=reason,
                 )
@@ -267,7 +259,7 @@ class RulesEngine:
                     ValidationErrorContainer(
                         status=ExecutionStatus.SKIPPED.value,
                         message=reason,
-                        dataset=dataset_metadata.filename,
+                        dataset=dataset_metadata.name,
                         domain=dataset_metadata.domain
                         or dataset_metadata.rdomain
                         or "",
@@ -287,7 +279,7 @@ class RulesEngine:
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
-                e, dataset_metadata.filename
+                e, dataset_metadata.name
             )
             error_obj.domain = dataset_metadata.domain or dataset_metadata.rdomain or ""
             # this wrapping into a list is necessary to keep return type consistent
@@ -296,7 +288,6 @@ class RulesEngine:
     def get_dataset_builder(
         self,
         rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
         return builder_factory.get_service(
@@ -307,8 +298,6 @@ class RulesEngine:
             data_processor=self.data_processor,
             rule_processor=self.rule_processor,
             dataset_metadata=dataset_metadata,
-            datasets=datasets,
-            dataset_path=dataset_metadata.full_path,
             define_xml_path=self.define_xml_path,
             standard=self.standard,
             standard_version=self.standard_version,
@@ -320,7 +309,6 @@ class RulesEngine:
     def validate_rule(
         self,
         rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
@@ -328,7 +316,7 @@ class RulesEngine:
         It defines a rule validator based on its type and calls it.
         """
         kwargs = {}
-        builder = self.get_dataset_builder(rule, datasets, dataset_metadata)
+        builder = self.get_dataset_builder(rule, dataset_metadata)
         try:
             dataset = builder.get_dataset()
         except Exception as e:
@@ -356,13 +344,12 @@ class RulesEngine:
         kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
-        return self.execute_rule(rule, dataset, datasets, dataset_metadata, **kwargs)
+        return self.execute_rule(rule, dataset, dataset_metadata, **kwargs)
 
     def execute_rule(
         self,
         rule: dict,
         dataset: DatasetInterface,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
@@ -391,12 +378,11 @@ class RulesEngine:
         dataset_preprocessor = DatasetPreprocessor(
             dataset, dataset_metadata, self.data_service, self.cache
         )
-        dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
+        dataset = dataset_preprocessor.preprocess(rule_copy)
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
             dataset_metadata,
-            datasets,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
@@ -412,7 +398,7 @@ class RulesEngine:
             )
             logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
             error_obj = FailedValidationEntity(
-                dataset=dataset_metadata.filename,
+                dataset=dataset_metadata.name,
                 error=SkippedReason.EMPTY_DATASET.value,
                 message=reason,
             )
@@ -420,7 +406,7 @@ class RulesEngine:
                 ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value,
                     message=reason,
-                    dataset=dataset_metadata.filename,
+                    dataset=dataset_metadata.name,
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                     errors=[error_obj],
                 ).to_representation()
@@ -445,17 +431,6 @@ class RulesEngine:
             ),
         )
         return results
-
-    def get_define_xml_value_level_metadata(
-        self, dataset_path: str, domain_name: str
-    ) -> List[dict]:
-        """
-        Gets Define XML variable metadata and returns it as dataframe.
-        """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            dataset_path, self.define_xml_path, self.data_service, self.cache
-        )
-        return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 
     def handle_validation_exceptions(  # noqa
         self, exception, filename: str

@@ -163,7 +163,7 @@ class OperationsFactory(FactoryInterface):
         """Get instance of operation that matches operation specified in params"""
         required_args = {
             "operation_params",
-            "original_dataset",
+            "evaluation_dataset",
             "cache",
             "data_service",
             "library_metadata",
@@ -176,7 +176,7 @@ class OperationsFactory(FactoryInterface):
         if name in self._operations_map:
             return self._operations_map.get(name)(
                 kwargs.get("operation_params"),
-                kwargs.get("original_dataset"),
+                kwargs.get("evaluation_dataset"),
                 kwargs.get("cache"),
                 kwargs.get("data_service"),
                 kwargs.get("library_metadata"),

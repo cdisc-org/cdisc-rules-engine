@@ -22,7 +22,8 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
         """
         data_contents_long_df = super().build()
         variable_metadata = self.data_service.get_variables_metadata(
-            dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
+            dataset_name=self.dataset_metadata.name,
+            drop_duplicates=True,
         )
         merged_df = data_contents_long_df.merge(
             variable_metadata._data, how="left", on="variable_name"

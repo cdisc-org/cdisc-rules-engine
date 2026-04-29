@@ -8,6 +8,7 @@ from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder imp
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 @pytest.mark.parametrize(
@@ -123,9 +124,7 @@ def test_contents_define_vlm_dataset_builder(
         cache_service=None,
         rule_processor=None,
         data_processor=None,
-        dataset_path=None,
-        datasets=None,
-        dataset_metadata=None,
+        dataset_metadata=SDTMDatasetMetadata(name="TEST"),
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",

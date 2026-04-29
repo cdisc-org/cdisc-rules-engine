@@ -14,7 +14,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset)])
@@ -170,6 +170,10 @@ def test_get_label_referenced_variable_metadata(
     operation_params.standard_version = "3-4"
     operation_params.target = "AELABEL"
     operation_params.operation_id = "$label_referenced_variable"
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}
+    )
+
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
 
@@ -191,14 +195,7 @@ def test_get_label_referenced_variable_metadata(
         library_metadata,
     )
 
-    def mock_cached_method(*args, **kwargs):
-        return SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
-
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
-        side_effect=mock_cached_method,
-    ):
-        result: pd.DataFrame = operation.execute()
+    result: pd.DataFrame = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",

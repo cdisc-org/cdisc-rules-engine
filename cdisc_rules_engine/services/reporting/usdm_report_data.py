@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import BinaryIO, Iterable
-import os
 
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
@@ -80,7 +79,7 @@ class USDMReportData(BaseReportData):
                 ReportMetadataItem(
                     "JSON file name",
                     9,
-                    os.path.basename(os.path.dirname(self._datasets[0].full_path)),
+                    self._datasets[0].filename,
                 )
             )
             conformance_details.append(
@@ -126,7 +125,7 @@ class USDMReportData(BaseReportData):
                 ):
                     summary_item = {
                         "entity": result.get("entity")
-                        or (result.get("dataset", "") or "").replace(".json", ""),
+                        or (result.get("dataset", "") or ""),
                         "core_id": validation_result.id,
                         "cdisc_rule_id": validation_result.cdisc_rule_id,
                         "message": result.get("message"),
@@ -188,8 +187,7 @@ class USDMReportData(BaseReportData):
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "message": result.get("message"),
                 "executability": validation_result.executability,
-                "entity": error.get("entity")
-                or error.get("dataset", "").replace(".json", ""),
+                "entity": error.get("entity") or error.get("dataset", ""),
                 "instance_id": error.get("instance_id"),
                 "path": error.get("path"),
                 "attributes": variables,
@@ -210,8 +208,7 @@ class USDMReportData(BaseReportData):
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "message": (f"{result.get('message')} - {error.get('error')}"),
                 "executability": validation_result.executability,
-                "entity": error.get("entity")
-                or error.get("dataset", "").replace(".json", ""),
+                "entity": error.get("entity") or error.get("dataset", ""),
                 "instance_id": "",
                 "path": "",
                 "attributes": "",
