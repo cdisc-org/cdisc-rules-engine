@@ -524,33 +524,6 @@ def test_extract_dataset_metadata_without_ordernumber(filename):
         )
 
 
-class TestNormalizeDefineVersion:
-    def test_no_version_returns_content_and_none(self):
-        content = '<ODM def:DefineVersion="2.0.0"/>'
-        result, original = DefineXMLReaderFactory._normalize_define_version(content)
-        assert result == content
-        assert original is None
-
-    def test_version_2_1_x_is_normalized(self):
-        content = '<ODM def:DefineVersion="2.1.3"/>'
-        result, original = DefineXMLReaderFactory._normalize_define_version(content)
-        assert original == "2.1.3"
-        assert 'def:DefineVersion="2.1"' in result
-
-    def test_version_2_0_x_not_normalized(self):
-        content = '<ODM def:DefineVersion="2.0.5"/>'
-        result, original = DefineXMLReaderFactory._normalize_define_version(content)
-        assert result == content
-        assert original is None
-
-    def test_idempotent_after_normalization(self):
-        content = '<ODM def:DefineVersion="2.1.9"/>'
-        normalized, _ = DefineXMLReaderFactory._normalize_define_version(content)
-        result, original = DefineXMLReaderFactory._normalize_define_version(normalized)
-        assert original is None
-        assert result == normalized
-
-
 class TestNormalizationInConstructors:
 
     def test_from_file_contents_original_version_preserved(self):

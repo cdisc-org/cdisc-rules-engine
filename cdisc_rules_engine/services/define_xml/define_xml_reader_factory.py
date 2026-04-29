@@ -41,7 +41,6 @@ class DefineXMLReaderFactory:
         DefineXMLReader20,
         DefineXMLReader21,
     )
-    _DEFINE_VERSION_RE = re.compile(r'(?<=def:DefineVersion=")2\.1\.\d+(?=")')
 
     @classmethod
     def from_filename(cls, filename: str):
@@ -56,30 +55,31 @@ class DefineXMLReaderFactory:
         study_id=None,
         data_bundle_id=None,
     ):
-        """
-        Inits a DefineXMLReader object from file contents.
-        """
         logger.info("Reading Define-XML from file contents")
-        if isinstance(file_contents, bytes):
-            file_contents: str = file_contents.decode("utf-8")
         return cls._build_reader(
             file_contents, cache_service_obj, study_id, data_bundle_id
         )
 
     @classmethod
-    def _normalize_define_version(cls, content: str) -> tuple[str, str | None]:
-        match = cls._DEFINE_VERSION_RE.search(content)
-        if match:
-            return cls._DEFINE_VERSION_RE.sub("2.1", content), match.group()
-        return content, None
-
-    @classmethod
     def _build_reader(
-        cls, content: str, cache_service_obj=None, study_id=None, data_bundle_id=None
+        cls,
+        content: Union[str, bytes],
+        cache_service_obj=None,
+        study_id=None,
+        data_bundle_id=None,
     ) -> "BaseDefineXMLReader":
-        content, original_version = cls._normalize_define_version(content)
         root = ElementTree.fromstring(content)
-        reader_class = cls._get_define_xml_reader(root)
+        reader_class, original_version = cls._get_define_xml_reader(root)
+
+        if isinstance(content, bytes):
+            content = ElementTree.tostring(root, encoding="unicode")
+
+        if original_version:
+            content = content.replace(
+                f'DefineVersion="{original_version}"',
+                'DefineVersion="2.1"',
+            )
+
         reader = reader_class(cache_service_obj, study_id, data_bundle_id)
         reader._original_define_version = original_version
         reader._odm_loader.load_odm_string(content)
@@ -88,21 +88,17 @@ class DefineXMLReaderFactory:
     @classmethod
     def _get_define_xml_reader(
         cls, root: ElementTree.Element
-    ) -> type[BaseDefineXMLReader]:
-        elt = root.find(
-            "Study/MetaDataVersion",
-            namespaces={"": ODM_NAMESPACE},
-        )
+    ) -> tuple[type[BaseDefineXMLReader], str]:
+        elt = root.find("Study/MetaDataVersion", namespaces={"": ODM_NAMESPACE})
         pattern = compile(r"(\{(.*)\})?DefineVersion")
-        define_version = next(
-            iter(
-                cls._from_namespace(match.group(2))
-                for match in [pattern.fullmatch(name) for name, _ in elt.items()]
-                if match
-            ),
-            None,
-        )
-        return define_version
+        for name, value in elt.items():
+            match = pattern.fullmatch(name)
+            if match:
+                reader_class = cls._from_namespace(match.group(2))
+                # only look after 2.1.* versions
+                original_version = value if re.fullmatch(r"2\.1\.\d+", value) else None
+                return reader_class, original_version
+        return None, None
 
     @classmethod
     def _from_namespace(cls, namespace: str) -> BaseDefineXMLReader:
