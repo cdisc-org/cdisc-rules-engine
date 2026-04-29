@@ -24,7 +24,9 @@ def test_get_study_domains_with_duplicates(
         {"filename": "ae.xpt", "first_record": {"DOMAIN": "AE"}},
         {"filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
     ]
-    operation_params.datasets = [SDTMDatasetMetadata(**dataset) for dataset in datasets]
+    data_service.get_datasets = lambda: [
+        SDTMDatasetMetadata(**dataset) for dataset in datasets
+    ]
     result = StudyDomains(
         operation_params, dataset_type.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()
@@ -46,7 +48,9 @@ def test_get_study_domains_with_missing_domains(
         {"filename": "ae.xpt", "first_record": {"DOMAIN": "AE"}},
         {"filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
     ]
-    operation_params.datasets = [SDTMDatasetMetadata(**dataset) for dataset in datasets]
+    data_service.get_datasets = lambda: [
+        SDTMDatasetMetadata(**dataset) for dataset in datasets
+    ]
     result = StudyDomains(
         operation_params, dataset_type.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()

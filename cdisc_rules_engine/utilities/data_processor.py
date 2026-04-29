@@ -19,7 +19,7 @@ from cdisc_rules_engine.services.data_services import (
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 from cdisc_rules_engine.utilities.utils import (
-    search_in_list_of_dicts,
+    search_in_list,
     custom_str_conversion,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
@@ -106,13 +106,15 @@ class DataProcessor:
         model_metadata = (
             dataset_preprocessor._data_service.library_metadata.model_metadata
         )
-        file_info: SDTMDatasetMetadata = search_in_list_of_dicts(
+        dataset_metadata: SDTMDatasetMetadata = search_in_list(
             datasets, lambda item: item.domain == relrec_row["RDOMAIN_RIGHT"]
         )
-        if not file_info:
+        if not dataset_metadata:
             return DatasetInterface()
-        right_dataset: DatasetInterface = dataset_preprocessor._download_dataset(
-            file_info.filename
+        right_dataset: DatasetInterface = (
+            dataset_preprocessor._data_service.get_dataset(
+                dataset_name=dataset_metadata.name
+            )
         )
         variables_with_wildcards = {
             source: f"RELREC.{target}"
@@ -494,7 +496,7 @@ class DataProcessor:
         library_metadata: dict,
         rule: dict,
     ) -> bool:
-        define_variable_metadata: Optional[dict] = search_in_list_of_dicts(
+        define_variable_metadata: Optional[dict] = search_in_list(
             define_metadata, lambda item: item.get("define_variable_name") == column
         )
         if not define_variable_metadata:

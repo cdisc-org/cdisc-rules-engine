@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.data_services import DummyDataService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
@@ -297,9 +298,9 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path=test_data["datasets"][0]["filename"],
-        datasets=test_data.get("datasets", {}),
-        dataset_metadata=test_data["datasets"][0],
+        dataset_metadata=SDTMDatasetMetadata(
+            name="QSCG",
+        ),
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
@@ -324,9 +325,9 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path=test_data["datasets"][1]["filename"],
-        datasets=test_data.get("datasets", {}),
-        dataset_metadata=test_data["datasets"][1],
+        dataset_metadata=SDTMDatasetMetadata(
+            name="QSPG",
+        ),
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",

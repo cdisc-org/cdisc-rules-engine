@@ -106,8 +106,6 @@ class DataServiceInterface(ABC):
     def get_dataset_class(
         self,
         dataset: DatasetInterface,
-        file_path: str,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """
@@ -117,8 +115,6 @@ class DataServiceInterface(ABC):
     @abstractmethod
     def get_data_structure(
         self,
-        file_path: str,
-        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """
@@ -129,6 +125,16 @@ class DataServiceInterface(ABC):
     def to_parquet(self, file_path: str) -> str:
         """
         Converts a given file_path to parquet. Returns path to new file
+        """
+
+    @abstractmethod
+    def handle_custom_domains(
+        self,
+        dataset: DatasetInterface,
+        dataset_metadata: SDTMDatasetMetadata,
+    ) -> str | None:
+        """
+        Handles custom domains by returning the appropriate class name based on the dataset contents.
         """
 
     @staticmethod

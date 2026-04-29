@@ -80,7 +80,10 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             logger.info(f"No define_metadata is provided for {__name__}.")
             return self.dataset_implementation(columns=define_col_order)
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+            self.dataset_metadata.full_path,
+            self.define_xml_path,
+            self.data_service,
+            self.cache,
         )
         enriched_metadata = []
         for basic_metadata in define_metadata:
@@ -131,23 +134,23 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             "ap_suffix",
         ]
 
-        if len(self.datasets) == 0:
+        if len(self.data_service.get_datasets()) == 0:
             dataset_df = self.dataset_implementation(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
             datasets = self.dataset_implementation()
-            for dataset in self.datasets:
+            for dataset_metadata in self.data_service.get_datasets():
                 ds_metadata = None
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
-                        dataset_name=dataset.filename
+                        dataset_name=dataset_metadata.name
                     )
                     ds_metadata.data["dataset_domain"] = getattr(
-                        dataset, "domain", None
+                        dataset_metadata, "domain", None
                     )
-                    if dataset.first_record:
+                    if dataset_metadata.first_record:
                         ds_metadata.data["dataset_columns"] = [
-                            list(dataset.first_record.keys())
+                            list(dataset_metadata.first_record.keys())
                         ]
                     else:
                         ds_metadata.data["dataset_columns"] = [[]]

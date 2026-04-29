@@ -10,6 +10,7 @@ import os
 import re
 import ast
 import pandas as pd
+from dataclasses import fields
 from datetime import datetime
 from typing import Callable, List, Optional, Union
 from uuid import UUID
@@ -19,6 +20,22 @@ from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
+
+
+def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) -> T:
+    """
+    Convert a dataclass subclass instance to its superclass by copying all fields.
+
+    Args:
+        instance: The subclass instance to convert
+        superclass: The target superclass type
+
+    Returns:
+        A new instance of the superclass with fields copied from the subclass instance
+    """
+    return superclass(
+        **{field.name: getattr(instance, field.name) for field in fields(superclass)}
+    )
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -112,45 +129,7 @@ def is_valid_iso_date(date_to_validate: str) -> bool:
     return is_valid
 
 
-def get_dataset_path(
-    study_id: str, data_bundle_id: str = None, filename: str = None
-) -> str:
-    """
-    Returns a path to dataset in the blob storage.
-    """
-    path: str = study_id
-    if data_bundle_id:
-        path = os.path.join(path, data_bundle_id)
-    if filename:
-        path = os.path.join(path, filename)
-    return path
-
-
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
-
-
-def get_dataset_cache_key_from_study(
-    study_id: str,
-    data_bundle_id: str = None,
-    filename: str = None,
-    dataset_type: str = None,
-) -> str:
-    """
-    Creates a cache key for a dataset.
-    Usually, template of a dataset cache key is {dataset_path}_{dataset_type}.
-    Ex.: CDISC01/test/ae.xpt_contents or CDISC01/test/ae.xpt_metadata.
-    So, the function also builds the path.
-
-    If dataset_type parameter is not passed, the returned key
-    can be used to clean several values with matching key pattern.
-    dataset_type param can be: contents, metadata, variables_metadata.
-    """
-    dataset_path: str = get_dataset_path(study_id, data_bundle_id, filename)
-    if dataset_type:
-        dataset_path = DATASET_CACHE_KEY_TEMPLATE.format(
-            dataset_path=dataset_path, dataset_type=dataset_type
-        )
-    return dataset_path
 
 
 def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str:
@@ -229,27 +208,28 @@ def replace_pattern_in_list_of_strings(
 
 def get_operations_cache_key(
     core_id: str,
-    directory_path: str,
     operation_id: str,
     domain: str = None,
     operation_name: str = None,
+    evaluation_dataset_name: str = None,
     grouping: str = None,
     target_variable: str = None,
-    dataset_path: str = None,
 ) -> str:
     """
     Creates the cache key for operations.
     """
-    key = f"operations/{core_id}/{directory_path}/{operation_id}"
-    optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
+    key = f"operations/{core_id}/{operation_id}"
+    optional_items = [
+        domain,
+        operation_name,
+        evaluation_dataset_name,
+        grouping,
+        target_variable,
+    ]
     for item in optional_items:
         if item:
             key = f"{key}/{item}"
     return key
-
-
-def get_directory_path(dataset_path):
-    return os.path.dirname(dataset_path)
 
 
 def serialize_rule(rule: dict) -> dict:
@@ -320,9 +300,9 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
     return f"meddra_valid_code_term_pairs_{meddra_path}"
 
 
-def get_item_index_by_condition(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[int]:
+def get_item_index_by_condition[
+    T
+](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
@@ -332,9 +312,9 @@ def get_item_index_by_condition(
             return index
 
 
-def search_in_list_of_dicts(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[dict]:
+def search_in_list[
+    T
+](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[T]:
     """
     Returns an element of unsorted list that applies to the condition.
     """

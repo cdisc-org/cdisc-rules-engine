@@ -59,8 +59,6 @@ def test_build_with_variable_metadata(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=None,
             data_processor=None,
-            dataset_path="ae.xpt",
-            datasets=[],
             dataset_metadata=SDTMDatasetMetadata(
                 name="AE", first_record={"DOMAIN": "AE"}
             ),
@@ -133,9 +131,14 @@ def test_concat_with_split_datasets():
     )
 
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    # Set up metadata in the data service
+    data_service._datasets_metadata = {
+        "AE1": ae1_metadata,
+        "AE2": ae2_metadata,
+    }
     data_service.get_dataset = MagicMock(
         side_effect=lambda dataset_name, **kwargs: PandasDataset(
-            ae1_data if dataset_name == "ae1.xpt" else ae2_data
+            ae1_data if dataset_name == "AE1" else ae2_data
         )
     )
     metadata_df = pd.DataFrame.from_dict(
@@ -157,8 +160,6 @@ def test_concat_with_split_datasets():
         cache_service=InMemoryCacheService(),
         rule_processor=None,
         data_processor=None,
-        dataset_path="ae.xpt",
-        datasets=[],
         dataset_metadata=SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}),
         define_xml_path="",
         standard="",
@@ -332,25 +333,25 @@ def test_concat_with_split_datasets():
                 4,
                 7,
             ],
-            "source_filename": [
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae1.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
-                "ae2.xpt",
+            "source_dataset_name": [
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE1",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
+                "AE2",
             ],
             "source_row_number": [
                 1,
@@ -383,7 +384,7 @@ def test_concat_with_split_datasets():
         "row_number",
         "variable_name",
         "variable_value",
-        "source_filename",
+        "source_dataset_name",
         "source_row_number",
     ]
     for col in key_columns:

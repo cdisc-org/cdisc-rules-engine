@@ -184,7 +184,7 @@ try:
         "DM": [
             {
                 "executionStatus": "success",
-                "dataset": "dm.xpt",
+                "dataset": "DM",
                 "domain": "DM",
                 "variables": [],
                 "message": None,
@@ -194,7 +194,7 @@ try:
         "FA": [
             {
                 "executionStatus": "issue reported",
-                "dataset": "fa.xpt",
+                "dataset": "FA",
                 "domain": "FA",
                 "variables": [
                     "$val_dy",
@@ -215,7 +215,7 @@ try:
                             "RFSTDTC": "2012-11-15",
                             "FADTC": "2012-12-02",
                         },
-                        "dataset": "fa.xpt",
+                        "dataset": "FA",
                         "row": 1,
                         "USUBJID": "CDISC002",
                         "SEQ": 1,
@@ -227,7 +227,7 @@ try:
                             "RFSTDTC": "2013-10-08",
                             "FADTC": "2013-10-12",
                         },
-                        "dataset": "fa.xpt",
+                        "dataset": "FA",
                         "row": 2,
                         "USUBJID": "CDISC004",
                         "SEQ": 2,
@@ -239,7 +239,7 @@ try:
                             "RFSTDTC": "2013-01-05",
                             "FADTC": "2012-12-02",
                         },
-                        "dataset": "fa.xpt",
+                        "dataset": "FA",
                         "row": 4,
                         "USUBJID": "CDISC007",
                         "SEQ": 4,
@@ -251,7 +251,7 @@ try:
                             "RFSTDTC": "2014-05-11",
                             "FADTC": "2014-12-02",
                         },
-                        "dataset": "fa.xpt",
+                        "dataset": "FA",
                         "row": 5,
                         "USUBJID": "CDISC008",
                         "SEQ": 5,
@@ -262,7 +262,7 @@ try:
         "IE": [
             {
                 "executionStatus": "issue reported",
-                "dataset": "ie.xpt",
+                "dataset": "IE",
                 "domain": "IE",
                 "variables": [
                     "$val_dy",
@@ -283,7 +283,7 @@ try:
                             "RFSTDTC": "2022-03-20",
                             "IEDTC": "2022-03-17",
                         },
-                        "dataset": "ie.xpt",
+                        "dataset": "IE",
                         "row": 1,
                         "USUBJID": "CDISC-TEST-001",
                         "SEQ": 1,
@@ -294,7 +294,7 @@ try:
         "LB": [
             {
                 "executionStatus": "issue reported",
-                "dataset": "lb.xpt",
+                "dataset": "LB",
                 "domain": "LB",
                 "variables": [
                     "$val_dy",
@@ -315,7 +315,7 @@ try:
                             "LBDTC": "2022-03-30",
                             "LBDY": 2,
                         },
-                        "dataset": "lb.xpt",
+                        "dataset": "LB",
                         "row": 1,
                         "USUBJID": "CDISC-TEST-001",
                         "SEQ": 1,

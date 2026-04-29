@@ -1,6 +1,6 @@
 import pytest
 from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
+    SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
@@ -62,8 +62,7 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    data_metadata = test_data
-    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
+    datasets = [DummyDataset(data) for data in test_data.get("datasets", [])]
     expected_output = {
         "STUDYID": {
             "0": "CDISCCORE01",
@@ -305,35 +304,35 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
             "26": "ALIVE",
             "27": "DEAD",
         },
-        SOURCE_FILENAME: {
-            "0": "ss11.xpt",
-            "1": "ss11.xpt",
-            "2": "ss11.xpt",
-            "3": "ss11.xpt",
-            "4": "ss11.xpt",
-            "5": "ss11.xpt",
-            "6": "ss11.xpt",
-            "7": "ss11.xpt",
-            "8": "ss11.xpt",
-            "9": "ss11.xpt",
-            "10": "ss11.xpt",
-            "11": "ss11.xpt",
-            "12": "ss11.xpt",
-            "13": "ss11.xpt",
-            "14": "ss12.xpt",
-            "15": "ss12.xpt",
-            "16": "ss12.xpt",
-            "17": "ss12.xpt",
-            "18": "ss12.xpt",
-            "19": "ss12.xpt",
-            "20": "ss12.xpt",
-            "21": "ss12.xpt",
-            "22": "ss12.xpt",
-            "23": "ss12.xpt",
-            "24": "ss12.xpt",
-            "25": "ss12.xpt",
-            "26": "ss12.xpt",
-            "27": "ss12.xpt",
+        SOURCE_DATASET_NAME: {
+            "0": "SS11",
+            "1": "SS11",
+            "2": "SS11",
+            "3": "SS11",
+            "4": "SS11",
+            "5": "SS11",
+            "6": "SS11",
+            "7": "SS11",
+            "8": "SS11",
+            "9": "SS11",
+            "10": "SS11",
+            "11": "SS11",
+            "12": "SS11",
+            "13": "SS11",
+            "14": "SS12",
+            "15": "SS12",
+            "16": "SS12",
+            "17": "SS12",
+            "18": "SS12",
+            "19": "SS12",
+            "20": "SS12",
+            "21": "SS12",
+            "22": "SS12",
+            "23": "SS12",
+            "24": "SS12",
+            "25": "SS12",
+            "26": "SS12",
+            "27": "SS12",
         },
         SOURCE_ROW_NUMBER: {
             "0": 1,
@@ -377,8 +376,6 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path="",
-        datasets=datasets,
         dataset_metadata=DummyDataset(test_data.get("datasets", {})[0]),
         define_xml_path=None,
         standard="sdtmig",

@@ -294,7 +294,7 @@ def test_get_model_filtered_variables(
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
     operation_params.key_value = key_val
-    operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(**dataset_metadata)
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
     library_metadata = LibraryMetadataContainer(
@@ -314,15 +314,7 @@ def test_get_model_filtered_variables(
         if model_metadata["datasets"][0]["_links"]["parentClass"]["title"] == "Events"
         else FINDINGS_ABOUT
     )
-    """
-    this fuction replaces get_raw_dataset_metadata in LocalDataService to
-    prevent filtering into the decorator that checks cache
-    """
 
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(**dataset_metadata)
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
     with patch.object(
         LocalDataService, "get_dataset_class", return_value=expected_class
     ):

@@ -118,9 +118,9 @@ def test_get_column_order_from_library(operation_params: OperationParams, datase
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-    operation_params.datasets = [
-        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
-    ]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        name="AE", first_record={"DOMAIN": "AE"}
+    )
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
@@ -137,11 +137,6 @@ def test_get_column_order_from_library(operation_params: OperationParams, datase
         standard_version="3-4",
         library_metadata=library_metadata,
     )
-
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
 
     operation = LibraryModelColumnOrder(
         operation_params,
@@ -277,9 +272,9 @@ def test_get_findings_class_column_order_from_library(
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-    operation_params.datasets = [
-        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
-    ]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        name="AE", first_record={"DOMAIN": "AE"}
+    )
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
@@ -296,10 +291,6 @@ def test_get_findings_class_column_order_from_library(
         library_metadata=library_metadata,
     )
 
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
     operation = LibraryModelColumnOrder(
         operation_params,
         operation_params.dataframe,

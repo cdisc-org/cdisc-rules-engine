@@ -11,7 +11,7 @@ import pytest
 
 from cdisc_rules_engine.utilities.sdtm_utilities import tag_source
 from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
+    SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
 )
 
@@ -394,7 +394,7 @@ def test_empty_sequential():
         {"TVSEQ": [2, 4, 6, None, "", 8], "TV": [1, 3, 5, 7, 9, "8"]}
     )
     variable = DatasetVariable(df)
-    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "TV"}, filename="tv")
+    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "TV"}, name="tv")
     action = COREActions(
         [],
         variable,
@@ -478,7 +478,7 @@ def test_nan_handling_in_error_object():
             "TVSEQ": [1, 2, 3, 4],
         }
     )
-    df[SOURCE_FILENAME] = "test.xpt"
+    df[SOURCE_DATASET_NAME] = "test"
     df[SOURCE_ROW_NUMBER] = [1, 2, 3, 4]
 
     expected_nan_vals = [1.0, None, 3.0, None]
