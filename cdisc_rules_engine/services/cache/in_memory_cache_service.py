@@ -104,7 +104,7 @@ class InMemoryCacheService(CacheServiceInterface):
         return self.dataset_cache.keys()
 
     def filter_cache(self, prefix: str) -> dict:
-        return {k: self.cache.get(k) for k in self.cache.keys() if k.startswith(prefix)}
+        return {k: self.get(k) for k in self.cache.keys() if k.startswith(prefix)}
 
     def get_by_regex(self, regex: str) -> dict:
         regex = regex.replace("*", ".*")
