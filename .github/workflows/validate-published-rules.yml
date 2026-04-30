@@ -11,7 +11,6 @@
 name: Validate Published Rules
 
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -20,10 +19,6 @@ on:
     inputs:
       rules_ref:
         description: 'Branch/tag/SHA of cdisc-open-rules to validate against'
-        required: false
-        default: 'main'
-      engine_ref:
-        description: 'Branch/tag/SHA of cdisc-rules-engine to use'
         required: false
         default: 'main'
 
@@ -41,7 +36,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: cdisc-org/cdisc-rules-engine
-          ref: ${{ inputs.engine_ref || github.sha }}
           path: engine
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -102,7 +96,9 @@ jobs:
           RULES_ROOT="$(pwd)/open-rules"
           PUBLISHED_DIR="$RULES_ROOT/Published"
           SCRIPTS_DIR="$RULES_ROOT/.github/scripts"
-          SUMMARY_REPORT="$(pwd)/validation_report.md"
+
+          SUMMARY_TABLE="$(pwd)/summary_table.md"
+          DETAIL_REPORT="$(pwd)/detail_report.md"
 
           OVERALL_EXIT=0
           RULE_PASS=0
@@ -117,14 +113,22 @@ jobs:
 
           echo "Found ${#RULE_DIRS[@]} rule(s) under Published/"
 
+          # -- Initialise summary table
           {
-            echo "# Published Rules Validation Report"
+            echo "# Published Rules Validation — Summary"
             echo ""
-          } > "$SUMMARY_REPORT"
+            echo "| Rule | Type | Number | Execution | Expected | Got | Match |"
+            echo "|------|------|--------|-----------|----------|-----|-------|"
+          } > "$SUMMARY_TABLE"
+
+          # -- Initialise detail report
+          {
+            echo "# Published Rules Validation — Failure Details"
+            echo ""
+          } > "$DETAIL_REPORT"
 
           for RULE_DIR in "${RULE_DIRS[@]}"; do
             RULE_ID=$(basename "$RULE_DIR")
-            RULE_REL_PATH="Published/$RULE_ID"
 
             RULE_YML=$(find "$RULE_DIR" -maxdepth 1 -name "*.yml" | head -1)
             if [ -z "$RULE_YML" ]; then
@@ -137,21 +141,85 @@ jobs:
             echo "========================================"
 
             RULE_EXIT=0
-            # Pass ENGINE_DIR explicitly so run_validation.sh knows where core.py is
             ENGINE_DIR_OVERRIDE="$ENGINE_DIR" \
             bash "$SCRIPTS_DIR/run_validation.sh" \
-              "$RULE_REL_PATH" \
+              "Published/$RULE_ID" \
               "$PYTHON_CMD" \
               "$RULES_ROOT" \
               || RULE_EXIT=$?
 
-            if [ -f "$RULES_ROOT/validation_report.md" ]; then
-              cat "$RULES_ROOT/validation_report.md" >> "$SUMMARY_REPORT"
-              echo -e "\n---\n" >> "$SUMMARY_REPORT"
-              rm -f "$RULES_ROOT/validation_report.md"
+            # -- Parse per-test-case results produced by run_validation.sh
+            CASE_RESULTS="$RULES_ROOT/case_results.jsonl"
+            RULE_ROW_FAILED=0
+
+            if [ -f "$CASE_RESULTS" ]; then
+              while IFS= read -r line; do
+                # Parse all fields in a single python3 call using shlex.quote
+                # to safely produce shell variable assignments
+                eval "$(echo "$line" | python3 -c "
+                      import sys, json, shlex
+                      d = json.load(sys.stdin)
+                      for k, v in [
+                        ('CASE_RULE',   d['rule']),
+                        ('CASE_TYPE',   d['type']),
+                        ('CASE_NUM',    str(d['num'])),
+                        ('EXEC_OK',     '✅' if d['exec'] else '❌'),
+                        ('EXPECTED',    str(d.get('expected', ''))),
+                        ('GOT',         str(d.get('got', ''))),
+                        ('MATCH',       '✅' if d.get('match') else '❌'),
+                        ('DIFF_FILE',   str(d.get('diff', ''))),
+                        ('STDERR_FILE', str(d.get('stderr', ''))),
+                      ]:
+                        print(k + '=' + shlex.quote(v))
+                      ")"
+
+                echo "| $CASE_RULE | $CASE_TYPE | $CASE_NUM | $EXEC_OK | $EXPECTED | $GOT | $MATCH |" >> "$SUMMARY_TABLE"
+
+                # Collect detail only for failures
+                if [[ "$EXEC_OK" == "❌" || "$MATCH" == "❌" ]]; then
+                  RULE_ROW_FAILED=1
+                  {
+                    echo "## $CASE_RULE — $CASE_TYPE / $CASE_NUM"
+                    if [[ "$EXEC_OK" == "❌" ]]; then
+                      echo "**Execution failed.**"
+                      if [ -f "$STDERR_FILE" ]; then
+                        echo '```'
+                        cat "$STDERR_FILE"
+                        echo '```'
+                      fi
+                    else
+                      echo "**Expected:** $EXPECTED  **Got:** $GOT"
+                      if [ -n "$DIFF_FILE" ] && [ -f "$DIFF_FILE" ]; then
+                        echo '```diff'
+                        cat "$DIFF_FILE"
+                        echo '```'
+                      fi
+                    fi
+                    echo ""
+                  } >> "$DETAIL_REPORT"
+                fi
+              done < "$CASE_RESULTS"
+              rm -f "$CASE_RESULTS"
+            else
+              # write a single aggregate row
+              EXEC_OK=$( [ $RULE_EXIT -eq 0 ] && echo "✅" || echo "❌" )
+              echo "| $RULE_ID | — | — | $EXEC_OK | — | — | — |" >> "$SUMMARY_TABLE"
+              if [ $RULE_EXIT -ne 0 ]; then
+                RULE_ROW_FAILED=1
+                # Append whatever markdown run_validation.sh produced
+                if [ -f "$RULES_ROOT/validation_report.md" ]; then
+                  {
+                    echo "## $RULE_ID"
+                    cat "$RULES_ROOT/validation_report.md"
+                    echo ""
+                  } >> "$DETAIL_REPORT"
+                fi
+              fi
             fi
 
-            if [ $RULE_EXIT -eq 0 ]; then
+            rm -f "$RULES_ROOT/validation_report.md"
+
+            if [ $RULE_ROW_FAILED -eq 0 ] && [ $RULE_EXIT -eq 0 ]; then
               RULE_PASS=$((RULE_PASS + 1))
               echo "  → $RULE_ID: PASSED"
             else
@@ -161,22 +229,14 @@ jobs:
             fi
           done
 
-          # Insert summary totals after the H1 heading
-          {
-            echo "**Total:** $((RULE_PASS + RULE_FAIL))  |  ✅ Passed: $RULE_PASS  |  ❌ Failed: $RULE_FAIL"
-            echo ""
-            echo "---"
-            echo ""
-          } > /tmp/totals.md
-          head -2 "$SUMMARY_REPORT"          > /tmp/final_report.md
-          cat /tmp/totals.md                >> /tmp/final_report.md
-          tail -n +3 "$SUMMARY_REPORT"      >> /tmp/final_report.md
-          mv /tmp/final_report.md "$SUMMARY_REPORT"
+          # -- Insert totals line into summary table
+          TOTALS="**Total:** $((RULE_PASS + RULE_FAIL))  |  ✅ Passed: $RULE_PASS  |  ❌ Failed: $RULE_FAIL"
+          sed -i "2s|^|$TOTALS\n\n|" "$SUMMARY_TABLE"
 
           exit $OVERALL_EXIT
 
       # -----------------------------------------------------------------------
-      # 6. Upload report + results.json as artifacts
+      # 6. Upload both reports + raw results as artifacts
       # -----------------------------------------------------------------------
       - name: Upload validation artifacts
         if: always()
@@ -185,16 +245,17 @@ jobs:
           name: published-rules-validation-${{ github.run_id }}
           path: |
             open-rules/Published/**/results/results.json
-            validation_report.md
+            summary_table.md
+            detail_report.md
           if-no-files-found: warn
 
       # -----------------------------------------------------------------------
-      # 7. Write report to GitHub Actions Job Summary
+      # 7. Write ONLY the summary table to GitHub Actions Job Summary
       # -----------------------------------------------------------------------
-      - name: Write report to workflow summary
+      - name: Write summary table to workflow summary
         if: always()
         run: |
-          [ -f validation_report.md ] && cat validation_report.md >> $GITHUB_STEP_SUMMARY || true
+          [ -f summary_table.md ] && cat summary_table.md >> $GITHUB_STEP_SUMMARY || true
 
       # -----------------------------------------------------------------------
       # 8. Fail the job if any rule failed
@@ -202,6 +263,5 @@ jobs:
       - name: Check overall status
         if: steps.validate.outcome == 'failure'
         run: |
-          echo "One or more published rules failed validation — see the report above."
+          echo "One or more published rules failed validation — see the artifacts for detail_report.md."
           exit 1
-
