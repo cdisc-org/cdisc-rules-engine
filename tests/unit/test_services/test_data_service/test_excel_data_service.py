@@ -50,14 +50,13 @@ def test_whitespace_get_dataset_raises(dataset_name):
     )
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
-    data_service = ExcelDataService.get_instance(
-        config=ConfigService(),
-        cache_service=mock_cache,
-        dataset_implementation=PandasDataset,
-        dataset_path=dataset_path,
-    )
     with pytest.raises(ExcelTestDataError) as exc_info:
-        data_service.get_dataset(dataset_name=dataset_name)
+        ExcelDataService.get_instance(
+            config=ConfigService(),
+            cache_service=mock_cache,
+            dataset_implementation=PandasDataset,
+            dataset_path=dataset_path,
+        )
     assert "leading/trailing whitespace" in str(exc_info.value.message)
     assert any(col in exc_info.value.message for col in ["STUDYID", "DOMAIN", "EXSEQ"])
 
@@ -96,7 +95,7 @@ def test_get_dataset_metadata(expected_result):
         cache_mock, MagicMock(), MagicMock(), dataset_path=dataset_path
     )
     metadata = data_service.get_dataset_metadata(
-        dataset_name=expected_result["dataset_location"]
+        dataset_name=expected_result["dataset_name"]
     )
     assert metadata["dataset_label"][0] == expected_result["dataset_label"]
     assert metadata["dataset_name"][0] == expected_result["dataset_name"]
@@ -107,7 +106,7 @@ def test_get_dataset_metadata(expected_result):
 
 @pytest.mark.parametrize(
     "dataset_name",
-    ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
+    ("ECAA", "ECBB", "SUPPEC"),
 )
 def test_get_variables_metadata(dataset_name):
     dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_datasets.xlsx"
@@ -119,7 +118,7 @@ def test_get_variables_metadata(dataset_name):
         dataset_implementation=PandasDataset,
         dataset_path=dataset_path,
     )
-    data = data_service.get_variables_metadata(dataset_name=dataset_name, datasets=[])
+    data = data_service.get_variables_metadata(dataset_name=dataset_name)
     assert isinstance(data, PandasDataset)
     expected_keys = [
         "variable_name",
@@ -185,7 +184,7 @@ def test_na_value_preserved_not_converted_to_nan():
         )
 
         # Get the dataset
-        dataset = data_service.get_dataset(dataset_name="test.xpt")
+        dataset = data_service.get_dataset(dataset_name="TEST")
 
         # Assertions
         assert isinstance(dataset, PandasDataset)
@@ -213,7 +212,7 @@ def test_na_value_preserved_not_converted_to_nan():
 def test_get_datasets_missing_datasets_sheet_raises_friendly_error():
     """
     When the workbook has no 'Datasets' sheet (e.g. tab named 'datasets' instead),
-    get_datasets() raises ExcelTestDataError with message that includes
+    initialization raises ExcelTestDataError with message that includes
     case-sensitive guidance.
     """
     with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
@@ -238,12 +237,10 @@ def test_get_datasets_missing_datasets_sheet_raises_friendly_error():
         mock_cache = MagicMock()
         mock_cache.get_dataset.return_value = None
 
-        data_service = ExcelDataService(
-            mock_cache, MagicMock(), MagicMock(), dataset_path=temp_path
-        )
-
         with pytest.raises(ExcelTestDataError) as exc_info:
-            data_service.get_datasets()
+            ExcelDataService(
+                mock_cache, MagicMock(), MagicMock(), dataset_path=temp_path
+            )
 
         msg = str(exc_info.value)
         assert ExcelDataSheets.DATASETS_SHEET_NAME.value in msg
@@ -254,7 +251,7 @@ def test_get_datasets_missing_datasets_sheet_raises_friendly_error():
 def test_get_datasets_missing_label_column_raises_friendly_error():
     """
     When the 'Datasets' sheet exists but is missing the 'Label' column,
-    get_datasets() raises ExcelTestDataError with column names and
+    initialization raises ExcelTestDataError with column names and
     case-sensitive guidance.
     """
     with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
@@ -280,12 +277,10 @@ def test_get_datasets_missing_label_column_raises_friendly_error():
         mock_cache = MagicMock()
         mock_cache.get_dataset.return_value = None
 
-        data_service = ExcelDataService(
-            mock_cache, MagicMock(), MagicMock(), dataset_path=temp_path
-        )
-
         with pytest.raises(ExcelTestDataError) as exc_info:
-            data_service.get_datasets()
+            ExcelDataService(
+                mock_cache, MagicMock(), MagicMock(), dataset_path=temp_path
+            )
 
         msg = str(exc_info.value)
         assert "Label" in msg

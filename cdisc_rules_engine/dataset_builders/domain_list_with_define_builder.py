@@ -26,7 +26,9 @@ class DomainListWithDefineDatasetBuilder(BaseDatasetBuilder):
         1  EC      ec.xpt    EC                   False
         2  SE      None      SE                   True
         """
-        domain_files = {ds.unsplit_name: ds.filename for ds in self.datasets}
+        domain_files = {
+            ds.unsplit_name: ds.filename for ds in self.data_service.get_datasets()
+        }
         all_define_metadata = self.get_define_metadata()
         records = []
         for define_item in all_define_metadata:

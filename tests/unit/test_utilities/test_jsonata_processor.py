@@ -4,6 +4,7 @@ from yaml import safe_load
 from cdisc_rules_engine.dataset_builders.jsonata_dataset_builder import (
     add_json_pointer_paths,
 )
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     MissingDataError,
     RuleExecutionError,
@@ -50,7 +51,7 @@ class TestJSONataProcessor(TestCase):
     }
     expected = [
         {
-            "executionStatus": "success",
+            "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
             "dataset": None,
             "domain": None,
             "variables": ["row", "A", "B"],

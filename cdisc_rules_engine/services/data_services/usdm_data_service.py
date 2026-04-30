@@ -71,27 +71,24 @@ class USDMDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
-        super(USDMDataService, self).__init__(
-            cache_service, reader_factory, config, **kwargs
-        )
         self.dataset_path: str = kwargs.get("dataset_path", "")
         self.encoding: str = kwargs.get("encoding")
 
         with open(os.path.join("resources", "schema", "USDM.yaml")) as entity_dict:
             self.entity_dict: dict = safe_load(entity_dict)
 
-        self.json = self._reader_factory.get_service("USDM").from_file(
-            self.dataset_path
-        )
+        self.json = reader_factory.get_service("USDM").from_file(self.dataset_path)
 
         # Build the id lookup dict once for fast reference resolution
         self._id_lookup = self.__build_id_lookup(self.json)
 
-        self.dataset_content_index: dict = self.__get_datasets_content_index(
-            dataset_name="USDM_content_index", json=self.json
-        )
+        self.dataset_content_index: List[dict] = self.__get_datasets_content_index()
 
         self._jsonpath_cache = {}
+
+        super(USDMDataService, self).__init__(
+            cache_service, reader_factory, config, **kwargs
+        )
 
     @classmethod
     def get_instance(
@@ -132,34 +129,40 @@ class USDMDataService(BaseDataService):
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         return self.__get_dataset(dataset_name)
 
-    @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
-    ) -> SDTMDatasetMetadata:
+    def _initialize_datasets_metadata(self, **kwargs) -> dict[str, SDTMDatasetMetadata]:
         """
-        Returns dataset metadata as DatasetMetadata instance.
+        Initialize the dataset metadata by reading metadata for all datasets in the USDM JSON.
+
+        Returns:
+            Dictionary mapping dataset name to SDTMDatasetMetadata
         """
-        dataset = self.get_dataset(dataset_name=dataset_name)
-        domain = self.__get_domain_from_dataset_name(dataset_name)
-        return SDTMDatasetMetadata(
-            name=domain,
-            first_record={"DOMAIN": domain},
-            label=domain,
-            modification_date=datetime.fromtimestamp(
-                os.path.getmtime(self.dataset_path)
-            ).isoformat(),
-            filename=basename(dataset_name),
-            full_path=dataset_name,
-            file_size=0,
-            record_count=len(dataset),
-        )
+        result = {}
+        for dataset_info in self.dataset_content_index:
+            dataset_name = dataset_info.get("dataset_name")
+            if not dataset_name:
+                continue
+            dataset = self.__get_dataset(dataset_name)
+            metadata = SDTMDatasetMetadata(
+                name=dataset_name,
+                first_record={"DOMAIN": dataset_name},
+                label=dataset_name,
+                modification_date=datetime.fromtimestamp(
+                    os.path.getmtime(self.dataset_path)
+                ).isoformat(),
+                filename=basename(self.dataset_path),
+                full_path=self.dataset_path,
+                file_size=0,
+                record_count=len(dataset),
+            )
+            result[dataset_name] = metadata
+        return result
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
     def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.read_metadata(dataset_name)
+        metadata: dict = self.__read_entity_metadata(dataset_name)
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -177,7 +180,7 @@ class USDMDataService(BaseDataService):
             "Can't use 'get_define_xml_contents' in USDMDataService!"
         )
 
-    def read_metadata(self, dataset_name: str) -> dict:
+    def __read_entity_metadata(self, dataset_name: str) -> dict:
         np_json_type_map: dict = {"O": "string", "float64": "float"}
         file_size = os.path.getsize(self.dataset_path)
         file_name = basename(self.dataset_path)
@@ -216,18 +219,6 @@ class USDMDataService(BaseDataService):
 
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
-
-    def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset in self.dataset_content_index:
-            dataset_name = dataset.get("dataset_name")
-            if not dataset_name:
-                continue
-            dataset_metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
-                dataset_name=dataset_name
-            )
-            datasets.append(dataset_metadata)
-        return datasets
 
     def to_parquet(self, file_path: str) -> str:
         """
@@ -403,9 +394,8 @@ class USDMDataService(BaseDataService):
         else:
             return api_type
 
-    def __read_metadata(
+    def __read_node_metadata(
         self,
-        json,
         parent_node: DatumInContext,
         child_value,
         content_path: str,
@@ -415,7 +405,7 @@ class USDMDataService(BaseDataService):
             f"{parent_node.path}".endswith("Id")
             or f"{parent_node.path}".endswith("Ids")
         ):
-            definition = self.__find_definition(json, child_value)
+            definition = self.__find_definition(self.json, child_value)
             if definition:
                 child_value = definition
                 ty = "reference"
@@ -430,26 +420,24 @@ class USDMDataService(BaseDataService):
     def __get_full_path(node: DatumInContext):
         return f"{node.full_path}".replace(".[", "[")
 
-    @cached_dataset(DatasetTypes.CONTENTS.value)
-    def __get_datasets_content_index(self, dataset_name: str, json) -> List[dict]:
+    def __get_datasets_content_index(self) -> List[dict]:
         """
         This is a bit convoluted because there is a bug in jsonpath_ng
         where this query does not return object values within an array
         """
         metadata = []
-        for node in parse("$..*").find(json):
+        for node in parse("$..*").find(self.json):
             if type(node.value) is list:
                 for index, child in enumerate(node.value):
-                    if metadatum := self.__read_metadata(
-                        json,
+                    if metadatum := self.__read_node_metadata(
                         node,
                         child,
                         f"{USDMDataService.__get_full_path(node)}[{index}]",
                     ):
                         metadata.append(metadatum)
             else:
-                if metadatum := self.__read_metadata(
-                    json, node, node.value, USDMDataService.__get_full_path(node)
+                if metadatum := self.__read_node_metadata(
+                    node, node.value, USDMDataService.__get_full_path(node)
                 ):
                     metadata.append(metadatum)
         dataset_dict = {}
@@ -463,18 +451,11 @@ class USDMDataService(BaseDataService):
             )
         return [
             {
-                "dataset_name": self.__get_dataset_name_from_domain(key),
-                "domain": key,
+                "dataset_name": key,
                 "content_paths": value,
             }
             for key, value in dataset_dict.items()
         ]
-
-    def __get_dataset_name_from_domain(self, domain_name: str) -> str:
-        return os.path.join(self.dataset_path, "{}.json".format(domain_name))
-
-    def __get_domain_from_dataset_name(self, dataset_name: str) -> str:
-        return basename(dataset_name).split(".")[0]
 
     @staticmethod
     def is_valid_data(dataset_paths: Sequence[str], encoding: str = None):

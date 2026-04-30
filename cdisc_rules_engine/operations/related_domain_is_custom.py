@@ -10,7 +10,7 @@ class RelatedDomainIsCustom(BaseOperation):
         If no -> the domain is custom.
         """
 
-        for ds in self.params.datasets:
+        for ds in self.data_service.get_datasets():
             if ds.is_supp and self.params.domain.endswith(ds.rdomain):
                 return is_custom_domain(self.library_metadata, ds.rdomain)
         return False

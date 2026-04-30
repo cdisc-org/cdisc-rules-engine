@@ -37,7 +37,7 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
 
     def _get_domain_to_datasets(self):
         domain_to_datasets = defaultdict(list)
-        for dataset in self.params.datasets:
+        for dataset in self.data_service.get_datasets():
             domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 
@@ -51,6 +51,11 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                 f"{rdomain} but Domain not found in datasets"
             )
         parent_dataframe = self.data_service.get_dataset(
-            dataset_name=parent_datasets[0].full_path
+            dataset_name=parent_datasets[0].name
         )
-        return self._get_variable_names_list(rdomain, parent_dataframe)
+        parent_dataframe_metadata = self.data_service.get_raw_dataset_metadata(
+            dataset_name=parent_datasets[0].name
+        )
+        return self._get_variable_names_list(
+            parent_dataframe_metadata, parent_dataframe
+        )
