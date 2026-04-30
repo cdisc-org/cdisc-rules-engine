@@ -44,7 +44,7 @@ class DefineXMLReaderFactory:
     @classmethod
     def from_filename(cls, filename: str):
         logger.info(f"Reading Define-XML from file. filename={filename}")
-        return cls._build_reader(Path(filename).read_text(encoding="utf-8"))
+        return cls._build_reader(Path(filename).read_bytes())
 
     @classmethod
     def from_file_contents(
