@@ -91,6 +91,24 @@ jobs:
         run: |
           chmod +x open-rules/.github/scripts/run_validation.sh
 
+          # Write the JSON-line parser once; called once per test case in the loop below
+          cat > /tmp/parse_case.py << 'PYEOF'
+          import sys, json, shlex
+          d = json.load(sys.stdin)
+          for k, v in [
+            ('CASE_RULE',   d['rule']),
+            ('CASE_TYPE',   d['type']),
+            ('CASE_NUM',    str(d['num'])),
+            ('EXEC_OK',     '\u2705' if d['exec'] else '\u274c'),
+            ('EXPECTED',    str(d.get('expected', ''))),
+            ('GOT',         str(d.get('got', ''))),
+            ('MATCH',       '\u2705' if d.get('match') else '\u274c'),
+            ('DIFF_FILE',   str(d.get('diff', ''))),
+            ('STDERR_FILE', str(d.get('stderr', ''))),
+          ]:
+            print(k + '=' + shlex.quote(v))
+          PYEOF
+
           PYTHON_CMD="$(pwd)/venv/bin/python"
           ENGINE_DIR="$(pwd)/engine"
           RULES_ROOT="$(pwd)/open-rules"
@@ -154,25 +172,8 @@ jobs:
 
             if [ -f "$CASE_RESULTS" ]; then
               while IFS= read -r line; do
-                # Parse all fields in a single python3 call using shlex.quote
-                # to safely produce shell variable assignments
-                eval "$(echo "$line" | python3 <<'PY'
-                import sys, json, shlex
-                d = json.load(sys.stdin)
-                for k, v in [
-                  ('CASE_RULE',   d['rule']),
-                  ('CASE_TYPE',   d['type']),
-                  ('CASE_NUM',    str(d['num'])),
-                  ('EXEC_OK',     '✅' if d['exec'] else '❌'),
-                  ('EXPECTED',    str(d.get('expected', ''))),
-                  ('GOT',         str(d.get('got', ''))),
-                  ('MATCH',       '✅' if d.get('match') else '❌'),
-                  ('DIFF_FILE',   str(d.get('diff', ''))),
-                  ('STDERR_FILE', str(d.get('stderr', ''))),
-                ]:
-                  print(k + '=' + shlex.quote(v))
-                'PY'
-                )"
+                # Parse all fields in a single python3 call — script written once above
+                eval "$(echo "$line" | python3 /tmp/parse_case.py)"
 
                 echo "| $CASE_RULE | $CASE_TYPE | $CASE_NUM | $EXEC_OK | $EXPECTED | $GOT | $MATCH |" >> "$SUMMARY_TABLE"
 
