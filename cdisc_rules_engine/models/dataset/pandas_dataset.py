@@ -56,8 +56,8 @@ class PandasDataset(DatasetInterface):
         return cls(dataframe)
 
     @classmethod
-    def from_records(cls, data: List[dict], **kwargs):
-        dataframe = pd.DataFrame.from_records(data, **kwargs)
+    def from_records(cls, data: List[dict]):
+        dataframe = pd.DataFrame.from_records(data)
         return cls(dataframe)
 
     def __getitem__(

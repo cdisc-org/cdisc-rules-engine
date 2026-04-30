@@ -14,6 +14,5 @@ class DomainListDatasetBuilder(BaseDatasetBuilder):
         """
 
         return self.dataset_implementation.from_records(
-            {ds.unsplit_name: ds.filename for ds in self.data_service.get_datasets()},
-            index=[0],
+            [{ds.unsplit_name: ds.filename for ds in self.data_service.get_datasets()}]
         )
