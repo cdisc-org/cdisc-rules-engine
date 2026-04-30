@@ -1080,9 +1080,15 @@ def test_rule_with_domain_prefix_replacement(
                 {
                     "domain": "AE",
                     "dataset": "AE",
-                    "errors": [],
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "message": None,
+                    "errors": [
+                        {
+                            "dataset": "AE",
+                            "error": "Empty dataset",
+                            "message": "Dataset skipped - Dataset is empty after preprocessing and operations. rule id=TEST1, dataset=AE",
+                        }
+                    ],
+                    "executionStatus": ExecutionStatus.SKIPPED.value,
+                    "message": "Dataset skipped - Dataset is empty after preprocessing and operations. rule id=TEST1, dataset=AE",
                     "variables": [],
                 }
             ],
