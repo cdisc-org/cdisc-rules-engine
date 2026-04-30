@@ -156,22 +156,23 @@ jobs:
               while IFS= read -r line; do
                 # Parse all fields in a single python3 call using shlex.quote
                 # to safely produce shell variable assignments
-                eval "$(echo "$line" | python3 -c "
-                      import sys, json, shlex
-                      d = json.load(sys.stdin)
-                      for k, v in [
-                        ('CASE_RULE',   d['rule']),
-                        ('CASE_TYPE',   d['type']),
-                        ('CASE_NUM',    str(d['num'])),
-                        ('EXEC_OK',     '✅' if d['exec'] else '❌'),
-                        ('EXPECTED',    str(d.get('expected', ''))),
-                        ('GOT',         str(d.get('got', ''))),
-                        ('MATCH',       '✅' if d.get('match') else '❌'),
-                        ('DIFF_FILE',   str(d.get('diff', ''))),
-                        ('STDERR_FILE', str(d.get('stderr', ''))),
-                      ]:
-                        print(k + '=' + shlex.quote(v))
-                      ")"
+                eval "$(echo "$line" | python3 <<'PY'
+                import sys, json, shlex
+                d = json.load(sys.stdin)
+                for k, v in [
+                  ('CASE_RULE',   d['rule']),
+                  ('CASE_TYPE',   d['type']),
+                  ('CASE_NUM',    str(d['num'])),
+                  ('EXEC_OK',     '✅' if d['exec'] else '❌'),
+                  ('EXPECTED',    str(d.get('expected', ''))),
+                  ('GOT',         str(d.get('got', ''))),
+                  ('MATCH',       '✅' if d.get('match') else '❌'),
+                  ('DIFF_FILE',   str(d.get('diff', ''))),
+                  ('STDERR_FILE', str(d.get('stderr', ''))),
+                ]:
+                  print(k + '=' + shlex.quote(v))
+                PY
+                )"
 
                 echo "| $CASE_RULE | $CASE_TYPE | $CASE_NUM | $EXEC_OK | $EXPECTED | $GOT | $MATCH |" >> "$SUMMARY_TABLE"
 
