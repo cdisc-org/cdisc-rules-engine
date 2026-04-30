@@ -171,7 +171,7 @@ jobs:
                   ('STDERR_FILE', str(d.get('stderr', ''))),
                 ]:
                   print(k + '=' + shlex.quote(v))
-                PY
+                'PY'
                 )"
 
                 echo "| $CASE_RULE | $CASE_TYPE | $CASE_NUM | $EXEC_OK | $EXPECTED | $GOT | $MATCH |" >> "$SUMMARY_TABLE"
