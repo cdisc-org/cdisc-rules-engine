@@ -9,6 +9,7 @@ import os
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
+from cdisc_rules_engine.utilities.decorators import cached
 from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
 from cdisc_rules_engine.constants.classes import (
     FINDINGS,
@@ -382,3 +383,72 @@ def test_cached_data_empty_cache():
             test_dataset_name, DatasetTypes.CONTENTS.value
         ): test_df
     }, "New dataset was not added to the cache"
+
+
+def test_cached_cache_hit_call_count():
+    cache_service = MagicMock()
+    expected_data = PandasDataset()
+    cache_service.get.return_value = expected_data
+
+    instance = MagicMock()
+    instance.cache_service = cache_service
+    instance.name = "Builder"
+
+    func_mock = MagicMock(return_value=PandasDataset())
+
+    @cached("get_dataset")
+    def func(self, **kwargs):
+        return func_mock()
+
+    result = func(instance, dataset_name="ae.xpt", name="Builder", domain_name="AE")
+
+    assert result is expected_data
+    assert func_mock.call_count == 0
+
+
+def test_cached_cache_miss_call_count():
+    cache_service = MagicMock()
+    cache_service.get.return_value = None
+
+    instance = MagicMock()
+    instance.cache_service = cache_service
+
+    func_mock = MagicMock(return_value=PandasDataset())
+
+    @cached("get_dataset")
+    def func(self, **kwargs):
+        return func_mock()
+
+    func(instance, dataset_name="ae.xpt")
+
+    assert func_mock.call_count == 1
+
+
+def test_cached_different_builders_have_different_cache():
+    cache_service = MagicMock()
+    cache_service.get.return_value = None
+
+    func_mock = MagicMock(side_effect=[PandasDataset(), PandasDataset()])
+
+    @cached("get_dataset")
+    def func(self, **kwargs):
+        return func_mock()
+
+    # builder 1
+    instance1 = MagicMock()
+    instance1.cache_service = cache_service
+    instance1.name = "BuilderA"
+
+    # builder 2
+    instance2 = MagicMock()
+    instance2.cache_service = cache_service
+    instance2.name = "BuilderB"
+
+    func(instance1, dataset_name="ae.xpt", domain_name="AE")
+    func(instance2, dataset_name="ae.xpt", domain_name="AE")
+
+    assert func_mock.call_count == 2
+    assert cache_service.add.call_count == 2
+    keys = [call[0][0] for call in cache_service.get.call_args_list]
+
+    assert keys[0] != keys[1]

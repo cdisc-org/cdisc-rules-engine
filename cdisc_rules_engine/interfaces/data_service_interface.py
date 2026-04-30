@@ -71,7 +71,6 @@ class DataServiceInterface(ABC):
         self,
         func_to_call: Callable,
         datasets_metadata: Iterable[DatasetMetadata],
-        **kwargs,
     ):
         """
         Accepts a list of split dataset filenames,
