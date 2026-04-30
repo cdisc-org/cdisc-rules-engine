@@ -474,6 +474,9 @@ class BaseDefineXMLReader(ABC):
     def get_define_version(self) -> Optional[str]:
         """Use to extract DefineVersion from file"""
         self.read()
+        if hasattr(self, "_original_define_version") and self._original_define_version:
+            return self._original_define_version
+
         mdv_attrib: dict = self._odm_loader.loader.parser.mdv[0].attrib
         for key, val in mdv_attrib.items():
             if key.endswith("DefineVersion"):
