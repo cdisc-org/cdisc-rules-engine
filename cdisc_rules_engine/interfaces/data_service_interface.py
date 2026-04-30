@@ -52,7 +52,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
+    def get_variables_metadata(self, dataset_name: str) -> DatasetInterface:
         """
         Gets variables metadata of a dataset.
         """

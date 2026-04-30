@@ -17,8 +17,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         """
         # Get basic variable metadata
         variables_metadata = self.data_service.get_variables_metadata(
-            dataset_name=self.dataset_metadata.name,
-            drop_duplicates=True,
+            dataset_name=self.dataset_metadata.name
         )
 
         # Check if the rule requires variable_max_size
