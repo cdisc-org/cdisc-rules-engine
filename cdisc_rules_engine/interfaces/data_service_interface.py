@@ -52,7 +52,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
+    def get_variables_metadata(self, dataset_name: str) -> DatasetInterface:
         """
         Gets variables metadata of a dataset.
         """
@@ -71,7 +71,6 @@ class DataServiceInterface(ABC):
         self,
         func_to_call: Callable,
         datasets_metadata: Iterable[DatasetMetadata],
-        **kwargs,
     ):
         """
         Accepts a list of split dataset filenames,

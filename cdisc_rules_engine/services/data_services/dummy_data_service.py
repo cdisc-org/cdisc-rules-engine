@@ -81,7 +81,7 @@ class DummyDataService(BaseDataService):
             for dataset in self.data
         }
 
-    def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
+    def get_variables_metadata(self, dataset_name: str) -> PandasDataset:
         metadata_to_return = {
             "variable_name": [],
             "variable_order_number": [],

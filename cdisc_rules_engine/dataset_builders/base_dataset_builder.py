@@ -5,6 +5,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.utilities.decorators import cached
 from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
 from cdisc_rules_engine.utilities.sdtm_utilities import (
     tag_source,
@@ -34,6 +35,7 @@ class BaseDatasetBuilder:
     ):
         self.data_service = data_service
         self.cache = cache_service
+        self.cache_service = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
         self.dataset_metadata = dataset_metadata
@@ -44,6 +46,14 @@ class BaseDatasetBuilder:
         self.standard_substandard = standard_substandard
         self.library_metadata = library_metadata
         self.dataset_implementation = self.data_service.dataset_implementation
+        if isinstance(dataset_metadata, SDTMDatasetMetadata):
+            self.domain = (
+                f"SUPP{dataset_metadata.rdomain}"
+                if dataset_metadata.rdomain
+                else dataset_metadata.domain
+            )
+            self.dataset_name = dataset_metadata.name
+        self.name = self.__class__.__name__
 
     @abstractmethod
     def build(self) -> DatasetInterface:
@@ -67,7 +77,8 @@ class BaseDatasetBuilder:
         finally:
             self.dataset_metadata = original_dataset_metadata
 
-    def get_dataset(self, **kwargs):
+    @cached("get_dataset")
+    def get_dataset(self):
         # If validating dataset content, ensure split datasets are handled.
         if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
@@ -77,7 +88,6 @@ class BaseDatasetBuilder:
                 datasets_metadata=get_corresponding_datasets(
                     self.data_service.get_datasets(), self.dataset_metadata
                 ),
-                **kwargs,
             )
         else:
             # single dataset. the most common case
@@ -85,7 +95,7 @@ class BaseDatasetBuilder:
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
-    def get_dataset_contents(self, **kwargs):
+    def get_dataset_contents(self):
         # If validating dataset content, ensure split datasets are handled.
         if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
@@ -95,7 +105,6 @@ class BaseDatasetBuilder:
                 datasets_metadata=get_corresponding_datasets(
                     self.data_service.get_datasets(), self.dataset_metadata
                 ),
-                **kwargs,
             )
         else:
             # single dataset. the most common case

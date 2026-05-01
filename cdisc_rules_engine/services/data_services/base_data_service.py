@@ -140,7 +140,6 @@ class BaseDataService(DataServiceInterface, ABC):
         self,
         func_to_call: Callable,
         datasets_metadata: Iterable[DatasetMetadata],
-        **kwargs,
     ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
@@ -149,8 +148,6 @@ class BaseDataService(DataServiceInterface, ABC):
         func_to_call must accept dataset_name and kwargs
         as input parameters and return pandas DataFrame.
         """
-        # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
-        drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
 
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
@@ -158,15 +155,12 @@ class BaseDataService(DataServiceInterface, ABC):
             dataset_names=[
                 dataset_metadata.name for dataset_metadata in datasets_metadata
             ],
-            **kwargs,
         )
         full_dataset = self.dataset_implementation()
         for dataset, dataset_metadata in zip(datasets, datasets_metadata):
             tagged_dataset = tag_source(dataset, dataset_metadata)
             full_dataset = full_dataset.concat(tagged_dataset, ignore_index=True)
 
-        if drop_duplicates:
-            full_dataset = full_dataset.drop_duplicates()
         return full_dataset
 
     def check_filepath(self, dataset_names: List[str]) -> List:

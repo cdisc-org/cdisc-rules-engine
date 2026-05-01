@@ -150,7 +150,7 @@ class LocalDataService(BaseDataService):
         return df
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
+    def get_variables_metadata(self, dataset_name: str) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
