@@ -12,7 +12,9 @@ class DayDataValidator(BaseOperation):
         )
         # Always get RFSTDTC column from DM dataset.
         dm_datasets = [
-            dataset for dataset in self.params.datasets if dataset.domain == "DM"
+            dataset
+            for dataset in self.data_service.get_datasets()
+            if dataset.domain == "DM"
         ]
         if not dm_datasets:
             raise DomainNotFoundError(
@@ -23,9 +25,7 @@ class DayDataValidator(BaseOperation):
                 self.data_service.get_dataset, dm_datasets
             )
         else:
-            dm_data = self.data_service.get_dataset(
-                dataset_name=dm_datasets[0].full_path or dm_datasets[0].filename
-            )
+            dm_data = self.data_service.get_dataset(dataset_name=dm_datasets[0].name)
             dm_data = tag_source(dm_data, dm_datasets[0])
 
         new_dataset = self.evaluation_dataset.merge(

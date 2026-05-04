@@ -101,7 +101,7 @@ def validate_single_rule(
         errors_per_dataset_flag=per_dataset_flag,
         encoding=args.encoding,
     )
-    results = engine.validate_single_rule(rule, datasets)
+    results = engine.validate_single_rule(rule)
     results = list(itertools.chain(*results.values()))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
@@ -128,14 +128,14 @@ def initialize_logger(disabled, log_level):
 
 
 def _convert_datasets_to_parquet_if_needed(
-    data_service, datasets, created_files, large_dataset_validation: bool
+    data_service, created_files, large_dataset_validation: bool
 ):
     if not (large_dataset_validation and data_service.standard != "usdm"):
         return
     engine_logger.warning(
         "Large datasets must use parquet format, converting all datasets to parquet"
     )
-    for dataset in datasets:
+    for dataset in data_service.get_datasets():
         file_path = dataset.full_path
         if file_path.endswith(".parquet"):
             continue
@@ -175,6 +175,8 @@ def run_validation(args: Validation_args):
             standard_substandard=standard_substandard,
             library_metadata=library_metadata,
             encoding=args.encoding,
+            variables_csv_path=args.variables_csv_path,
+            datasets_csv_path=args.datasets_csv_path,
         ).get_data_service(args.dataset_paths)
         # install dictionaries if needed
         dictionary_versions = fill_cache_with_dictionaries(
@@ -186,7 +188,6 @@ def run_validation(args: Validation_args):
         datasets = data_service.get_datasets()
         _convert_datasets_to_parquet_if_needed(
             data_service,
-            datasets,
             created_files,
             large_dataset_validation,
         )
@@ -221,7 +222,7 @@ def run_validation(args: Validation_args):
         elapsed_time = end - start
         engine_logger.info("Done Rule execution, creating reports")
         reporting_factory = ReportFactory(
-            datasets, results, elapsed_time, args, data_service, dictionary_versions
+            results, elapsed_time, args, data_service, dictionary_versions
         )
         reporting_services: List[BaseReport] = reporting_factory.get_report_services()
         output_files = []
@@ -322,5 +323,5 @@ def run_single_rule_validation(
     engine.rule_processor = RuleProcessor(data_service, cache, library_metadata)
     engine.data_processor = DataProcessor(data_service, cache)
     rule = Rule.from_cdisc_metadata(rule)
-    results = engine.validate_single_rule(rule, datasets)
+    results = engine.validate_single_rule(rule)
     return results

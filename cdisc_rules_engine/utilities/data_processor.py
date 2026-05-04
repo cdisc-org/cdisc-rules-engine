@@ -19,7 +19,8 @@ from cdisc_rules_engine.services.data_services import (
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 from cdisc_rules_engine.utilities.utils import (
-    search_in_list_of_dicts,
+    search_in_list,
+    custom_str_conversion,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
 
@@ -105,13 +106,15 @@ class DataProcessor:
         model_metadata = (
             dataset_preprocessor._data_service.library_metadata.model_metadata
         )
-        file_info: SDTMDatasetMetadata = search_in_list_of_dicts(
+        dataset_metadata: SDTMDatasetMetadata = search_in_list(
             datasets, lambda item: item.domain == relrec_row["RDOMAIN_RIGHT"]
         )
-        if not file_info:
+        if not dataset_metadata:
             return DatasetInterface()
-        right_dataset: DatasetInterface = dataset_preprocessor._download_dataset(
-            file_info.filename
+        right_dataset: DatasetInterface = (
+            dataset_preprocessor._data_service.get_dataset(
+                dataset_name=dataset_metadata.name
+            )
         )
         variables_with_wildcards = {
             source: f"RELREC.{target}"
@@ -213,6 +216,8 @@ class DataProcessor:
         if len(unique_idvar_values) == 1:
             right_dataset = DataProcessor.process_supp(right_dataset)
             dynamic_key = right_dataset["IDVAR"].iloc[0]
+            temp_key = f"{dynamic_key}__norm"
+
             is_blank: bool = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
             # Determine the common keys present in both datasets
             common_keys = [
@@ -221,11 +226,19 @@ class DataProcessor:
                 if key in left_dataset.columns and key in right_dataset.columns
             ]
             if not is_blank:
+                left_dataset[temp_key] = left_dataset[dynamic_key]
+
                 common_keys.append(dynamic_key)
                 current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
                 current_supp = current_supp.drop(columns=["IDVAR"])
-                left_dataset[dynamic_key] = left_dataset[dynamic_key].astype(str)
-                current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+
+                if pd.api.types.is_numeric_dtype(left_dataset[dynamic_key]):
+                    left_dataset[dynamic_key] = left_dataset[dynamic_key].apply(
+                        custom_str_conversion
+                    )
+                    current_supp[dynamic_key] = current_supp[dynamic_key].apply(
+                        custom_str_conversion
+                    )
             else:
                 columns_to_drop = [
                     col for col in ["IDVAR", "IDVARVAL"] if col in right_dataset.columns
@@ -242,7 +255,7 @@ class DataProcessor:
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
             else:
                 left_dataset = PandasDataset(
-                    pd.merge(
+                    pd.merge(  # noqa
                         left_dataset.data,
                         current_supp.data,
                         how="left",
@@ -251,6 +264,9 @@ class DataProcessor:
                     )
                 )
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
+            if not is_blank:
+                left_dataset[dynamic_key] = left_dataset[temp_key]
+                left_dataset = left_dataset.drop(columns=[temp_key])
         else:
             if dataset_implementation == DaskDataset:
                 left_dataset = PandasDataset(left_dataset.data.compute())
@@ -263,6 +279,7 @@ class DataProcessor:
                 left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
                     left_dataset, right_dataset, static_keys, qnam_list
                 )
+
         return left_dataset
 
     @staticmethod
@@ -479,7 +496,7 @@ class DataProcessor:
         library_metadata: dict,
         rule: dict,
     ) -> bool:
-        define_variable_metadata: Optional[dict] = search_in_list_of_dicts(
+        define_variable_metadata: Optional[dict] = search_in_list(
             define_metadata, lambda item: item.get("define_variable_name") == column
         )
         if not define_variable_metadata:

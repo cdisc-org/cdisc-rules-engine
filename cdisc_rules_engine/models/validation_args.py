@@ -16,7 +16,6 @@ Validation_args = namedtuple(
         "output",
         "output_format",
         "raw_report",
-        "define_version",
         "external_dictionaries",
         "rules",
         "exclude_rules",
@@ -29,5 +28,7 @@ Validation_args = namedtuple(
         "max_report_rows",
         "max_errors_per_rule",
         "encoding",
+        "variables_csv_path",
+        "datasets_csv_path",
     ],
 )

@@ -89,7 +89,7 @@ def test_get_xhtml_errors(
     operation_params.namespace = namespace
     operation = GetXhtmlErrors(
         params=operation_params,
-        original_dataset=dataset,
+        evaluation_dataset=dataset,
         cache_service=MagicMock(),
         data_service=MagicMock(),
     )

@@ -1,12 +1,11 @@
 from typing import List, Optional, Set, Hashable, Iterable
-from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.constants.metadata_columns import (
-    SOURCE_FILENAME,
+    SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
@@ -191,6 +190,10 @@ class COREActions(BaseActions):
                     targets,
                 )
 
+            grouping_variables = [
+                x.replace("--", self.dataset_metadata.wildcard_replacement or "")
+                for x in grouping_variables
+            ]
             missing_grouping_vars = [
                 var for var in grouping_variables if var not in data.columns
             ]
@@ -448,14 +451,16 @@ class COREActions(BaseActions):
         return errors_list
 
     def _get_dataset_name(self, data: pd.DataFrame) -> str:
-        source_pathnames = data.get(SOURCE_FILENAME, [])
-        source_filenames = [
-            path.basename(source_pathname) for source_pathname in source_pathnames
-        ]
-        source_filename_str = ", ".join(
-            sorted(set(source_filename or "" for source_filename in source_filenames))
+        source_dataset_names = data.get(SOURCE_DATASET_NAME, [])
+        source_dataset_name_str = ", ".join(
+            sorted(
+                set(
+                    source_dataset_name or ""
+                    for source_dataset_name in source_dataset_names
+                )
+            )
         )
-        return source_filename_str
+        return source_dataset_name_str
 
     def _create_error_object(
         self, df_row: pd.Series, data: pd.DataFrame
@@ -467,20 +472,21 @@ class COREActions(BaseActions):
         json_path: Optional[pd.Series] = data.get("_path")
         instance_id: Optional[pd.Series] = data.get("id")
         source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
-        source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
+        source_dataset_name: Optional[pd.Series] = data.get(SOURCE_DATASET_NAME)
         row_dict = df_row.to_dict()
         filtered_dict = {}
         for key, value in row_dict.items():
             filtered_dict[key] = self._filter_null_values(value)
         error_object = ValidationErrorEntity(
             dataset=(
-                path.basename(source_filename[df_row.name])
-                if isinstance(source_filename, pd.Series)
+                source_dataset_name[df_row.name]
+                if isinstance(source_dataset_name, pd.Series)
                 else ""
             ),
             row=(
                 int(data.loc[df_row.name]["row_number"])
                 if "row_number" in data.columns
+                and pd.notna(data.loc[df_row.name]["row_number"])
                 else (
                     int(source_row_number[df_row.name])
                     if isinstance(source_row_number, pd.Series)
