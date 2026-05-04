@@ -1066,6 +1066,8 @@ def test_validate(filetype):
                     None,
                     max_report_errors,
                     None,
+                    None,
+                    None,
                 )
             )
             print(f"{filetype.upper()} validation completed successfully!")
