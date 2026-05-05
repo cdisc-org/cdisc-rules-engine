@@ -117,7 +117,7 @@ def main():
         merged_schema = merge_schema_with_markdown(
             schema_path, schema_path.with_suffix(".md")
         )
-
+        merged_schema["$id"] = merged_schema["$id"].replace("/rule/", "/rule-merged/")
         with open(OUTPUT_DIR / schema_path.name, "w", encoding="utf-8") as f:
             json.dump(merged_schema, f, indent=2)
             f.write("\n")
