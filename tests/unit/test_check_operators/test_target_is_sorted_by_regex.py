@@ -117,11 +117,11 @@ def test_target_is_sorted_by_with_regex_invalid_order(dataset_class):
     }
 
     result = DataframeType({"value": df}).target_is_sorted_by(other_value)
-    # lalala10 and lalala9 are in wrong positions
-    # Expected by date: 1, 2, 9, 10
-    # Actual: 1, 10, 2, 9
-    # The function marks records where neighbor consistency fails
-    assert result.equals(pd.Series([True, False, True, False]))
+    # After sorting by extracted MIDS (1, 2, 9, 10), dates should be:
+    # MIDS=1 (2020-01-01) -> MIDS=2 (should be 2020-01-02) -> MIDS=9 (should be 2020-01-09) -> MIDS=10 (should be 2020-01-10)
+    # Actual dates: 2020-01-01, 2020-01-09, 2020-01-10, 2020-01-02
+    # Only MIDS=1 is in correct chronological position
+    assert result.equals(pd.Series([True, False, False, False]))
 
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])

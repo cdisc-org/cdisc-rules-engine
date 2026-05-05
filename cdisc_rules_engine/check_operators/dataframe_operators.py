@@ -1857,10 +1857,10 @@ class DataframeType(BaseType):
                     working_df[target], target_regex
                 )
                 target_for_sorting = f"{target}_extracted"
-                # Sort by within columns only, preserve original order within groups
+                # Sort by within columns AND extracted target
                 sorted_df = working_df.sort_values(
-                    by=within_columns,
-                    ascending=[True] * len(within_columns),
+                    by=[*within_columns, target_for_sorting],
+                    ascending=[True] * (len(within_columns) + 1),
                 )
             else:
                 working_df = self.value[selected_columns]
