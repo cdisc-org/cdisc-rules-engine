@@ -1,6 +1,7 @@
 from cdisc_rules_engine.config.config import ConfigService
 from pathlib import Path
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.operations.define_variable_metadata import (
     DefineVariableMetadata,
 )
@@ -23,7 +24,9 @@ def test_get_define_variable_metadata_variable_in_domain(
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
     resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
-    operation_params.directory_path = str(resources_path)
+    operation_params.evaluation_dataset_metadata = SDTMDatasetMetadata(
+        full_path=Path(resources_path, "ae.xpt")
+    )
     operation_params.domain = "AE"
     operation_params.target = "--SER"
     operation_params.attribute_name = "define_variable_ccode"
@@ -44,7 +47,9 @@ def test_get_define_variable_metadata_variable_not_in_domain(
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
     resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
-    operation_params.directory_path = str(resources_path)
+    operation_params.evaluation_dataset_metadata = SDTMDatasetMetadata(
+        full_path=Path(resources_path, "ae.xpt")
+    )
     operation_params.domain = "AE"
     operation_params.target = "VERYFAKEVARIABLE"
     operation_params.attribute_name = "define_variable_ccode"

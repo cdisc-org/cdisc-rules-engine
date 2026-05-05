@@ -117,8 +117,8 @@ class DaskDataset(PandasDataset):
         return cls(dataframe)
 
     @classmethod
-    def from_records(cls, data: List[dict], **kwargs):
-        data = pd.DataFrame.from_records(data, **kwargs)
+    def from_records(cls, data: List[dict]):
+        data = pd.DataFrame.from_records(data)
         dataframe = dd.from_pandas(data, npartitions=DEFAULT_NUM_PARTITIONS)
         return cls(dataframe)
 

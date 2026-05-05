@@ -1,7 +1,9 @@
-import os
-from xml.etree import ElementTree
+import re
+from pathlib import Path
+from os.path import dirname, join
 from re import compile
 from typing import Union
+from xml.etree import ElementTree
 
 from cdisc_rules_engine.constants.define_xml_constants import (
     DEFINE_XML_FILE_NAME,
@@ -17,7 +19,6 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
 from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
     BaseDefineXMLReader,
 )
-from cdisc_rules_engine.utilities.utils import get_directory_path
 
 
 class DefineXMLReaderFactory:
@@ -42,16 +43,8 @@ class DefineXMLReaderFactory:
 
     @classmethod
     def from_filename(cls, filename: str):
-        """
-        Inits a DefineXMLReader object from file.
-        """
-        logger.info(f"Reading Define-XML from file name. filename={filename}")
-        define_xml_reader_class: type = cls._get_define_xml_reader(
-            ElementTree.parse(filename).getroot()
-        )
-        reader: BaseDefineXMLReader = define_xml_reader_class()
-        reader._odm_loader.open_odm_document(filename)
-        return reader
+        logger.info(f"Reading Define-XML from file. filename={filename}")
+        return cls._build_reader(Path(filename).read_bytes())
 
     @classmethod
     def from_file_contents(
@@ -61,35 +54,50 @@ class DefineXMLReaderFactory:
         study_id=None,
         data_bundle_id=None,
     ):
-        """
-        Inits a DefineXMLReader object from file contents.
-        """
         logger.info("Reading Define-XML from file contents")
-        define_xml_reader_class: type = cls._get_define_xml_reader(
-            ElementTree.fromstring(file_contents)
+        return cls._build_reader(
+            file_contents, cache_service_obj, study_id, data_bundle_id
         )
-        reader: BaseDefineXMLReader = define_xml_reader_class(
-            cache_service_obj, study_id, data_bundle_id
-        )
-        reader._odm_loader.load_odm_string(file_contents)
+
+    @classmethod
+    def _build_reader(
+        cls,
+        content: Union[str, bytes],
+        cache_service_obj=None,
+        study_id=None,
+        data_bundle_id=None,
+    ) -> "BaseDefineXMLReader":
+        root = ElementTree.fromstring(content)
+        reader_class, original_version = cls._get_define_xml_reader(root)
+
+        if isinstance(content, bytes):
+            content = ElementTree.tostring(root, encoding="unicode")
+
+        if original_version:
+            content = content.replace(
+                f'DefineVersion="{original_version}"',
+                'DefineVersion="2.1"',
+            )
+
+        reader = reader_class(cache_service_obj, study_id, data_bundle_id)
+        reader._original_define_version = original_version
+        reader._odm_loader.load_odm_string(content)
         return reader
 
     @classmethod
-    def _get_define_xml_reader(cls, root: ElementTree.Element) -> BaseDefineXMLReader:
-        elt = root.find(
-            "Study/MetaDataVersion",
-            namespaces={"": ODM_NAMESPACE},
-        )
+    def _get_define_xml_reader(
+        cls, root: ElementTree.Element
+    ) -> tuple[type[BaseDefineXMLReader], str]:
+        elt = root.find("Study/MetaDataVersion", namespaces={"": ODM_NAMESPACE})
         pattern = compile(r"(\{(.*)\})?DefineVersion")
-        define_version = next(
-            iter(
-                cls._from_namespace(match.group(2))
-                for match in [pattern.fullmatch(name) for name, _ in elt.items()]
-                if match
-            ),
-            None,
-        )
-        return define_version
+        for name, value in elt.items():
+            match = pattern.fullmatch(name)
+            if match:
+                reader_class = cls._from_namespace(match.group(2))
+                # only look after 2.1.* versions
+                original_version = value if re.fullmatch(r"2\.1\.\d+", value) else None
+                return reader_class, original_version
+        return None, None
 
     @classmethod
     def _from_namespace(cls, namespace: str) -> BaseDefineXMLReader:
@@ -107,9 +115,9 @@ class DefineXMLReaderFactory:
     def get_define_xml_reader(
         cls, dataset_path: str, define_xml_path: str, data_service, cache
     ):
-        directory_path = get_directory_path(dataset_path)
+        directory_path = dirname(dataset_path)
         if define_xml_path is None:
-            define_xml_path: str = os.path.join(
+            define_xml_path: str = join(
                 directory_path,
                 DEFINE_XML_FILE_NAME,
             )

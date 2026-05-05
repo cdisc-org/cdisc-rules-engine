@@ -117,6 +117,7 @@ def test_get_parent_column_order_from_library(
 ):
     datasets: List[SDTMDatasetMetadata] = [
         SDTMDatasetMetadata(
+            name="AE",
             first_record={"DOMAIN": "AE"},
             filename="ae.xpt",
             full_path="ae.xpt",
@@ -129,18 +130,17 @@ def test_get_parent_column_order_from_library(
             "AESEQ": [1, 2, 3],
         }
     )
-    path_to_dataset_map: dict = {"ae.xpt": ae}
+    path_to_dataset_map: dict = {"AE": ae}
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        # Set evaluation_dataset instead of dataframe
-        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.datasets = datasets
-        operation_params.dataset_path = "suppae.xpt"
+        operation_params.dataframe_metadata = SDTMDatasetMetadata(
+            first_record={"RDOMAIN": "AE"}
+        )
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()
@@ -156,6 +156,7 @@ def test_get_parent_column_order_from_library(
             standard_version="3-4",
             library_metadata=library_metadata,
         )
+        data_service.get_datasets = lambda: datasets
 
         def mock_get_raw_metadata(dataset_name, **kwargs):
             if "ae" in dataset_name.lower():
@@ -300,11 +301,13 @@ def test_get_parent_findings_class_column_order_from_library(
 ):
     datasets: List[dict] = [
         {
+            "name": "AE",
             "first_record": {"DOMAIN": "AE"},
             "filename": "ae.xpt",
             "full_path": "ae.xpt",
         },
         {
+            "name": "EC",
             "first_record": {"DOMAIN": "EC"},
             "filename": "ec.xpt",
             "full_path": "ec.xpt",
@@ -336,22 +339,19 @@ def test_get_parent_findings_class_column_order_from_library(
         }
     )
     path_to_dataset_map: dict = {
-        "ae.xpt": ae,
-        "ec.xpt": ec,
+        "AE": ae,
+        "EC": ec,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        # Set evaluation_dataset instead of dataframe
-        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.datasets = [
-            SDTMDatasetMetadata(**dataset) for dataset in datasets
-        ]
-        operation_params.dataset_path = "suppae.xpt"
+        operation_params.dataframe_metadata = SDTMDatasetMetadata(
+            first_record={"RDOMAIN": "AE"},
+        )
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()
@@ -368,6 +368,9 @@ def test_get_parent_findings_class_column_order_from_library(
             standard_version="3-4",
             library_metadata=library_metadata,
         )
+        data_service.get_datasets = lambda: [
+            SDTMDatasetMetadata(**dataset) for dataset in datasets
+        ]
 
         def mock_get_raw_metadata(dataset_name, **kwargs):
             if "ae" in dataset_name.lower():

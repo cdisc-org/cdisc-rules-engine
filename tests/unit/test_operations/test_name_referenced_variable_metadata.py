@@ -13,7 +13,7 @@ from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset)])
@@ -170,6 +170,9 @@ def test_get_name_referenced_variable_metadata(
     operation_params.standard_version = "3-4"
     operation_params.target = "AEREF"
     operation_params.operation_id = "$name_referenced_variable"
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}
+    )
     # save model metadata to cache
     cache = InMemoryCacheService()
     library_metadata = LibraryMetadataContainer(
@@ -190,14 +193,7 @@ def test_get_name_referenced_variable_metadata(
         library_metadata,
     )
 
-    def mock_cached_method(*args, **kwargs):
-        return SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
-
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
-        side_effect=mock_cached_method,
-    ):
-        result = operation.execute()
+    result = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",

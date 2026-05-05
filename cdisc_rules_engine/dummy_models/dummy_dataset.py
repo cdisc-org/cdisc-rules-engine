@@ -7,7 +7,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 class DummyDataset(SDTMDatasetMetadata):
-    def __init__(self, dataset_data: dict):
+    def __init__(self, dataset_data: dict | SDTMDatasetMetadata):
         # with XPT in test, we pass the dataset_data as an instance of SDTMDatasetMetadata
         if isinstance(dataset_data, SDTMDatasetMetadata):
             super().__init__(
@@ -44,15 +44,6 @@ class DummyDataset(SDTMDatasetMetadata):
             self.data = pd.DataFrame.from_dict(dataset_data.get("records", {}))
 
             self.record_count = len(self.data.index)
-
-    def get_metadata(self):
-        return {
-            "dataset_size": [self.file_size or 1000],
-            "dataset_name": [self.name or "test"],
-            "dataset_label": [self.label or "test"],
-            "filename": [self.filename],
-            "record_count": [self.record_count],
-        }
 
     def __repr__(self):
         return asdict(self).__repr__()

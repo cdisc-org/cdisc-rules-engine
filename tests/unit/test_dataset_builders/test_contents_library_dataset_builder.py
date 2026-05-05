@@ -10,6 +10,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.data_services import LocalDataService
 
 
@@ -105,9 +106,7 @@ def test_contents_library_variables_dataset_builder(
         cache_service=None,
         rule_processor=None,
         data_processor=None,
-        dataset_path=None,
-        datasets=None,
-        dataset_metadata=None,
+        dataset_metadata=SDTMDatasetMetadata(name="TEST"),
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",

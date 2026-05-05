@@ -55,7 +55,7 @@ def test_day_data_calculation(
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     datasets_map = {
-        "dm.xpt": dataset_type.from_dict(
+        "DM": dataset_type.from_dict(
             {
                 "RFSTDTC": [
                     "1997-07-16T19:20:30",
@@ -73,20 +73,17 @@ def test_day_data_calculation(
     datasets = [
         SDTMDatasetMetadata(
             **{
+                "name": "DM",
                 "first_record": {"DOMAIN": "DM"},
                 "filename": "dm.xpt",
                 "full_path": "/path/to/dm.xpt",
             }
         )
     ]
-    mock_data_service.get_dataset.side_effect = (
-        lambda *args, **kwargs: datasets_map.get(
-            args.split("/")[-1]
-            if args
-            else kwargs.get("dataset_name", "").split("/")[-1]
-        )
+    mock_data_service.get_dataset.side_effect = lambda **kwargs: datasets_map.get(
+        kwargs.get("dataset_name")
     )
-    operation_params.datasets = datasets
+    mock_data_service.get_datasets.return_value = datasets
     operation_params.dataframe = PandasDataset.from_dict(data)
     operation_params.target = "values"
     result = DayDataValidator(

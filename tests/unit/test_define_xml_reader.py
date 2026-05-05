@@ -524,6 +524,55 @@ def test_extract_dataset_metadata_without_ordernumber(filename):
         )
 
 
+class TestNormalizationInConstructors:
+
+    def test_from_file_contents_original_version_preserved(self):
+        contents = resources_path.joinpath("test_defineV21-SDTM.xml").read_bytes()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        assert reader._original_define_version == "2.1.0"
+
+    def test_from_file_contents_original_version_none_for_v20(self):
+        contents = resources_path.joinpath("test_defineV20-SDTM.xml").read_bytes()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        assert reader._original_define_version is None
+
+    def test_from_file_contents_patched_version_normalized(self):
+        original = resources_path.joinpath("test_defineV21-SDTM.xml").read_text(
+            encoding="utf-8"
+        )
+        patched = original.replace(
+            'def:DefineVersion="2.1.0"', 'def:DefineVersion="2.1.7"'
+        )
+        reader = DefineXMLReaderFactory.from_file_contents(patched)
+        assert isinstance(reader, DefineXMLReader21)
+        assert reader._original_define_version == "2.1.7"
+
+    def test_from_filename_original_version_preserved(self):
+        reader = DefineXMLReaderFactory.from_filename(
+            resources_path.joinpath("test_defineV21-SDTM.xml")
+        )
+        assert reader._original_define_version == "2.1.0"
+
+    def test_from_filename_original_version_none_for_v20(self):
+        reader = DefineXMLReaderFactory.from_filename(
+            resources_path.joinpath("test_defineV20-SDTM.xml")
+        )
+        assert reader._original_define_version is None
+
+    def test_from_filename_patched_version_normalized(self, tmp_path):
+        original = resources_path.joinpath("test_defineV21-SDTM.xml").read_text(
+            encoding="utf-8"
+        )
+        patched = original.replace(
+            'def:DefineVersion="2.1.0"', 'def:DefineVersion="2.1.5"'
+        )
+        tmp_file = tmp_path / "define_patched.xml"
+        tmp_file.write_text(patched, encoding="utf-8")
+        reader = DefineXMLReaderFactory.from_filename(str(tmp_file))
+        assert isinstance(reader, DefineXMLReader21)
+        assert reader._original_define_version == "2.1.5"
+
+
 class TestGetExtensibleCodelistMappings:
     @staticmethod
     def _make_codelist(name, coded_values_extended, alias_list):

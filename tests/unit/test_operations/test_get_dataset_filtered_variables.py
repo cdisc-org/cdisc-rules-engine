@@ -503,7 +503,7 @@ def test_get_dataset_filtered_variables(
     operation_params.standard_version = "3-4"
     operation_params.key_name = key_name
     operation_params.key_value = key_value
-    operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(**dataset_metadata)
 
     cache = InMemoryCacheService.get_instance()
     library_metadata = LibraryMetadataContainer(
@@ -524,11 +524,6 @@ def test_get_dataset_filtered_variables(
         if model_metadata["datasets"][0]["_links"]["parentClass"]["title"] == "Events"
         else FINDINGS_ABOUT
     )
-
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(**dataset_metadata)
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
 
     with patch.object(
         LocalDataService, "get_dataset_class", return_value=expected_class
@@ -569,7 +564,7 @@ def test_get_dataset_filtered_variables_dask(
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
     operation_params.key_value = "Timing"
-    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="AE")
 
     model_metadata = {
         "datasets": [
@@ -685,11 +680,6 @@ def test_get_dataset_filtered_variables_dask(
         library_metadata=library_metadata,
     )
 
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(name="AE")
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
-
     with patch.object(LocalDataService, "get_dataset_class", return_value=EVENTS):
         operation = GetDatasetFilteredVariables(
             operation_params,
@@ -716,7 +706,7 @@ def test_get_dataset_filtered_variables_empty_dataset(
     operation_params.domain = "AE"
     operation_params.key_name = "role"
     operation_params.key_value = "Timing"
-    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="AE")
 
     model_metadata = {
         "datasets": [
@@ -792,11 +782,6 @@ def test_get_dataset_filtered_variables_empty_dataset(
         library_metadata=library_metadata,
     )
 
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(name="AE")
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
-
     with patch.object(LocalDataService, "get_dataset_class", return_value=EVENTS):
         operation = GetDatasetFilteredVariables(
             operation_params,
@@ -822,7 +807,7 @@ def test_get_dataset_filtered_variables_invalid_key(operation_params: OperationP
     operation_params.domain = "AE"
     operation_params.key_name = "invalid_key"
     operation_params.key_value = "SomeValue"
-    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="AE")
 
     model_metadata = {
         "datasets": [
@@ -903,11 +888,6 @@ def test_get_dataset_filtered_variables_invalid_key(operation_params: OperationP
         standard_version="3-4",
         library_metadata=library_metadata,
     )
-
-    def mock_get_raw_metadata(*args, **kwargs):
-        return SDTMDatasetMetadata(name="AE")
-
-    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
 
     with patch.object(LocalDataService, "get_dataset_class", return_value=EVENTS):
         operation = GetDatasetFilteredVariables(

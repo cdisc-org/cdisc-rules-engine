@@ -50,7 +50,7 @@ def test_get_dataset():
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
-    dataset = data_service.get_dataset("ae.xpt")
+    dataset = data_service.get_dataset(dataset_name="AE")
     assert dataset["AESEQ"].to_list() == [
         1,
         2,
@@ -102,7 +102,7 @@ def test_get_dataset_metadata():
     cache_mock = MagicMock()
     cache_mock.get_dataset.return_value = None
     data_service = DummyDataService(cache_mock, MagicMock(), MagicMock(), data=datasets)
-    metadata = data_service.get_dataset_metadata(dataset_name="ae.xpt")
+    metadata = data_service.get_dataset_metadata(dataset_name="AE")
     assert metadata["dataset_label"][0] == "ADVERSE EVENTS"
     assert metadata["dataset_name"][0] == "AE"
     assert metadata["dataset_size"][0] == 2000
@@ -131,7 +131,7 @@ def test_get_variables_metadata():
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
-    metadata = data_service.get_variables_metadata("/ae.xpt")
+    metadata = data_service.get_variables_metadata("AE")
     assert metadata["variable_name"].iloc[0] == "AESEQ"
     assert metadata["variable_label"].iloc[0] == "AE Sequence"
     assert metadata["variable_data_type"].iloc[0] == "integer"
