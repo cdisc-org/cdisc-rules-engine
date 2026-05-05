@@ -12,8 +12,15 @@ class ContainsAllOperator(BaseSqlOperator):
         not per-row results like other operators.
 
         """
-        target_column = self.replace_prefix(other_value.get("target")).lower()
+        target = other_value.get("target")
         comparator = other_value.get("comparator")
+
+        if target in self.operation_variables:
+            target_var = self.operation_variables[target]
+            if target_var.type == "collection":
+                return self._handle_target_is_collection(target, comparator)
+
+        target_column = self.replace_prefix(target).lower()
 
         if isinstance(comparator, list):
             return self._handle_list_comparator(target_column, comparator)
@@ -130,6 +137,26 @@ class ContainsAllOperator(BaseSqlOperator):
                       THEN true
                       ELSE false
                       END"""
+
+        return self._do_check_operator(sql)
+
+    def _handle_target_is_collection(self, target_variable, comparator):
+        """Handle when the target is a collection operation variable."""
+
+        def sql():
+            collection_sql = self._collection_sql(target_variable)
+            comparator_sql = self._constant_sql(comparator)
+
+            return f"""CASE
+                        WHEN NOT EXISTS (SELECT 1 FROM {collection_sql}) THEN false
+                        WHEN EXISTS (
+                            SELECT 1 FROM {collection_sql} AS collection_values(value)
+                            WHERE collection_values.value IS NULL
+                               OR collection_values.value = ''
+                               OR collection_values.value NOT LIKE '%' || {comparator_sql} || '%'
+                        ) THEN false
+                        ELSE true
+                       END"""
 
         return self._do_check_operator(sql)
 

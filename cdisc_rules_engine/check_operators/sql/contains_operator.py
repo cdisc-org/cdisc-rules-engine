@@ -14,14 +14,16 @@ class ContainsOperator(BaseSqlOperator):
         Also handles cases where the target is a collection operation variable.
         Returns True if the comparator is found as a substring within the target column.
         """
-        target_column = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
 
-        if target_column in self.operation_variables:
-            target_var = self.operation_variables[target_column]
-            if target_var.type == "collection":
-                return self._handle_target_is_collection(target_column, comparator, value_is_literal)
+        if target in self.operation_variables:
+            target_var = self.operation_variables[target]
+            if target_var.type == "collection" and value_is_literal:
+                return self._handle_target_is_collection(target, comparator)
+
+        target_column = self.replace_prefix(target)
 
         if isinstance(comparator, str) and comparator in self.operation_variables:
             return self._handle_operation_variable_comparator(target_column, comparator)
@@ -126,11 +128,14 @@ class ContainsOperator(BaseSqlOperator):
         )
 
     def _handle_target_is_collection(self, target_variable, comparator, value_is_literal):
-        """Handle when the target is a collection operation variable and we check if it contains a value."""
+        """Handle when the target is a collection operation variable."""
 
         def sql():
             collection_sql = self._collection_sql(target_variable, lowercase=self.case_insensitive)
-            comparator_sql = self._constant_sql(comparator, lowercase=self.case_insensitive)
+            if value_is_literal:
+                comparator_sql = self._constant_sql(comparator, lowercase=self.case_insensitive)
+            else:
+                comparator_sql = self._sql(comparator, lowercase=self.case_insensitive)
 
             return f"""EXISTS (
                         SELECT 1 FROM {collection_sql} AS collection_values(value)
