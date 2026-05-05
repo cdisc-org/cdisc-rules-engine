@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from conftest import mock_data_service
 from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
@@ -1021,82 +1020,6 @@ def test_extract_target_names_from_rule_output_variables():
         "USUBJID",
         "TARGET",
     ]
-
-
-@pytest.mark.parametrize(
-    "conditions",
-    [
-        {
-            "any": [
-                {
-                    "value": {
-                        "target": "dataset_label",
-                        "comparator": "Adverse Events",
-                    },
-                    "operator": "equal_to",
-                },
-                {
-                    "value": {"target": "dataset_size", "unit": "MB", "comparator": 5},
-                    "operator": "less_than",
-                },
-            ]
-        },
-        {
-            "any": [
-                {
-                    "value": {
-                        "target": "dataset_label",
-                        "comparator": "Adverse Events",
-                    },
-                    "operator": "equal_to",
-                },
-                {
-                    "all": [
-                        {
-                            "value": {
-                                "target": "dataset_size",
-                                "unit": "MB",
-                                "comparator": 5,
-                            },
-                            "operator": "less_than",
-                        },
-                    ]
-                },
-            ]
-        },
-        {
-            "not": {
-                "any": [
-                    {
-                        "value": {
-                            "target": "dataset_label",
-                            "comparator": "Adverse Events",
-                        },
-                        "operator": "equal_to",
-                    },
-                    {
-                        "all": [
-                            {
-                                "value": {
-                                    "target": "dataset_size",
-                                    "unit": "MB",
-                                    "comparator": 5,
-                                },
-                                "operator": "less_than",
-                            },
-                        ]
-                    },
-                ]
-            }
-        },
-    ],
-)
-def test_get_size_unit_from_rule(conditions: dict):
-    rule: dict = {
-        "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
-    }
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    assert processor.get_size_unit_from_rule(rule) == "MB"
 
 
 def test_duplicate_for_targets():

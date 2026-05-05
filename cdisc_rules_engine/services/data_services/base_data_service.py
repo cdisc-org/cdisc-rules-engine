@@ -203,9 +203,7 @@ class BaseDataService(DataServiceInterface, ABC):
         return OTHER
 
     @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
+    def get_dataset_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
