@@ -41,6 +41,8 @@ from cdisc_rules_engine.sql_operations.define_exdict_version_operation import (
 )
 from cdisc_rules_engine.sql_operations.whodrug_code_hierarchy import SqlWhodrugHierarchyOperation
 from cdisc_rules_engine.sql_operations.standard_domains import SqlStandardDomainsOperation
+from cdisc_rules_engine.sql_operations.label_referenced_variable_metadata import SqlLabelReferencedVariableMetadata
+from cdisc_rules_engine.sql_operations.name_referenced_variable_metadata import SqlNameReferencedVariableMetadata
 
 
 class SqlOperationsFactory:
@@ -81,8 +83,8 @@ class SqlOperationsFactory:
         "standard_domains": SqlStandardDomainsOperation,
         "study_domains": SqlStudyDomainsOperation,
         "valid_codelist_dates": SqlValidCodelistDates,
-        "label_referenced_variable_metadata": None,
-        "name_referenced_variable_metadata": None,
+        "label_referenced_variable_metadata": SqlLabelReferencedVariableMetadata,
+        "name_referenced_variable_metadata": SqlNameReferencedVariableMetadata,
         "define_variable_metadata": SqlGetDefineVariablesMetadata,
         "valid_external_dictionary_value": None,
         "valid_external_dictionary_code": None,
