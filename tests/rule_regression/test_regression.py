@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
+from cdisc_rules_engine.standards.default_standards_context import DefaultStandardsContext
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from rule_regression.operator_analysis import generate_operators_analysis_report
 from rule_regression.regression import (
@@ -85,19 +87,30 @@ def test_regression_single_case_DEV(pytestconfig, get_core_rules_df, get_core_ru
 
 
 def test_rule_existing_rule(get_sample_lb_rule, get_sample_lb_dataset):
-    ig_specs = {
-        "standard": "SDTMIG",
-        "standard_version": "3.4",
-        "standard_substandard": None,
-        "define_xml_version": None,
-    }
-    ds = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset], ig_specs, cache_path=TEST_CACHE_PATH)
-    data = sql_run_single_rule_validation(data_service=ds, rule=get_sample_lb_rule)
+    class DummyStandardsContext(DefaultStandardsContext):
+        def __init__(self):
+            self.standard = "SDTMIG"
+            self.standard_version = "3.4"
+            self.standard_substandard = None
+            self.define_xml_version = None
 
-    assert "LB" in data
-    assert len(data["LB"]) == 1
-    assert data["LB"][0]["message"] == "LBSEQ greater than 0"
-    assert len(data["LB"][0]["errors"]) == 2
+        def transform_dataset_metadata(self, source):
+            return source
+
+    ds = PostgresQLDataService.from_list_of_testdatasets(
+        [get_sample_lb_dataset], DummyStandardsContext(), cache_path=TEST_CACHE_PATH
+    )
+    ds.datasets = [
+        BaseDatasetMetadata(**{k: v for k, v in ds.datasets[0].__dict__.items()}, domain=ds.datasets[0].name.upper())
+    ]
+    data = sql_run_single_rule_validation(
+        data_service=ds, rule=get_sample_lb_rule, standards_context=DummyStandardsContext()
+    )
+
+    assert "lb" in data
+    assert len(data["lb"]) == 1
+    assert data["lb"][0]["message"] == "LBSEQ less than maximum value"
+    assert len(data["lb"][0]["errors"]) == 1
 
 
 def test_regression_all_rules_pgserver(pytestconfig, get_core_rules_df, get_core_rule):

@@ -64,7 +64,7 @@ def setup_codelist_table(data_service: PostgresQLDataService):
 
 
 def test_get_codelist_attributes_term_ccode(sdtm_standards_context):
-    data_service = PostgresQLDataService.instance()
+    data_service = PostgresQLDataService.instance(provided_codelists="sdtmct-2020-03-27")
     setup_codelist_table(data_service)
 
     params = SqlOperationParams(
@@ -72,7 +72,6 @@ def test_get_codelist_attributes_term_ccode(sdtm_standards_context):
         target="column",
         standards_context=sdtm_standards_context,
         ct_attribute="Term CCODE",
-        ct_version="2020-03-27",
     )
 
     operation = SqlGetCodelistAttributesOperation(params, data_service)
@@ -82,7 +81,7 @@ def test_get_codelist_attributes_term_ccode(sdtm_standards_context):
 
 
 def test_get_codelist_attributes_term_signification(sdtm_standards_context):
-    data_service = PostgresQLDataService.instance()
+    data_service = PostgresQLDataService.instance(provided_codelists="sdtmct-2021-12-17")
     setup_codelist_table(data_service)
 
     params = SqlOperationParams(
@@ -90,7 +89,6 @@ def test_get_codelist_attributes_term_signification(sdtm_standards_context):
         target="column",
         standards_context=sdtm_standards_context,
         ct_attribute="Term Signification",
-        ct_version="2021-12-17",
     )
 
     operation = SqlGetCodelistAttributesOperation(params, data_service)

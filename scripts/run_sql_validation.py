@@ -91,6 +91,7 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
         args.dataset_paths,
         standards_context=standards_context,
         codelists=library_metadata.get_all_ct_package_metadata(),
+        provided_codelists=args.controlled_terminology_package,
         external_dictionaries=args.external_dictionaries,
         cache_path=args.cache,
         define_xml_path=args.define_xml_path,

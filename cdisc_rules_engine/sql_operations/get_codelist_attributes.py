@@ -20,24 +20,26 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
     def _execute_operation(self):
         ct_table = StaticTables.IG_CODELIST_TABLE_NAME.value
         attribute = self.params.ct_attribute
-        version = self.params.ct_version
-        if version is None:
+        if not self.params.ct_version and not self.data_service.provided_codelists:
             raise ValueError("Version must be provided for codelist attribute retrieval.")
+        ct_list = (
+            self.data_service.provided_codelists
+            if isinstance(self.data_service.provided_codelists, list)
+            else [self.data_service.provided_codelists]
+        )
+        provided_cts = [{"type": ct.split("ct-")[0], "version": ct.split("ct-")[1]} for ct in ct_list]
         conditions = self.params.ct_conditions
 
         select_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, _COLUMN_MAP.get(attribute, "item_code"))
         version_date_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "version_date")
         std_type_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "standard_type")
 
-        ct_packages = self.params.standards_context.get_ct_packages()
-        ct_types = {ct.split("ct")[0] for ct in ct_packages}
-        types_list_sql = ", ".join([f"'{t}'" for t in ct_types])
+        where_clause = f"""({" OR ".join(f"({std_type_col_sql} = '{ct['type']}' AND {version_date_col_sql} = '{ct['version']}')" for ct in provided_cts)})"""  # noqa
 
         query = f"""
             SELECT DISTINCT {select_col_sql} AS value
             FROM {ct_table}
-            WHERE {std_type_col_sql} IN ({types_list_sql})
-              AND {version_date_col_sql} = '{version.lower()}'
+            WHERE {where_clause}
         """
 
         condition_sql = """"""

@@ -62,6 +62,7 @@ class PostgresQLDataService:
         sql_namespace: Optional[str] = None,
         use_pgserver: bool = False,
         codelists: Optional[List[Union[str, Dict]]] = None,
+        provided_codelists: Optional[List | str] = None,
         external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
@@ -82,6 +83,7 @@ class PostgresQLDataService:
         populate_standards(pgi)
 
         instance._update_define_xml_path(define_xml_path)
+        instance._update_provided_codelists(provided_codelists)
 
         return instance
 
@@ -112,6 +114,7 @@ class PostgresQLDataService:
         dataset_paths,
         standards_context,
         codelists: Optional[List[Union[str, Dict]]] = None,
+        provided_codelists: Optional[List | str] = None,
         external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
@@ -122,6 +125,7 @@ class PostgresQLDataService:
             sql_namespace=sql_namespace,
             use_pgserver=use_pgserver,
             codelists=codelists,
+            provided_codelists=provided_codelists,
             cache_path=cache_path,
             external_dictionaries=external_dictionaries,
             define_xml_path=define_xml_path,
@@ -187,3 +191,6 @@ class PostgresQLDataService:
 
     def _update_define_xml_path(self, define_xml_path: str):
         self.define_xml_path = define_xml_path
+
+    def _update_provided_codelists(self, provided_codelists: Optional[List | str] = None):
+        self.provided_codelists = provided_codelists
