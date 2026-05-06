@@ -377,47 +377,77 @@ def test_rule_applies_to_class(
 
 
 @pytest.mark.parametrize(
-    "rule_use_case, use_case, standard, outcome",
+    "dataset_name, domain, rdomain, rule_use_case, use_case, standard, standard_substandard, outcome",
     [
-        # Basic use case tests - user provides "INDH" or "PROD"
-        ("INDH, PROD", "INDH", "tig", True),
-        ("INDH, PROD", "PROD", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("PROD", "PROD", "tig", True),
-        ("PROD", "INDH", "tig", False),
-        ("NONCLIN", "NONCLIN", "tig", True),
-        ("NONCLIN", "INDH", "tig", False),
-        # Tests for ADaM datasets
-        ("ANALYSIS", "ANALYSIS", "tig", True),
-        ("ANALYSIS", "ANALYSIS", "tig", True),
-        ("ANALYSIS", "INDH", "tig", False),
-        # Tests for supplementary datasets
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("PROD", "PROD", "tig", True),
-        # Tests for empty/None use cases in rule (should always return True)
-        ("", "INDH", "tig", True),
-        (None, "INDH", "tig", True),
+        # Basic use case tests - custom_domain_use_case is irrelevant for standard domains
+        ("AE", "AE", None, ["INDH", "PROD"], None, "tig", "SDTM", True),
+        ("CM", "CM", None, ["INDH"], None, "tig", "SDTM", True),
+        ("TS", "TS", None, ["INDH"], None, "tig", "SDTM", True),
+        ("ES", "ES", None, ["PROD"], None, "tig", "SDTM", True),
+        ("BW", "BW", None, ["NONCLIN"], None, "tig", "SEND", True),
+        # Domain not in rule's use case domains
+        ("ES", "ES", None, ["INDH"], None, "tig", "SDTM", False),
+        ("BW", "BW", None, ["INDH"], None, "tig", "SEND", False),
+        # command line use_case is ignored for standard domains
+        ("ES", "ES", None, ["PROD"], "INDH", "tig", "SDTM", True),
+        # ADAM tests - custom_domain_use_case irrelevant, only rule's use_case matters
+        ("ADAE", "ADAE", None, ["ANALYSIS"], None, "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, ["INDH"], None, "tig", "ADAM", False),
+        # Supp tests - rdomain is checked, custom_domain_use_case irrelevant
+        ("SUPPAE", None, "AE", ["INDH"], None, "tig", "SDTM", True),
+        ("SUPPQS", None, "QS", ["INDH"], None, "tig", "SDTM", True),
+        ("SUPPEC", None, "EC", ["INDH"], None, "tig", "SDTM", True),
+        ("SUPP--", None, "AE", ["INDH"], None, "tig", "SDTM", True),
+        ("SUPPPT", None, "PT", ["PROD"], None, "tig", "SDTM", True),
+        # Tests for empty/None use cases in rule - standard domain returns False, custom would raise
+        ("AE", "AE", None, [], None, "tig", "SDTM", False),
+        ("AE", "AE", None, None, None, "tig", "SDTM", False),
         # Tests for non-TIG standard (should always return True)
-        ("INDH", "INDH", "sdtmig", True),
-        ("NONCLIN", "NONCLIN", "sendct", True),
-        # Test case mismatch
-        ("INDH, PROD", "SAFETY", "tig", False),
+        ("AE", "AE", None, ["INDH"], None, "sdtmig", "SDTM", True),
+        ("BW", "BW", None, ["NONCLIN"], None, "sendct", "SEND", True),
+        # command line use_case is ignored - AE is in INDH domains
+        ("AE", "AE", None, ["INDH", "PROD"], "SAFETY", "tig", "SDTM", True),
+        # Tests for custom domains (XYZ-prefixed)
+        ("XY", "XY", None, ["INDH"], "INDH", "tig", "SDTM", True),
+        ("XY", "XY", None, ["INDH"], "PROD", "tig", "SDTM", False),
+        ("ZZ", "ZZ", None, ["PROD"], "PROD", "tig", "SDTM", True),
     ],
 )
 def test_rule_applies_to_use_case(
     mock_data_service,
+    dataset_name,
+    domain,
+    rdomain,
     rule_use_case,
-    standard,
     use_case,
+    standard,
+    standard_substandard,
     outcome,
 ):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     rule = {"use_case": rule_use_case}
-    assert processor.rule_applies_to_use_case(rule, standard, use_case) == outcome
+    dataset_metadata = SDTMDatasetMetadata(
+        name=dataset_name,
+        first_record=(
+            {"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}
+        ),
+    )
+    assert (
+        processor.rule_applies_to_use_case(
+            rule, standard, standard_substandard, dataset_metadata, use_case
+        )
+        == outcome
+    )
+
+
+def test_rule_applies_to_use_case_custom_domain_no_use_case_argument_raises(
+    mock_data_service,
+):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    rule = {"use_case": ["INDH"]}
+    dataset_metadata = SDTMDatasetMetadata(name="XY", first_record={"DOMAIN": "XY"})
+    with pytest.raises(ValueError, match="requires a use case"):
+        processor.rule_applies_to_use_case(rule, "tig", "SDTM", dataset_metadata, None)
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
