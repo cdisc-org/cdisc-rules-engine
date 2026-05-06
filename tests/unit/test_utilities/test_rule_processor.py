@@ -380,37 +380,37 @@ def test_rule_applies_to_class(
     "dataset_name, domain, rdomain, rule_use_case, use_case, standard, standard_substandard, outcome",
     [
         # Basic use case tests - custom_domain_use_case is irrelevant for standard domains
-        ("AE", "AE", None, ["INDH", "PROD"], None, "tig", "SDTM", True),
-        ("CM", "CM", None, ["INDH"], None, "tig", "SDTM", True),
-        ("TS", "TS", None, ["INDH"], None, "tig", "SDTM", True),
-        ("ES", "ES", None, ["PROD"], None, "tig", "SDTM", True),
-        ("BW", "BW", None, ["NONCLIN"], None, "tig", "SEND", True),
+        ("AE", "AE", None, "INDH, PROD", None, "tig", "SDTM", True),
+        ("CM", "CM", None, "INDH", None, "tig", "SDTM", True),
+        ("TS", "TS", None, "INDH", None, "tig", "SDTM", True),
+        ("ES", "ES", None, "PROD", None, "tig", "SDTM", True),
+        ("BW", "BW", None, "NONCLIN", None, "tig", "SEND", True),
         # Domain not in rule's use case domains
-        ("ES", "ES", None, ["INDH"], None, "tig", "SDTM", False),
-        ("BW", "BW", None, ["INDH"], None, "tig", "SEND", False),
+        ("ES", "ES", None, "INDH", None, "tig", "SDTM", False),
+        ("BW", "BW", None, "INDH", None, "tig", "SEND", False),
         # command line use_case is ignored for standard domains
-        ("ES", "ES", None, ["PROD"], "INDH", "tig", "SDTM", True),
-        # ADAM tests - custom_domain_use_case irrelevant, only rule's use_case matters
-        ("ADAE", "ADAE", None, ["ANALYSIS"], None, "tig", "ADAM", True),
-        ("ADAE", "ADAE", None, ["INDH"], None, "tig", "ADAM", False),
-        # Supp tests - rdomain is checked, custom_domain_use_case irrelevant
-        ("SUPPAE", None, "AE", ["INDH"], None, "tig", "SDTM", True),
-        ("SUPPQS", None, "QS", ["INDH"], None, "tig", "SDTM", True),
-        ("SUPPEC", None, "EC", ["INDH"], None, "tig", "SDTM", True),
-        ("SUPP--", None, "AE", ["INDH"], None, "tig", "SDTM", True),
-        ("SUPPPT", None, "PT", ["PROD"], None, "tig", "SDTM", True),
-        # Tests for empty/None use cases in rule - standard domain returns False, custom would raise
-        ("AE", "AE", None, [], None, "tig", "SDTM", False),
+        ("ES", "ES", None, "PROD", "INDH", "tig", "SDTM", True),
+        # ADAM tests
+        ("ADAE", "ADAE", None, "ANALYSIS", None, "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "INDH", None, "tig", "ADAM", False),
+        # Supp tests
+        ("SUPPAE", None, "AE", "INDH", None, "tig", "SDTM", True),
+        ("SUPPQS", None, "QS", "INDH", None, "tig", "SDTM", True),
+        ("SUPPEC", None, "EC", "INDH", None, "tig", "SDTM", True),
+        ("SUPP--", None, "AE", "INDH", None, "tig", "SDTM", True),
+        ("SUPPPT", None, "PT", "PROD", None, "tig", "SDTM", True),
+        # Empty/None use cases in rule
+        ("AE", "AE", None, "", None, "tig", "SDTM", False),
         ("AE", "AE", None, None, None, "tig", "SDTM", False),
-        # Tests for non-TIG standard (should always return True)
-        ("AE", "AE", None, ["INDH"], None, "sdtmig", "SDTM", True),
-        ("BW", "BW", None, ["NONCLIN"], None, "sendct", "SEND", True),
-        # command line use_case is ignored - AE is in INDH domains
-        ("AE", "AE", None, ["INDH", "PROD"], "SAFETY", "tig", "SDTM", True),
-        # Tests for custom domains (XYZ-prefixed)
-        ("XY", "XY", None, ["INDH"], "INDH", "tig", "SDTM", True),
-        ("XY", "XY", None, ["INDH"], "PROD", "tig", "SDTM", False),
-        ("ZZ", "ZZ", None, ["PROD"], "PROD", "tig", "SDTM", True),
+        # Non-TIG standard
+        ("AE", "AE", None, "INDH", None, "sdtmig", "SDTM", True),
+        ("BW", "BW", None, "NONCLIN", None, "sendct", "SEND", True),
+        # command line use_case ignored - AE is in INDH domains
+        ("AE", "AE", None, "INDH, PROD", "SAFETY", "tig", "SDTM", True),
+        # Custom domains (XYZ-prefixed)
+        ("XY", "XY", None, "INDH", "INDH", "tig", "SDTM", True),
+        ("XY", "XY", None, "INDH", "PROD", "tig", "SDTM", False),
+        ("ZZ", "ZZ", None, "PROD", "PROD", "tig", "SDTM", True),
     ],
 )
 def test_rule_applies_to_use_case(
