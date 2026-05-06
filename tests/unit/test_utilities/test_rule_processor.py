@@ -444,7 +444,7 @@ def test_rule_applies_to_use_case_custom_domain_no_use_case_argument_raises(
     mock_data_service,
 ):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    rule = {"use_case": ["INDH"]}
+    rule = {"use_case": "INDH"}
     dataset_metadata = SDTMDatasetMetadata(name="XY", first_record={"DOMAIN": "XY"})
     with pytest.raises(ValueError, match="requires a use case"):
         processor.rule_applies_to_use_case(rule, "tig", "SDTM", dataset_metadata, None)
