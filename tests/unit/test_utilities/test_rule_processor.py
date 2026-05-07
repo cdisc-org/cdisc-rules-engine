@@ -498,7 +498,7 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
     assert result["$max_aestdy"][0] == df["AESTDY"].max()
     assert result["$min_aestdy"][0] == df["AESTDY"].min()
     assert result["$avg_aestdy"][0] == df["AESTDY"].mean()
-    assert result["$unique_aestdy"].equals(pd.Series([{11, 12, 40, 59}] * len(df)))
+    assert result["$unique_aestdy"].equals(pd.Series([[11, 12, 40, 59]] * len(df)))
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -603,22 +603,22 @@ def test_perform_rule_operation_with_grouping(
                     200,
                 ],
                 "$unique_aestdy": [
-                    {
+                    [
                         10,
                         40,
-                    },
-                    {
+                    ],
+                    [
                         11,
                         59,
-                    },
-                    {
+                    ],
+                    [
                         10,
                         40,
-                    },
-                    {
+                    ],
+                    [
                         11,
                         59,
-                    },
+                    ],
                 ],
             }
         )
