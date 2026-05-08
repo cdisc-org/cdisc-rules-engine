@@ -44,8 +44,11 @@ class TargetIsSortedByOperator(BaseSqlOperator):
         Returns:
             Boolean series indicating if each record meets the sorting condition
         """
+        regex_sort = other_value.get("regex", None)
         target = self.replace_prefix(other_value.get("target"))
-        within = self.replace_prefix(other_value.get("within"))
+        val = other_value.get("within")
+        within = val if isinstance(val, list) else [val]
+        within = [self.replace_prefix(val) for val in within]
         comparators = other_value["comparator"]
 
         if not all([target, within, comparators]):
@@ -58,9 +61,14 @@ class TargetIsSortedByOperator(BaseSqlOperator):
             null_pos = comp["null_position"]
             comparator_parts.append(f"{name}_{order}_{null_pos}")
 
-        cache_key = f"{target}_is_sorted_by_{'_'.join(comparator_parts)}_within_{within}"
+        cache_key = f"{target}_is_sorted_by_{'_'.join(comparator_parts)}_within_{'_'.join(val for val in within)}"
 
         def sql(table_name, column_name):
+
+            target_sql = self._column_sql(target, alias=False)
+            target_sql = (
+                target_sql if not regex_sort else f"CAST((regexp_match({target_sql}, '{regex_sort}'))[1] AS INTEGER)"
+            )
 
             # Build CTEs for each individual comparator check
             comparator_ctes = []
@@ -87,11 +95,11 @@ class TargetIsSortedByOperator(BaseSqlOperator):
             comp_{i}_presorted AS (
                 SELECT
                     id,
-                    {self._column_sql(target, alias=False)} AS target_val,
-                    {self._column_sql(within, alias=False)} AS within_val,
+                    {target_sql} AS target_val,
+                    {' '.join(f'{self._column_sql(val, alias=False)} AS within_val{n},' for n, val in enumerate(within, start=1))}
                     {comp_sql} AS comp_val,
                     ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(within, alias=False)}
+                        PARTITION BY {', '.join(f'{self._column_sql(val, alias=False)}' for val in within)}
                         ORDER BY {order_part}
                     ) - 1 AS position_in_comp_order
                 FROM {table_name}
@@ -100,7 +108,7 @@ class TargetIsSortedByOperator(BaseSqlOperator):
                 SELECT
                     *,
                     ROW_NUMBER() OVER (
-                        PARTITION BY within_val
+                        PARTITION BY {', '.join(f'within_val{n}' for n in range(1, len(within) + 1))}
                         ORDER BY
                             CASE WHEN target_val IS NULL THEN 1 ELSE 0 END,
                             target_val ASC
@@ -119,7 +127,6 @@ class TargetIsSortedByOperator(BaseSqlOperator):
                 FROM comp_{i}_sorted
             )"""
                 )
-
             all_ctes = ",".join(comparator_ctes)
 
             # Build the join to combine all comparator checks
@@ -150,6 +157,7 @@ class TargetIsSortedByOperator(BaseSqlOperator):
 
             order_by_clause = ", ".join(order_by_parts)
             comparator_columns_sql = ", ".join(comparator_columns)
+            final_join = " AND ".join(f"s1.within_val{n} = s2.within_val{n}" for n in range(1, len(within) + 1))
 
             return f"""
             -- Check if target is sorted correctly by each comparator independently (matches old engine)
@@ -163,10 +171,11 @@ class TargetIsSortedByOperator(BaseSqlOperator):
             sorted_for_overlap AS (
                 SELECT
                     id,
-                    {self._column_sql(within, alias=False)} AS within_val,
+                    {self._column_sql(target, alias=False)} AS target_val,
+                    {' '.join(f'{self._column_sql(val, alias=False)} AS within_val{n},' for n, val in enumerate(within, start=1))}
                     {comparator_columns_sql},
                     ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(within, alias=False)}
+                        PARTITION BY {', '.join(f'{self._column_sql(val, alias=False)}' for val in within)}
                         ORDER BY {order_by_clause}
                     ) AS row_position
                 FROM {table_name}
@@ -191,7 +200,7 @@ class TargetIsSortedByOperator(BaseSqlOperator):
                         ELSE true
                     END AS date_overlap_ok
                 FROM sorted_for_overlap s1
-                LEFT JOIN sorted_for_overlap s2 ON s1.within_val = s2.within_val
+                LEFT JOIN sorted_for_overlap s2 ON {final_join}
                     AND s2.row_position = s1.row_position + 1
             )
             UPDATE {table_name} t
