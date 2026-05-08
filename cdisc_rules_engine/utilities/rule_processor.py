@@ -48,6 +48,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
+from cdisc_rules_engine.utilities.sdtm_utilities import is_custom_domain
 
 
 class RuleProcessor:
@@ -297,8 +298,8 @@ class RuleProcessor:
         if domain_to_check in allowed_domains:
             return True
 
-        is_custom_domain = domain_to_check[0].upper() in ("X", "Y", "Z")
-        if not is_custom_domain:
+        domain_is_custom = is_custom_domain(self.library_metadata, domain_to_check)
+        if not domain_is_custom:
             return False
         if not custom_domain_use_case:
             raise ValueError(

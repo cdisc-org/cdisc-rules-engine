@@ -384,7 +384,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     default=None,
     type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
     help=(
-        "CDISC TIG Use Case for scoping a TIG Custom Domains."
+        "Specifies the CDISC TIG use case for all custom domains in a validation run"
         "Any of INDH, PROD, NONCLIN, or ANALYSIS."
     ),
     envvar="USE_CASE",

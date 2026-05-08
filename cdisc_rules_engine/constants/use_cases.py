@@ -12,7 +12,7 @@ PROD = "PROD"
 NONCLIN = "NONCLIN"
 ANALYSIS = "ANALYSIS"
 
-# NOTE: this may need to be expanded after the pilot re: custom domains, other applicable domains, etc.  The
+# NOTE: this may need to be expanded after the pilot re: custom domains, other applicable domains, etc.
 USE_CASE_DOMAINS = {
     SDTM: {  # only prod and individual health are allowed for sdtm
         INDH: [
