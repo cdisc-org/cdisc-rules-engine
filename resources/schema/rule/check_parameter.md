@@ -279,7 +279,7 @@ Reference to another operation result, used as the second operand in operations 
 
 ### order_insensitive
 
-Optional boolean parameter for the `minus` operator. When set to `true`, `minus` performs a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) operation, ignoring the order of elements. When `false` or not specified, `minus` considers element order and only removes elements from `name` that follow the same order as in `subtract`.
+Optional boolean parameter for the `minus` operator. When set to `true` or not specified, `minus` performs a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) operation, ignoring the order of elements. When set to `false`, `minus` considers element order and only removes elements from `name` that follow the same order as in `subtract`.
 
 ### term_code
 

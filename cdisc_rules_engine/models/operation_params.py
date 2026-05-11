@@ -60,7 +60,7 @@ class OperationParams:
     target: str = None
     subtract: str = None
     order_insensitive: bool = False
-    value_is_reference: bool = False
+    value_is_reference: bool = True
     namespace: str = None
     delimiter: str = None
     define_xml_path: str = None

@@ -34,14 +34,15 @@ def _set_difference_order_sensitive(list_a: list, list_b: list) -> list:
     """
     result = []
     a_start_index = 0
+    list_a_normalized = _normalize_to_list(list_a)
     for b_item in _normalize_to_list(list_b):
         # Check if b_item is in the remaining part of A
-        set_a = set(_normalize_to_list(list_a[a_start_index:]))
+        set_a = set(list_a_normalized[a_start_index:])
         if b_item in set_a:
             match_found = False
             # Iterate through A starting from last matched index
-            for i in range(a_start_index, len(list_a)):
-                a_item = list_a[i]
+            for i in range(a_start_index, len(list_a_normalized)):
+                a_item = list_a_normalized[i]
                 if a_item != b_item:
                     if match_found:
                         break
@@ -57,7 +58,7 @@ def _set_difference_order_sensitive(list_a: list, list_b: list) -> list:
             continue
 
     # Add any remaining items in A after last matched index
-    result.extend(list_a[a_start_index:])
+    result.extend(list_a_normalized[a_start_index:])
 
     return result
 
