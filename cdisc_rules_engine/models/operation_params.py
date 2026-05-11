@@ -59,8 +59,8 @@ class OperationParams:
     source: str = None
     target: str = None
     subtract: str = None
-    order_insensitive: bool = False
-    value_is_reference: bool = True
+    order_insensitive: bool = True
+    value_is_reference: bool = False
     namespace: str = None
     delimiter: str = None
     define_xml_path: str = None

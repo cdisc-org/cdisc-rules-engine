@@ -91,6 +91,7 @@ def test_minus_operation_incorrect_order(minus_params: OperationParams, dataset_
         }
     )
 
+    minus_params.order_insensitive = False
     operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
     result = operation.execute()
     assert list(result[minus_params.operation_id].iloc[0]) == ["DOMAIN", "AEDECOD"]
