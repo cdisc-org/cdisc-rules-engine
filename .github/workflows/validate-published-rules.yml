@@ -14,13 +14,12 @@ on:
   push:
     branches:
       - main
-      - 798-test-against-published
   workflow_dispatch:
     inputs:
       rules_ref:
-        description: 'Branch/tag/SHA of cdisc-open-rules to validate against'
+        description: "Branch/tag/SHA of cdisc-open-rules to validate against"
         required: false
-        default: 'main'
+        default: "main"
 
 jobs:
   validate-published-rules:
@@ -71,7 +70,7 @@ jobs:
       - name: Set up Python 3.12
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       # -----------------------------------------------------------------------
       # 4. Install engine dependencies
