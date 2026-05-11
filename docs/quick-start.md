@@ -17,11 +17,13 @@ Download the latest executable for your operating system from the [Releases page
 Open a terminal in the unzipped directory and run:
 
 **Windows (PowerShell):**
+
 ```powershell
 .\core.exe --help
 ```
 
 **Linux / Mac:**
+
 ```bash
 # Make it executable (one-time setup)
 chmod +x ./core
@@ -30,6 +32,7 @@ chmod +x ./core
 ```
 
 > **Mac users:** If you see a security warning, remove the quarantine attribute first:
+>
 > ```bash
 > xattr -rd com.apple.quarantine .
 > ```
@@ -43,11 +46,13 @@ Executable releases ship with a pre-populated cache, so you can skip this step a
 ### 4. Run a Validation
 
 **Windows:**
+
 ```powershell
 .\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
 ```
 
 **Linux / Mac:**
+
 ```bash
 ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
@@ -73,19 +78,24 @@ Test files are cleaned up automatically after completion.
 **Best for:** Developers, contributors, or users who need the latest features.
 
 ### Prerequisites
+
 - **Python 3.12** is required. Other versions are not supported.
   Check your version:
+
 ```bash
   python --version
 ```
-  Install Python 3.12 from [python.org](https://www.python.org/downloads/) if needed.
+
+Install Python 3.12 from [python.org](https://www.python.org/downloads/) if needed.
 
 - **Git** is required to clone the repository.
   Check your version:
+
 ```bash
   git --version
 ```
-  Install Git from [git-scm.com](https://git-scm.com/downloads) if needed.
+
+Install Git from [git-scm.com](https://git-scm.com/downloads) if needed.
 
 ### 1. Clone the Repository
 
@@ -97,12 +107,14 @@ cd cdisc-rules-engine
 ### 2. Create and Activate a Virtual Environment
 
 **Linux / Mac:**
+
 ```bash
 python -m venv venv
 source venv/bin/activate
 ```
 
 **Windows:**
+
 ```bash
 python -m venv venv
 .\venv\Scripts\Activate
@@ -134,12 +146,12 @@ python core.py validate -s sdtmig -v 3-4 -d /path/to/datasets
 
 CORE supports the following input formats:
 
-| Format | Description |
-|---|---|
-| **XPT** | SAS Transport Format (version 5) |
-| **JSON** | Dataset-JSON ≥ v1.1 (CDISC standard) |
-| **NDJSON** | Newline Delimited JSON |
-| **XLSX** | Microsoft Excel |
+| Format     | Description                          |
+| ---------- | ------------------------------------ |
+| **XPT**    | SAS Transport Format (version 5)     |
+| **JSON**   | Dataset-JSON ≥ v1.1 (CDISC standard) |
+| **NDJSON** | Newline Delimited JSON               |
+| **XLSX**   | Microsoft Excel                      |
 
 > **Note:** Define-XML files must be provided via `--define-xml-path` (`-dxp`), not through the dataset directory.
 
@@ -151,12 +163,12 @@ All commands and flags are documented in the [CLI Reference](cli-reference.md).
 
 Command summary:
 
-| Command | Purpose |
-|---|---|
-| `validate` | Run conformance validation |
-| `update-cache` | Download/refresh rules, CT, and metadata |
-| `list-rules` | List rules available in the cache |
-| `list-rule-sets` | List standards and versions in the cache |
-| `list-ct` | List controlled terminology packages in the cache |
+| Command          | Purpose                                           |
+| ---------------- | ------------------------------------------------- |
+| `validate`       | Run conformance validation                        |
+| `update-cache`   | Download/refresh rules, CT, and metadata          |
+| `list-rules`     | List rules available in the cache                 |
+| `list-rule-sets` | List standards and versions in the cache          |
+| `list-ct`        | List controlled terminology packages in the cache |
 
 > Throughout these docs, examples use `python core.py`. If you're using the executable, replace this with `.\core.exe` (Windows) or `./core` (Linux/Mac).

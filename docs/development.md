@@ -6,13 +6,14 @@ This page covers integrating CORE as a library, building from source, running te
 
 ## PyPI Integration
 
-CORE is available as a Python package for direct integration into data pipelines. 
+CORE is available as a Python package for direct integration into data pipelines.
 
 ```bash
 pip install cdisc-rules-engine
 ```
 
 This allows you to:
+
 - Import the rules engine library into your Python projects
 - Validate data without requiring XPT format files
 - Integrate rules validation into existing pipelines
@@ -68,6 +69,7 @@ Pre-built executables are available on the [Releases page](https://github.com/cd
 For reference, the PyInstaller commands are:
 
 **Linux:**
+
 ```bash
 pyinstaller core.py \
   --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas \
@@ -77,6 +79,7 @@ pyinstaller core.py \
 ```
 
 **Windows:**
+
 ```bash
 pyinstaller core.py ^
   --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" ^
@@ -94,34 +97,40 @@ The executable is created in the `dist/` folder and does not require Python to b
 All non-Python files must be listed in `MANIFEST.in` to be included in the distribution.
 
 **Unix / Mac:**
+
 ```bash
 python3 -m pip install --upgrade build
 python3 -m build
 ```
 
 Install locally from the `dist/` folder:
+
 ```bash
 pip3 install dist/cdisc_rules_engine-{version}-py3-none-any.whl
 ```
 
 Upload to PyPI:
+
 ```bash
 python3 -m pip install --upgrade twine
 python3 -m twine upload --repository {repository_name} dist/*
 ```
 
 **Windows:**
+
 ```bash
 py -m pip install --upgrade build
 py -m build
 ```
 
 Install locally:
+
 ```bash
 pip install dist\cdisc_rules_engine-{version}-py3-none-any.whl
 ```
 
 Upload to PyPI:
+
 ```bash
 py -m pip install --upgrade twine
 py -m twine upload --repository {repository_name} dist/*
@@ -139,17 +148,21 @@ CORE validates against USDM JSON Schema versions 3.0 and 4.0. Schema definitions
 These are derived from the OpenAPI specs in [`cdisc-org/DDF-RA`](https://github.com/cdisc-org/DDF-RA). To update or add a schema version:
 
 1. Extract the OpenAPI spec for the target tag:
+
    ```bash
    git --no-pager --git-dir DDF-RA.git show --format=format:"%B" {tag}:Deliverables/API/USDM_API.json > USDM_API_{version}.json
    ```
+
    Example tag: `v3.0.0`
 
 2. Convert the OpenAPI spec to JSON Schema:
+
    ```bash
    python scripts/openapi-to-json.py
    ```
 
 3. Convert the JSON Schema to `.pkl`:
+
    ```bash
    python scripts/json_pkl_converter.py
    ```

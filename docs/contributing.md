@@ -29,6 +29,7 @@ Follow the [Development → Environment Setup](development.md#environment-setup)
 This project enforces consistent formatting and linting via pre-commit hooks.
 
 **Tools used:**
+
 - [`black`](https://black.readthedocs.io/) — Python code formatter
 - [`flake8`](https://flake8.pycqa.org/) — Python linter
 - [`prettier`](https://prettier.io/) — JSON, YAML, and Markdown formatter
@@ -42,6 +43,7 @@ pre-commit install
 This installs the hooks into `.git/hooks/` so formatting and linting run automatically on each commit.
 
 To run the checks manually:
+
 ```bash
 pre-commit run --all-files
 ```
@@ -71,6 +73,7 @@ For larger changes or new features, consider opening a GitHub Discussion or issu
 Use [GitHub Issues](https://github.com/cdisc-org/cdisc-rules-engine/issues) to report bugs or request features.
 
 When reporting a bug, please include:
+
 - A clear description of the problem
 - Steps to reproduce
 - Your operating system and Python version (or executable version)

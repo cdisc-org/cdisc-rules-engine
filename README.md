@@ -16,14 +16,13 @@ Full documentation lives in the [`docs/`](docs/index.md) directory and is hosted
 
 > **[https://cdisc-org.github.io/cdisc-rules-engine](https://cdisc-org.github.io/cdisc-rules-engine)**
 
-| | |
-|---|---|
-| [Quick Start](docs/quick-start.md) | Download the executable or run from source |
-| [CLI Reference](docs/cli-reference.md) | All commands and flags |
-| [Development](docs/development.md) | PyPI integration, building, testing |
-| [Contributing](docs/contributing.md) | Code style, tests, rule contributions |
-| [FAQ & Troubleshooting](docs/faq.md) | Common issues and questions |
-
+|                                        |                                            |
+| -------------------------------------- | ------------------------------------------ |
+| [Quick Start](docs/quick-start.md)     | Download the executable or run from source |
+| [CLI Reference](docs/cli-reference.md) | All commands and flags                     |
+| [Development](docs/development.md)     | PyPI integration, building, testing        |
+| [Contributing](docs/contributing.md)   | Code style, tests, rule contributions      |
+| [FAQ & Troubleshooting](docs/faq.md)   | Common issues and questions                |
 
 ## Troubleshooting & Support
 

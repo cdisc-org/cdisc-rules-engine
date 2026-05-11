@@ -19,6 +19,7 @@ Download Python 3.12 from [python.org](https://www.python.org/downloads/) if nee
 ### The Mac executable won't open due to a security warning
 
 Remove the quarantine attribute:
+
 ```bash
 xattr -rd com.apple.quarantine .
 ```
@@ -48,7 +49,8 @@ CDISC_LIBRARY_API_KEY=your_key_here
 ```
 
 ### My validation returned no results or unexpected rules
-- **Console output / logs:** By default, engine logs are disabled. Use `-l` / `--log-level` to enable them.  Available levels: `info`, `debug`, `warn`, `error`, `critical`.
+
+- **Console output / logs:** By default, engine logs are disabled. Use `-l` / `--log-level` to enable them. Available levels: `info`, `debug`, `warn`, `error`, `critical`.
 - **The output report:** Open the results file and review the **Rule Report** tab (XLSX) or the top-level `Rules_Report` array (JSON). Rules with a status of `SKIPPED` will include a reason in the Issue Details — this is often the cause of unexpectedly absent results.
 - **Scope flags:** Confirm that your `-s`, `-v`, and for TIG `-ss` arguments match the standard, version, and substandard you intended to validate against. A mismatch will cause rules to be silently out of scope.
 
@@ -60,12 +62,12 @@ If you're still not seeing expected results after checking the above, post in th
 
 ### What does each rule run status mean?
 
-| Status | Meaning |
-|---|---|
-| `SUCCESS` | Rule ran; no issues found. |
-| `SKIPPED` | Rule did not run (column/domain not found, schema validation off, outside scope). |
-| `ISSUE_REPORTED` | Rule ran; issues were found. |
-| `EXECUTION_ERROR` | Rule failed unexpectedly. Check the Issue Details tab for details. |
+| Status            | Meaning                                                                           |
+| ----------------- | --------------------------------------------------------------------------------- |
+| `SUCCESS`         | Rule ran; no issues found.                                                        |
+| `SKIPPED`         | Rule did not run (column/domain not found, schema validation off, outside scope). |
+| `ISSUE_REPORTED`  | Rule ran; issues were found.                                                      |
+| `EXECUTION_ERROR` | Rule failed unexpectedly. Check the Issue Details tab for details.                |
 
 ### My dataset fails to load / wrong encoding
 
@@ -75,7 +77,7 @@ CORE defaults to `utf-8`. If your files use a different encoding, specify it:
 python core.py validate -s sdtmig -v 3-4 -dp path/to/dataset.xpt -e cp1252
 ```
 
->NOTE: you may notice a `'utf-9' codec can't decode byte` error in the logs.  This is usually due to Windows Smart Quotes, produced in excel, which are CP1252 encoded, not utf-8.  Unfortunately, Windows Smart Quotes produce a file that is mostly utf-8 with some CP1252 for the smart quotes so the -e command will not work to resolve this.  You will need to locate these quotes and manually change them before being able to rerun this data.
+> NOTE: you may notice a `'utf-9' codec can't decode byte` error in the logs. This is usually due to Windows Smart Quotes, produced in excel, which are CP1252 encoded, not utf-8. Unfortunately, Windows Smart Quotes produce a file that is mostly utf-8 with some CP1252 for the smart quotes so the -e command will not work to resolve this. You will need to locate these quotes and manually change them before being able to rerun this data.
 
 ### Will using -d pointed at my data directory cause CORE to include my Define-XML file in the validation?
 
@@ -94,6 +96,7 @@ $env:DATASET_SIZE_THRESHOLD=0; .\core.exe validate -s sdtmig -v 3-4 -d C:\path\t
 ```
 
 Or add to a `.env` file in the root directory:
+
 ```
 DATASET_SIZE_THRESHOLD=0
 ```
@@ -125,8 +128,6 @@ python core.py validate -s sdtmig -v 3-4 -d /data -er CORE-000001
 
 You can view and clone the CDISC CORE rules at [cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
 
-
-
 ## Privacy & Data Protection
 
 ### Does CORE transmit my study data anywhere during validation?
@@ -149,12 +150,11 @@ You can view and clone the CDISC CORE rules at [cdisc-open-rules](https://github
 - **Custom rules** are individual rule definitions stored in the cache by CORE ID.
 - **Custom standards** map a standard identifier to a list of rule IDs, acting as a lookup for which rules apply.
 
-Add your custom rules first, then create a standard that references them. See [CLI Reference → update-cache](cli-reference.md#custom-rules) for details.  Custom Rules & Standards continue to be a work in progress, there are tickets within CORE's Issues to full implement further support for them in the future.
+Add your custom rules first, then create a standard that references them. See [CLI Reference → update-cache](cli-reference.md#custom-rules) for details. Custom Rules & Standards continue to be a work in progress, there are tickets within CORE's Issues to full implement further support for them in the future.
 
 ### Can a custom standard use CDISC library metadata?
 
 Yes. If you name your custom standard after an existing CDISC standard (e.g. `sdtmig/3-4`), CORE will fetch library metadata for that standard while applying your custom rules.
-
 
 ---
 

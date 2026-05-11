@@ -23,12 +23,12 @@ The package also includes the USDM and Dataset-JSON schemas, available if you us
 
 ## Choosing an Approach
 
-| | Option A: Business Rules Engine | Option B: RulesEngine Class |
-|---|---|---|
-| **Interface** | Low-level, rule-by-rule | High-level, dataset-oriented |
-| **Data input** | pandas DataFrame | XPT or other file-based datasets |
-| **Setup** | Minimal | More configuration required |
-| **Best for** | Simple in-memory validation | Full multi-domain validation pipelines |
+|                | Option A: Business Rules Engine | Option B: RulesEngine Class            |
+| -------------- | ------------------------------- | -------------------------------------- |
+| **Interface**  | Low-level, rule-by-rule         | High-level, dataset-oriented           |
+| **Data input** | pandas DataFrame                | XPT or other file-based datasets       |
+| **Setup**      | Minimal                         | More configuration required            |
+| **Best for**   | Simple in-memory validation     | Full multi-domain validation pipelines |
 
 ---
 

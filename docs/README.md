@@ -10,4 +10,4 @@
 
 # CDISC Rules Engine (CORE)
 
-Open source offering of the CDISC Conformance Rules Engine — a tool for validating clinical trial data against CDISC data standards.  CORE validates study data structure and conformance against both published CDISC conformance rules for the various CDISC standards and custom rules authored in the CORE rule format.
+Open source offering of the CDISC Conformance Rules Engine — a tool for validating clinical trial data against CDISC data standards. CORE validates study data structure and conformance against both published CDISC conformance rules for the various CDISC standards and custom rules authored in the CORE rule format.

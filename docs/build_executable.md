@@ -207,7 +207,6 @@ RUN chmod +x /app/dist/output/core-ubuntu-22.04/core/core && \
 
 For the most consistent experience across all platforms, consider using the **GitHub Actions approach (Option 1)**, which handles platform differences automatically and doesn't require local Docker setup.
 
-
 ## Troubleshooting
 
 ### Architecture Issues
@@ -218,4 +217,3 @@ You can build executables for different operating systems using GitHub's hosted 
 - https://github.com/actions/runner-images
 
 The runner in our workflow currently builds for ubuntu-22.04 but this can be changed to your particular OS, as well as CPU architectures (This will be different for Apple M chips that use ARM architecture versus Intel chips)
-
