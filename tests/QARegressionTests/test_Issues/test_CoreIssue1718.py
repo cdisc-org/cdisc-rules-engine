@@ -7,7 +7,7 @@ from conftest import get_python_executable
 
 @pytest.mark.regression
 class TestCoreIssue1718:
-    def test_raw_report(self):
+    def test_max_issues(self):
         # Run the command in the terminal
         max_issues = 3
         command = [
@@ -32,7 +32,7 @@ class TestCoreIssue1718:
             "-of",
             "json",
             "-me",
-            max_issues,
+            f"{max_issues}",
             "true",
         ]
         subprocess.run(command, check=True)
@@ -54,7 +54,7 @@ class TestCoreIssue1718:
         }.issubset(json_report.keys())
         assert json_report["Rules_Report"][0]["status"] == "ISSUE REPORTED"
         assert json_report["Issue_Summary"][0]["issues"] == 74
-        assert json_report["Issue_Details"] == max_issues
+        assert len(json_report["Issue_Details"]) == max_issues
 
         if os.path.exists(json_report_path):
             os.remove(json_report_path)
