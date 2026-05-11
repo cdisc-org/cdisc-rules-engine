@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CDISC Rules Engine (CORE)</title>
+  <meta name="description" content="Open source CDISC conformance rules engine for validating clinical trial data." />
+  <link rel="icon" href="../resources/assets/CORE_logo_sm.png" />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+  <style>
+    :root {
+      --theme-color: #005f8e;
+    }
+    .sidebar-toggle {
+      background-color: transparent;
+    }
+    nav.app-nav {
+      right: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">Loading CORE documentation…</div>
+  <script>
+    window.$docsify = {
+      name: 'CORE Docs',
+      repo: 'https://github.com/cdisc-org/cdisc-rules-engine',
+      homepage: 'index.md',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search docs…',
+        noData: 'No results.',
+        depth: 4,
+      },
+      plugins: [],
+    };
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+</body>
+</html>

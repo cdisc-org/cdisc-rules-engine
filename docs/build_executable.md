@@ -1,24 +1,26 @@
 # Building CDISC Rules Engine Executable
 
+Pre-built executables for each release are available on the Releases page. If you need to build your own there are two approaches.
+
 ## Option 1: Using GitHub Actions (Recommended)
 
-### Step 1: Fork and Setup
+### Step 1: Fork the Repository and Setup
 
 1. Fork the repository: https://github.com/cdisc-org/cdisc-rules-engine
 2. The workflow file `.github/workflows/build-version.yml` is already included in the main repository. It is contained within our .gitignore so you can customize it as you see fit.
 
-### Step 2: Run the Build
+### Step 2: Add your API Key
 
 1. Go to the top bar of the fork, click Settings > Security > Secrets and Variables > Actions
 2. Click **New Repository Secret** and set an action secret named CDISC_LIBRARY_API_KEY and secret as your API key
-3. Go to **Actions** tab in your forked repository
-4. Click "Build Custom Executable"
-5. Click **Run workflow**
-6. Download the artifact when complete
+
+### Step 3: Run the Build
+
+Go to the **Actions** tab → **Build Custom Executable** → **Run workflow**. Download the artifact when complete.
 
 ### Step 3: Automated Builds (Optional)
 
-To run builds automatically, uncomment the schedule section in the workflow:
+To run builds automatically, uncomment the `schedule` section in the workflow:
 
 ```yaml
 schedule:
@@ -27,16 +29,7 @@ schedule:
   - cron: "0 2 * * *" # Daily at 2 AM UTC
 ```
 
-## Troubleshooting
-
-### Architecture Issues
-
-You can build executables for different operating systems using GitHub's hosted runners. This creates platform-specific executables that work on different environments. See:
-
-- https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
-- https://github.com/actions/runner-images
-
-The runner in our workflow currently builds for ubuntu-22.04 but this can be changed to your particular OS, as well as CPU architectures (This will be different for Apple M chips that use ARM architecture versus Intel chips)
+---
 
 ## Option 2: Using Docker Locally
 
@@ -213,3 +206,16 @@ RUN chmod +x /app/dist/output/core-ubuntu-22.04/core/core && \
 ### Cross-Platform Alternative
 
 For the most consistent experience across all platforms, consider using the **GitHub Actions approach (Option 1)**, which handles platform differences automatically and doesn't require local Docker setup.
+
+
+## Troubleshooting
+
+### Architecture Issues
+
+You can build executables for different operating systems using GitHub's hosted runners. This creates platform-specific executables that work on different environments. See:
+
+- https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
+- https://github.com/actions/runner-images
+
+The runner in our workflow currently builds for ubuntu-22.04 but this can be changed to your particular OS, as well as CPU architectures (This will be different for Apple M chips that use ARM architecture versus Intel chips)
+
