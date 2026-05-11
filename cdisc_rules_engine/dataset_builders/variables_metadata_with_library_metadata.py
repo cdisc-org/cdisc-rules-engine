@@ -26,9 +26,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         # get dataset metadata and execute the rule
         content_variables_metadata: DatasetInterface = (
             self.data_service.get_variables_metadata(
-                dataset_name=self.dataset_path,
-                datasets=self.datasets,
-                drop_duplicates=True,
+                dataset_name=self.dataset_metadata.name
             )
         )
         dataset_contents = self.get_dataset_contents()

@@ -17,7 +17,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         """
         # Get basic variable metadata
         variables_metadata = self.data_service.get_variables_metadata(
-            dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
+            dataset_name=self.dataset_metadata.name
         )
 
         # Check if the rule requires variable_max_size
@@ -120,7 +120,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         This column contains the maximum length of actual data for each variable.
         """
         # Get the dataset contents
-        dataset = self.data_service.get_dataset(dataset_name=self.dataset_path)
+        dataset = self.data_service.get_dataset(dataset_name=self.dataset_metadata.name)
 
         # Calculate max size for each variable
         max_sizes = {}

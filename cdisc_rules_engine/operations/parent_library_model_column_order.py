@@ -21,26 +21,29 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         in accordance to "ordinal" key of library metadata.
         """
         domain_to_datasets = self._get_domain_to_datasets()
+        rdomain_values = self.evaluation_dataset.get(
+            "RDOMAIN", [None] * len(self.evaluation_dataset)
+        )
+
         rdomain_names_list = {}
-        return self.evaluation_dataset.convert_to_series(
-            Series(
-                rdomain_names_list.setdefault(
-                    rdomain,
-                    self._get_parent_variable_names_list(domain_to_datasets, rdomain),
-                )
-                for rdomain in self.evaluation_dataset.get(
-                    "RDOMAIN", [None] * len(self.evaluation_dataset)
-                )
+        for rdomain in set(rdomain_values):
+            rdomain_names_list[rdomain] = self._get_parent_variable_names_list(
+                domain_to_datasets, rdomain
             )
+
+        return self.evaluation_dataset.convert_to_series(
+            Series(rdomain_names_list[rdomain] for rdomain in rdomain_values)
         )
 
     def _get_domain_to_datasets(self):
         domain_to_datasets = defaultdict(list)
-        for dataset in self.params.datasets:
+        for dataset in self.data_service.get_datasets():
             domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 
-    def _get_parent_variable_names_list(self, domain_to_datasets: dict, rdomain: str):
+    def _get_parent_variable_names_list(
+        self, domain_to_datasets: dict, rdomain: str
+    ) -> list[str]:
         parent_datasets = domain_to_datasets.get(rdomain, [])
         if len(parent_datasets) < 1:
             raise DomainNotFoundError(
@@ -48,6 +51,11 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                 f"{rdomain} but Domain not found in datasets"
             )
         parent_dataframe = self.data_service.get_dataset(
-            dataset_name=parent_datasets[0].full_path
+            dataset_name=parent_datasets[0].name
         )
-        return self._get_variable_names_list(rdomain, parent_dataframe)
+        parent_dataframe_metadata = self.data_service.get_raw_dataset_metadata(
+            dataset_name=parent_datasets[0].name
+        )
+        return self._get_variable_names_list(
+            parent_dataframe_metadata, parent_dataframe
+        )

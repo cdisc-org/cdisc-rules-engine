@@ -35,7 +35,7 @@ class Distinct(BaseOperation):
                 data = result[self.params.target].unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
-            result = set(data)
+            result = list(data)
         else:
             grouped = result.groupby(
                 self.params.grouping, as_index=False, group_keys=False
@@ -52,7 +52,9 @@ class Distinct(BaseOperation):
                         ),
                         axis=1,
                     )
-                    return pd.Series({operation_id: set(values.dropna().unique())})
+                    return pd.Series(
+                        {operation_id: list(values.dropna().sort_index().unique())}
+                    )
 
                 result = grouped.apply(get_existing_column_names).reset_index()
             elif isinstance(result.data, pd.DataFrame):
@@ -65,15 +67,15 @@ class Distinct(BaseOperation):
                     .unique()
                     .rename({self.params.target: self.params.operation_id})
                 )
-                result = result.apply(set).to_frame().reset_index()
+                result = result.apply(list).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
         referenced_datasets = {}
         for dataset_metadata in self.data_service.get_datasets():
-            dataset = self.data_service.get_dataset(dataset_metadata.filename)
+            dataset = self.data_service.get_dataset(dataset_name=dataset_metadata.name)
             referenced_datasets[dataset_metadata.name] = dataset
         return referenced_datasets
 
     def _unique_values_for_column(self, column):
-        return pd.Series({self.params.operation_id: set(column.unique())})
+        return pd.Series({self.params.operation_id: list(column.unique())})

@@ -1,6 +1,6 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.utilities.utils import (
-    search_in_list_of_dicts,
+    search_in_list,
 )
 
 
@@ -12,7 +12,7 @@ class DomainLabel(BaseOperation):
         standard_data = self.library_metadata.standard_metadata
         domain_details = None
         for c in standard_data.get("classes", []):
-            domain_details = search_in_list_of_dicts(
+            domain_details = search_in_list(
                 c.get("datasets", []), lambda item: item["name"] == self.params.domain
             )
             if domain_details:
