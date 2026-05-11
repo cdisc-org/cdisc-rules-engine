@@ -1,0 +1,319 @@
+{
+    "datasetJSONCreationDateTime": "2024-11-11T15:09:14",
+    "datasetJSONVersion": "1.1.0",
+    "fileOID": "www.cdisc.org/StudyMSGv2/1/Define-XML_2.1.0/2024-11-11/ae",
+    "dbLastModifiedDateTime": "2020-08-21T09:14:28",
+    "originator": "CDISC SDTM MSG Team",
+    "sourceSystem": {
+        "name": "SAS on X64_10PRO",
+        "version": "9.0401M7"
+    },
+    "studyOID": "cdisc.com/CDISCPILOT01",
+    "metaDataVersionOID": "MDV.MSGv2.0.SDTMIG.3.3.SDTM.1.7",
+    "metaDataRef": "define.xml",
+    "itemGroupOID": "IG.AE",
+    "records": 1,
+    "name": "AE",
+    "label": "Adverse Events",
+    "columns": [
+        {
+            "itemOID": "IT.AE.STUDYID",
+            "name": "STUDYID",
+            "label": "Study Identifier",
+            "dataType": "string",
+            "length": 12,
+            "keySequence": 1
+        },
+        {
+            "itemOID": "IT.AE.DOMAIN",
+            "name": "DOMAIN",
+            "label": "Domain Abbreviation",
+            "dataType": "string",
+            "length": 2
+        },
+        {
+            "itemOID": "IT.AE.USUBJID",
+            "name": "USUBJID",
+            "label": "Unique Subject Identifier",
+            "dataType": "string",
+            "length": 8,
+            "keySequence": 2
+        },
+        {
+            "itemOID": "IT.AE.AESEQ",
+            "name": "AESEQ",
+            "label": "Sequence Number",
+            "dataType": "integer"
+        },
+        {
+            "itemOID": "IT.AE.AELNKID",
+            "name": "AELNKID",
+            "label": "Link ID",
+            "dataType": "string",
+            "length": 50,
+            "keySequence": 5
+        },
+        {
+            "itemOID": "IT.AE.AETERM",
+            "name": "AETERM",
+            "label": "Reported Term for the Adverse Event",
+            "dataType": "string",
+            "length": 200
+        },
+        {
+            "itemOID": "IT.AE.AELLT",
+            "name": "AELLT",
+            "label": "Lowest Level Term",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AELLTCD",
+            "name": "AELLTCD",
+            "label": "Lowest Level Term Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEDECOD",
+            "name": "AEDECOD",
+            "label": "Dictionary-Derived Term",
+            "dataType": "string",
+            "length": 1,
+            "keySequence": 3
+        },
+        {
+            "itemOID": "IT.AE.AEPTCD",
+            "name": "AEPTCD",
+            "label": "Preferred Term Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEHLT",
+            "name": "AEHLT",
+            "label": "High Level Term",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEHLTCD",
+            "name": "AEHLTCD",
+            "label": "High Level Term Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEHLGT",
+            "name": "AEHLGT",
+            "label": "High Level Group Term",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEHLGTCD",
+            "name": "AEHLGTCD",
+            "label": "High Level Group Term Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEBODSYS",
+            "name": "AEBODSYS",
+            "label": "Body System or Organ Class",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEBDSYCD",
+            "name": "AEBDSYCD",
+            "label": "Body System or Organ Class Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESOC",
+            "name": "AESOC",
+            "label": "Primary System Organ Class",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESOCCD",
+            "name": "AESOCCD",
+            "label": "Primary System Organ Class Code",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESEV",
+            "name": "AESEV",
+            "label": "Severity/Intensity",
+            "dataType": "string",
+            "length": 8
+        },
+        {
+            "itemOID": "IT.AE.AESER",
+            "name": "AESER",
+            "label": "Serious Event",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AEACN",
+            "name": "AEACN",
+            "label": "Action Taken with Study Treatment",
+            "dataType": "string",
+            "length": 16
+        },
+        {
+            "itemOID": "IT.AE.AEREL",
+            "name": "AEREL",
+            "label": "Causality",
+            "dataType": "string",
+            "length": 16
+        },
+        {
+            "itemOID": "IT.AE.AEOUT",
+            "name": "AEOUT",
+            "label": "Outcome of Adverse Event",
+            "dataType": "string",
+            "length": 32
+        },
+        {
+            "itemOID": "IT.AE.AESCAN",
+            "name": "AESCAN",
+            "label": "Involves Cancer",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESCONG",
+            "name": "AESCONG",
+            "label": "Congenital Anomaly or Birth Defect",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESDISAB",
+            "name": "AESDISAB",
+            "label": "Persist or Signif Disability/Incapacity",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESDTH",
+            "name": "AESDTH",
+            "label": "Results in Death",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESHOSP",
+            "name": "AESHOSP",
+            "label": "Requires or Prolongs Hospitalization",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESLIFE",
+            "name": "AESLIFE",
+            "label": "Is Life Threatening",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.AESOD",
+            "name": "AESOD",
+            "label": "Occurred with Overdose",
+            "dataType": "string",
+            "length": 1
+        },
+        {
+            "itemOID": "IT.AE.EPOCH",
+            "name": "EPOCH",
+            "label": "Epoch",
+            "dataType": "string",
+            "length": 9
+        },
+        {
+            "itemOID": "IT.AE.AESTDTC",
+            "name": "AESTDTC",
+            "label": "Start Date/Time of Adverse Event",
+            "dataType": "date",
+            "keySequence": 4
+        },
+        {
+            "itemOID": "IT.AE.AEENDTC",
+            "name": "AEENDTC",
+            "label": "End Date/Time of Adverse Event",
+            "dataType": "date"
+        },
+        {
+            "itemOID": "IT.AE.AESTDY",
+            "name": "AESTDY",
+            "label": "Study Day of Start of Adverse Event",
+            "dataType": "integer"
+        },
+        {
+            "itemOID": "IT.AE.AEENDY",
+            "name": "AEENDY",
+            "label": "Study Day of End of Adverse Event",
+            "dataType": "integer"
+        },
+        {
+            "itemOID": "IT.AE.AEENRTPT",
+            "name": "AEENRTPT",
+            "label": "End Relative to Reference Time Point",
+            "dataType": "string",
+            "length": 7
+        },
+        {
+            "itemOID": "IT.AE.AEENTPT",
+            "name": "AEENTPT",
+            "label": "End Reference Time Point",
+            "dataType": "date"
+        }
+    ],
+    "rows": [
+        [
+            "CDISCPILOT01",
+            "AE",
+            "utf8:ἇ",
+            9,
+            "9",
+            "SUDDEN DEATH",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "SEVERE",
+            "Y",
+            "DRUG WITHDRAWN",
+            "NOT RELATED",
+            "FATAL",
+            "N",
+            "N",
+            "N",
+            "Y",
+            "N",
+            "Y",
+            "N",
+            "TREATMENT",
+            "2013-01-14",
+            "2013-01-14",
+            61,
+            61,
+            "",
+            ""
+        ]
+    ]
+}
