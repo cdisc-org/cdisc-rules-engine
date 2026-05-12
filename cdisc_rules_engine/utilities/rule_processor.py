@@ -429,6 +429,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 term_value=operation.get("term_value"),
                 value_is_reference=operation.get("value_is_reference", False),
+                order_insensitive=operation.get("order_insensitive", True),
             )
             try:
                 # execute operation
