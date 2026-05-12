@@ -10,3 +10,4 @@ class StaticTables(BaseEnum):
     UNII_TABLE_NAME = "ex_unii"
     MEDRT_TABLE_NAME = "ex_medrt"
     LOINC_TABLE_NAME = "ex_loinc"
+    SNOMED_TABLE_NAME = "ex_snomed"

@@ -4,6 +4,7 @@ from cdisc_rules_engine.readers.external_dictionary_readers.meddra_reader import
 from cdisc_rules_engine.readers.external_dictionary_readers.unii_reader import UniiReader
 from cdisc_rules_engine.readers.external_dictionary_readers.medrt_reader import MedRTReader
 from cdisc_rules_engine.readers.external_dictionary_readers.loinc_reader import LoincReader
+from cdisc_rules_engine.readers.external_dictionary_readers.snomed_reader import SnomedReader
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
 
 
@@ -13,11 +14,10 @@ IMPLEMENTED_DICTIONARY_VALIDATORS = {
     DictionaryTypes.UNII.value: UniiReader,
     DictionaryTypes.MEDRT.value: MedRTReader,
     DictionaryTypes.LOINC.value: LoincReader,
+    DictionaryTypes.SNOMED.value: SnomedReader,
 }
 
-UNIMPLEMENTED_DICTIONARIES = [
-    DictionaryTypes.SNOMED.value,
-]
+UNIMPLEMENTED_DICTIONARIES = []
 
 
 class SqlExternalDictionariesContainer:

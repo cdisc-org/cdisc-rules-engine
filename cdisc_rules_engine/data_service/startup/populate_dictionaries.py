@@ -52,12 +52,19 @@ def _loinc_schema(metadata=None) -> SqlTableSchema:
     return table
 
 
+def _snomed_schema(metadata=None) -> SqlTableSchema:
+    table = _create_standard_term_schema(StaticTables.SNOMED_TABLE_NAME.value)
+    _add_char_columns(table, "term_tag")
+    return table
+
+
 _SCHEMA_MAP = {
     DictionaryTypes.WHODRUG.value: _whodrug_schema,
     DictionaryTypes.MEDDRA.value: _meddra_schema,
     DictionaryTypes.UNII.value: _unii_schema,
     DictionaryTypes.MEDRT.value: _medrt_schema,
     DictionaryTypes.LOINC.value: _loinc_schema,
+    DictionaryTypes.SNOMED.value: _snomed_schema,
 }
 
 

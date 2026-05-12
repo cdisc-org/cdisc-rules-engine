@@ -281,6 +281,24 @@ class PostgresQLOperators(BaseType):
         "is_not_valid_loinc_code_term_pair": lambda data: NotOperator(
             data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.LOINC_TABLE_NAME.value)
         ),
+        "is_valid_snomed_term_reference": lambda data: ValidExDictTermReferenceOperator(
+            data, StaticTables.SNOMED_TABLE_NAME.value
+        ),
+        "is_not_valid_snomed_term_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictTermReferenceOperator(d, StaticTables.SNOMED_TABLE_NAME.value)
+        ),
+        "is_valid_snomed_code_reference": lambda data: ValidExDictCodeReferenceOperator(
+            data, StaticTables.SNOMED_TABLE_NAME.value
+        ),
+        "is_not_valid_snomed_code_reference": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeReferenceOperator(d, StaticTables.SNOMED_TABLE_NAME.value)
+        ),
+        "is_valid_snomed_code_term_pair": lambda data: ValidExDictCodeTermPairsOperator(
+            data, StaticTables.SNOMED_TABLE_NAME.value
+        ),
+        "is_not_valid_snomed_code_term_pair": lambda data: NotOperator(
+            data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.SNOMED_TABLE_NAME.value)
+        ),
     }
 
     def __init__(self, data):

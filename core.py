@@ -164,6 +164,7 @@ def cli():
     default="https://snowstorm.snomedtools.org/snowstorm/snomed-ct/",
 )
 @click.option("--snomed-edition", help="Edition of snomed to use.")
+@click.option("--snomed", help="Path to directory with SNOMED dictionary files")
 @click.option(
     "--rules",
     "-r",
@@ -248,6 +249,7 @@ def validate(
     snomed_version: str,
     snomed_edition: str,
     snomed_url: str,
+    snomed: str,
     rules: Tuple[str],
     local_rules: str,
     custom_standard: bool,
@@ -284,11 +286,15 @@ def validate(
             DictionaryTypes.MEDDRA.value: meddra,
             DictionaryTypes.WHODRUG.value: whodrug,
             DictionaryTypes.LOINC.value: loinc,
-            DictionaryTypes.SNOMED.value: {
-                "edition": snomed_edition,
-                "version": snomed_version,
-                "base_url": snomed_url,
-            },
+            DictionaryTypes.SNOMED.value: (
+                snomed
+                if sql_engine
+                else {
+                    "edition": snomed_edition,
+                    "version": snomed_version,
+                    "base_url": snomed_url,
+                }
+            ),
         }
     )
     if data:
