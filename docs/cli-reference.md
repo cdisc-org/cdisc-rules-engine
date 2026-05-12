@@ -14,14 +14,14 @@ python core.py validate --help
 
 ### Required Flags
 
-| Flag                      | Description                                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------------------ |
-| `-s, --standard TEXT`     | CDISC standard to validate against (e.g. `sdtmig`, `tig`). Also via `PRODUCT` env var.           |
-| `-v, --version TEXT`      | Standard version (e.g. `3-4`). Also via `VERSION` env var.                                       |
-| `-ss, --substandard TEXT` | **Required for TIG.** One of `SDTM`, `SEND`, `ADaM`, `CDASH`. Also via `SUBSTANDARD` env var.    |
-| `-uc, --use-case TEXT`    | Use Case for TIG Custom Domains.  When performing a TIG validation with custom domain(s), this   |
-|                           | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,         |
-|                           | `ANALYSIS`. Also via `USE_CASE` env var.                                                         |
+| Flag                      | Description                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `-s, --standard TEXT`     | CDISC standard to validate against (e.g. `sdtmig`, `tig`). Also via `PRODUCT` env var.        |
+| `-v, --version TEXT`      | Standard version (e.g. `3-4`). Also via `VERSION` env var.                                    |
+| `-ss, --substandard TEXT` | **Required for TIG.** One of `SDTM`, `SEND`, `ADaM`, `CDASH`. Also via `SUBSTANDARD` env var. |
+| `-uc, --use-case TEXT`    | Use Case for TIG Custom Domains. When performing a TIG validation with custom domain(s), this |
+|                           | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,      |
+|                           | `ANALYSIS`. Also via `USE_CASE` env var.                                                      |
 
 ### Dataset Input
 
