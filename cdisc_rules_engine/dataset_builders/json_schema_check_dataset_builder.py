@@ -46,7 +46,7 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
 
         return errlist
 
-    def get_dataset(self, **kwargs) -> DatasetInterface:
+    def get_dataset(self) -> DatasetInterface:
         dataset = self._get_cached_dataset()
         records = [
             {key: dataset[key][i] for key in dataset}
@@ -56,10 +56,10 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             row for row in records if row["dataset"] == self.dataset_metadata.name
         ]
         if filtered:
-            result = self.dataset_implementation.from_records(filtered, **kwargs)
+            result = self.dataset_implementation.from_records(filtered)
         else:
             empty_row = {key: "" for key in self.dataset_template.keys()}
-            result = self.dataset_implementation.from_records([empty_row], **kwargs)
+            result = self.dataset_implementation.from_records([empty_row])
         return tag_source(result, self.dataset_metadata)
 
     def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):

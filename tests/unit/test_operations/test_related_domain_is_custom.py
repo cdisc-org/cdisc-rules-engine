@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -16,8 +18,7 @@ class DummyDataset:
 
 
 class DummyParams:
-    def __init__(self, datasets, domain: str):
-        self.datasets = datasets
+    def __init__(self, domain: str):
         self.domain = domain
 
 
@@ -73,14 +74,16 @@ def test_related_domain_is_custom(
     library_metadata = LibraryMetadataContainer(
         standard_metadata={"dataset_names": standard_domains}
     )
-    params = DummyParams(datasets=study_datasets, domain=domain)
+    params = DummyParams(domain=domain)
 
+    data_service = MagicMock()
+    data_service.get_datasets.return_value = study_datasets
     op = RelatedDomainIsCustom(
         params=params,
         library_metadata=library_metadata,
-        original_dataset=None,
+        evaluation_dataset=None,
         cache_service=None,
-        data_service=None,
+        data_service=data_service,
     )
 
     assert op._execute_operation() is expected

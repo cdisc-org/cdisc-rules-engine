@@ -73,7 +73,7 @@ def test_validate_define_xml_against_lib_metadata():
     dataset_column_values = [
         cell.value for cell in dataset_column[1:] if cell.value is not None
     ]
-    assert sorted(set(dataset_column_values)) == ["dm.xpt", "suppec.xpt"]
+    assert sorted(set(dataset_column_values)) == ["DM", "SUPPEC"]
 
     core_id_column = sheet[issue_sheet_coreid_column]
     core_id_column_values = [
@@ -125,7 +125,7 @@ def test_validate_define_xml_against_lib_metadata():
     for row in summary_values:
         assert row[2] == "Issue with codelist definition in the Define-XML document."
     datasets_in_summary = set(row[0] for row in summary_values if row[0] is not None)
-    assert datasets_in_summary == {"dm.xpt", "suppec.xpt"}
+    assert datasets_in_summary == {"DM", "SUPPEC"}
 
     # Delete the excel file
     if os.path.exists(excel_file_path):

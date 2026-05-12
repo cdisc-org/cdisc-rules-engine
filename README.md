@@ -154,7 +154,9 @@ This will show the list of validation options.
   -ss, --substandard TEXT         Substandard to validate against. SUBSTANDARD environment variable can be used to pass value.
                                   "SDTM", "SEND", "ADaM", or "CDASH"
                                   [required for TIG]
-  -uc, --use-case TEXT            Use Case for TIG Validation
+  -uc, --use-case TEXT            Use Case for TIG Custom Domains
+                                  When performing a TIG validation with custom domain(s), this must be given to identify the custom domains' use case
+                                  in order to determine what rules to validate against them
                                   "INDH", "PROD", "NONCLIN", or "ANALYSIS"
                                   [required for TIG]
                                   USE_CASE environment variable can be used to pass value.
@@ -245,9 +247,9 @@ This will show the list of validation options.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   -e, --encoding TEXT             File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   -ft, --filetype TEXT            File extension to filter datasets. Has higher priority than --dataset-path parameter.
-  -vcp, --variables-csv-path      Path to variables.csv. Used when multiple dataset paths are provided and refer to different folders.
-                                    Not required if variables.txt exists in all -dp directories.
-  -tcp, --tables-csv-path         Path to tables.csv. Required when multiple dataset paths are provided and refer to different folders.
+  -vcp, --variables-csv-path      Path to _variables.csv. Used when multiple dataset paths are provided and refer to different folders.
+                                    Not required if _variables.txt exists in all -dp directories.
+  -dcp, --datasets-csv-path         Path to _datasets.csv. Required when multiple dataset paths are provided and refer to different folders.
   --help                          Show this message and exit.
 ```
 

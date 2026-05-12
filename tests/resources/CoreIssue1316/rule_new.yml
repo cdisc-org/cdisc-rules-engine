@@ -1,0 +1,45 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  Each domain dataset is distinguished by a unique, two-character
+                  code
+                Document: IG v3.4
+                Section: "2.2"
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CORE-EX-ROUTE-001
+              Version: "1"
+            Version: "2.0"
+        Version: "3.4"
+Check:
+  all:
+    - name: variable_name
+      operator: equal_to
+      value: EXROUTE
+    - name: library_variable_ccode
+      operator: non_empty
+
+Core:
+  Id: CORE-EX-ROUTE-001
+  Status: Draft
+  Version: "1"
+Description: test.
+Executability: Fully Executable
+
+Outcome:
+  Message: test.
+  Output Variables:
+    - EXROUTE
+Rule Type: Value Check against Library Metadata
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Record

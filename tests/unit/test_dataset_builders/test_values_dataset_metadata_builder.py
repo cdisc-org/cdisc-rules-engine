@@ -60,8 +60,6 @@ def test_build_with_dataset_metadata(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=rule_processor_mock,
             data_processor=None,
-            dataset_path="ae.xpt",
-            datasets=[],
             dataset_metadata=SDTMDatasetMetadata(
                 name="AE", first_record={"DOMAIN": "AE"}
             ),
@@ -111,6 +109,15 @@ def test_build_split_datasets(mock_build):
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     original_get_metadata = data_service.get_dataset_metadata
 
+    data_service._datasets_metadata = {
+        "DM": SDTMDatasetMetadata(
+            name="DM",
+            label="Demographics",
+            full_path="/path/to/dm.xpt",
+            filename="dm.xpt",
+        )
+    }
+
     metadata_df = pd.DataFrame(
         [
             {
@@ -134,15 +141,13 @@ def test_build_split_datasets(mock_build):
             cache_service=InMemoryCacheService(),
             rule_processor=rule_processor_mock,
             data_processor=None,
-            dataset_path="",
-            datasets=[],
             dataset_metadata=None,
             define_xml_path="",
             standard="",
             standard_version="",
             standard_substandard=None,
         )
-        result = builder.build_split_datasets("dm.xpt")
+        result = builder.build_split_datasets("DM")
 
         assert data_service.get_dataset_metadata.called
         expected_columns = {

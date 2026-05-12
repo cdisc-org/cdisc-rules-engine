@@ -1,33 +1,27 @@
 name: CORE Test Suite Validation
 on:
   workflow_dispatch:
-    inputs:
-      pr_number:
-        description: "PR number to test (for forked repositories) (leave empty for current branch)"
-        required: false
-        type: string
-  pull_request_target:
+  pull_request:
   push:
     branches:
       - main
-
+permissions:
+  contents: read
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - name: Get Engine Changes
         uses: actions/checkout@v6
-        with:
-          ref: ${{ (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
       - name: Get Test Suite Repository
         uses: actions/checkout@v6
         with:
           repository: cdisc-org/CORE_Test_Suite
           path: CORE_Test_Suite
           token: ${{ secrets.ACCESS_TOKEN }}
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -143,7 +137,7 @@ jobs:
         id: usdm_neg
         continue-on-error: true
         run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
+          python core.py validate -s usdm -v 4-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
 
           if [ -f "CORE_Test_Suite/usdm_negative_report.json" ]; then
             echo "usdm_neg_success=true" >> $GITHUB_OUTPUT
@@ -178,7 +172,7 @@ jobs:
         id: usdm_pos
         continue-on-error: true
         run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
+          python core.py validate -s usdm -v 4-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
 
           if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
             echo "usdm_pos_success=true" >> $GITHUB_OUTPUT

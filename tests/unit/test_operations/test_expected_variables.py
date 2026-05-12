@@ -6,7 +6,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import pandas as pd
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
@@ -175,6 +175,9 @@ def test_get_expected_variables(operation_params: OperationParams, dataset_type)
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
+    operation_params.dataframe_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}
+    )
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
@@ -189,21 +192,14 @@ def test_get_expected_variables(operation_params: OperationParams, dataset_type)
     )
     data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
 
-    def mock_cached_method(*args, **kwargs):
-        return SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
-
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
-        side_effect=mock_cached_method,
-    ):
-        operation = ExpectedVariables(
-            operation_params,
-            operation_params.dataframe,
-            cache,
-            data_service,
-            library_metadata,
-        )
-        result = operation.execute()
+    operation = ExpectedVariables(
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
+    )
+    result = operation.execute()
 
     variables = ["STUDYID", "DOMAIN", "AENEW", "TIMING_VAR"]
     expected = pd.Series(

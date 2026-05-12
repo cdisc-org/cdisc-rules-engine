@@ -1251,7 +1251,9 @@ def installed_meddra_dictionaries(request) -> dict:
     """
     cache_service = InMemoryCacheService.get_instance()
     # install dictionaries and save to cache
-    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
+    local_data_service = LocalDataService.get_instance(
+        config=ConfigService(), cache_service=cache_service
+    )
     factory = MedDRATermsFactory(local_data_service)
 
     terms: dict = factory.install_terms(meddra_path)
@@ -1276,9 +1278,6 @@ def operation_params() -> OperationParams:
         dataframe=PandasDataset.from_dict({}),
         target="target",
         domain="domain",
-        dataset_path="dataset_path",
-        directory_path="directory_path",
-        datasets=[],
         standard="standard",
         standard_version="standard_version",
         external_dictionaries=ExternalDictionariesContainer(

@@ -6,4 +6,4 @@ class DatasetNames(BaseOperation):
         """
         Returns a list of the dataset names in the study
         """
-        return list({dataset.name for dataset in self.params.datasets})
+        return list({dataset.name for dataset in self.data_service.get_datasets()})

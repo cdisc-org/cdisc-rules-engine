@@ -11,7 +11,6 @@ def test_get_report_services():
     Unit test for ReportFactory.get_report_services
     """
     factory = ReportFactory(
-        datasets=[],
         results=[],
         elapsed_time=10.5,
         args=MagicMock(

@@ -110,38 +110,40 @@ def _validate_csv_data_paths(
     dataset_paths: list[str], encoding: str = DEFAULT_ENCODING
 ) -> list[str]:
     """
-    Filters dataset paths based on tables.csv content.
+    Filters dataset paths based on _datasets.csv content.
 
-    Raises InvalidCSVFile error if there are no proper tables.csv files in provided path.
+    Raises InvalidCSVFile error if there are no proper _datasets.csv files in provided path.
 
-    Keeps only datasets listed in tables.csv (Filename column).
-    Always excludes tables.csv and variables.csv from result.
+    Keeps only datasets listed in _datasets.csv (Filename column).
+    Always excludes _datasets.csv and _variables.csv from result.
     """
     import pandas as pd
 
     paths = [Path(p) for p in dataset_paths]
 
-    tables_path = list({p for p in paths if p.name.lower() == "tables.csv"})
-    if len(tables_path) > 1:
-        raise InvalidCSVFile("There is more than one tables.csv file in provided path.")
-    elif len(tables_path) == 0:
-        raise InvalidCSVFile("There is no tables.csv file in provided path.")
+    datasets_path = list({p for p in paths if p.name.lower() == "_datasets.csv"})
+    if len(datasets_path) > 1:
+        raise InvalidCSVFile(
+            "There is more than one _datasets.csv file in provided path."
+        )
+    elif len(datasets_path) == 0:
+        raise InvalidCSVFile("There is no _datasets.csv file in provided path.")
     else:
-        tables_path = tables_path[0]
+        datasets_path = datasets_path[0]
 
     dataset_files = [
-        p for p in paths if p.name.lower() not in ("tables.csv", "variables.csv")
+        p for p in paths if p.name.lower() not in ("_datasets.csv", "_variables.csv")
     ]
 
-    tables_df = pd.read_csv(tables_path, encoding=encoding)
+    datasets_df = pd.read_csv(datasets_path, encoding=encoding)
 
-    if "Filename" not in tables_df.columns or "Label" not in tables_df.columns:
+    if "Filename" not in datasets_df.columns or "Label" not in datasets_df.columns:
         raise InvalidCSVFile(
             "Metadata files is malformed. One of [Filename, Label] columns is missing."
         )
 
     allowed_datasets = {
-        Path(str(name)).stem.lower() for name in tables_df["Filename"].dropna()
+        Path(str(name)).stem.lower() for name in datasets_df["Filename"].dropna()
     }
 
     filtered = {
@@ -235,7 +237,7 @@ def _validate_dataset_paths(
                 [
                     str(p)
                     for p in dp_path.parent.glob("*")
-                    if p.is_file() and p.name in {"tables.csv", "variables.csv"}
+                    if p.is_file() and p.name in {"datasets.csv", "variables.csv"}
                 ]
             )
         try:
@@ -382,7 +384,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     default=None,
     type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
     help=(
-        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Specifies the CDISC TIG use case for all custom domains in a validation run"
         "Any of INDH, PROD, NONCLIN, or ANALYSIS."
     ),
     envvar="USE_CASE",
@@ -536,13 +538,13 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     "-vcp",
     "--variables-csv-path",
     required=False,
-    help="Path to variables.csv",
+    help="Path to _variables.csv",
 )
 @click.option(
-    "-tcp",
-    "--tables-csv-path",
+    "-dcp",
+    "--datasets-csv-path",
     required=False,
-    help="Path to tables.csv",
+    help="Path to _datasets.csv",
 )
 @click.pass_context
 def validate(  # noqa
@@ -583,7 +585,7 @@ def validate(  # noqa
     max_errors_per_rule: tuple[int, bool],
     encoding: str,
     variables_csv_path: str,
-    tables_csv_path: str,
+    datasets_csv_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -624,10 +626,8 @@ def validate(  # noqa
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     if standard == "tig":
-        if not substandard or not use_case:
-            logger.error(
-                "Standard 'tig' requires both --substandard and --use-case to be specified."
-            )
+        if not substandard:
+            logger.error("Standard 'tig' requires --substandard to be specified.")
             ctx.exit(2)
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
@@ -692,7 +692,7 @@ def validate(  # noqa
             max_errors_per_rule,
             encoding,
             variables_csv_path,
-            tables_csv_path,
+            datasets_csv_path,
         )
     )
 
@@ -1063,6 +1063,8 @@ def test_validate(filetype):
                     (),
                     None,
                     max_report_errors,
+                    None,
+                    None,
                     None,
                 )
             )

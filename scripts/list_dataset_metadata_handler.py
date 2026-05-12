@@ -51,9 +51,7 @@ def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
         raise ValueError(error_msg)
 
     cache_service = CacheServiceFactory(config).get_service()
-    data_service = DataServiceFactory(config, cache_service).get_service()
-    metadata: List[SDTMDatasetMetadata] = [
-        data_service.get_raw_dataset_metadata(dataset_name=path)
-        for path in dataset_paths
-    ]
-    return DatasetMetadataSerializer(metadata).data
+    factory = DataServiceFactory(config, cache_service)
+    data_service = factory.get_data_service(dataset_paths=dataset_paths)
+    datasets_metadata: List[SDTMDatasetMetadata] = data_service.get_datasets()
+    return DatasetMetadataSerializer(datasets_metadata).data

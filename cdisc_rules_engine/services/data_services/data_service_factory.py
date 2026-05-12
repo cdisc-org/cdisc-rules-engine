@@ -1,6 +1,4 @@
-from typing import Iterable, List, Type
-
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
+from typing import Iterable, Type
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
     ConfigInterface,
@@ -39,7 +37,7 @@ class DataServiceFactory(FactoryInterface):
         max_dataset_size: int = 0,
         encoding: str = None,
         variables_csv_path: str = None,
-        tables_csv_path=None,
+        datasets_csv_path=None,
     ):
         if config.getValue("DATA_SERVICE_TYPE"):
             self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
@@ -56,7 +54,7 @@ class DataServiceFactory(FactoryInterface):
         self.max_dataset_size = max_dataset_size
         self.encoding = encoding
         self.variables_csv_path = variables_csv_path
-        self.tables_csv_path = tables_csv_path
+        self.datasets_csv_path = datasets_csv_path
         self.dataset_size_threshold = self.config.get_dataset_size_threshold()
 
     def get_data_service(
@@ -76,8 +74,15 @@ class DataServiceFactory(FactoryInterface):
             )
         elif DummyDataService.is_valid_data(dataset_paths, encoding=self.encoding):
             """Get dummy data service"""
-            return self.get_dummy_data_service(
-                data=DummyDataService.get_data(dataset_paths, encoding=self.encoding)
+            return self.get_service(
+                "dummy",
+                standard=self.standard,
+                standard_version=self.standard_version,
+                standard_substandard=self.standard_substandard,
+                library_metadata=self.library_metadata,
+                dataset_path=dataset_paths[0],
+                dataset_implementation=self.get_dataset_implementation(),
+                encoding=self.encoding,
             )
         elif ExcelDataService.is_valid_data(dataset_paths):
             """Get Excel file to dataset data service"""
@@ -103,20 +108,8 @@ class DataServiceFactory(FactoryInterface):
                 dataset_implementation=self.get_dataset_implementation(),
                 encoding=self.encoding,
                 variables_csv_path=self.variables_csv_path,
-                tables_csv_path=self.tables_csv_path,
+                datasets_csv_path=self.datasets_csv_path,
             )
-
-    def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
-        return self.get_service(
-            "dummy",
-            data=data,
-            standard=self.standard,
-            standard_version=self.standard_version,
-            standard_substandard=self.standard_substandard,
-            library_metadata=self.library_metadata,
-            dataset_implementation=self.get_dataset_implementation(),
-            encoding=self.encoding,
-        )
 
     def get_dataset_implementation(self):
         """
