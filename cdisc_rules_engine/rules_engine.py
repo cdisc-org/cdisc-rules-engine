@@ -195,9 +195,13 @@ class RulesEngine:
 
     def _truncate_dataset_errors(self, dataset_results, rule, dataset_metadata):
         for result in dataset_results:
-            if result.get("executionStatus") == "success":
+            if result.get("executionStatus") in [
+                ExecutionStatus.ISSUE_REPORTED.value,
+                ExecutionStatus.SUCCESS.value,
+            ]:
                 errors = result.get("errors", [])
                 if len(errors) > self.max_errors_per_rule:
+                    result["original_errors_len"] = len(errors)
                     result["errors"] = errors[: self.max_errors_per_rule]
                     logger.info(
                         f"Rule {rule.get('core_id')}: Truncated {len(errors)} errors to "
