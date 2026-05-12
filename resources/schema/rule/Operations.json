@@ -644,6 +644,9 @@
     "value_is_reference": {
       "type": "boolean"
     },
+    "order_insensitive": {
+      "type": "boolean"
+    },
     "version": {
       "type": "string"
     }

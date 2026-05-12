@@ -267,7 +267,7 @@
       "properties": {
         "operator": {
           "const": "minus",
-          "markdownDescription": "\nComputes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A \u2216 B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.\n\n```yaml\nOperations:\n  - id: $expected_variables\n    operator: expected_variables\n  - id: $dataset_variables\n    operator: get_column_order_from_dataset\n  - id: $expected_minus_dataset\n    name: $expected_variables\n    operator: minus\n    subtract: $dataset_variables\n```\n"
+          "markdownDescription": "\nComputes set difference: elements in `name` that are not in `subtract`. By default a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A \u2216 B) is applied. Optional `order_insensitive` property allows to have the element order to be taken into consideration and only those `name` elements are removed which follow the same order as in `subtract` . Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.\n\n```yaml\nOperations:\n  - id: $expected_variables\n    operator: expected_variables\n  - id: $dataset_variables\n    operator: get_column_order_from_dataset\n  - id: $expected_minus_dataset\n    name: $expected_variables\n    operator: minus\n    subtract: $dataset_variables\n    order_insensitive: false\n```\n"
         }
       },
       "required": ["id", "operator", "name", "subtract"],
@@ -695,6 +695,9 @@
       "type": "string"
     },
     "value_is_reference": {
+      "type": "boolean"
+    },
+    "order_insensitive": {
       "type": "boolean"
     },
     "version": {

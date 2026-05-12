@@ -779,7 +779,7 @@ Operations:
 
 ### minus
 
-Computes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
+Computes set difference: elements in `name` that are not in `subtract`. By default a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B) is applied. Optional `order_insensitive` property allows to have the element order to be taken into consideration and only those `name` elements are removed which follow the same order as in `subtract` . Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
 
 ```yaml
 Operations:
@@ -791,6 +791,7 @@ Operations:
     name: $expected_variables
     operator: minus
     subtract: $dataset_variables
+    order_insensitive: false
 ```
 
 ### label_referenced_variable_metadata
