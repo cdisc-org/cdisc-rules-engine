@@ -226,6 +226,7 @@ class RulesEngine:
                 rule,
                 dataset_metadata,
                 self.standard,
+                self.standard_substandard,
                 self.use_case,
             )
             if is_suitable:
