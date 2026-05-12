@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.cdisc.org">
-    <img src="../resources/assets/CORE_logo_sm.png" alt="CORE Logo">
+    <img src="https://raw.githubusercontent.com/cdisc-org/cdisc-rules-engine/main/resources/assets/CORE_logo_sm.png" alt="CORE Logo">
   </a>
 </p>
 
