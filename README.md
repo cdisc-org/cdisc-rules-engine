@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.cdisc.org">
-  <img src="./CORE_logo_sm.png">
+  <img src="./docs/CORE_logo_sm.png">
   </a>
 </p>
 
