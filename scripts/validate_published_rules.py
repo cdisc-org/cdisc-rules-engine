@@ -284,8 +284,8 @@ def validate_all_rules(
     scripts_dir = os.path.join(rules_root, ".github", "scripts")
 
     if not os.path.isdir(published_dir):
-        print(f"WARNING: Published/ not found under {rules_root}", file=sys.stderr)
-        return False
+        print(f"ERROR: Published/ not found under {rules_root}", file=sys.stderr)
+        return True
 
     rule_ids = sorted(
         entry
@@ -294,8 +294,8 @@ def validate_all_rules(
     )
 
     if not rule_ids:
-        print("WARNING: No rule directories found under Published/", file=sys.stderr)
-        return False
+        print("ERROR: No rule directories found under Published/", file=sys.stderr)
+        return True
 
     print(f"Found {len(rule_ids)} rule(s) under Published/")
 

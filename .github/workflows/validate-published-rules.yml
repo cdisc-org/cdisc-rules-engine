@@ -45,10 +45,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: cdisc-org/cdisc-open-rules
-          ref: ${{ inputs.rules_ref || 'rules_2' }}
+          ref: ${{ inputs.rules_ref }}
           path: open-rules
-          # If cdisc-open-rules is private, add a PAT secret:
-          # token: ${{ secrets.CDISC_OPEN_RULES_TOKEN }}
 
       # -----------------------------------------------------------------------
       # 2b. Debug — verify directory layout
