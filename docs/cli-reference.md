@@ -95,7 +95,6 @@ python core.py validate --help
 | `-dep, --dotenv-path`              | Path to `.env` file for environment variables.                                    |
 | `-l, --log-level`                  | Log verbosity: `debug`, `info`, `warn`, `error`, `critical`, `disabled`.          |
 | `-vx, --validate-xml`              | XML validation toggle (default: enabled). Pass a value other than `y` to disable. |
-| `-vo, --verbose-output`            | Print each rule as it completes.                                                  |
 | `-p, --progress`                   | Progress display: `verbose_output`, `disabled`, `percents`, or `bar` (default).   |
 | `-jcf, --jsonata-custom-functions` | Variable name + path to directory of custom JSONata functions. Repeatable.        |
 | `--help`                           | Show the help message and exit.                                                   |
