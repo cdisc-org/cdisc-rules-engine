@@ -25,15 +25,15 @@ python core.py validate --help
 
 ### Dataset Input
 
-| Flag                           | Description                                                                                                                    |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `-d, --data TEXT`              | Path to directory containing dataset files. Only the last value is used if specified multiple times.                           |
-| `-dp, --dataset-path TEXT`     | Absolute path to a single dataset file. Can be specified multiple times.                                                       |
-| `-dxp, --define-xml-path TEXT` | Path to Define-XML. Also via `DEFINE_XML` env var.                                                                             |
-| `-ft, --filetype TEXT`         | File extension filter applied to the `-d` directory (e.g. `xpt`). Has higher priority than --dataset-path parameter            |
-| `-e, --encoding TEXT`          | File encoding for reading datasets (default: `utf-8`). Common values: `cp1252`, `latin-1`, `utf-16`.                           |
-| `-vcp, --variables-csv-path`   | Path to `_variables.csv` when using multiple `-dp` paths across different folders.                                             |
-| `-dcp, --datasets-csv-path`    | Path to `_datasets.csv`. Required when multiple `-dp` paths refer to different folders.                                        |
+| Flag                           | Description                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `-d, --data TEXT`              | Path to directory containing dataset files. Only the last value is used if specified multiple times.                |
+| `-dp, --dataset-path TEXT`     | Absolute path to a single dataset file. Can be specified multiple times.                                            |
+| `-dxp, --define-xml-path TEXT` | Path to Define-XML. Also via `DEFINE_XML` env var.                                                                  |
+| `-ft, --filetype TEXT`         | File extension filter applied to the `-d` directory (e.g. `xpt`). Has higher priority than --dataset-path parameter |
+| `-e, --encoding TEXT`          | File encoding for reading datasets (default: `utf-8`). Common values: `cp1252`, `latin-1`, `utf-16`.                |
+| `-vcp, --variables-csv-path`   | Path to `_variables.csv` when using multiple `-dp` paths across different folders.                                  |
+| `-dcp, --datasets-csv-path`    | Path to `_datasets.csv`. Required when multiple `-dp` paths refer to different folders.                             |
 
 ### Rules Selection
 
@@ -243,7 +243,7 @@ python core.py list-rules --custom-rules -s custom_standard -v 1-0
 | `-s, --standard TEXT`     | Filter by standard (e.g. `sdtmig`, `tig`).                            |
 | `-v, --version TEXT`      | Filter by standard version (e.g. `3-4`).                              |
 | `-ss, --substandard TEXT` | Filter by substandard for integrated standards (e.g. `SDTM`, `ADaM`). |
-| `-r, --rule-id TEXT`        | List specific rule(s) by CORE ID. Repeatable.                         |
+| `-r, --rule-id TEXT`      | List specific rule(s) by CORE ID. Repeatable.                         |
 | `--custom-rules`          | List custom rules instead of published CDISC rules.                   |
 | `-c, --cache-path TEXT`   | Relative path to cache.                                               |
 | `--help`                  | Show the help message and exit.                                       |

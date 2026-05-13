@@ -152,7 +152,7 @@ CORE supports the following input formats:
 | **JSON**   | Dataset-JSON ≥ v1.1 (CDISC standard) |
 | **NDJSON** | Newline Delimited JSON               |
 | **XLSX**   | Microsoft Excel                      |
-|  **CSV**   | CORE Comma Separated Value Test Data |
+| **CSV**    | CORE Comma Separated Value Test Data |
 
 > **Note:** See [here](https://github.com/cdisc-org/cdisc-open-rules/blob/main/README.md#rule-authoring-and-test-data-creation-process) for a description of CSV formatting
 > **Note:** Define-XML files must be provided via `--define-xml-path` (`-dxp`), not through the dataset directory.
