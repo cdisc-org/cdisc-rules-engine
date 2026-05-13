@@ -66,8 +66,8 @@ If you're still not seeing expected results after checking the above, post in th
 | ----------------- | --------------------------------------------------------------------------------- |
 | `SUCCESS`         | Rule ran; no issues found.                                                        |
 | `SKIPPED`         | Rule did not run (column/domain not found, schema validation off, outside scope). |
-| `ISSUE_REPORTED`  | Rule ran; issues were found.                                                      |
-| `EXECUTION_ERROR` | Rule failed unexpectedly. Check the Issue Details tab for details.                |
+| `ISSUE REPORTED`  | Rule ran; issues were found.                                                      |
+| `EXECUTION ERROR` | Rule failed unexpectedly. Check the Issue Details tab for details.                |
 
 ### My dataset fails to load / wrong encoding
 

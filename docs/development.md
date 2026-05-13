@@ -64,7 +64,7 @@ python -m pytest tests
 
 ## Creating an Executable
 
-Pre-built executables are available on the [Releases page](https://github.com/cdisc-org/cdisc-rules-engine/releases). If you need to build your own, see [README_Build_Executable.md](../README_Build_Executable.md) in the repository root.
+Pre-built executables are available on the [Releases page](https://github.com/cdisc-org/cdisc-rules-engine/releases). If you need to build your own, see [README_Build_Executable.md](./build_executable.md) in the repository root.
 
 For reference, the PyInstaller commands are:
 
