@@ -83,6 +83,37 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
     def get_parent_path(self, path_list: list):
         return list(path_list)[0 : (-1 - int(isinstance(path_list[-1], int)))]
 
+    def _get_ancestor_instance_type(self, path_list: list) -> str:
+        """Walk up the path to find the nearest ancestor's instanceType."""
+        current_path = list(path_list)
+        while current_path:
+            current_path = current_path[:-1]
+            try:
+                ancestor = self.get_instance_by_path(
+                    self.data_service.json, current_path
+                )
+                if isinstance(ancestor, dict) and "instanceType" in ancestor:
+                    return ancestor["instanceType"]
+            except (KeyError, IndexError, TypeError):
+                pass
+        return ""
+
+    def _get_schema_class_name(self, error: exceptions.ValidationError) -> str:
+        """Extract class name from error's schema title or $ref when instanceType is unavailable.
+
+        Only uses the schema ``title`` field or the last segment of a ``$ref`` —
+        avoids inspecting ``absolute_schema_path`` which can return JSON-Schema
+        keywords (e.g. ``"type"``, ``"items"``) as false positives.
+        """
+        schema = error.schema if error.schema else {}
+        # Prefer explicit title (e.g. "AliasCode", "StudyVersion")
+        if title := schema.get("title", ""):
+            return title
+        # Fall back to the class name embedded in a $ref
+        if ref := schema.get("$ref", ""):
+            return ref.split("/")[-1]
+        return ""
+
     def parse_error(
         self,
         error: exceptions.ValidationError,
@@ -95,8 +126,9 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             if error.validator in ["required", "additionalProperties"]
             else (
                 "{}[{}]".format(error.absolute_path[-2], error.absolute_path[-1])
-                if isinstance(error.absolute_path[-1], int)
-                else error.absolute_path[-1]
+                if len(error.absolute_path) >= 2
+                and isinstance(error.absolute_path[-1], int)
+                else (error.absolute_path[-1] if error.absolute_path else "")
             )
         )
         errlist["json_path"].append(error.json_path)
@@ -110,6 +142,17 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             and str(error.instance) in error.message
             else error.message
         )
+        if errctx:
+            instance_type = (
+                errctx.get("instanceType")
+                or self._get_schema_class_name(error)
+                or self._get_ancestor_instance_type(errpath)
+            )
+        else:
+            instance_type = self._get_schema_class_name(
+                error
+            ) or self._get_ancestor_instance_type(errpath)
+        errlist["dataset"].append(instance_type)
         errlist["dataset"].append(errctx.get("instanceType", "") if errctx else "")
         errlist["id"].append(errctx.get("id", "") if errctx else "")
         errlist["_path"].append("/" + "/".join(map(str, errpath)))
