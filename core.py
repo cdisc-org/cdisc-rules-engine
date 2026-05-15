@@ -384,7 +384,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     default=None,
     type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
     help=(
-        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Specifies the CDISC TIG use case for all custom domains in a validation run"
         "Any of INDH, PROD, NONCLIN, or ANALYSIS."
     ),
     envvar="USE_CASE",
@@ -626,10 +626,8 @@ def validate(  # noqa
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     if standard == "tig":
-        if not substandard or not use_case:
-            logger.error(
-                "Standard 'tig' requires both --substandard and --use-case to be specified."
-            )
+        if not substandard:
+            logger.error("Standard 'tig' requires --substandard to be specified.")
             ctx.exit(2)
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(

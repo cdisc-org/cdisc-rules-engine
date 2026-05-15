@@ -25,6 +25,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -47,6 +48,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
+from cdisc_rules_engine.utilities.sdtm_utilities import is_custom_domain
 
 
 class RuleProcessor:
@@ -267,15 +269,43 @@ class RuleProcessor:
         self,
         rule: dict,
         standard: str,
-        use_case: str,
+        standard_substandard: str,
+        dataset_metadata,
+        custom_domain_use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
             return True
-        use_cases = rule.get("use_case") or []
-        if not use_cases:
+        use_cases = (
+            [uc.strip() for uc in rule.get("use_case", "").split(",")]
+            if rule.get("use_case")
+            else []
+        )
+        substandard = standard_substandard.upper()
+        if substandard not in USE_CASE_DOMAINS:
+            return False
+        domain_to_check = dataset_metadata.domain
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain_to_check = dataset_metadata.rdomain
+        # Handle ADaM datasets with AD prefix
+        if substandard == "ADAM" and domain_to_check.startswith("AD"):
+            return "ANALYSIS" in use_cases
+
+        # Standard domain check
+        allowed_domains = set()
+        for use in use_cases:
+            if use in USE_CASE_DOMAINS[substandard]:
+                allowed_domains.update(USE_CASE_DOMAINS[substandard][use])
+        if domain_to_check in allowed_domains:
             return True
-        use_cases = [uc.strip() for uc in use_cases.split(",")]
-        return use_case in use_cases
+
+        domain_is_custom = is_custom_domain(self.library_metadata, domain_to_check)
+        if not domain_is_custom:
+            return False
+        if not custom_domain_use_case:
+            raise ValueError(
+                f"Custom domain '{domain_to_check}' requires a use case -uc in validation command but none was provided."
+            )
+        return custom_domain_use_case in use_cases
 
     @classmethod
     def rule_applies_to_entity(
@@ -399,6 +429,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 term_value=operation.get("term_value"),
                 value_is_reference=operation.get("value_is_reference", False),
+                order_insensitive=operation.get("order_insensitive", True),
             )
             try:
                 # execute operation
@@ -635,7 +666,8 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
-        standard,
+        standard: str,
+        substandard: str,
         use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
@@ -653,6 +685,8 @@ class RuleProcessor:
         if not self.rule_applies_to_use_case(
             rule,
             standard,
+            substandard,
+            dataset_metadata,
             use_case,
         ):
             reason = (
