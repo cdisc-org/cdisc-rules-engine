@@ -153,7 +153,6 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
                 error
             ) or self._get_ancestor_instance_type(errpath)
         errlist["dataset"].append(instance_type)
-        errlist["dataset"].append(errctx.get("instanceType", "") if errctx else "")
         errlist["id"].append(errctx.get("id", "") if errctx else "")
         errlist["_path"].append("/" + "/".join(map(str, errpath)))
 
