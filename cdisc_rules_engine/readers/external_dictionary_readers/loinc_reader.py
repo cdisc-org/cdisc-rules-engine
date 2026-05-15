@@ -15,14 +15,18 @@ class LoincReader:
         self.dictionary_path = dictionary_path
 
     def _extract_version_metadata(self) -> LoincVersionMetadata:
-        """Extract metadata from the LOINC directory name."""
+        """Extract metadata from the LOINC directory."""
         base_dir = os.path.basename(os.path.normpath(self.dictionary_path))
 
-        try:
-            version = base_dir.split("_")[1]
-        except IndexError:
-            version = "unknown"
-
+        if "_" in base_dir:
+            version = base_dir.split("_")[-1]
+        else:
+            for file in os.listdir(self.dictionary_path):
+                if file.startswith("Loinc_") and file.endswith("_DifferenceReport.pdf"):
+                    version = file.split("_")[1]
+                    break
+            else:
+                version = "unknown"
         return LoincVersionMetadata(version=version)
 
     def process_data(self, metadata: LoincVersionMetadata = None) -> pd.DataFrame:
