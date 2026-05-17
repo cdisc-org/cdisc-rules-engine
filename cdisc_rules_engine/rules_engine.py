@@ -149,7 +149,9 @@ class RulesEngine:
                     )
                     break
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
-                    include_split = rule["domains"].get("include_split_datasets", False)
+                    include_split = (rule["domains"] or {}).get(
+                        "include_split_datasets", False
+                    )
                     if not include_split:
                         continue  # handling split datasets
                 dataset_results = self.validate_single_dataset(
