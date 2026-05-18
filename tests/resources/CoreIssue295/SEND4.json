@@ -21,7 +21,7 @@
   "Description": "Raise an error when the data type in the define.xml does not correspond to the data type in the dataset",
   "Outcome": {
     "Message": "Variable datatype in the define.xml does not correspond to the data type in the dataset",
-    "Output_Variables": [
+    "Output Variables": [
       "variable_name"
     ]
   },
@@ -45,7 +45,7 @@
                   "Cited_Guidance": "The define.xml specification includes seven distinct attributes to describe variable-level metadata: ..."
                 }
               ],
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "SEND4",
                 "Version": "1"
               }
@@ -67,5 +67,5 @@
       ]
     }
   },
-  "Rule_Type": "Variable Metadata Check against Define XML"
+  "Rule Type": "Variable Metadata Check against Define XML"
 }

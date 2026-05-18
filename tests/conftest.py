@@ -938,14 +938,14 @@ def mock_validation_results() -> list[RuleValidationResult]:
                         "Standards": [
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID3"}},
                                 ]
                             },
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID1"}},
                                 ]
                             },
                         ],
@@ -955,8 +955,8 @@ def mock_validation_results() -> list[RuleValidationResult]:
                         "Standards": [
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
-                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                    {"Rule Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule Identifier": {"Id": "FDARuleID2"}},
                                 ]
                             }
                         ],
@@ -998,14 +998,14 @@ def mock_validation_results() -> list[RuleValidationResult]:
                         "Standards": [
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID3"}},
                                 ]
                             },
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
-                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule Identifier": {"Id": "CDISCRuleID1"}},
                                 ]
                             },
                         ],
@@ -1015,8 +1015,8 @@ def mock_validation_results() -> list[RuleValidationResult]:
                         "Standards": [
                             {
                                 "References": [
-                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
-                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                    {"Rule Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule Identifier": {"Id": "FDARuleID2"}},
                                 ]
                             }
                         ],

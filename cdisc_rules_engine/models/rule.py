@@ -38,7 +38,6 @@ class Rule:
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
-            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
@@ -52,12 +51,12 @@ class Rule:
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
                 "entities": rule_metadata.get("Scope", {}).get("Entities"),
-                "rule_type": rule_metadata.get("Rule_Type"),
+                "rule_type": rule_metadata.get("Rule Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
-                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
+                "use_case": rule_metadata.get("Scope", {}).get("Use Case"),
                 "data_structures": rule_metadata.get("Scope", {}).get(
-                    "Data_Structures"
+                    "Data Structures"
                 ),
                 "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
@@ -65,32 +64,21 @@ class Rule:
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
-            if "Match_Datasets" in rule_metadata:
+            if "Match Datasets" in rule_metadata:
                 executable_rule["datasets"] = cls.parse_datasets(
-                    rule_metadata.get("Match_Datasets")
+                    rule_metadata.get("Match Datasets")
                 )
-            if "Output_Variables" in rule_metadata.get("Outcome", {}):
+            if "Output Variables" in rule_metadata.get("Outcome", {}):
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
-                    "Output_Variables"
+                    "Output Variables"
                 ]
-            if "Grouping_Variables" in rule_metadata:
+            if "Grouping Variables" in rule_metadata:
                 executable_rule["grouping_variables"] = rule_metadata.get(
-                    "Grouping_Variables"
+                    "Grouping Variables"
                 )
             return executable_rule
         else:
             return rule_metadata
-
-    @classmethod
-    def spaces_to_underscores(cls, obj):
-        if isinstance(obj, dict):
-            return {
-                key.replace(" ", "_"): cls.spaces_to_underscores(value)
-                for key, value in obj.items()
-            }
-        if isinstance(obj, list):
-            return [cls.spaces_to_underscores(item) for item in obj]
-        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
