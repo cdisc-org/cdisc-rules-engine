@@ -19,10 +19,8 @@ class ValueCheckDatasetMetadataDatasetBuilder(ValuesDatasetBuilder):
         - is_ap - Whether the domain is an AP domain
         - ap_suffix - The 2-character suffix from AP domains
         """
-        size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
         dataset_metadata = self.data_service.get_dataset_metadata(
             dataset_name=self.dataset_metadata.name,
-            size_unit=size_unit,
         )
         dataset_metadata = dataset_metadata.to_dict(orient="records")[0]
         data_contents_long_df = super().build()

@@ -224,11 +224,14 @@ class SDTMReportData(BaseReportData):
                     result.get("errors")
                     and result.get("executionStatus") != ExecutionStatus.SKIPPED.value
                 ):
+                    issues = result.get("original_errors_len") or len(
+                        result.get("errors", [])
+                    )
                     summary_item = {
                         "dataset": dataset,
                         "core_id": validation_result.id,
                         "message": result.get("message"),
-                        "issues": len(result.get("errors")),
+                        "issues": issues,
                     }
                     summary_data.append(summary_item)
 

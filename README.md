@@ -159,7 +159,9 @@ This will show the list of validation options.
   -ss, --substandard TEXT         Substandard to validate against. SUBSTANDARD environment variable can be used to pass value.
                                   "SDTM", "SEND", "ADaM", or "CDASH"
                                   [required for TIG]
-  -uc, --use-case TEXT            Use Case for TIG Validation
+  -uc, --use-case TEXT            Use Case for TIG Custom Domains
+                                  When performing a TIG validation with custom domain(s), this must be given to identify the custom domains' use case
+                                  in order to determine what rules to validate against them
                                   "INDH", "PROD", "NONCLIN", or "ANALYSIS"
                                   [required for TIG]
                                   USE_CASE environment variable can be used to pass value.

@@ -191,7 +191,7 @@
       "description": "Can reference either a dataset variable name or an operation result"
     }
   },
-  "$id": "https://cdisc.org/CORE-base.json",
+  "$id": "https://raw.githubusercontent.com/cdisc-org/cdisc-rules-engine/refs/heads/main/resources/schema/rule-merged/CORE-base.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "markdownDescription": "Validation schema CDISC Rules 1.0",

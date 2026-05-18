@@ -26,6 +26,11 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
+@pytest.fixture(autouse=True)
+def clear_lru_cache():
+    RulesEngine(standard="sdtmig").cache.clear_all()
+
+
 def test_get_schema():
     schema = RulesEngine().get_schema()
     assert "variables" in schema
@@ -1075,9 +1080,15 @@ def test_rule_with_domain_prefix_replacement(
                 {
                     "domain": "AE",
                     "dataset": "AE",
-                    "errors": [],
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "message": None,
+                    "errors": [
+                        {
+                            "dataset": "AE",
+                            "error": "Empty dataset",
+                            "message": "Dataset skipped - Dataset is empty after preprocessing and operations. rule id=TEST1, dataset=AE",
+                        }
+                    ],
+                    "executionStatus": ExecutionStatus.SKIPPED.value,
+                    "message": "Dataset skipped - Dataset is empty after preprocessing and operations. rule id=TEST1, dataset=AE",
                     "variables": [],
                 }
             ],

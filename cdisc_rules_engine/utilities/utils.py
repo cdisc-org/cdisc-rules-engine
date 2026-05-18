@@ -38,19 +38,6 @@ def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) ->
     )
 
 
-def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
-    """
-    Converts file size from bytes to any of the following units:
-    KB, MB, GB
-    """
-    unit_to_denominator_map: dict = {
-        "KB": 1024,
-        "MB": 1024**2,
-        "GB": 1024**3,
-    }
-    return size_in_bytes / unit_to_denominator_map[desired_unit]
-
-
 def get_execution_status(results):
     """
     If any result has an execution error, return execution error

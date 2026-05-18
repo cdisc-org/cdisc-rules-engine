@@ -153,7 +153,9 @@ class RulesEngine:
                     )
                     break
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
-                    include_split = rule["domains"].get("include_split_datasets", False)
+                    include_split = (rule["domains"] or {}).get(
+                        "include_split_datasets", False
+                    )
                     if not include_split:
                         continue  # handling split datasets
                 dataset_results = self.validate_single_dataset(
@@ -199,9 +201,13 @@ class RulesEngine:
 
     def _truncate_dataset_errors(self, dataset_results, rule, dataset_metadata):
         for result in dataset_results:
-            if result.get("executionStatus") == "success":
+            if result.get("executionStatus") in [
+                ExecutionStatus.ISSUE_REPORTED.value,
+                ExecutionStatus.SUCCESS.value,
+            ]:
                 errors = result.get("errors", [])
                 if len(errors) > self.max_errors_per_rule:
+                    result["original_errors_len"] = len(errors)
                     result["errors"] = errors[: self.max_errors_per_rule]
                     logger.info(
                         f"Rule {rule.get('core_id')}: Truncated {len(errors)} errors to "
@@ -226,6 +232,7 @@ class RulesEngine:
                 rule,
                 dataset_metadata,
                 self.standard,
+                self.standard_substandard,
                 self.use_case,
             )
             if is_suitable:
