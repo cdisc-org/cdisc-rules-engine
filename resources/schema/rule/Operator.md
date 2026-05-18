@@ -1127,7 +1127,22 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in name are ordered according to the values specified by value in ascending/descending order, grouped by the values in within. Each value entry requires a variable name, a sort_order of asc or desc, and an optional null_position of first or last (defaults to last) which controls where null/empty comparator values are placed in the expected ordering. Within accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that overlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as their order cannot be inferred.
+True if the values in name are ordered according to the values specified by value
+in ascending/descending order, grouped by the values in within. Each value entry
+requires a variable name, a sort_order of asc or desc, and an optional
+null_position of first or last (defaults to last) which controls where null/empty
+comparator values are placed in the expected ordering. Within accepts either a
+single column or an ordered list of columns. Columns can be either number or Char
+Dates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that
+overlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as
+their order cannot be inferred.
+
+Optionally supports a `regex` parameter that extracts a portion of the target
+value for sorting. The regex must contain at least one capturing group. The first
+captured group is extracted and converted to numeric if possible, allowing proper
+sorting of sequence numbers (e.g., "MIDS1", "MIDS2", ..., "MIDS10" with regex
+`.*?(\\d+)$`). This is particularly useful for variables that end with sequence
+numbers that may or may not be zero-padded.
 
 ```yaml
 Check:
@@ -1141,6 +1156,22 @@ Check:
         - name: --STDTC
           sort_order: asc
           null_position: last
+```
+
+Example with regex for extracting sequence numbers:
+
+```yaml
+Check:
+  all:
+    - name: MIDS
+      operator: target_is_sorted_by
+      regex: ".*?(\\d+)$" # Extract trailing digits, convert to numeric
+      value:
+        - name: SMSTDTC
+          sort_order: asc
+      within:
+        - USUBJID
+        - MIDSTYPE
 ```
 
 ### target_is_not_sorted_by
