@@ -38,7 +38,8 @@ class SnomedReader:
                 )
         raise FileNotFoundError(f"Could not find valid SNOMED RF files in {self.dictionary_path}")
 
-    def _load_snomed_file(self, pattern: str, tag: str) -> pd.DataFrame:
+    def _load_snomed_file(self, tag: str, metadata: SnomedVersionMetadata) -> pd.DataFrame:
+        pattern = f"sct{metadata.edition}_{tag}_Full-{metadata.language}_{metadata.package}_{metadata.version}.txt"
         for file_path in self._get_all_files():
             if re.match(pattern, file_path.name):
                 df = pd.read_csv(file_path, sep="\t", usecols=["id", "term"], dtype=str, encoding="utf-8")
@@ -52,12 +53,7 @@ class SnomedReader:
         if not metadata:
             metadata = self._extract_version_metadata()
 
-        base_pattern = (
-            f"sct{metadata.edition}_(Description|TextDefinition)_"
-            f"Full-{metadata.language}_{metadata.package}_{metadata.version}.txt"
-        )
-
-        desc_df = self._load_snomed_file(base_pattern.format("Description"), "Description")
-        text_df = self._load_snomed_file(base_pattern.format("TextDefinition"), "TextDefinition")
+        desc_df = self._load_snomed_file("Description", metadata)
+        text_df = self._load_snomed_file("TextDefinition", metadata)
 
         return pd.concat([desc_df, text_df], ignore_index=True)
