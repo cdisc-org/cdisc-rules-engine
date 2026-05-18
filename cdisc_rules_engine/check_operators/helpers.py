@@ -56,7 +56,7 @@ class DatePrecision(IntEnum):
 
 
 def is_valid_date(date_string: str) -> bool:
-    if date_string is None:
+    if date_string is None or not isinstance(date_string, str):
         return False
     try:
         isoparse(date_string)
