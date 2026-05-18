@@ -52,7 +52,6 @@ def test_build_with_dataset_metadata(mock_build):
 
     rule_mock = MagicMock()
     rule_processor_mock = MagicMock()
-    rule_processor_mock.get_size_unit_from_rule.return_value = "KB"
     try:
         builder = ValueCheckDatasetMetadataDatasetBuilder(
             rule=rule_mock,
@@ -133,7 +132,6 @@ def test_build_split_datasets(mock_build):
 
     rule_mock = MagicMock()
     rule_processor_mock = MagicMock()
-    rule_processor_mock.get_size_unit_from_rule.return_value = "KB"
     try:
         builder = ValueCheckDatasetMetadataDatasetBuilder(
             rule=rule_mock,
