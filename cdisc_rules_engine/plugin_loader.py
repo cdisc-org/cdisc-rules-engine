@@ -40,19 +40,6 @@ class PluginLoader:
             group_plugins: EntryPoints = entry_points().select(group=group_name)
             self.__register_group_plugins(factory_class, group_plugins)
 
-    @classmethod
-    def register_group_factory(
-        cls, group_name: str, factory_class: Type[FactoryInterface]
-    ):
-        """
-        Registers new plugin group and factory.
-        """
-        if not issubclass(factory_class, FactoryInterface):
-            raise ValueError(
-                f"Given class {factory_class} must implement FactoryInterface"
-            )
-        cls.__group_factory_map[group_name] = factory_class
-
     def __register_group_plugins(
         self, factory_class: Type[FactoryInterface], group_plugins: EntryPoints
     ):

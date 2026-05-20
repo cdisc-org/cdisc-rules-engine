@@ -405,10 +405,6 @@ class DaskDataset(PandasDataset):
         result = self._data.map_partitions(partition_isin)
         return result
 
-    def filter_by_value(self, column, values):
-        mask = self._data[column].isin(values)
-        return self.__class__(self._data[mask])
-
     def max(self, *args, **kwargs):
         result = self._data.max(*args, **kwargs)
         return self.__class__(result)

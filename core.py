@@ -48,7 +48,7 @@ DEFAULT_CACHE_PATH = os.path.join(
 )
 
 
-def validate_encoding(ctx, param, value):
+def validate_encoding(_ctx, _param, value):
     if value is None:
         return DEFAULT_ENCODING
     try:
@@ -275,7 +275,7 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
-def load_custom_dotenv(ctx, param, value):
+def load_custom_dotenv(_ctx, _param, value):
     if not value:
         return value
     if os.path.exists(value):
@@ -283,7 +283,7 @@ def load_custom_dotenv(ctx, param, value):
     return value
 
 
-def load_custom_dotenv_from_data_options(ctx, param, value):
+def load_custom_dotenv_from_data_options(_ctx, _param, value):
     if not value:
         return value
     if isinstance(value, str):
