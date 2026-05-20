@@ -600,6 +600,13 @@ def validate(  # noqa
     load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
+    if define_xml_path and dotenv_path and os.getenv("DEFINE_XML"):
+        dxp = Path(define_xml_path)
+        if not dxp.is_absolute() and dxp.parent == Path("."):
+            resolved = Path(dotenv_path).parent / define_xml_path
+            if resolved.is_file():
+                define_xml_path = str(resolved)
+
     if not custom_standard:
         standard = standard.lower()
         supported_standards = StandardTypes.values()
