@@ -63,7 +63,7 @@ class DummyDataService(BaseDataService):
         dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
         if dataset is not None:
             df: pd.DataFrame = dataset.data
-            df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
+            df = df.map(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
             result = PandasDataset(df)
             return result
         else:
