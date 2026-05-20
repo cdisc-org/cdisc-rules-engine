@@ -385,7 +385,7 @@ core.exe validate -rest -of -config -commands
 
 ---
 
-**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See env.example to see what the CLI .env file should look like
+**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See .env.example to see what the CLI .env file should look like
 
 ### Updating the Cache (`update-cache`)
 
