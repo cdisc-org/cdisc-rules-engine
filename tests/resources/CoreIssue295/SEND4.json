@@ -21,9 +21,7 @@
   "Description": "Raise an error when the data type in the define.xml does not correspond to the data type in the dataset",
   "Outcome": {
     "Message": "Variable datatype in the define.xml does not correspond to the data type in the dataset",
-    "Output Variables": [
-      "variable_name"
-    ]
+    "Output Variables": ["variable_name"]
   },
   "Sensitivity": "Record",
   "Executability": "Fully Executable",
@@ -57,14 +55,10 @@
   ],
   "Scope": {
     "Classes": {
-      "Include": [
-        "ALL"
-      ]
+      "Include": ["ALL"]
     },
     "Domains": {
-      "Include": [
-        "ALL"
-      ]
+      "Include": ["ALL"]
     }
   },
   "Rule Type": "Variable Metadata Check against Define XML"

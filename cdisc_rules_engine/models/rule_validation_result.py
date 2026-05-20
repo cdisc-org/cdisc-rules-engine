@@ -45,7 +45,7 @@ class RuleValidationResult(RepresentationInterface):
         return instance
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
-        ids = (
+        ids = {
             (
                 reference.get("Rule Identifier")
                 or reference.get("Rule_Identifier")
@@ -55,7 +55,7 @@ class RuleValidationResult(RepresentationInterface):
             for standard in authority.get("Standards", [])
             for reference in standard.get("References", [])
             if authority.get("Organization") == org
-        )
+        }
         return ", ".join(sorted(id_ for id_ in ids if id_ is not None))
 
     def to_representation(self) -> dict:
