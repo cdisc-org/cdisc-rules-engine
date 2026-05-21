@@ -78,7 +78,7 @@ def _parse_case_result(line: str) -> dict:
         "Number": str(d["num"]),
         "Execution": CHECKMARK if exec_ok else CROSS,
         "Expected": str(d.get("expected", "")),
-        "Got": str(d.get("got", "")),
+        "Actual": str(d.get("actual", "")),
         "Match": CHECKMARK if match_ok else CROSS,
         # Private fields used when generating failure detail
         "_exec_ok": exec_ok,
@@ -180,7 +180,7 @@ def _aggregate_row(
         "Number": "\u2014",
         "Execution": CHECKMARK if exec_ok else CROSS,
         "Expected": "\u2014",
-        "Got": "\u2014",
+        "Actual": "\u2014",
         "Match": "\u2014",
     }
     if exec_ok:
