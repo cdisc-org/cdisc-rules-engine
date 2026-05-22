@@ -81,9 +81,17 @@ class DaskDataset(PandasDataset):
             array_values = da.from_array(value, chunks=tuple(chunks))
             self._data[key] = array_values
         elif isinstance(value, pd.Series):
-            chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
-            array_values = da.from_array(value.values, chunks=tuple(chunks))
-            self._data[key] = array_values
+            if not isinstance(value.values, np.ndarray):
+                # Extension array (e.g. StringDtype): da.from_array() cannot handle it;
+                # materialize to pandas, assign positionally, and re-partition.
+                npartitions = self._data.npartitions
+                pandas_df = self._data.compute()
+                pandas_df[key] = value.values
+                self._data = dd.from_pandas(pandas_df, npartitions=npartitions)
+            else:
+                chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
+                array_values = da.from_array(value.values, chunks=tuple(chunks))
+                self._data[key] = array_values
         elif isinstance(value, dd.DataFrame):
             for column in value:
                 self._data[column] = value[column]
