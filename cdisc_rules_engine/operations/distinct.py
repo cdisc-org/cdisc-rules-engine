@@ -60,12 +60,20 @@ class Distinct(BaseOperation):
                     self._unique_values_for_column
                 )
             else:
+                # Dask path: groupby-apply produces only the aggregated result,
+                # matching the shape expected by _handle_grouped_result.
+                grouping = self.params.grouping
+                target = self.params.target
                 result = (
-                    grouped.data[self.params.target]
-                    .unique()
-                    .rename({self.params.target: self.params.operation_id})
+                    result.data.groupby(grouping)[target]
+                    .apply(
+                        lambda col: set(col.dropna().unique()),
+                        meta=pd.Series(dtype=object),
+                    )
+                    .compute()
+                    .to_frame(name=target)
+                    .reset_index()
                 )
-                result = result.apply(set).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
