@@ -229,11 +229,9 @@ class DatasetInterface(ABC):
     def fillna(
         self,
         value=None,
-        method=None,
         axis=None,
         inplace=False,
         limit=None,
-        downcast=None,
     ):
         """
         Fill NA/NaN values using the specified method.
