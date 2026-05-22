@@ -1,4 +1,5 @@
 import pandas as pd
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -19,6 +20,8 @@ class Distinct(BaseOperation):
         result = self.params.dataframe
         if self.params.filter:
             result = self._filter_data(result)
+        if hasattr(result.data, 'compute'):
+            result = PandasDataset(result.data.compute())
         value_is_reference = getattr(self.params, "value_is_reference", False)
         if not self.params.grouping:
             if value_is_reference:
@@ -57,17 +60,10 @@ class Distinct(BaseOperation):
                     )
 
                 result = grouped.apply(get_existing_column_names).reset_index()
-            elif isinstance(result.data, pd.DataFrame):
+            else:
                 result = grouped.data[self.params.target].agg(
                     self._unique_values_for_column
                 )
-            else:
-                result = (
-                    grouped.data[self.params.target]
-                    .unique()
-                    .rename({self.params.target: self.params.operation_id})
-                )
-                result = result.apply(list).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
