@@ -62,12 +62,28 @@ class Distinct(BaseOperation):
                     self._unique_values_for_column
                 )
             else:
-                result = (
-                    grouped.data[self.params.target]
-                    .unique()
-                    .rename({self.params.target: self.params.operation_id})
-                )
-                result = result.apply(list).to_frame().reset_index()
+                import dask.dataframe as dd
+
+                if isinstance(result.data, dd.DataFrame):
+                    grouping = self.params.grouping
+                    target = self.params.target
+                    result = (
+                        result.data.groupby(grouping)[target]
+                        .apply(
+                            lambda col: list(col.dropna().unique()),
+                            meta=pd.Series(dtype=object),
+                        )
+                        .compute()
+                        .to_frame(name=target)
+                        .reset_index()
+                    )
+                else:
+                    result = (
+                        grouped.data[self.params.target]
+                        .unique()
+                        .rename({self.params.target: self.params.operation_id})
+                    )
+                    result = result.apply(list).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
