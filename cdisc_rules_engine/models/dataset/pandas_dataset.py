@@ -260,22 +260,18 @@ class PandasDataset(DatasetInterface):
     def fillna(
         self,
         value=None,
-        method=None,
         axis=None,
         inplace=False,
         limit=None,
-        downcast=None,
     ):
         """
         Fill NA/NaN values using the specified method.
         """
         result = self._data.fillna(
             value=value,
-            method=method,
             axis=axis,
             inplace=inplace,
             limit=limit,
-            downcast=downcast,
         )
         if inplace:
             return None
