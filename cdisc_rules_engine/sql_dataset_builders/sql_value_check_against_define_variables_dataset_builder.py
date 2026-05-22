@@ -61,8 +61,20 @@ class SqlValueCheckAgainstDefineVariablesDatasetBuilder(SqlBaseDatasetBuilder):
             ]
 
             for key in DEFINE_VARIABLES_TYPE.keys():
-                val = str(d_var.get(key, ""))
-                select_parts.append(f"CAST('{val}' AS TEXT) as {new_col_hash_map[key]}")
+                val = str(d_var.get(key, "")).replace("'", "''").strip()
+                column_type = DEFINE_VARIABLES_TYPE[key]
+
+                if column_type == "Bool":
+                    sql_type = "BOOLEAN"
+                elif column_type == "Num":
+                    sql_type = "NUMERIC"
+                else:
+                    sql_type = "TEXT"
+
+                if val.lower() in ["", "none", "null", "''", '""']:
+                    select_parts.append(f"CAST(NULL AS {sql_type}) as {new_col_hash_map[key]}")
+                else:
+                    select_parts.append(f"CAST('{val}' AS {sql_type}) as {new_col_hash_map[key]}")
 
             select_statements.append(f"SELECT {', '.join(select_parts)} FROM {source_table_hash}")
 
