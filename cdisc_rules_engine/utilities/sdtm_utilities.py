@@ -1,11 +1,3 @@
-import re
-
-from cdisc_rules_engine.constants.domains import (
-    AP_DOMAIN,
-    APFA_DOMAIN,
-    APRELSUB_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
-)
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_DATASET_NAME,
     SOURCE_ROW_NUMBER,
@@ -94,13 +86,6 @@ def convert_library_class_name_to_ct_class(class_name: str):
         "special-purpose datasets": SPECIAL_PURPOSE_MODEL,
     }
     return conversions.get(class_name.lower(), class_name.upper())
-
-
-def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
-    link = model_link.get("href")
-    model_type = "sdtm"
-    model_version = link.split("/")[-1]
-    return model_type, model_version
 
 
 def get_variables_metadata_from_standard(  # noqa
@@ -516,27 +501,6 @@ def add_variable_wildcards(
         )
         for variable in variables
     }
-
-
-def is_supp_domain(dataset_domain: str) -> bool:
-    """
-    Returns true if domain name starts with SUPP or SQ
-    """
-    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
-
-
-def is_ap_domain(dataset_domain: str) -> bool:
-    """
-    Returns true if domain name is like AP-- / APFA APRELSUB.
-    """
-    if dataset_domain == APRELSUB_DOMAIN:
-        return True
-    if len(dataset_domain) == 6:
-        domain_to_check: str = APFA_DOMAIN
-    else:
-        domain_to_check: str = AP_DOMAIN
-    regex = r"^" + re.escape(domain_to_check) + "[a-zA-Z]{2,4}$"
-    return bool(re.match(regex, dataset_domain))
 
 
 def get_corresponding_datasets(
