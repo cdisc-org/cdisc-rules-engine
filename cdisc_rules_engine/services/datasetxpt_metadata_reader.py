@@ -174,25 +174,6 @@ class DatasetXPTMetadataReader:
                 rule_author_type_map[value]
             )
 
-    def _to_dict(self) -> dict:
-        """
-        This method is used to transform metadata_container
-        object into dictionary.
-        """
-        return {
-            "variable_labels": self._metadata_container.column_labels,
-            "variable_formats": self._metadata_container.column_formats,
-            "variable_names": self._metadata_container.column_names,
-            "variable_name_to_label_map": self._metadata_container.column_names_to_labels,  # noqa
-            "variable_name_to_data_type_map": self._metadata_container.readstat_variable_types,  # noqa
-            "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
-            "number_of_variables": self._metadata_container.number_columns,
-            "dataset_label": self._metadata_container.file_label,
-            "first_record": self._first_record,
-            "dataset_name": self._dataset_name,
-            "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
-        }
-
     def _extract_adam_info(self, variable_names):
         ad = AdamVariableReader()
         adam_columns = ad.extract_columns(variable_names)

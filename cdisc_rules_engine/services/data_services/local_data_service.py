@@ -170,22 +170,6 @@ class LocalDataService(BaseDataService):
         with open(dataset_name, "rb") as f:
             return f.read()
 
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> DatasetInterface:
-        """
-        Generic function to return dataset based on the type.
-        dataset_type param can be: contents, metadata, variables_metadata.
-        """
-        dataset_type_to_function_map: dict = {
-            DatasetTypes.CONTENTS.value: self.get_dataset,
-            DatasetTypes.METADATA.value: self.get_dataset_metadata,
-            DatasetTypes.VARIABLES_METADATA.value: self.get_variables_metadata,
-        }
-        return dataset_type_to_function_map[dataset_type](
-            dataset_name=dataset_name, **params
-        )
-
     def __read_metadata(
         self,
         dataset_path: str,

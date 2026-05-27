@@ -1,41 +1,5 @@
 from functools import wraps
-from typing import Callable, List
-
-from requests import Response
-
-from cdisc_rules_engine.exceptions.custom_exceptions import NumberOfAttemptsExceeded
-
-
-def retry_request(retries: int, status_code_ranges: List[int] = None):
-    """
-    Decorator used to retry a request if
-    any desired status was returned.
-    Wrapped function has to return requests.Response object.
-    """
-    if status_code_ranges is None:
-        status_code_ranges = [500]
-
-    def decorator(func: Callable):
-        @wraps(func)
-        def inner(*args, **kwargs):
-            for retry in range(retries):
-                response: Response = func(*args, **kwargs)
-                request_should_be_retried: bool = any(
-                    response.status_code >= code_range
-                    for code_range in status_code_ranges
-                )
-                # no need for else.
-                # If should be retied -> loop will go to the next iteration
-                if not request_should_be_retried:
-                    return response
-            raise NumberOfAttemptsExceeded(
-                f"Cannot perform request after {retries} retries. "
-                f"Function - {func.__name__}. Args - {args}. Kwargs - {kwargs}."
-            )
-
-        return inner
-
-    return decorator
+from typing import Callable
 
 
 def cached(cache_key: str):  # noqa: C901
