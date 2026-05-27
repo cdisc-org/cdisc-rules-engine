@@ -550,16 +550,6 @@ class RuleProcessor:
         )
         return result
 
-    def get_size_unit_from_rule(self, rule: dict) -> Optional[str]:
-        """
-        Extracts size unit from rule if it was passed
-        """
-        rule_conditions: ConditionInterface = rule["conditions"]
-        for condition in rule_conditions.values():
-            value: dict = condition["value"]
-            if value["target"] == "dataset_size":
-                return value.get("unit")
-
     def add_operator_to_rule_conditions(
         self, rule: dict, target_to_operator_map: dict, domain: str
     ):

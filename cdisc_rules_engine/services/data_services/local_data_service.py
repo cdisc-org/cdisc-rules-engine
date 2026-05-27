@@ -1,7 +1,7 @@
 import os
 from os.path import basename
 from io import IOBase
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Tuple
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -22,9 +22,6 @@ from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
     DatasetNDJSONMetadataReader,
 )
 from cdisc_rules_engine.services.csv_metadata_reader import DatasetCSVMetadataReader
-from cdisc_rules_engine.utilities.utils import (
-    convert_file_size,
-)
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
@@ -249,16 +246,10 @@ class LocalDataService(BaseDataService):
 
     def __get_dataset_metadata(self, dataset_path: str, **kwargs) -> Tuple[dict, dict]:
         """
-        Internal method that gets dataset metadata
-        and converts file size if needed.
+        Internal method that gets dataset metadata.
         """
         metadata: dict = self.__read_metadata(dataset_path)
         file_metadata: dict = metadata["file_metadata"]
-        size_unit: Optional[str] = kwargs.get("size_unit")
-        if size_unit:  # convert file size from bytes to desired unit if needed
-            file_metadata["file_size"] = convert_file_size(
-                file_metadata["file_size"], size_unit
-            )
         return file_metadata, metadata["contents_metadata"]
 
     def to_parquet(self, file_path: str) -> str:
