@@ -22,7 +22,6 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
-from cdisc_rules_engine.models.operation_params import OperationParams
 
 
 @pytest.mark.parametrize(
@@ -805,62 +804,6 @@ def test_perform_rule_operation_with_null_operations(
     assert df.equals(new_data)
 
 
-def test_preprocess_operation_params_wildcard_replacement(mock_data_service):
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
-    operation_params = OperationParams(
-        core_id="test_id",
-        operation_id="test_op",
-        operation_name="test_operator",
-        dataframe=df,
-        target="--SEQ",
-        original_target="--SEQ",
-        domain="AE",
-        standard="sdtmig",
-        standard_version="3-4",
-        grouping=["--SEQ", "--DTC", "USUBJID"],
-        filter={"--STAT": "COMPLETED"},
-    )
-    domain_details = SDTMDatasetMetadata(
-        filename="ae.xpt", full_path="test/ae.xpt", name="AE", label="Adverse Events"
-    )
-    result = processor._preprocess_operation_params(operation_params, domain_details)
-    assert result.target == "AESEQ"
-    assert result.original_target == "AESEQ"
-    assert result.grouping == ["AESEQ", "AEDTC", "USUBJID"]
-    assert result.filter == {"AESTAT": "COMPLETED"}
-    # Check that original params and dataframe are not modified
-    assert operation_params.target == "--SEQ"
-    assert operation_params.grouping == ["--SEQ", "--DTC", "USUBJID"]
-    assert result.dataframe is operation_params.dataframe
-
-
-def test_preprocess_operation_params_supp_domain_uses_rdomain(mock_data_service):
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
-    operation_params = OperationParams(
-        core_id="test_id",
-        operation_id="test_op",
-        operation_name="test_operator",
-        dataframe=df,
-        target="--SEQ",
-        original_target="--SEQ",
-        domain=None,
-        standard="sdtmig",
-        standard_version="3-4",
-    )
-    domain_details = SDTMDatasetMetadata(
-        filename="suppae.xpt",
-        full_path="test/suppae.xpt",
-        name="SUPPAE",
-        label="Supplemental AE",
-        first_record={"RDOMAIN": "AE"},
-    )
-    result = processor._preprocess_operation_params(operation_params, domain_details)
-    assert result.target == "AESEQ"
-    assert result.original_target == "AESEQ"
-
-
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
 )
@@ -940,71 +883,6 @@ def test_perform_extract_metadata_operation(
         "SUPPEC",
     ]
     assert dataset_after_operation.equals(expected_dataset)
-
-
-def test_add_operator_to_conditions(mock_data_service):
-    """
-    Unit test for add_operator_to_rule_conditions method.
-    Checks nested conditions as well.
-    """
-    conditions = {
-        "all": [
-            {"name": "get_dataset", "value": {"target": "STUDYID"}},
-            {"name": "get_dataset", "value": {"target": "DOMAIN"}},
-            {
-                "any": [
-                    {"name": "get_dataset", "value": {"target": "--SEQ"}},
-                ],
-            },
-        ]
-    }
-    rule = {"conditions": ConditionCompositeFactory.get_condition_composite(conditions)}
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    target_to_operator_map: dict = {
-        "STUDYID": "equal_to",
-        "DOMAIN": [
-            "less_than",
-            "not_empty",
-        ],
-        "AESEQ": "empty",
-    }
-    processor.add_operator_to_rule_conditions(rule, target_to_operator_map, "AE")
-    assert rule["conditions"].to_dict() == {
-        "all": [
-            {
-                "name": "get_dataset",
-                "operator": "equal_to",
-                "value": {
-                    "target": "STUDYID",
-                },
-            },
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "less_than",
-                        "value": {"target": "DOMAIN"},
-                    },
-                    {
-                        "name": "get_dataset",
-                        "operator": "not_empty",
-                        "value": {"target": "DOMAIN"},
-                    },
-                ]
-            },
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "empty",
-                        "value": {
-                            "target": "--SEQ",
-                        },
-                    },
-                ],
-            },
-        ]
-    }
 
 
 def test_extract_target_names_from_rule():

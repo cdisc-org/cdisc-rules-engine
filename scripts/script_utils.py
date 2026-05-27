@@ -536,14 +536,6 @@ def load_and_parse_rule(rule_file):
         return None
 
 
-def replace_rule_keys(rule):
-    if "Operations" in rule:
-        rule["actions"] = rule.pop("Operations")
-    if "Check" in rule:
-        rule["conditions"] = rule.pop("Check")
-        return rule
-
-
 def rule_matches_standard_version(rule, standard, version, substandard=None):
     normalized_version = version.replace("-", ".")
     for standard_info in rule["standards"]:

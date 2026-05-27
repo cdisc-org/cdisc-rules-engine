@@ -12,6 +12,7 @@ from odmlib.loader import ODMLoader
 import odmlib.define_2_1.model  # noqa F401
 import odmlib.define_2_0.model  # noqa F401
 
+from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
     FailedSchemaValidation,
@@ -19,7 +20,6 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
-from cdisc_rules_engine.utilities.sdtm_utilities import is_supp_domain
 
 
 @dataclass
@@ -36,6 +36,14 @@ class StandardsCTMetadata:
 
     type: str = None
     publishing_set: str = None
+
+
+@staticmethod
+def is_supp_domain(dataset_domain: str) -> bool:
+    """
+    Returns true if domain name starts with SUPP or SQ
+    """
+    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
 
 
 class BaseDefineXMLReader(ABC):
