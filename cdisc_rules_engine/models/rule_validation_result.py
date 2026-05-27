@@ -45,18 +45,18 @@ class RuleValidationResult(RepresentationInterface):
         return instance
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
-        ids = {
-            (
-                reference.get("Rule Identifier")
-                or reference.get("Rule_Identifier")
-                or {}
-            ).get("Id")
-            for authority in rule.get("authorities", [])
-            for standard in authority.get("Standards", [])
-            for reference in standard.get("References", [])
-            if authority.get("Organization") == org
-        }
-        return ", ".join(sorted(id_ for id_ in ids if id_ is not None))
+        return ", ".join(
+            sorted(
+                {
+                    reference.get("Rule Identifier", {}).get("Id")
+                    for authority in rule.get("authorities", [])
+                    for standard in authority.get("Standards", [])
+                    for reference in standard.get("References", [])
+                    if authority.get("Organization") == org
+                }
+                - {None}
+            )
+        )
 
     def to_representation(self) -> dict:
         return {

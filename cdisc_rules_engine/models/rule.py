@@ -32,7 +32,7 @@ class Rule:
         self.operations: List[dict] = record_params.get("operations")
         self.conditions: dict = record_params["conditions"]
         self.actions: dict = record_params["actions"]
-        self.output_variables: dict = record_params.get("output_variables")
+        self.output_variables: dict = record_params.get("output variables")
         self.grouping_variables: List[str] = record_params.get("grouping_variables", [])
 
     @classmethod
