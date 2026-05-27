@@ -62,6 +62,8 @@ class InMemoryCacheService(CacheServiceInterface):
             )
 
     def add_dataset(self, cache_key, data):
+        if get_data_size(data) > self.max_dataset_cache_size:
+            return
         with self.dataset_cache_lock:
             self.dataset_cache[cache_key] = data
 
@@ -94,21 +96,23 @@ class InMemoryCacheService(CacheServiceInterface):
         return [self.get(key) for key in cache_keys]
 
     def get_all_by_prefix(self, prefix):
-        items = []
-        for key in self.cache:
-            if key.startswith(prefix):
-                items.append(self.get(key))
-        return items
+        with self.cache_lock:
+            keys = [key for key in self.cache.keys() if key.startswith(prefix)]
+        return [self.get(key) for key in keys]
 
     def dataset_keys(self):
         return self.dataset_cache.keys()
 
     def filter_cache(self, prefix: str) -> dict:
-        return {k: self.get(k) for k in self.cache.keys() if k.startswith(prefix)}
+        with self.cache_lock:
+            keys = [k for k in self.cache.keys() if k.startswith(prefix)]
+        return {k: self.get(k) for k in keys}
 
     def get_by_regex(self, regex: str) -> dict:
         regex = regex.replace("*", ".*")
-        return {k: self.get(k) for k in self.cache.keys() if re.search(regex, k)}
+        with self.cache_lock:
+            keys = [k for k in self.cache.keys() if re.search(regex, k)]
+        return {k: self.get(k) for k in keys}
 
     def exists(self, cache_key):
         return cache_key in self.cache
@@ -125,7 +129,7 @@ class InMemoryCacheService(CacheServiceInterface):
             for key in keys_to_remove:
                 self.clear(key)
         else:
-            self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
+            self.cache = LRUCache(maxsize=self.max_size, getsizeof=cust_asizeof)
 
     def add_all(self, data: dict):
         for key, val in data.items():
