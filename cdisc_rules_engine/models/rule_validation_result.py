@@ -48,7 +48,11 @@ class RuleValidationResult(RepresentationInterface):
         return ", ".join(
             sorted(
                 {
-                    reference.get("Rule Identifier", {}).get("Id")
+                    (
+                        reference.get("Rule Identifier")
+                        or reference.get("Rule_Identifier")
+                        or {}
+                    ).get("Id")
                     for authority in rule.get("authorities", [])
                     for standard in authority.get("Standards", [])
                     for reference in standard.get("References", [])
