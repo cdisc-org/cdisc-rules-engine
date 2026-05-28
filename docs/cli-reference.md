@@ -8,6 +8,9 @@
 
 Run conformance validation against a CDISC standard.
 
+Validate has pandas Copy-on-Write (CoW) enabled globally when using the rules engine.
+**Note**: In Pandas 2.x this is an opt-in feature,  Pandas 3.x, CoW is enabled by default, so this behavior will become standard once the project is upgraded.
+
 ```bash
 python core.py validate --help
 ```
