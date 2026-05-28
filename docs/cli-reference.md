@@ -126,7 +126,7 @@ DATASET_SIZE_THRESHOLD=0 ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 $env:DATASET_SIZE_THRESHOLD=0; .\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
 ```
 
-Or create a `.env` file in the root directory:
+Or create a `.env` file in the root directory (See `.env.example`):
 
 ```
 DATASET_SIZE_THRESHOLD=0
@@ -308,4 +308,4 @@ Key environment variables that can substitute for or supplement CLI flags:
 | `MAX_ERRORS_PER_RULE`    | `-me` / `--max-errors-per-rule`               |
 | `DATASET_SIZE_THRESHOLD` | Dask threshold (set to `0` to force Dask)     |
 
-These can be set in a `.env` file in the root directory. See `env.example`.
+These can be set in a `.env` file in the root directory. See `.env.example`.

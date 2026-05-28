@@ -12,8 +12,6 @@ class ContentMetadataDatasetBuilder(BaseDatasetBuilder):
         is_ap - Whether the domain is an AP domain
         ap_suffix - The 2-character suffix from AP domains
         """
-        size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
         return self.data_service.get_dataset_metadata(
             dataset_name=self.dataset_metadata.name,
-            size_unit=size_unit,
         )
