@@ -6,7 +6,6 @@ import tempfile
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
@@ -111,18 +110,6 @@ class DummyDataService(BaseDataService):
                 "variable_format"
             ] + [variable.format]
         return PandasDataset.from_dict(metadata_to_return)
-
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> PandasDataset:
-        dataset_type_to_function_map: dict = {
-            DatasetTypes.CONTENTS.value: self.get_dataset,
-            DatasetTypes.METADATA.value: self.get_dataset_metadata,
-            DatasetTypes.VARIABLES_METADATA.value: self.get_variables_metadata,
-        }
-        return dataset_type_to_function_map[dataset_type](
-            dataset_name=dataset_name, **params
-        )
 
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
         if not self.define_xml:

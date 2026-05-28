@@ -326,7 +326,7 @@ class DatasetPreprocessor:
         standard_keys: List[str],
     ) -> pd.DataFrame:
         results = []
-        for child_idx, child_row in child_records.iterrows():
+        for _, child_row in child_records.iterrows():
             idvar = child_row.get("IDVAR")
             idvarval = child_row.get("IDVARVAL")
             parent_candidates = self._filter_parents_by_standard_keys(
@@ -463,7 +463,7 @@ class DatasetPreprocessor:
         right_domain: str,
     ) -> pd.DataFrame:
         results = []
-        for child_idx, child_row in child_records.iterrows():
+        for _, child_row in child_records.iterrows():
             idvar = child_row.get("IDVAR")
             idvarval = child_row.get("IDVARVAL")
             parent_match = None
