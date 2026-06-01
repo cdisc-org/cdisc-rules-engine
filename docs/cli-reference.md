@@ -1,6 +1,7 @@
 # CLI Reference
 
-> Throughout this reference, examples use `python core.py`. If you're using the pre-built executable, replace this with `.\core.exe` (Windows) or `./core` (Linux/Mac).
+> Throughout this reference, examples use `python core.py`. If you're using the pre-built
+> executable, replace this with `.\core.exe` (Windows) or `./core` (Linux/Mac).
 
 ---
 
@@ -85,9 +86,12 @@ python core.py validate --help
 -me 100 True    # Hard limit per dataset per rule
 ```
 
-- `False` (default): After each dataset, if cumulative errors for a rule meet the limit, that rule stops processing further datasets.
-- `True`: Limits reported issues to `<limit>` per dataset per rule. The rule still executes on all datasets.
-- Can also be set via `MAX_ERRORS_PER_RULE` env var. The larger of the env var and CLI values is used. If either sets `per_dataset_flag` to `True`, it will be `True`.
+- `False` (default): After each dataset, if cumulative errors for a rule meet the limit,
+  that rule stops processing further datasets.
+- `True`: Limits reported issues to `<limit>` per dataset per rule.
+  The rule still executes on all datasets.
+- Can also be set via `MAX_ERRORS_PER_RULE` env var. The larger of the env var and CLI
+  values is used. If either sets `per_dataset_flag` to `True`, it will be `True`.
 
 ### Performance & Behavior
 
@@ -115,7 +119,8 @@ The **Rules Report** tab in the output summarizes the outcome for each rule:
 
 ### Large Dataset Processing (Dask)
 
-CORE uses Dask instead of pandas for datasets exceeding 1/4 of available RAM. To force Dask for all datasets:
+CORE uses Dask instead of pandas for datasets exceeding 1/4 of available RAM.
+To force Dask for all datasets:
 
 **Linux/Mac:**
 
@@ -131,7 +136,7 @@ $env:DATASET_SIZE_THRESHOLD=0; .\core.exe validate -s sdtmig -v 3-4 -d C:\path\t
 
 Or create a `.env` file in the root directory (See `.env.example`):
 
-```
+```text
 DATASET_SIZE_THRESHOLD=0
 ```
 
@@ -145,11 +150,16 @@ Download and refresh locally cached rules, controlled terminology, and metadata.
 python core.py update-cache
 ```
 
-An API key is required for metadata and CT. Rules are accessible without a key. Set your key via the `CDISC_LIBRARY_API_KEY` environment variable or in a `.env` file in the root directory (no quotes needed around the value).
+An API key is required for metadata and CT. Rules are accessible without a key. Set your
+key via the `CDISC_LIBRARY_API_KEY` environment variable or in a `.env` file in the root
+directory (no quotes needed around the value).
 
-To obtain an API key: [wiki.cdisc.org — Getting Started](https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication)
+To obtain an API key:
+[wiki.cdisc.org — Getting Started](https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication)
 
-> **Firewall note:** CORE connects to `api.library.cdisc.org` on port 443. If you see SSL certificate verification errors, contact your IT department to obtain the corporate CA bundle or request whitelisting for this hostname.
+> **Firewall note:** CORE connects to `api.library.cdisc.org` on port 443. If you see SSL
+> certificate verification errors, contact your IT department to obtain the corporate CA
+> bundle or request whitelisting for this hostname.
 
 ### Options
 
@@ -187,7 +197,8 @@ python core.py update-cache --remove-custom-rules ALL
 
 ### Custom Standards
 
-Custom standards map a standard identifier to a list of applicable rule IDs. Add rules to the cache first, then create a standard that references them.
+Custom standards map a standard identifier to a list of applicable rule IDs. Add rules
+to the cache first, then create a standard that references them.
 
 **Standard JSON format:**
 
@@ -197,7 +208,8 @@ Custom standards map a standard identifier to a list of applicable rule IDs. Add
 }
 ```
 
-Custom standards can also reference CDISC standard names to inherit library metadata while using custom rules:
+Custom standards can also reference CDISC standard names to inherit library metadata
+while using custom rules:
 
 ```json
 {

@@ -275,16 +275,14 @@ class RulesEngine:
                 ]
         except Exception as e:
             logger.trace(e)
-            logger.error(
-                f"""Error occurred during validation.
+            logger.error(f"""Error occurred during validation.
             Error: {e}
             Error Type: {type(e)}
             Error Message: {str(e)}
             Dataset Name: {dataset_metadata.name}
             Rule ID: {rule.get("core_id", "unknown")}
             Full traceback: {traceback.format_exc()}
-            """
-            )
+            """)
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_metadata.name
             )

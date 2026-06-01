@@ -17,7 +17,7 @@ import pytest
 from unittest.mock import Mock
 
 
-@pytest.mark.parametrize("dataset_type", [(PandasDataset)])
+@pytest.mark.parametrize("dataset_type", [PandasDataset])
 def test_get_label_referenced_variable_metadata(
     operation_params: OperationParams, dataset_type
 ):

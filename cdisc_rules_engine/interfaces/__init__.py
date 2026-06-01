@@ -9,7 +9,6 @@ from .representation_interface import RepresentationInterface
 from .dictionary_term_interface import DictionaryTermInterface
 from .terms_factory_interface import TermsFactoryInterface
 
-
 __all__ = [
     "CacheServiceInterface",
     "ConditionInterface",

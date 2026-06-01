@@ -11,7 +11,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
-
 define_metadata = [
     {
         "define_dataset_name": "TS",
