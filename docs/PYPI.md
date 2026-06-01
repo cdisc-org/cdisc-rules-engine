@@ -337,7 +337,7 @@ reporting_services = reporting_factory.get_report_services()
 
 **`column_prefix_map`** — maps the `--` variable prefix to the dataset domain (e.g. `{"--": "AE"}`), resolving placeholders like `--SEQ` → `AESEQ`.
 
-**External dictionaries** — pass an `ExternalDictionariesContainer` to `RulesEngine` if validating rules that require MedDRA, WHODrug, LOINC, UNII, MedRT, or SNOMED. See the [External Dictionary Reference](https://cdisc-org.github.io/conformance-rules-editor/#/exdictionary).
+**External dictionaries** — pass an `ExternalDictionariesContainer` to `RulesEngine` if validating rules that require MedDRA, WHODrug, LOINC, UNII, MedRT, or SNOMED. See the [External Dictionary Reference](https://cdisc-org.github.io/cdisc-open-rules/#/exdictionary).
 
 **Dask** — set `max_dataset_size=0` when initializing `DataServiceFactory` to force Dask processing for all datasets.
 
