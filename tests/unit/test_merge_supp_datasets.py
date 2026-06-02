@@ -80,11 +80,8 @@ def test_data_processor_suppae_multiple_qnams():
     assert result.loc[0, "AEREL2"] == "POSSIBLE"
 
 
-@patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
-def test_merge_pivot_supp_dataset(
-    mock_async_get_datasets, mock_check_filepath, data_service
-):
+def test_merge_pivot_supp_dataset(mock_async_get_datasets, data_service):
     # Setup example datasets
     parent_dataset = PandasDataset(
         pd.DataFrame(
@@ -150,7 +147,6 @@ def test_merge_pivot_supp_dataset(
     " length of the merged dataset should match the parent dataset."
 
 
-@patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
 @pytest.mark.parametrize(
     "a_parent, id_var_val, expected_dataset",
@@ -193,7 +189,6 @@ def test_merge_pivot_supp_dataset(
 )
 def test_merge_supp_str_float(
     mock_async_get_datasets,
-    mock_check_filepath,
     data_service,
     a_parent,
     id_var_val,
@@ -243,7 +238,6 @@ def test_merge_supp_str_float(
     " length of the merged dataset should match the parent dataset."
 
 
-@patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
 def test_merge_supp_dataset_multi_idvar(mock_async_get_datasets, data_service):
     parent_dataset = PandasDataset(
@@ -325,7 +319,6 @@ def test_merge_supp_dataset_multi_idvar(mock_async_get_datasets, data_service):
     ), "Merged dataset should have same number of rows as parent"
 
 
-@patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
 def test_merge_supp_dataset_multi_idvar_aggregation(
     mock_async_get_datasets, data_service
@@ -374,7 +367,6 @@ def test_merge_supp_dataset_multi_idvar_aggregation(
     assert row["ECSITE"] == "Site A", "ECSITE from ECENDY=7 should be merged"
 
 
-@patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
 def test_merge_supp_dataset_same_qnam_validation_error(
     mock_async_get_datasets, data_service

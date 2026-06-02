@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -468,46 +468,6 @@ class DataProcessor:
                     ),
                 ] = None
         return result
-
-    @staticmethod
-    def filter_dataset_columns_by_metadata_and_rule(
-        columns: List[str],
-        define_metadata: List[dict],
-        library_metadata: dict,
-        rule: dict,
-    ) -> List[str]:
-        """
-        Leaves only those variables where:
-            variable origin type is the same as in rule and
-            variable core status is the same as in rule
-        """
-        targets: List[str] = []
-        for column in columns:
-            if DataProcessor.column_metadata_equal_to_define_and_library(
-                column, define_metadata, library_metadata, rule
-            ):
-                targets.append(column)
-        return targets
-
-    @staticmethod
-    def column_metadata_equal_to_define_and_library(
-        column: str,
-        define_metadata: List[dict],
-        library_metadata: dict,
-        rule: dict,
-    ) -> bool:
-        define_variable_metadata: Optional[dict] = search_in_list(
-            define_metadata, lambda item: item.get("define_variable_name") == column
-        )
-        if not define_variable_metadata:
-            return False
-        equal_origin_type: bool = define_variable_metadata[
-            "define_variable_origin_type"
-        ] == rule.get("variable_origin_type")
-        equal_core_status: bool = library_metadata.get(column, {}).get(
-            "core"
-        ) == rule.get("variable_core_status")
-        return equal_core_status and equal_origin_type
 
     @staticmethod
     def is_dummy_data(data_service: DataServiceInterface) -> bool:

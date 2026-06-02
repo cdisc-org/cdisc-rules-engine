@@ -84,8 +84,6 @@ class USDMDataService(BaseDataService):
 
         self.dataset_content_index: List[dict] = self.__get_datasets_content_index()
 
-        self._jsonpath_cache = {}
-
         super(USDMDataService, self).__init__(
             cache_service, reader_factory, config, **kwargs
         )
@@ -244,16 +242,6 @@ class USDMDataService(BaseDataService):
         return flattened
 
     @staticmethod
-    def __get_parent(node):
-        # Native node: just return node itself
-        return node
-
-    @staticmethod
-    def __get_closest_non_list_ancestor(node):
-        # Native node: just return node itself
-        return node
-
-    @staticmethod
     def jsonpath_to_pointer(path_expr: str) -> str:
         pointer = path_expr.replace("$.", "/").replace(".", "/")
         pointer = re.sub(r"\[(\d+)\]", r"/\1", pointer)
@@ -322,12 +310,6 @@ class USDMDataService(BaseDataService):
     def __find_definition(self, json, id: str):
         # Use the pre-built lookup dict for fast access
         return self._id_lookup.get(id, None)
-
-    def _get_parsed_jsonpath(self, path_expr):
-        key = path_expr.strip()
-        if key not in self._jsonpath_cache:
-            self._jsonpath_cache[key] = parse(key)
-        return self._jsonpath_cache[key]
 
     def __get_dataset(self, dataset_name: str) -> DatasetInterface:
         datasets = self.dataset_content_index

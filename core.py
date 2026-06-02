@@ -48,7 +48,7 @@ DEFAULT_CACHE_PATH = os.path.join(
 )
 
 
-def validate_encoding(ctx, param, value):
+def validate_encoding(_ctx, _param, value):
     if value is None:
         return DEFAULT_ENCODING
     try:
@@ -275,7 +275,7 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
-def load_custom_dotenv(ctx, param, value):
+def load_custom_dotenv(_ctx, _param, value):
     if not value:
         return value
     if os.path.exists(value):
@@ -283,7 +283,7 @@ def load_custom_dotenv(ctx, param, value):
     return value
 
 
-def load_custom_dotenv_from_data_options(ctx, param, value):
+def load_custom_dotenv_from_data_options(_ctx, _param, value):
     if not value:
         return value
     if isinstance(value, str):
@@ -599,6 +599,13 @@ def validate(  # noqa
     logger = logging.getLogger("validator")
     load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
+
+    if define_xml_path and dotenv_path and os.getenv("DEFINE_XML"):
+        dxp = Path(define_xml_path)
+        if not dxp.is_absolute() and dxp.parent == Path("."):
+            resolved = Path(dotenv_path).parent / define_xml_path
+            if resolved.is_file():
+                define_xml_path = str(resolved)
 
     if not custom_standard:
         standard = standard.lower()
