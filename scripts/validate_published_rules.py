@@ -285,7 +285,7 @@ def validate_all_rules(
 
     if not os.path.isdir(published_dir):
         print(f"ERROR: Published/ not found under {rules_root}", file=sys.stderr)
-        return True
+        return False
 
     rule_ids = sorted(
         entry
@@ -295,7 +295,7 @@ def validate_all_rules(
 
     if not rule_ids:
         print("ERROR: No rule directories found under Published/", file=sys.stderr)
-        return True
+        return False
 
     print(f"Found {len(rule_ids)} rule(s) under Published/")
 
