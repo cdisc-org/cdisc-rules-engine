@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: cdisc-org/cdisc-open-rules
-          ref: ${{ inputs.rules_ref }}
+          ref: ${{ inputs.rules_ref || 'rules_2'}} # TODO: Remove this before merging to main
           path: open-rules
 
       # -----------------------------------------------------------------------
