@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 
-SUMMARY_HEADERS = ["Rule", "Type", "Number", "Execution", "Expected", "Got", "Match"]
+SUMMARY_HEADERS = ["Rule", "Type", "Number", "Execution", "Expected", "Actual", "Match"]
 CHECKMARK = "\u2705"
 CROSS = "\u274c"
 
@@ -100,7 +100,9 @@ def _build_failure_detail(record: dict) -> str:
                 lines.append(fh.read())
             lines.append("```")
     else:
-        lines.append(f"**Expected:** {record['Expected']}  **Got:** {record['Got']}\n")
+        lines.append(
+            f"**Expected:** {record['Expected']}  **Actual:** {record['Actual']}\n"
+        )
         diff_file = record["_diff_file"]
         if diff_file and os.path.isfile(diff_file):
             lines.append("```diff")
