@@ -5,7 +5,7 @@
 #   3. Installs engine Python dependencies
 #   4. Iterates every Published/ rule from cdisc-open-rules
 #   5. Runs the engine against each test case
-#   6. Compares output with committed results.csv baseline
+#   6. Compares actual output with expected results.csv baseline
 #   7. Publishes a Markdown report to Job Summary and as an artifact
 # ==============================================================================
 name: Validate Published Rules
