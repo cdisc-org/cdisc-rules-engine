@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 
-SUMMARY_HEADERS = ["Rule", "Type", "Number", "Execution", "Expected", "Actual", "Match"]
+SUMMARY_HEADERS = ["Rule", "Type", "Number", "Expected", "Actual", "Match"]
 CHECKMARK = "\u2705"
 CROSS = "\u274c"
 
@@ -76,9 +76,8 @@ def _parse_case_result(line: str) -> dict:
         "Rule": d["rule"],
         "Type": d["type"],
         "Number": str(d["num"]),
-        "Execution": CHECKMARK if exec_ok else CROSS,
         "Expected": CROSS if d.get("expected") == "" else str(d["expected"]),
-        "Actual": str(d.get("actual", "")),
+        "Actual": str(d.get("actual", "")) if exec_ok else CROSS,
         "Match": CHECKMARK if match_ok else CROSS,
         # Private fields used when generating failure detail
         "_exec_ok": exec_ok,
@@ -180,9 +179,8 @@ def _aggregate_row(
         "Rule": rule_id,
         "Type": "\u2014",
         "Number": "\u2014",
-        "Execution": CHECKMARK if exec_ok else CROSS,
         "Expected": "\u2014",
-        "Actual": "\u2014",
+        "Actual": CHECKMARK if exec_ok else CROSS,
         "Match": "\u2014",
     }
     if exec_ok:
