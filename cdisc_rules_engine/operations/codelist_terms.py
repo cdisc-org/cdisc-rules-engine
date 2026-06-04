@@ -64,6 +64,10 @@ class CodelistTerms(BaseOperation):
                 "codelist_code": "string",
             }
         )
+        cast_cols = {self.params.ct_version: "string"}
+        if self.params.codelist_code in self.evaluation_dataset.columns:
+            cast_cols[self.params.codelist_code] = "string"
+        self.evaluation_dataset = self.evaluation_dataset.astype(cast_cols)
         if self.params.codelist_code in self.evaluation_dataset.columns:
             result = self.evaluation_dataset.merge(
                 ct_df.data,
