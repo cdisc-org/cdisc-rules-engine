@@ -75,12 +75,14 @@ Retrieve rules for a standard and version:
 
 ```python
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-
 cache = load_rules_cache("path/to/rules/cache")
 # Note: version uses dashes, not dots
-rules = cache.get_all_by_prefix(get_rules_cache_key("sdtmig", "3-4"))
+rule_keys = cache.get_all_by_prefix(get_rules_cache_key("sdtmig", "3-4"))
+rules = [cache.get(key) for key in rule_keys[0]]
 ```
 
+`get_all_by_prefix` returns a nested list of cache keys, not rule objects directly.
+Fetch the actual rule dicts by calling cache.get() on each key.
 Each rule is a dict with keys: `core_id`, `domains`, `author`, `reference`,
 `sensitivity`, `executability`, `description`, `authorities`, `standards`, `classes`,
 `rule_type`, `conditions`, `actions`, `datasets`, `output_variables`.
