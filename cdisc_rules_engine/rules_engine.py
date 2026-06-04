@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import List, Union
 from dateutil.parser._parser import ParserError
 import traceback
+import pandas as pd
 
 from business_rules import export_rule_data
 from business_rules.engine import run
@@ -33,6 +34,7 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
+from cdisc_rules_engine.models.dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
@@ -58,6 +60,8 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
+
+pd.options.mode.copy_on_write = True
 
 
 class RulesEngine:
@@ -375,9 +379,9 @@ class RulesEngine:
             rule["conditions"], dataset.columns.to_list()
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
-        # Adding copy for now to avoid updating cached dataset
-        dataset = deepcopy(dataset)
         # preprocess dataset
+        if isinstance(dataset, DaskDataset):
+            dataset = deepcopy(dataset)
         dataset_preprocessor = DatasetPreprocessor(
             dataset, dataset_metadata, self.data_service, self.cache
         )

@@ -13,7 +13,6 @@ import pandas as pd
 from dataclasses import fields
 from datetime import datetime
 from typing import Callable, List, Optional, Union
-from uuid import UUID
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
@@ -36,19 +35,6 @@ def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) ->
     return superclass(
         **{field.name: getattr(instance, field.name) for field in fields(superclass)}
     )
-
-
-def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
-    """
-    Converts file size from bytes to any of the following units:
-    KB, MB, GB
-    """
-    unit_to_denominator_map: dict = {
-        "KB": 1024,
-        "MB": 1024**2,
-        "GB": 1024**3,
-    }
-    return size_in_bytes / unit_to_denominator_map[desired_unit]
 
 
 def get_execution_status(results):
@@ -114,19 +100,6 @@ def get_execution_status(results):
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
     standard, version = normalize_standard_input(standard, version)
     return f"{standard.lower()}-{version.replace('.', '-')}-codelists"
-
-
-def is_valid_iso_date(date_to_validate: str) -> bool:
-    """
-    Validates a given date against an ISO Format.
-    Valid date example: 2022-02-04T15:29:20.173854
-    """
-    is_valid = True
-    try:
-        datetime.fromisoformat(date_to_validate)
-    except ValueError:
-        is_valid = False
-    return is_valid
 
 
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
@@ -251,29 +224,6 @@ def serialize_rule(rule: dict) -> dict:
     return serialized_rule
 
 
-def get_cache_last_updated_key() -> str:
-    return "CACHE_LAST_UPDATED"
-
-
-def remove_none_keys_from_dict(dict_to_remove: dict):
-    """
-    Removes dict keys whose value is None.
-    Changes the dict by reference.
-    """
-    # dict can't change its size during iteration
-    dict_copy: dict = copy.deepcopy(dict_to_remove)
-    for key, value in dict_copy.items():
-        if value is None:
-            dict_to_remove.pop(key)
-
-
-def list_contains_duplicates(list_to_check: list) -> bool:
-    """
-    Checks if a list contains duplicated items.
-    """
-    return bool(len(list_to_check) > len(set(list_to_check)))
-
-
 def generate_report_filename(generation_time: str) -> str:
     timestamp = (
         datetime.fromisoformat(generation_time)
@@ -329,17 +279,6 @@ def search_in_list[
     index = get_item_index_by_condition(list_of_dicts, condition)
     if index is not None:
         return list_of_dicts[index]
-
-
-def is_valid_uuid(string_to_validate: str) -> bool:
-    """
-    Checks if a given string is a valid UUID.
-    """
-    try:
-        UUID(string_to_validate)
-    except ValueError:
-        return False
-    return True
 
 
 def get_dictionary_path(directory_path: str, file_name: str) -> str:

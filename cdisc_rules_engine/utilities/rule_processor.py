@@ -1,7 +1,6 @@
 import re
-import copy
 
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -28,7 +27,6 @@ from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundError,
     OperationError,
@@ -549,66 +547,6 @@ class RuleProcessor:
             f"is_relationship_dataset. dataset_name={dataset_name}, result={result}"
         )
         return result
-
-    def get_size_unit_from_rule(self, rule: dict) -> Optional[str]:
-        """
-        Extracts size unit from rule if it was passed
-        """
-        rule_conditions: ConditionInterface = rule["conditions"]
-        for condition in rule_conditions.values():
-            value: dict = condition["value"]
-            if value["target"] == "dataset_size":
-                return value.get("unit")
-
-    def add_operator_to_rule_conditions(
-        self, rule: dict, target_to_operator_map: dict, domain: str
-    ):
-        """
-        Adds "operator" key to rule condition.
-        target_to_operator_map parameter is a dict
-        where keys are targets and values are operators.
-
-        The rule is passed and changed by reference.
-        """
-        conditions: ConditionInterface = rule["conditions"]
-        for condition in conditions.values():
-            target: str = (
-                condition.get("value", {}).get("target", "").replace("--", domain)
-            )
-            operator_to_add: Optional[Union[str, list]] = target_to_operator_map.get(
-                target
-            )
-            if not operator_to_add:
-                continue
-            if isinstance(operator_to_add, str):
-                condition["operator"] = operator_to_add
-            elif isinstance(operator_to_add, list):
-                nested_conditions = [
-                    {**condition, "operator": operator} for operator in operator_to_add
-                ]
-                condition.clear()  # delete all keys from dict
-                condition[AllowedConditionsKeys.ANY.value] = nested_conditions
-
-    def _preprocess_operation_params(
-        self, operation_params: OperationParams, domain_details: dict = None
-    ) -> OperationParams:
-        # uses shallow copy to not overwrite for subsequent
-        # operations and avoids costly deepcopy of dataframe
-        params_copy = copy.copy(operation_params)
-        current_domain = params_copy.domain
-        if domain_details.is_supp:
-            current_domain = domain_details.rdomain
-        for param_name in vars(params_copy):
-            if param_name in ("dataframe"):
-                continue
-            param_value = getattr(params_copy, param_name)
-            updated_value = self._replace_wildcards_in_value(
-                param_value, current_domain
-            )
-            if updated_value is not param_value:
-                updated_value = copy.deepcopy(updated_value)
-                setattr(params_copy, param_name, updated_value)
-        return params_copy
 
     def _replace_wildcards_in_value(self, value, domain: str):
         if value is None:
