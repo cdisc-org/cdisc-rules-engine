@@ -275,10 +275,15 @@ def validate_all_rules(
     engine_dir: str,
     python_cmd: str,
     output_dir: str,
+    core_ids: list[str] | None = None,
 ) -> bool:
     """
     Iterate every directory under Published/, run the validation shell script,
     parse results, and write the two report files.
+
+    Args:
+        core_ids: Optional list of rule IDs to restrict validation to.
+                  If None or empty, all rules are validated.
 
     Returns True if any rule failed, False if all passed.
     """
@@ -298,6 +303,21 @@ def validate_all_rules(
     if not rule_ids:
         print("ERROR: No rule directories found under Published/", file=sys.stderr)
         return True
+
+    if core_ids:
+        unknown = [cid for cid in core_ids if cid not in rule_ids]
+        if unknown:
+            print(
+                f"WARNING: The following requested core IDs were not found under Published/: {unknown}",
+                file=sys.stderr,
+            )
+        rule_ids = [rid for rid in rule_ids if rid in core_ids]
+        if not rule_ids:
+            print(
+                "ERROR: None of the requested core IDs exist under Published/",
+                file=sys.stderr,
+            )
+            return True
 
     print(f"Found {len(rule_ids)} rule(s) under Published/")
 
@@ -361,6 +381,14 @@ def _parse_args() -> argparse.Namespace:
         default=".",
         help="Directory where summary_table.md and detail_report.md are written (default: cwd).",
     )
+    parser.add_argument(
+        "--core-ids",
+        nargs="+",
+        metavar="CORE_ID",
+        default=None,
+        help="Optional list of rule IDs to validate (e.g. CORE-000001 CORE-000002). "
+        "If omitted, all Published rules are validated.",
+    )
     return parser.parse_args()
 
 
@@ -371,5 +399,6 @@ if __name__ == "__main__":
         engine_dir=os.path.abspath(_args.engine_dir),
         python_cmd=_args.python_cmd,
         output_dir=os.path.abspath(_args.output_dir),
+        core_ids=_args.core_ids,
     )
     sys.exit(1 if _any_failed else 0)
