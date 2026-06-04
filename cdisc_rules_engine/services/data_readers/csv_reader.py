@@ -1,6 +1,6 @@
 import tempfile
 
-from dask.dataframe import dd
+import dask.dataframe as dd
 
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.interfaces import DataReaderInterface
