@@ -98,7 +98,7 @@ jobs:
             CORE_IDS_ARG="--core-ids ${{ inputs.core_ids }}"
           fi
 
-          # CORE_IDS_ARG="--core-ids CORE-000001 CORE-000002 CORE-000003 CORE-000004" # TODO: Remove this before merging to main
+          CORE_IDS_ARG="--core-ids CORE-000001 CORE-000002 CORE-000003 CORE-000004 CORE-000005 CORE-000006" # TODO: Remove this before merging to main
 
           ./venv/bin/python engine/scripts/validate_published_rules.py \
             --rules-root "$(pwd)/open-rules" \
@@ -116,7 +116,7 @@ jobs:
         with:
           name: published-rules-validation-${{ github.run_id }}
           path: |
-            open-rules/Published/**/results/results.json
+            open-rules/Published/**/results/results.csv
             summary_table.md
             detail_report.md
           if-no-files-found: warn
