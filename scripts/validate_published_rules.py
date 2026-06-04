@@ -77,7 +77,7 @@ def _parse_case_result(line: str) -> dict:
         "Type": d["type"],
         "Number": str(d["num"]),
         "Execution": CHECKMARK if exec_ok else CROSS,
-        "Expected": CROSS if d.get("expected") is None else str(d["expected"]),
+        "Expected": CROSS if d.get("expected") == "" else str(d["expected"]),
         "Actual": str(d.get("actual", "")),
         "Match": CHECKMARK if match_ok else CROSS,
         # Private fields used when generating failure detail
