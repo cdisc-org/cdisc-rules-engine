@@ -42,12 +42,13 @@ python -m venv venv
 
 # Activate (Linux/Mac)
 source venv/bin/activate
+# Install dependencies (Linux/Mac)
+pip install -e . && pip install --group dev
 
 # Activate (Windows)
 .\venv\Scripts\Activate
-
-# Install dependencies
-pip install -e . && pip install --group dev
+# Install dependencies ()
+pip install -e .; pip install --group dev
 ```
 
 ---

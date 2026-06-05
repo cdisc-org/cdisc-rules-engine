@@ -143,15 +143,24 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
 
         result = builder.build()
 
-    expected_df = pd.DataFrame(
-        [
-            expected_results["ts.xpt"],
-            expected_results["dm.xpt"],
-            expected_results["ae.xpt"],
-        ]
-    ).astype(object).sort_values("dataset_location").reset_index(drop=True)
+    expected_df = (
+        pd.DataFrame(
+            [
+                expected_results["ts.xpt"],
+                expected_results["dm.xpt"],
+                expected_results["ae.xpt"],
+            ]
+        )
+        .astype(object)
+        .sort_values("dataset_location")
+        .reset_index(drop=True)
+    )
 
-    result_df = result.data[expected_df.columns].reset_index(drop=True)
+    result_df = (
+        result.data[expected_df.columns]
+        .sort_values("dataset_location")
+        .reset_index(drop=True)
+    )
 
     # Check that columns are the same
     assert list(result_df.columns) == list(expected_df.columns), "Columns do not match"
