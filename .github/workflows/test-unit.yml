@@ -16,8 +16,8 @@ jobs:
           python-version: "3.12"
       - name: Install requirements
         run: |
-          pip install -r requirements.txt
-          pip install --group dev -e .
+          pip install -r requirements-dev.txt
+          pip install -e .
       - name: Running Tests
         env:
           CDISC_LIBRARY_API_KEY: fakekey12341234

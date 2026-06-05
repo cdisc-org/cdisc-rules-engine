@@ -47,7 +47,7 @@ source venv/bin/activate
 .\venv\Scripts\Activate
 
 # Install dependencies
-pip install -e . && pip install --group dev
+python -m pip install -r requirements-dev.txt
 ```
 
 ---

@@ -34,7 +34,7 @@ This project enforces consistent formatting and linting via pre-commit hooks.
 - [`flake8`](https://flake8.pycqa.org/) — Python linter
 - [`prettier`](https://prettier.io/) — JSON, YAML, and Markdown formatter
 
-Both `black` and `flake8` are included in the `dev` dependency group in `pyproject.toml`. After installing dependencies, install the pre-commit hooks:
+Both `black` and `flake8` are included in `requirements-dev.txt`. After installing dependencies, install the pre-commit hooks:
 
 ```bash
 pre-commit install

@@ -66,7 +66,7 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         data_contents_with_vlm["variable_value_length"] = data_contents_with_vlm.data[
             ["variable_value", "define_vlm_data_type"]
         ].apply(
-            lambda row: ValuesDatasetBuilder.calculate_variable_value_length(
+            lambda row: self.calculate_variable_value_length(
                 row["variable_value"], row["define_vlm_data_type"]
             ),
             axis=1,
