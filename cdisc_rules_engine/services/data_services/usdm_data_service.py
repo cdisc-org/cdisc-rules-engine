@@ -400,7 +400,7 @@ class USDMDataService(BaseDataService):
 
     @staticmethod
     def __get_full_path(node: DatumInContext) -> str:
-        return str(node.full_path).replace(".[", "[").replace("(", "").replace(")", "")
+        return str(node.full_path).replace(".[", "[")
 
     def __get_datasets_content_index(self) -> List[dict]:
         """
