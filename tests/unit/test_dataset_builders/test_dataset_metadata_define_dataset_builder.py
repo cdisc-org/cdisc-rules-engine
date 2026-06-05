@@ -149,7 +149,7 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
             expected_results["dm.xpt"],
             expected_results["ae.xpt"],
         ]
-    ).astype(object).sort_values("dataset_location").reset_index(drop=True)
+    ).astype(object)
 
     result_df = result.data[expected_df.columns].reset_index(drop=True)
 
