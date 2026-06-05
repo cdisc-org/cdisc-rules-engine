@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from io import IOBase
 from typing import Iterable
 
@@ -53,3 +53,11 @@ class BaseReportData(ABC):
             else:
                 processed_values.append(value)
         return processed_values
+
+    @abstractmethod
+    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+        """
+        Return (header, rows) for the CSV output format.
+        Each row is a list of string values matching the header columns.
+        """
+        pass
