@@ -82,8 +82,8 @@ class DaskDataset(PandasDataset):
             self._data[key] = array_values
         elif isinstance(value, pd.Series):
             pdf = self._data.compute()
-            pdf[key] = value.values
-            self._data = dd.from_pandas(pdf, npartitions=1)
+            pdf[key] = value.reindex(pdf.index)
+            self._data = dd.from_pandas(pdf, npartitions=self._data.npartitions)
         elif isinstance(value, dd.DataFrame):
             for column in value:
                 self._data[column] = value[column]
