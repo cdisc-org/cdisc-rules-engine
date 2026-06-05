@@ -5,7 +5,7 @@ LOG_FORMAT: str = "[%(levelname)s %(asctime)s - %(filename)s:%(lineno)s] - %(mes
 
 NULL_FLAVORS = ["", None, {}, {None}, [], [None], np.nan]
 
-KNOWN_REPORT_EXTENSIONS = [".json", ".xlsx", ".xls"]
+KNOWN_REPORT_EXTENSIONS = [".json", ".xlsx", ".xls", ".csv"]
 
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
