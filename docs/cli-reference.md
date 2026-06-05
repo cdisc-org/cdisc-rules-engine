@@ -69,14 +69,14 @@ python core.py validate --help
 
 ### Output
 
-| Flag                                         | Description                                                                                                           |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `-o, --output TEXT`                          | Output file path (without extension). Extension is added automatically based on format.                               |
-| `-of, --output-format [JSON\|XLSX]`          | Output format.                                                                                                        |
-| `-rr, --raw-report`                          | Raw output format (JSON only).                                                                                        |
-| `-mr, --max-report-rows INTEGER`             | Max rows in the Issue Details tab of Excel output (default: 1000; 0 = unlimited). Also via `MAX_REPORT_ROWS` env var. |
-| `-me, --max-errors-per-rule INTEGER BOOLEAN` | Limit errors per rule. Format: `-me <limit> <per_dataset_flag>`. See below.                                           |
-| `-rt, --report-template TEXT`                | Path to a custom Excel report template.                                                                               |
+| Flag                                         | Description                                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output TEXT`                          | Output file path (without extension). Extension is added automatically based on format.                                         |
+| `-of, --output-format [JSON\|XLSX\|CSV]`     | Output format. `CSV` writes issue rows directly (Dataset, Record, Variable, Value) compatible with the open-rules test harness. |
+| `-rr, --raw-report`                          | Raw output format (JSON only).                                                                                                  |
+| `-mr, --max-report-rows INTEGER`             | Max rows in the Issue Details tab of Excel output (default: 1000; 0 = unlimited). Also via `MAX_REPORT_ROWS` env var.           |
+| `-me, --max-errors-per-rule INTEGER BOOLEAN` | Limit errors per rule. Format: `-me <limit> <per_dataset_flag>`. See below.                                                     |
+| `-rt, --report-template TEXT`                | Path to a custom Excel report template.                                                                                         |
 
 #### `--max-errors-per-rule` Detail
 

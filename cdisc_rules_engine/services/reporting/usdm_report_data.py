@@ -245,6 +245,17 @@ class USDMReportData(BaseReportData):
             )
         return errors
 
+    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+        header = ["path", "attribute", "value"]
+        rows = []
+        for issue in self.data_sheets.get("Issue Details", []):
+            path = issue.get("path") or ""
+            attributes = issue.get("attributes") or []
+            values = issue.get("values") or []
+            for attribute, value in zip(attributes, values):
+                rows.append([path, attribute, str(value)])
+        return header, rows
+
     def get_rules_report_data(self) -> list[dict]:
         """
         Generates the rules report data that goes into the excel export.
