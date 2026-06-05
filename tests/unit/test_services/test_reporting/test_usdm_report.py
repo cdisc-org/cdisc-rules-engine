@@ -116,6 +116,74 @@ def test_get_summary_data(mock_validation_results):
         assert error == summary_data[i]
 
 
+def test_get_csv_rows_header(mock_validation_results):
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    header, _ = report.get_csv_rows()
+    assert header == ["path", "attribute", "value"]
+
+
+def test_get_csv_rows_produces_one_row_per_attribute(mock_validation_results):
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    # 3 errors total (2 from CORE1, 1 from CORE2), each with 2 attributes → 6 rows
+    assert len(rows) == 6
+    for row in rows:
+        assert len(row) == 3
+
+
+def test_get_csv_rows_row_values(mock_validation_results):
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    attributes = {r[1] for r in rows}
+    assert attributes == {"AESTDY", "DOMAIN", "TTVAR1", "TTVAR2"}
+    for row in rows:
+        assert row[2] == "test"
+
+
+def test_get_csv_rows_empty_path_when_not_set(mock_validation_results):
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    # mock errors have no 'path' key, so path defaults to ""
+    assert all(r[0] == "" for r in rows)
+
+
+def test_get_csv_rows_empty_results():
+    report = USDMReportData(
+        [],
+        ["test"],
+        [],
+        0.0,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    header, rows = report.get_csv_rows()
+    assert header == ["path", "attribute", "value"]
+    assert rows == []
+
+
 def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results):
     # forcing None and str comparison in summary and details
     mock_validation_results[0].id = None
