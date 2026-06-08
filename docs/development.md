@@ -42,8 +42,6 @@ python -m venv venv
 
 # Activate (Linux/Mac)
 source venv/bin/activate
-# Install dependencies (Linux/Mac)
-pip install -e . && pip install --group dev
 
 # Activate (Windows)
 .\venv\Scripts\Activate
@@ -52,10 +50,10 @@ pip install -e . && pip install --group dev
 pip install uv
 
 # Install pinned dependencies from the primary & dev lockfiles
-uv pip sync pylock.toml pylock.dev.toml
+uv pip sync pylock.dev.toml
 
 # Install the package itself in editable mode
-pip install -e .
+pip install -e. 
 ```
 
 > **Note:** `pylock.toml` and `pylock.dev.toml` are standard lockfiles (PEP 751) and can be used
