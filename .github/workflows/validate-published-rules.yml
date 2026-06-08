@@ -81,8 +81,9 @@ jobs:
         run: |
           python -m venv venv
           ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install -r engine/requirements.txt
-
+          ./venv/bin/pip install uv
+          ./venv/bin/uv pip sync engine/pylock.toml
+          ./venv/bin/pip install -e engine/.
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------

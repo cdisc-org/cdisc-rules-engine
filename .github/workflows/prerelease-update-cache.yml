@@ -23,7 +23,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install requirements
-        run: pip install -r requirements.txt
+        run: |
+          pip install uv
+          uv pip sync pylock.toml
+          pip install -e .
 
       - name: Run Update Cache Script
         run: python core.py update-cache

@@ -47,9 +47,21 @@ pip install -e . && pip install --group dev
 
 # Activate (Windows)
 .\venv\Scripts\Activate
-# Install dependencies ()
-pip install -e .; pip install --group dev
+
+# Install uv (if not already installed)
+pip install uv
+
+# Install pinned dependencies from the primary & dev lockfiles
+uv pip sync pylock.toml pylock.dev.toml
+
+# Install the package itself in editable mode
+pip install -e .
 ```
+
+> **Note:** `pylock.toml` and `pylock.dev.toml` are standard lockfiles (PEP 751) and can be used
+> with any compatible tool. If you prefer not to use uv, you can install core dependencies via
+> standard pip (`pip install .`), though dev dependencies will need to be installed separately
+> and exact version pinning is only guaranteed when using a tool that supports `pylock.toml`.
 
 ---
 
