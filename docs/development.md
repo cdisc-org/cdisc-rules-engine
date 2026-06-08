@@ -53,7 +53,7 @@ pip install uv
 uv pip sync pylock.dev.toml
 
 # Install the package itself in editable mode
-pip install -e. 
+pip install -e.
 ```
 
 > **Note:** `pylock.toml` and `pylock.dev.toml` are standard lockfiles (PEP 751) and can be used

@@ -17,8 +17,8 @@ jobs:
       - name: Install requirements
         run: |
           pip install uv
-          uv pip sync pylock.dev.toml
-          pip install -e .
+          uv pip sync --system pylock.dev.toml
+          uv pip install --system -e .
       - name: Running Tests
         env:
           CDISC_LIBRARY_API_KEY: fakekey12341234

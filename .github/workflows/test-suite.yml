@@ -29,8 +29,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install uv
-          uv pip sync pylock.toml
-          pip install -e .
+          uv pip sync --system pylock.toml
+          uv pip install --system -e .
       - name: Update rules cache
         env:
           CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}

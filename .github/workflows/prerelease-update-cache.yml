@@ -25,7 +25,7 @@ jobs:
       - name: Install requirements
         run: |
           pip install uv
-          uv pip sync pylock.toml
+          uv pip sync --system pylock.toml
           pip install -e .
 
       - name: Run Update Cache Script
