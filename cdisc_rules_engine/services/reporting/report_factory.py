@@ -13,6 +13,7 @@ from cdisc_rules_engine.services.reporting.sdtm_report_data import SDTMReportDat
 from .base_report import BaseReport
 from .excel_report import ExcelReport
 from .json_report import JsonReport
+from .csv_report import CsvReport
 
 
 class ReportFactory:
@@ -46,6 +47,7 @@ class ReportFactory:
         self._output_type_service_map: dict[str, Type[BaseReport]] = {
             ReportTypes.XLSX.value: ExcelReport,
             ReportTypes.JSON.value: JsonReport,
+            ReportTypes.CSV.value: CsvReport,
         }
         self._standard_type_map: dict[str, Type[BaseReportData]] = {
             "usdm": USDMReportData,
