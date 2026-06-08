@@ -98,7 +98,7 @@ def get_execution_status(results):
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
-    standard, version = normalize_adam_input(standard, version)
+    standard, version = normalize_standard_input(standard, version)
     return f"{standard.lower()}-{version.replace('.', '-')}-codelists"
 
 
@@ -115,7 +115,7 @@ def get_library_variables_metadata_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
     if not standard_substandard:
-        standard_type, standard_version = normalize_adam_input(
+        standard_type, standard_version = normalize_standard_input(
             standard_type, standard_version
         )
         return f"library_variables_metadata/{standard_type}/{standard_version}"
@@ -126,7 +126,7 @@ def get_library_variables_metadata_cache_key(
 def get_standard_details_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str = None
 ) -> str:
-    standard_type, standard_version = normalize_adam_input(
+    standard_type, standard_version = normalize_standard_input(
         standard_type, standard_version
     )
     if not standard_substandard:
@@ -135,24 +135,32 @@ def get_standard_details_cache_key(
         return f"standards/{standard_type}/{standard_version}/{standard_substandard.lower()}"
 
 
-def normalize_adam_input(standard: str, version: str) -> tuple:
+def normalize_standard_input(standard: str, version: str) -> tuple:
     """
-    Normalizes ADAM user input to the expected internal format.
-    Args:
-        standard: User input like 'adamig', 'adam-adae'
-        version: User input like '1-0'
-    Returns:
-        Tuple of (normalized_standard, normalized_version)
-        Examples:
-        - ('adamig', '1-0') -> ('adam', 'adamig-1-0')
-        - ('adam-adae', '1-0') -> ('adam', 'adam-adae-1-0')
-        - ('sdtm', '3-4') -> ('sdtm', '3-4')
+    Normalizes user CLI input for standards that have sub-variant prefixes,
+    translating them into the internal library path format used in the cache.
+
+    The CDISC Library API stores sub-variants with the variant name folded
+    into the version field.
+
+    Examples:
+        ('adamig', '1-3')         -> ('adam', 'adamig-1-3')
+        ('adam-adae', '1-0')      -> ('adam', 'adam-adae-1-0')
+        ('sendig-dart', '1-1')    -> ('sendig', 'dart-1-1')
+        ('sendig-ar', '1-0')      -> ('sendig', 'ar-1-0')
+        ('sendig-genetox', '1-0') -> ('sendig', 'genetox-1-0')
+        ('sdtmig-ap', '1-0')      -> ('sdtmig', 'ap-1-0')
+        ('sdtmig-md', '1-0')      -> ('sdtmig', 'md-1-0')
     """
-    if standard:
-        standard_lower = standard.lower()
-        if standard_lower in ADAM_PRODUCTS:
-            return "adam", f"{standard_lower}-{version}"
-    # Non-ADAM standard - keep as is
+    if not standard:
+        return standard, version
+    standard_lower = standard.lower()
+    if standard_lower in ADAM_PRODUCTS:
+        return "adam", f"{standard_lower}-{version}"
+    for base in ("sendig", "sdtmig"):
+        if standard_lower.startswith(f"{base}-"):
+            sub = standard_lower[len(base) + 1 :]
+            return base, f"{sub}-{version}"
     return standard, version
 
 
@@ -242,7 +250,7 @@ def get_variable_codelist_map_cache_key(standard: str, version: str, subversion)
     if subversion:
         return f"{standard}-{version}-{subversion}-codelists"
     else:
-        standard, version = normalize_adam_input(standard, version)
+        standard, version = normalize_standard_input(standard, version)
         return f"{standard}-{version}-codelists"
 
 
