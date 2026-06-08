@@ -17,7 +17,7 @@ jobs:
       - name: Install requirements
         run: |
           pip install uv
-          uv pip sync --system pylock.dev.toml
+          uv pip sync --system --no-build pylock.dev.toml
           uv pip install --system -e .
       - name: Running Tests
         env:

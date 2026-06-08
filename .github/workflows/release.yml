@@ -103,7 +103,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install uv build twine
-          uv pip sync --system pylock.toml
+          uv pip sync --system --no-build pylock.toml
           uv pip install --system -e .
       - name: Build package
         run: |

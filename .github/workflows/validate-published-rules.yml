@@ -80,10 +80,9 @@ jobs:
       - name: Install engine dependencies
         run: |
           python -m venv venv
-          ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install uv
-          ./venv/bin/uv pip sync engine/pylock.toml
-          ./venv/bin/pip install -e engine/.
+          venv/bin/pip install uv
+          venv/bin/uv pip sync --no-build pylock.dev.toml
+          venv/bin/uv pip install -e .
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
