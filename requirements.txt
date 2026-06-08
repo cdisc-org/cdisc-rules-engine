@@ -1,5 +1,3 @@
-# Lockfile: exact pinned versions for reproducible installs.
-# Dependency constraints are defined in pyproject.toml.
 business_rules_enhanced==1.4.8
 cachetools==6.1.0
 cdisc-library-client==0.1.6
