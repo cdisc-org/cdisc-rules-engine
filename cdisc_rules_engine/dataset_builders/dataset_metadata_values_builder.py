@@ -23,6 +23,10 @@ class ValueCheckDatasetMetadataDatasetBuilder(ValuesDatasetBuilder):
             dataset_name=self.dataset_metadata.name,
         )
         dataset_metadata = dataset_metadata.to_dict(orient="records")[0]
+        dataset_metadata = {
+            k: v.item() if hasattr(v, "item") else v
+            for k, v in dataset_metadata.items()
+        }
         data_contents_long_df = super().build()
         row_count = len(data_contents_long_df)
         for key, value in dataset_metadata.items():
