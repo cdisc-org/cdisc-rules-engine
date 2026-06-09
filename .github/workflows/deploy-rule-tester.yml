@@ -26,6 +26,11 @@ jobs:
     environment: ${{ github.event_name == 'pull_request' && 'DEV' || inputs.environment || 'PROD' }}
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Generate requirements.txt from pyproject.toml
+        run: pip install pip-tools && pip-compile pyproject.toml -o requirements.txt --no-header
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
