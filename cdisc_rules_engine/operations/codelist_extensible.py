@@ -28,8 +28,8 @@ class CodelistExtensible(BaseOperation):
         ct_df = self.evaluation_dataset.__class__.from_dict(ct_data)
         ct_df = ct_df.astype(
             {
-                "version": "string",
-                "codelist_code": "string",
+                "version": str,
+                "codelist_code": str,
             }
         )
         cast_cols = {self.params.ct_version: str}

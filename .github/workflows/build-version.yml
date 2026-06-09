@@ -19,6 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip install twine
           pip install .
       - name: Update CDISC standards cache
         env:
@@ -71,6 +72,7 @@ jobs:
 #      - name: Install dependencies
 #        run: |
 #          pip install --upgrade pip
+#          pip install twine
 #          pip install .
 #       - name: Update CDISC standards cache
 #         env:
@@ -113,6 +115,7 @@ jobs:
 #      - name: Install dependencies
 #        run: |
 #          pip install --upgrade pip
+#          pip install twine
 #          pip install .
 #       - name: Update CDISC standards cache
 #         env:

@@ -21,6 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip install twine
           pip install .
 
       - name: Build Binary (Linux)
