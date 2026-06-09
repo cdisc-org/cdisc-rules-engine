@@ -1,6 +1,5 @@
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
-import dask.array as da
 import pandas as pd
 import re
 import dask
@@ -76,13 +75,9 @@ class DaskDataset(PandasDataset):
         )
 
     def __setitem__(self, key, value):
-        if isinstance(value, list):
-            chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
-            array_values = da.from_array(value, chunks=tuple(chunks))
-            self._data[key] = array_values
-        elif isinstance(value, pd.Series):
+        if isinstance(value, (list, pd.Series)):
             pdf = self._data.compute()
-            pdf[key] = value.reindex(pdf.index)
+            pdf[key] = value if isinstance(value, list) else value.reindex(pdf.index)
             self._data = dd.from_pandas(pdf, npartitions=self._data.npartitions)
         elif isinstance(value, dd.DataFrame):
             for column in value:
