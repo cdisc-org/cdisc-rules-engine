@@ -5,7 +5,9 @@ import os
 import pytest
 
 
-@pytest.mark.skip(reason="Requires API key to run. Run Locally with valid API key to test.")
+@pytest.mark.skip(
+    reason="Requires API key to run. Run Locally with valid API key to test."
+)
 class TestCoreIssue363(unittest.TestCase):
     def test_post_request(self):
         # URL to send the POST request to

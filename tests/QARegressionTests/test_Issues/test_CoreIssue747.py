@@ -1,7 +1,6 @@
 import subprocess
 import os
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,

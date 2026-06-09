@@ -364,13 +364,12 @@ class TestValidate(unittest.TestCase):
             "-l",
             "info",
             "-r",
-            "CORE-000237"
+            "CORE-000237",
         ]
         exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-
 
     def test_validate_with_log_level_error(self):
         args = [

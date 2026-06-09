@@ -2,7 +2,6 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 
 
@@ -47,7 +46,9 @@ class TestCoreIssue1487(unittest.TestCase):
         assert (
             target_row[4] in target_row[4]
         ), "Expected error message for CORE-000354 not found."
-        assert target_row[5] == "ISSUE REPORTED", "CORE-000354 status should be ISSUE REPORTED."
+        assert (
+            target_row[5] == "ISSUE REPORTED"
+        ), "CORE-000354 status should be ISSUE REPORTED."
 
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)
