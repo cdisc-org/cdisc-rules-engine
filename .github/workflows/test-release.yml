@@ -80,10 +80,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install uv build twine
-          uv pip sync --system --no-build pylock.toml
-          uv pip install --system -e .
+          pip install --upgrade pip
+          pip install .
 
 
       - name: Build package

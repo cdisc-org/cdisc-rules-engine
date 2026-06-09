@@ -125,14 +125,9 @@ python -m venv venv
 ### 3. Install Dependencies
 
 ```bash
-pip install uv
-uv pip sync pylock.toml
+pip install --upgrade pip
+pip install . --group dev
 ```
-
-> **Note:** `pylock.toml` is a standard format (PEP 751) and can be used with any compatible tool.
-> If you prefer not to use uv, you can install directly from `pyproject.toml` using standard pip
-> (`pip install .`) or any other PEP 517-compatible tool such as pip-tools or Poetry. Note that
-> exact version pinning is only guaranteed when using a tool that supports `pylock.toml`.
 
 ### 4. Populate the Cache
 

@@ -28,9 +28,8 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install uv
-          uv pip sync --system --no-build pylock.toml
-          uv pip install --system -e .
+          pip install --upgrade pip
+          pip install . --group dev
       - name: Update rules cache
         env:
           CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}

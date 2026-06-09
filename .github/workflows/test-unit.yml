@@ -14,11 +14,10 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Install requirements
+      - name: Install dependencies
         run: |
-          pip install uv
-          uv pip sync --system --no-build pylock.dev.toml
-          uv pip install --system -e .
+          pip install --upgrade pip
+          pip install . --group dev
       - name: Running Tests
         env:
           CDISC_LIBRARY_API_KEY: fakekey12341234
