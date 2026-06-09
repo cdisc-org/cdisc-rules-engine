@@ -99,7 +99,7 @@ jobs:
             echo "dask_success=true" >> $GITHUB_OUTPUT
             echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
             echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
-            python CORE_Test_Suite/scripts/validation_summary.py dask-results.json >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/dask-results.json >> $GITHUB_STEP_SUMMARY
           else
             echo "Failed to generate dask-results.json"
             echo "dask_success=false" >> $GITHUB_OUTPUT
