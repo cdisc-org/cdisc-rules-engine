@@ -13,7 +13,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal
@@ -23,9 +22,9 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
             "core",
             "validate",
             "-s",
-            "send",
+            "sendig",
             "-v",
-            "1-0",
+            "3-1",
             "-dp",
             os.path.join(
                 "tests",
@@ -81,7 +80,7 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)
 
-    def test_negaive_dataset(self):
+    def test_negative_dataset(self):
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -89,9 +88,9 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
             "core",
             "validate",
             "-s",
-            "send",
+            "sendig",
             "-v",
-            "1-0",
+            "3-1",
             "-dp",
             os.path.join(
                 "tests",
@@ -122,7 +121,7 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
         dataset_values = [row for row in dataset_sheet.iter_rows(values_only=True)][1:]
         dataset_values = [row for row in dataset_values if any(row)]
         assert len(dataset_values) > 0
-        assert dataset_values[0][0] == "pp.xpt"
+        assert dataset_values[0][0] == "PP"
         assert dataset_values[0][1] == "Pharmacokinetics Parameters"
         assert dataset_values[0][-1] == 4
 
@@ -133,7 +132,7 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
         ][1:]
         summary_values = [row for row in summary_values if any(row)]
         assert len(summary_values) > 0
-        assert summary_values[0][0] == "pp.xpt"
+        assert summary_values[0][0] == "PP"
         assert summary_values[0][1] == "CDISC.SENDIG.SEND282"
         assert summary_values[0][3] == 2
 

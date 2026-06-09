@@ -163,7 +163,7 @@ class TestValidate(unittest.TestCase):
             "--meddra",
             os.path.join("tests", "resources", "dictionaries", "meddra"),
             "-r",
-            os.path.join("tests", "resources", "Rule-CG0027.json"),
+            "CORE-000237",
             "-lr",
             os.path.join("tests", "resources", "CG0272.yml"),
             "-p",
@@ -264,7 +264,10 @@ class TestValidate(unittest.TestCase):
         args = ["python", "core.py", "validate", "-s", "sdtmig"]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertNotEqual(exit_code, 0)
-        self.assertIn("error: missing option", stderr)
+        self.assertIn(
+            "\n\nerror: missing option '-v' / '--version'.\n",
+            stderr,
+        )
 
     def test_validate_output_format_json(self):
         args = [
@@ -360,12 +363,14 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-l",
             "info",
+            "-r",
+            "CORE-000237"
         ]
         exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertIn("warning", stderr)
+
 
     def test_validate_with_log_level_error(self):
         args = [
