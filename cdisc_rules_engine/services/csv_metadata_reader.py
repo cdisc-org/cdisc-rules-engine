@@ -57,7 +57,7 @@ class DatasetCSVMetadataReader:
 
         if not self.datasets_csv_path.exists():
             logger.info("No datasets file found for %s", self.dataset)
-            return {}
+            return {"dataset_name": self.dataset}
 
         try:
             datasets_df = pd.read_csv(self.datasets_csv_path, encoding=self.encoding)

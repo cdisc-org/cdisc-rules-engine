@@ -179,9 +179,9 @@ class TestEdgeCases:
 VARIABLES_CSV = textwrap.dedent(
     """\
     dataset,variable,label,type,length
-    patients.csv,id,Patient ID,integer,10
-    patients.csv,name,Patient Name,string,50
-    patients.csv,age,Patient Age,integer,3
+    patients,id,Patient ID,integer,10
+    patients,name,Patient Name,string,50
+    patients,age,Patient Age,integer,3
 """
 )
 
@@ -197,7 +197,7 @@ DATA_CSV = textwrap.dedent(
 DATASETS_CSV = textwrap.dedent(
     """\
     Filename,Label
-    patients.csv,Patient Dataset
+    patients,Patient Dataset
 """
 )
 
@@ -306,8 +306,8 @@ class TestDatasetCSVMetadataReaderRead:
         variables_with_nan = textwrap.dedent(
             """\
             dataset,variable,label,type,length
-            patients.csv,id,Patient ID,integer,
-        """
+            patients,id,Patient ID,integer,
+            """
         )
         _write(self._variables_path(), variables_with_nan)
         reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
