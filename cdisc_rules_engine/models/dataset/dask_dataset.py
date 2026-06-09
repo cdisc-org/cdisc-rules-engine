@@ -362,14 +362,7 @@ class DaskDataset(PandasDataset):
     def to_dict(self, **kwargs) -> dict:
         orient = kwargs.get("orient", "dict")
         if orient == "records":
-            reset_df = self._data.reset_index(drop=True)
-            all_partitions = list(
-                reset_df.map_partitions(lambda x: x.to_dict(orient="records"))
-            )
-            flattened = []
-            for partition in all_partitions:
-                flattened.extend(partition)
-            return flattened
+            return self._data.compute().reset_index(drop=True).to_dict(orient="records")
         else:
             return self._data.compute().to_dict(**kwargs)
 
