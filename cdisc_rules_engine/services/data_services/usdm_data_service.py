@@ -400,7 +400,18 @@ class USDMDataService(BaseDataService):
 
     @staticmethod
     def __get_full_path(node: DatumInContext) -> str:
-        return str(node.full_path).replace(".[", "[")
+        parts = []
+        current = node
+        while current is not None and current.context is not None:
+            parts.append(str(current.path))
+            current = current.context
+        result = ""
+        for part in reversed(parts):
+            if part.startswith("["):
+                result += part
+            else:
+                result = (result + "." if result else "") + part
+        return result
 
     def __get_datasets_content_index(self) -> List[dict]:
         """
