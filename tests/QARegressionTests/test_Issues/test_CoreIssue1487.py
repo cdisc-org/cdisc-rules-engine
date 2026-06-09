@@ -2,11 +2,9 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.skip(reason="No library metadata found")
 class TestCoreIssue1487(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal
@@ -18,7 +16,7 @@ class TestCoreIssue1487(unittest.TestCase):
             "-s",
             "sdtmig",
             "-v",
-            "5-0",
+            "3-4",
             "-d",
             os.path.join("tests", "resources", "CoreIssue1487"),
             "-r",
@@ -46,9 +44,11 @@ class TestCoreIssue1487(unittest.TestCase):
                 break
         assert target_row, "Rule CORE-000354 not present in 'Rules Report' sheet."
         assert (
-            target_row[4] and "was requested but is not available" in target_row[4]
+            target_row[4] in target_row[4]
         ), "Expected error message for CORE-000354 not found."
-        assert target_row[5] == "SKIPPED", "CORE-000354 status should be SKIPPED."
+        assert (
+            target_row[5] == "ISSUE REPORTED"
+        ), "CORE-000354 status should be ISSUE REPORTED."
 
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)

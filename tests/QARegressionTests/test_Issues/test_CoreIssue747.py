@@ -1,7 +1,6 @@
 import subprocess
 import os
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -18,10 +17,9 @@ have both positive and negative cases,
 including the supp and split domains"""
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_CG0019():
     command = (
-        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue747", "Rule_underscores.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue747", "Datasets.json")
@@ -71,7 +69,7 @@ def test_CG0019():
 
     assert len(coreid_values) == 4
 
-    assert rule_status_column_values[0] == "SUCCESS"
+    assert rule_status_column_values[0] == "ISSUE REPORTED"
 
     # Close the workbook
     workbook.close()
