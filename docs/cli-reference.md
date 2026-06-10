@@ -22,9 +22,6 @@ python core.py validate --help
 | `-s, --standard TEXT`     | CDISC standard to validate against (e.g. `sdtmig`, `tig`). Also via `PRODUCT` env var.        |
 | `-v, --version TEXT`      | Standard version (e.g. `3-4`). Also via `VERSION` env var.                                    |
 | `-ss, --substandard TEXT` | **Required for TIG.** One of `SDTM`, `SEND`, `ADaM`, `CDASH`. Also via `SUBSTANDARD` env var. |
-| `-uc, --use-case TEXT`    | Use Case for TIG Custom Domains. When performing a TIG validation with custom domain(s), this |
-|                           | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,      |
-|                           | `ANALYSIS`. Also via `USE_CASE` env var.                                                      |
 
 ### Dataset Input
 
@@ -33,6 +30,9 @@ python core.py validate --help
 | `-d, --data TEXT`              | Path to directory containing dataset files. Only the last value is used if specified multiple times.                |
 | `-dp, --dataset-path TEXT`     | Absolute path to a single dataset file. Can be specified multiple times.                                            |
 | `-dxp, --define-xml-path TEXT` | Path to Define-XML. Also via `DEFINE_XML` env var.                                                                  |
+| `-uc, --use-case TEXT`         | Use Case for TIG Custom Domains. When performing a TIG validation with custom domain(s), this                       |
+|                                | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,                            |
+|                                | `ANALYSIS`. Also via `USE_CASE` env var.                                                                            |
 | `-ft, --filetype TEXT`         | File extension filter applied to the `-d` directory (e.g. `xpt`). Has higher priority than --dataset-path parameter |
 | `-e, --encoding TEXT`          | File encoding for reading datasets (default: `utf-8`). Common values: `cp1252`, `latin-1`, `utf-16`.                |
 | `-vcp, --variables-csv-path`   | Path to `_variables.csv` when using multiple `-dp` paths across different folders.                                  |
