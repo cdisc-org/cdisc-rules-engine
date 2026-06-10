@@ -13,7 +13,6 @@ This guide explains how to extend CDISC rule definitions with your own custom at
 - [Best Practices](#best-practices)
 - [FAQ](#faq)
 
-
 ## Overview
 
 The CDISC Rules Engine schema supports custom extensions to help organizations better categorize, manage, and filter rules. These extensions maintain compatibility with standard CDISC rule definitions while adding organizational metadata tailored to your specific needs.
