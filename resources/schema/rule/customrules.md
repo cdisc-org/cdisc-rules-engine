@@ -1,119 +1,21 @@
-# Custom Editor Columns and Custom Rules
+# CDISC Custom Rule Extensions
 
-This guide explains how to extend CDISC rule definitions with custom attributes and how to access these attributes using the custom columns editor syntax.
+This guide explains how to extend CDISC rule definitions with your own custom attributes while maintaining compatibility with the core CDISC schema structure.
 
 ## Table of Contents
 
-- [Custom Columns in Editor Syntax](#custom-columns-in-editor-syntax)
-  - [Overview and Basic Syntax](#overview-and-basic-syntax)
-  - [Identifying Arrays in YAML](#identifying-arrays-in-yaml)
-  - [Identifying Arrays in JSON](#identifying-arrays-in-json)
 - [Custom Attributes Overview](#overview)
 - [What Can and Cannot Be Changed](#what-can-and-cannot-be-changed)
 - [Custom Schema Attributes](#custom-attributes)
-- [Custom Columns in Editor Syntax](#custom-columns-in-editor-syntax)
 - [Adding a Custom Organization](#adding-a-custom-organization)
 - [Example Rule with Custom Attributes](#example-rule-with-custom-attributes)
-- [Filtering Rules with Custom Columns](#filtering-rules-with-custom-columns)
 - [Validation](#validation)
 - [Best Practices](#best-practices)
 - [FAQ](#faq)
 
-## Custom Columns in Editor Syntax
-
-Custom columns allow you to query nested rule structures, including arrays, using a simple path syntax. This allows for better access and filtering for both standard and custom attributes.
-
-## Overview and Basic Syntax
-
-Custom columns allow you to query nested rule structures, including arrays, using a simple path syntax. All custom column paths use `.` to separate each nested object property of the rule and use `@` to denote array elements.
-
-The general rules for constructing paths:
-
-1. The path is **case-sensitive**
-2. The `@` symbol must come directly before the array name
-3. Array notation must be used to access array elements
-4. The path must reflect the exact structure of your data
-
-### Identifying Arrays in YAML
-
-When viewing a YAML document, you can identify arrays by looking for these indicators:
-
-1. **Hyphen (-) at the Start**: Arrays elements are marked with a leading hyphen
-
-```yaml
-Authorities: #This is an array
-  - Organization: "Org1" # This is an element within the array
-    Standards: #This is an array (within the Authorities Array)
-      - Name: "Standard1" # This is also an element within the array
-      - Name: "Standard2" # Another element within the array
-```
-
-This means the Authorities array contains elements with Organization and Standards Properties on them. Similarly, Standards is an array with each element in the array having a Name property.
-
-2. **No Hyphen**: Regular object properties don't have a hyphen
-
-```yaml
-Core:
-  Id: "123"
-  Status: "Active"
-```
-
-### Example YAML with Path Mapping
-
-```yaml
-Authorities:
-  - Organization: "Org1" # @Authorities.Organization
-    Standards:
-      - Name: "Standard1" # @Authorities.@Standards.Name
-Core:
-  Id: "123" # Core.Id
-  Status: "Active" # Core.Status
-```
-
-The presence of hyphens (-) is your key indicator that you need to use @ notation in your custom path
-
-### Identifying Arrays in JSON
-
-You can also inspect the rule json looking for `[` square brackets to denote arrays.
-
-### Single Array Example
-
-For data structured like:
-
-```json
-{
-  "Check": {
-    "all": [{ "operator": "equal_to" }, { "operator": "not_equal_to" }]
-  }
-}
-```
-
-Use: `Check.@all.operator` All is an array, containing objects with operator keys
-
-### Nested Arrays Example
-
-For data structured like:
-
-```json
-{
-  "Authorities": [
-    {
-      "Organization": "Org1",
-      "Standards": [{ "Name": "Standard1" }, { "Name": "Standard2" }]
-    }
-  ]
-}
-```
-
-Use: `@Authorities.@Standards.Name`
-
-# CDISC Custom Rule Extensions
-
-This guide explains how to extend CDISC rule definitions with your own custom attributes while maintaining compatibility with the core CDISC schema structure, and how to access these attributes using the custom columns editor syntax.
-
 ## Overview
 
-The CDISC Rules Engine schema supports custom extensions to help organizations better categorize, manage, and filter rules. These extensions maintain compatibility with standard CDISC rule definitions while adding organizational metadata tailored to your specific needs. The custom columns editor syntax allows you to query and filter these properties using a simple path notation.
+The CDISC Rules Engine schema supports custom extensions to help organizations better categorize, manage, and filter rules. These extensions maintain compatibility with standard CDISC rule definitions while adding organizational metadata tailored to your specific needs.
 
 ## What Can and Cannot Be Changed
 
@@ -300,14 +202,6 @@ If you want to formally define custom properties in your schema (recommended for
    - Provide validation rules or constraints for each property
    - Share the documentation with all teams that will be using the rules
 
-### Accessing Custom Properties
-
-To access your custom properties in the editor using custom columns:
-
-- Simple property: `Category.MyCustomProperty`
-- Nested property: `Category.ReviewInfo.LastReviewer`
-- Array property: `Category.@ValidationHistory.Result`
-
 ## Example Rule with Custom Attributes
 
 Here's a complete example of a rule with custom attributes in the Category section:
@@ -374,39 +268,6 @@ Scope:
 Sensitivity: Record
 ```
 
-## Filtering Rules with Custom Columns
-
-The custom columns editor syntax allows you to create powerful filters based on your custom attributes. Here are some common filtering scenarios:
-
-### Setting Up Custom Columns
-
-1. Add a custom column using the column selector
-2. Enter the path to the attribute you want to display/filter
-3. Set the column name
-
-### Filter Examples
-
-| To Filter By           | Custom Column Path                                       | Filter Value Example  |
-| ---------------------- | -------------------------------------------------------- | --------------------- |
-| Sponsor                | `@Authorities.Category.@Sponsors`                        | "Sponsor A"           |
-| Specific vendor        | `@Authorities.Category.@Vendors`                         | "CRO B"               |
-| Therapeutic area       | `@Authorities.Category.@TherapeuticAreas`                | "Oncology"            |
-| Trial                  | `@Authorities.Category.@Trials`                          | "ONC-2025-01"         |
-| Purpose                | `@Authorities.Category.Purpose`                          | "RAW data validation" |
-| Keyword                | `@Authorities.Category.@Keywords`                        | "mykeyword"           |
-| Custom property        | `@Authorities.Category.Department`                       | "Clinical Data Mgmt"  |
-| Authority organization | `@Authorities.Organization`                              | "MyCompany"           |
-| Standard name          | `@Authorities.@Standards.Name`                           | "Internal Standard"   |
-| Rule ID                | `@Authorities.@Standards.@References.Rule_Identifier.Id` | "INT001"              |
-
-### Complex Filtering
-
-Combine multiple custom columns to create complex filters:
-
-1. Add column for `@Authorities.Category.@TherapeuticAreas` and filter for "Oncology"
-2. Add column for `@Authorities.Category.Purpose` and filter for "RAW data validation"
-3. Add column for `@Authorities.Organization` and filter for "MyCompany"
-
 ## Best Practices
 
 When adding custom attributes to rules:
@@ -416,7 +277,6 @@ When adding custom attributes to rules:
 3. **Use controlled vocabularies** - For fields like TherapeuticAreas, maintain a list of standard terms
 4. **Consider hierarchies** - Categorize using hierarchical structures when appropriate
 5. **Avoid redundancy** - Don't duplicate information already in core CDISC properties
-6. **Path naming** - When adding custom columns, use clear names that indicate the data being displayed
 
 ## Validation
 

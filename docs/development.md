@@ -173,7 +173,7 @@ These are derived from the OpenAPI specs in [`cdisc-org/DDF-RA`](https://github.
 
 ## Dataset Format Reference (JSON)
 
-When validating a single rule with `--local-rules`, JSON datasets must match the Dataset-JSON format used by the rule editor:
+When validating a single rule with `--local-rules`, JSON datasets must match the json format used by the deprecated rule editor:
 
 ```json
 {
