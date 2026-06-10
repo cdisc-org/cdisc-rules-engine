@@ -32,7 +32,7 @@ def test_check_xx_zz_rule(column_name):
 
 
 @pytest.mark.parametrize("column_name", ["ANL23FL"])
-def test_check_xx_zz_rule(column_name):
+def test_check_xx_zz_rule_2(column_name):
     ad = AdamVariableReader()
     ad.check_xx_zz(column_name)
     assert ad.selection_algorithm["ANL23FL"] == 23

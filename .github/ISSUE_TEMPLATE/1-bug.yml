@@ -39,7 +39,9 @@ body:
       value: https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
   - type: markdown
     attributes:
-      value: "\nIn the next fields, please provide a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)."
+      value: |
+        In the next fields, please provide a
+        [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example).
   - type: input
     id: cli_command
     validations:

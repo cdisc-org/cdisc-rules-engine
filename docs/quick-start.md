@@ -1,16 +1,20 @@
 # Quick Start
 
-> **Need help?** See [FAQ & Troubleshooting](faq.md) or post in [GitHub Discussions](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a).
+> **Need help?** See [FAQ & Troubleshooting](faq.md) or post in
+> [GitHub Discussions](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a).
 
 ---
 
 ## Option 1: Pre-Built Executable
 
-**Best for:** Users who want to run CORE without installing Python or managing dependencies.
+**Best for:** Users who want to run CORE without installing Python or managing
+dependencies.
 
 ### 1. Download
 
-Download the latest executable for your operating system from the [Releases page](https://github.com/cdisc-org/cdisc-rules-engine/releases) and unzip the downloaded file.
+Download the latest executable for your operating system from the
+[Releases page](https://github.com/cdisc-org/cdisc-rules-engine/releases) and unzip
+the downloaded file.
 
 ### 2. Verify the Installation
 
@@ -39,9 +43,14 @@ chmod +x ./core
 
 ### 3. (Optional) Update the Cache
 
-Executable releases ship with a pre-populated cache, so you can skip this step and go straight to validation. If you want the latest published rules, see [CLI Reference → update-cache](cli-reference.md#updating-the-cache-update-cache) for API key setup and options.
+Executable releases ship with a pre-populated cache, so you can skip this step and go
+straight to validation. If you want the latest published rules, see
+[CLI Reference → update-cache](cli-reference.md#updating-the-cache-update-cache) for
+API key setup and options.
 
-> **Note:** Rules published after a release may depend on engine features not present in that executable. When in doubt, wait for the next release rather than updating the cache manually.
+> **Note:** Rules published after a release may depend on engine features not present
+> in that executable. When in doubt, wait for the next release rather than updating the
+> cache manually.
 
 ### 4. Run a Validation
 
@@ -83,7 +92,7 @@ Test files are cleaned up automatically after completion.
   Check your version:
 
 ```bash
-  python --version
+python --version
 ```
 
 Install Python 3.12 from [python.org](https://www.python.org/downloads/) if needed.
@@ -92,7 +101,7 @@ Install Python 3.12 from [python.org](https://www.python.org/downloads/) if need
   Check your version:
 
 ```bash
-  git --version
+git --version
 ```
 
 Install Git from [git-scm.com](https://git-scm.com/downloads) if needed.
@@ -154,8 +163,12 @@ CORE supports the following input formats:
 | **XLSX**   | Microsoft Excel                      |
 | **CSV**    | CORE Comma Separated Value Test Data |
 
-> **Note:** See [here](https://github.com/cdisc-org/cdisc-open-rules/blob/main/README.md#rule-authoring-and-test-data-creation-process) for a description of CSV formatting
-> **Note:** Define-XML files must be provided via `--define-xml-path` (`-dxp`), not through the dataset directory.
+> **Note:** See the
+> [CSV formatting description](https://github.com/cdisc-org/cdisc-open-rules/blob/main/README.md#rule-authoring-and-test-data-creation-process)
+> for details on CSV formatting.
+>
+> **Note:** Define-XML files must be provided via `--define-xml-path` (`-dxp`), not
+> through the dataset directory.
 
 ---
 
@@ -173,4 +186,5 @@ Command summary:
 | `list-rule-sets` | List standards and versions in the cache          |
 | `list-ct`        | List controlled terminology packages in the cache |
 
-> Throughout these docs, examples use `python core.py`. If you're using the executable, replace this with `.\core.exe` (Windows) or `./core` (Linux/Mac).
+> Throughout these docs, examples use `python core.py`. If you're using the executable,
+> replace this with `.\core.exe` (Windows) or `./core` (Linux/Mac).

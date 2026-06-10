@@ -6,5 +6,6 @@ exclude = .github,
     .pytest_cache,
     cdisc_rules_engine/resources,
     venv,
+    .venv,
     build,
     dist

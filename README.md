@@ -1,14 +1,17 @@
+# cdisc-rules-engine
+
 <p align="center">
   <a href="https://www.cdisc.org">
-  <img src="./docs/CORE_logo_sm.png">
+    <img src="./docs/CORE_logo_sm.png" alt="CDISC CORE Logo">
   </a>
 </p>
 
-[![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120)
+[![PyPI](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine)
+[![Docker](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
-# cdisc-rules-engine
-
-Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
+Open source offering of the CDISC Rules Engine, a tool designed for validating clinical
+trial data against data standards.
 
 ## Quick Start Documentation
 
@@ -28,12 +31,15 @@ Full documentation lives in the [`docs/`](docs/index.md) directory and is hosted
 
 ### Questions or Need Help?
 
-If you need any assistance or encounter errors during setup, check or reach out via our [Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a?discussions_q=) board
+If you need any assistance or encounter errors during setup, check or reach out via our
+[Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a?discussions_q=)
+board.
 
 ### Submit an Issue
 
-If you encounter any bugs or have feature requests please submit an issue on our GitHub repository:
-[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+If you encounter any bugs or have feature requests please submit an issue on our
+GitHub repository:
+[GitHub Issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
 
 When submitting an issue, please include:
 

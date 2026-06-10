@@ -32,7 +32,7 @@ def test_get_term_hierarchies():
     terms = factory.install_terms(dictionary_path)
     expected_term_hierarchies = set(
         [
-            f"TESTSOC{i+1}/TESTHLGT{i+1}/TESTHLT{i+1}/TESTPT{i+1}/TESTLLT{i+1}"
+            f"TESTSOC{i + 1}/TESTHLGT{i + 1}/TESTHLT{i + 1}/TESTPT{i + 1}/TESTLLT{i + 1}"
             for i in range(len(terms[TermTypes.LLT.value]))
         ]
     )
