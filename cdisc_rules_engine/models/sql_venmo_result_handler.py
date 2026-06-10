@@ -347,7 +347,7 @@ class SqlVenmoResultHandler(BaseActions):
             self.data_service.pgi.execute_sql(query)
             result_rows = self.data_service.pgi.fetch_all()
             if result_rows and len(result_rows) > 0:
-                return result_rows[0].get("value")
+                return [row.get("value") for row in result_rows if row.get("value") is not None]
             return None
         except Exception as e:
             return f"Query error: {str(e)}"
