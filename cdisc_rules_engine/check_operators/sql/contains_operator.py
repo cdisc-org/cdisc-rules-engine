@@ -21,7 +21,7 @@ class ContainsOperator(BaseSqlOperator):
         if target in self.operation_variables:
             target_var = self.operation_variables[target]
             if target_var.type == "collection" and value_is_literal:
-                return self._handle_target_is_collection(target, comparator)
+                return self._handle_target_is_collection(target, comparator, value_is_literal)
 
         target_column = self.replace_prefix(target)
 
