@@ -1,9 +1,13 @@
 import subprocess
 from platform import system
-from os import listdir, remove
+from os import environ, listdir, remove
 
 
 def run_command(args, shell):
+    env = environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    env["PYTHONUTF8"] = "1"
+
     try:
         completed_process = subprocess.run(
             args,
@@ -12,9 +16,8 @@ def run_command(args, shell):
             universal_newlines=True,
             check=True,
             encoding="utf8",
-            # test_test_command and windows seem to be happy with shell=True
-            # test_validate on linux needs shell=False
             shell=shell or system() == "Windows",
+            env=env,
         )
         return (
             completed_process.returncode,

@@ -15,8 +15,7 @@ Conformance rules are maintained separately in
 - Report an issue with an existing rule's logic
 - Contribute a rule implementation
 
-Please open an issue or pull request in that repository. Rule authoring can also be done
-through the hosted [CORE Rule Editor](https://cdisc-org.github.io/conformance-rules-editor).
+Please open an issue or pull request in that repository.
 
 For questions about rule contribution workflows, post in
 [GitHub Discussions](https://github.com/cdisc-org/cdisc-rules-engine/discussions).

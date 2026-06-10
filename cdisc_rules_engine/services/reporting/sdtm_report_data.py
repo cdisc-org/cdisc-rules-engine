@@ -347,6 +347,18 @@ class SDTMReportData(BaseReportData):
             )
         return errors
 
+    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+        header = ["Dataset", "Record", "Variable", "Value"]
+        rows = []
+        for issue in self.data_sheets.get("Issue Details", []):
+            dataset = (issue.get("dataset") or "").removesuffix(".csv")
+            record = str(issue.get("row", ""))
+            variables = issue.get("variables") or []
+            values = issue.get("values") or []
+            for variable, value in zip(variables, values):
+                rows.append([dataset, record, variable, str(value)])
+        return header, rows
+
     def get_rules_report_data(self) -> list[dict]:
         """
         Generates the rules report data that goes into the excel export.

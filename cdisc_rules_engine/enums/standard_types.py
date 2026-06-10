@@ -6,6 +6,9 @@ class StandardTypes(BaseEnum):
 
     SDTMIG = "sdtmig"
     SENDIG = "sendig"
-    ADAM = "adam"
+    SENDIG_AR = "sendig-ar"
+    SENDIG_DART = "sendig-dart"
+    SENDIG_GENETOX = "sendig-genetox"
+    ADAMIG = "adamig"
     TIG = "tig"
     USDM = "usdm"

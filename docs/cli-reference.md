@@ -23,9 +23,6 @@ python core.py validate --help
 | `-s, --standard TEXT`     | CDISC standard to validate against (e.g. `sdtmig`, `tig`). Also via `PRODUCT` env var.        |
 | `-v, --version TEXT`      | Standard version (e.g. `3-4`). Also via `VERSION` env var.                                    |
 | `-ss, --substandard TEXT` | **Required for TIG.** One of `SDTM`, `SEND`, `ADaM`, `CDASH`. Also via `SUBSTANDARD` env var. |
-| `-uc, --use-case TEXT`    | Use Case for TIG Custom Domains. When performing a TIG validation with custom domain(s), this |
-|                           | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,      |
-|                           | `ANALYSIS`. Also via `USE_CASE` env var.                                                      |
 
 ### Dataset Input
 
@@ -34,6 +31,9 @@ python core.py validate --help
 | `-d, --data TEXT`              | Path to directory containing dataset files. Only the last value is used if specified multiple times.                |
 | `-dp, --dataset-path TEXT`     | Absolute path to a single dataset file. Can be specified multiple times.                                            |
 | `-dxp, --define-xml-path TEXT` | Path to Define-XML. Also via `DEFINE_XML` env var.                                                                  |
+| `-uc, --use-case TEXT`         | Use Case for TIG Custom Domains. When performing a TIG validation with custom domain(s), this                       |
+|                                | must be given to identify the custom domains' use case One of `INDH`, `PROD`, `NONCLIN`,                            |
+|                                | `ANALYSIS`. Also via `USE_CASE` env var.                                                                            |
 | `-ft, --filetype TEXT`         | File extension filter applied to the `-d` directory (e.g. `xpt`). Has higher priority than --dataset-path parameter |
 | `-e, --encoding TEXT`          | File encoding for reading datasets (default: `utf-8`). Common values: `cp1252`, `latin-1`, `utf-16`.                |
 | `-vcp, --variables-csv-path`   | Path to `_variables.csv` when using multiple `-dp` paths across different folders.                                  |
@@ -70,14 +70,14 @@ python core.py validate --help
 
 ### Output
 
-| Flag                                         | Description                                                                                                           |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `-o, --output TEXT`                          | Output file path (without extension). Extension is added automatically based on format.                               |
-| `-of, --output-format [JSON\|XLSX]`          | Output format.                                                                                                        |
-| `-rr, --raw-report`                          | Raw output format (JSON only).                                                                                        |
-| `-mr, --max-report-rows INTEGER`             | Max rows in the Issue Details tab of Excel output (default: 1000; 0 = unlimited). Also via `MAX_REPORT_ROWS` env var. |
-| `-me, --max-errors-per-rule INTEGER BOOLEAN` | Limit errors per rule. Format: `-me <limit> <per_dataset_flag>`. See below.                                           |
-| `-rt, --report-template TEXT`                | Path to a custom Excel report template.                                                                               |
+| Flag                                         | Description                                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output TEXT`                          | Output file path (without extension). Extension is added automatically based on format.                                         |
+| `-of, --output-format [JSON\|XLSX\|CSV]`     | Output format. `CSV` writes issue rows directly (Dataset, Record, Variable, Value) compatible with the open-rules test harness. |
+| `-rr, --raw-report`                          | Raw output format (JSON only).                                                                                                  |
+| `-mr, --max-report-rows INTEGER`             | Max rows in the Issue Details tab of Excel output (default: 1000; 0 = unlimited). Also via `MAX_REPORT_ROWS` env var.           |
+| `-me, --max-errors-per-rule INTEGER BOOLEAN` | Limit errors per rule. Format: `-me <limit> <per_dataset_flag>`. See below.                                                     |
+| `-rt, --report-template TEXT`                | Path to a custom Excel report template.                                                                                         |
 
 #### `--max-errors-per-rule` Detail
 

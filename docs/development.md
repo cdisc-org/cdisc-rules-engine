@@ -184,7 +184,7 @@ To update or add a schema version:
 ## Dataset Format Reference (JSON)
 
 When validating a single rule with `--local-rules`, JSON datasets must match the
-Dataset-JSON format used by the rule editor:
+json format used by the deprecated rule editor:
 
 ```json
 {
