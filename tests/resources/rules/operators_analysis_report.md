@@ -4,9 +4,9 @@
 
 - Total rules without check operators: 302
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 116
+- Total implemented PostgreSQL operators: 122
 - Missing operators (in rules but not implemented): 1
-- Extra operators (implemented but not used in rules): 59
+- Extra operators (implemented but not used in rules): 65
 
 ## ✅ Implementation Status
 
@@ -41,6 +41,9 @@ The following operators are implemented but not currently used in any rules:
 - is_not_valid_medrt_code_reference
 - is_not_valid_medrt_code_term_pair
 - is_not_valid_medrt_term_reference
+- is_not_valid_snomed_code_reference
+- is_not_valid_snomed_code_term_pair
+- is_not_valid_snomed_term_reference
 - is_not_valid_unii_code_reference
 - is_not_valid_unii_code_term_pair
 - is_not_valid_unii_term_reference
@@ -59,6 +62,9 @@ The following operators are implemented but not currently used in any rules:
 - is_valid_medrt_code_reference
 - is_valid_medrt_code_term_pair
 - is_valid_medrt_term_reference
+- is_valid_snomed_code_reference
+- is_valid_snomed_code_term_pair
+- is_valid_snomed_term_reference
 - is_valid_unii_code_reference
 - is_valid_unii_code_term_pair
 - is_valid_unii_term_reference
