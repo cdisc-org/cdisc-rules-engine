@@ -52,6 +52,7 @@ from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
 from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
 from .variable_metadata_equal_to_operator import VariableMetadataEqualToOperator
+from .is_latest_available_exdict_version import IsLatestAvailableExDictVersionOperator
 
 MEDDRA_CODE_SUFFIX_MAP = {
     "BDSYCD": "SOC",
@@ -298,6 +299,10 @@ class PostgresQLOperators(BaseType):
         ),
         "is_not_valid_snomed_code_term_pair": lambda data: NotOperator(
             data, lambda d: ValidExDictCodeTermPairsOperator(d, StaticTables.SNOMED_TABLE_NAME.value)
+        ),
+        "is_latest_available_external_dictionary_version": lambda data: IsLatestAvailableExDictVersionOperator(data),
+        "is_not_latest_available_external_dictionary_version": lambda data: NotOperator(
+            data, lambda d: IsLatestAvailableExDictVersionOperator(d)
         ),
     }
 
