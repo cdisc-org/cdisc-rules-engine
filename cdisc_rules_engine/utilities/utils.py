@@ -13,7 +13,6 @@ import pandas as pd
 from dataclasses import fields
 from datetime import datetime
 from typing import Callable, List, Optional, Union
-from uuid import UUID
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
@@ -36,19 +35,6 @@ def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) ->
     return superclass(
         **{field.name: getattr(instance, field.name) for field in fields(superclass)}
     )
-
-
-def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
-    """
-    Converts file size from bytes to any of the following units:
-    KB, MB, GB
-    """
-    unit_to_denominator_map: dict = {
-        "KB": 1024,
-        "MB": 1024**2,
-        "GB": 1024**3,
-    }
-    return size_in_bytes / unit_to_denominator_map[desired_unit]
 
 
 def get_execution_status(results):
@@ -112,21 +98,8 @@ def get_execution_status(results):
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
-    standard, version = normalize_adam_input(standard, version)
+    standard, version = normalize_standard_input(standard, version)
     return f"{standard.lower()}-{version.replace('.', '-')}-codelists"
-
-
-def is_valid_iso_date(date_to_validate: str) -> bool:
-    """
-    Validates a given date against an ISO Format.
-    Valid date example: 2022-02-04T15:29:20.173854
-    """
-    is_valid = True
-    try:
-        datetime.fromisoformat(date_to_validate)
-    except ValueError:
-        is_valid = False
-    return is_valid
 
 
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
@@ -142,7 +115,7 @@ def get_library_variables_metadata_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
     if not standard_substandard:
-        standard_type, standard_version = normalize_adam_input(
+        standard_type, standard_version = normalize_standard_input(
             standard_type, standard_version
         )
         return f"library_variables_metadata/{standard_type}/{standard_version}"
@@ -153,7 +126,7 @@ def get_library_variables_metadata_cache_key(
 def get_standard_details_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str = None
 ) -> str:
-    standard_type, standard_version = normalize_adam_input(
+    standard_type, standard_version = normalize_standard_input(
         standard_type, standard_version
     )
     if not standard_substandard:
@@ -162,24 +135,32 @@ def get_standard_details_cache_key(
         return f"standards/{standard_type}/{standard_version}/{standard_substandard.lower()}"
 
 
-def normalize_adam_input(standard: str, version: str) -> tuple:
+def normalize_standard_input(standard: str, version: str) -> tuple:
     """
-    Normalizes ADAM user input to the expected internal format.
-    Args:
-        standard: User input like 'adamig', 'adam-adae'
-        version: User input like '1-0'
-    Returns:
-        Tuple of (normalized_standard, normalized_version)
-        Examples:
-        - ('adamig', '1-0') -> ('adam', 'adamig-1-0')
-        - ('adam-adae', '1-0') -> ('adam', 'adam-adae-1-0')
-        - ('sdtm', '3-4') -> ('sdtm', '3-4')
+    Normalizes user CLI input for standards that have sub-variant prefixes,
+    translating them into the internal library path format used in the cache.
+
+    The CDISC Library API stores sub-variants with the variant name folded
+    into the version field.
+
+    Examples:
+        ('adamig', '1-3')         -> ('adam', 'adamig-1-3')
+        ('adam-adae', '1-0')      -> ('adam', 'adam-adae-1-0')
+        ('sendig-dart', '1-1')    -> ('sendig', 'dart-1-1')
+        ('sendig-ar', '1-0')      -> ('sendig', 'ar-1-0')
+        ('sendig-genetox', '1-0') -> ('sendig', 'genetox-1-0')
+        ('sdtmig-ap', '1-0')      -> ('sdtmig', 'ap-1-0')
+        ('sdtmig-md', '1-0')      -> ('sdtmig', 'md-1-0')
     """
-    if standard:
-        standard_lower = standard.lower()
-        if standard_lower in ADAM_PRODUCTS:
-            return "adam", f"{standard_lower}-{version}"
-    # Non-ADAM standard - keep as is
+    if not standard:
+        return standard, version
+    standard_lower = standard.lower()
+    if standard_lower in ADAM_PRODUCTS:
+        return "adam", f"{standard_lower}-{version}"
+    for base in ("sendig", "sdtmig"):
+        if standard_lower.startswith(f"{base}-"):
+            sub = standard_lower[len(base) + 1 :]
+            return base, f"{sub}-{version}"
     return standard, version
 
 
@@ -243,29 +224,6 @@ def serialize_rule(rule: dict) -> dict:
     return serialized_rule
 
 
-def get_cache_last_updated_key() -> str:
-    return "CACHE_LAST_UPDATED"
-
-
-def remove_none_keys_from_dict(dict_to_remove: dict):
-    """
-    Removes dict keys whose value is None.
-    Changes the dict by reference.
-    """
-    # dict can't change its size during iteration
-    dict_copy: dict = copy.deepcopy(dict_to_remove)
-    for key, value in dict_copy.items():
-        if value is None:
-            dict_to_remove.pop(key)
-
-
-def list_contains_duplicates(list_to_check: list) -> bool:
-    """
-    Checks if a list contains duplicated items.
-    """
-    return bool(len(list_to_check) > len(set(list_to_check)))
-
-
 def generate_report_filename(generation_time: str) -> str:
     timestamp = (
         datetime.fromisoformat(generation_time)
@@ -292,7 +250,7 @@ def get_variable_codelist_map_cache_key(standard: str, version: str, subversion)
     if subversion:
         return f"{standard}-{version}-{subversion}-codelists"
     else:
-        standard, version = normalize_adam_input(standard, version)
+        standard, version = normalize_standard_input(standard, version)
         return f"{standard}-{version}-codelists"
 
 
@@ -300,9 +258,9 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
     return f"meddra_valid_code_term_pairs_{meddra_path}"
 
 
-def get_item_index_by_condition[
-    T
-](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[int]:
+def get_item_index_by_condition[T](
+    list_of_dicts: List[T], condition: Callable[[T], bool]
+) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
@@ -312,26 +270,15 @@ def get_item_index_by_condition[
             return index
 
 
-def search_in_list[
-    T
-](list_of_dicts: List[T], condition: Callable[[T], bool]) -> Optional[T]:
+def search_in_list[T](
+    list_of_dicts: List[T], condition: Callable[[T], bool]
+) -> Optional[T]:
     """
     Returns an element of unsorted list that applies to the condition.
     """
     index = get_item_index_by_condition(list_of_dicts, condition)
     if index is not None:
         return list_of_dicts[index]
-
-
-def is_valid_uuid(string_to_validate: str) -> bool:
-    """
-    Checks if a given string is a valid UUID.
-    """
-    try:
-        UUID(string_to_validate)
-    except ValueError:
-        return False
-    return True
 
 
 def get_dictionary_path(directory_path: str, file_name: str) -> str:

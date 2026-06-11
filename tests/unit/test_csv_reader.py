@@ -176,30 +176,24 @@ class TestEdgeCases:
         assert result.count(str(dm)) == 1
 
 
-VARIABLES_CSV = textwrap.dedent(
-    """\
+VARIABLES_CSV = textwrap.dedent("""\
     dataset,variable,label,type,length
     patients.csv,id,Patient ID,integer,10
     patients.csv,name,Patient Name,string,50
     patients.csv,age,Patient Age,integer,3
-"""
-)
+""")
 
-DATA_CSV = textwrap.dedent(
-    """\
+DATA_CSV = textwrap.dedent("""\
     id,name,age
     1,Alice,30
     2,Bob,25
     3,Carol,40
-"""
-)
+""")
 
-DATASETS_CSV = textwrap.dedent(
-    """\
+DATASETS_CSV = textwrap.dedent("""\
     Filename,Label
     patients.csv,Patient Dataset
-"""
-)
+""")
 
 
 def _write(path: Path, content: str) -> None:
@@ -303,12 +297,10 @@ class TestDatasetCSVMetadataReaderRead:
         assert sizes == {"id": 10, "name": 50, "age": 3}
 
     def test_variable_name_to_size_map_with_nan_length(self):
-        variables_with_nan = textwrap.dedent(
-            """\
+        variables_with_nan = textwrap.dedent("""\
             dataset,variable,label,type,length
             patients.csv,id,Patient ID,integer,
-        """
-        )
+        """)
         _write(self._variables_path(), variables_with_nan)
         reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
         sizes = reader.read()["variable_name_to_size_map"]

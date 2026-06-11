@@ -1,9 +1,7 @@
-import asyncio
 from abc import ABC, abstractmethod
-from functools import wraps, partial
+from functools import wraps
 from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
-import os
 import numpy as np
 import dask.dataframe as dd
 
@@ -30,7 +28,6 @@ from cdisc_rules_engine.constants.data_structures import (
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
@@ -105,9 +102,6 @@ class BaseDataService(DataServiceInterface, ABC):
         self.cache_service = cache_service
         self._reader_factory = reader_factory
         self._config = config
-        self.cdisc_library_service: CDISCLibraryService = CDISCLibraryService(
-            self._config.getValue("CDISC_LIBRARY_API_KEY", ""), self.cache_service
-        )
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.standard_substandard = kwargs.get("standard_substandard")
@@ -118,22 +112,6 @@ class BaseDataService(DataServiceInterface, ABC):
         # Call the subclass implementation to populate metadata
         self._datasets_metadata: dict[str, SDTMDatasetMetadata] = (
             self._initialize_datasets_metadata(**kwargs)
-        )
-
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> DatasetInterface:
-        """
-        Generic function to return dataset based on the type.
-        dataset_type param can be: contents, metadata, variables_metadata.
-        """
-        dataset_type_to_function_map: dict = {
-            DatasetTypes.CONTENTS.value: self.get_dataset,
-            DatasetTypes.METADATA.value: self.get_dataset_metadata,
-            DatasetTypes.VARIABLES_METADATA.value: self.get_variables_metadata,
-        }
-        return dataset_type_to_function_map[dataset_type](
-            dataset_name=dataset_name, **params
         )
 
     def concat_split_datasets(
@@ -162,12 +140,6 @@ class BaseDataService(DataServiceInterface, ABC):
             full_dataset = full_dataset.concat(tagged_dataset, ignore_index=True)
 
         return full_dataset
-
-    def check_filepath(self, dataset_names: List[str]) -> List:
-        """
-        Check if single file with multiple datasets.
-        """
-        return any(not os.path.exists(name) for name in dataset_names)
 
     def get_dataset_class(
         self,
@@ -202,10 +174,8 @@ class BaseDataService(DataServiceInterface, ABC):
             return OCCDS
         return OTHER
 
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
+    @cached_dataset(DatasetTypes.DATASET_METADATA.value)
+    def get_dataset_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
@@ -351,14 +321,6 @@ class BaseDataService(DataServiceInterface, ABC):
         elif check_presence("RDOMAIN"):
             return check_presence(variable)
 
-    def _domain_starts_with(self, domain, variable):
-        """
-        Checks if the given dataset-class string starts with
-         a particular variable string.
-        Returns True/False
-        """
-        return domain.startswith(variable)
-
     @staticmethod
     def _replace_nans_in_numeric_cols_with_none(dataset: DatasetInterface):
         """
@@ -384,17 +346,6 @@ class BaseDataService(DataServiceInterface, ABC):
         else:
             dataset.data = replace_nan_values_in_df(dataset.data, valid_columns)
         return dataset
-
-    async def _async_get_dataset(
-        self, function_to_call: Callable, dataset_name: str, **kwargs
-    ) -> DatasetInterface:
-        """
-        Asynchronously executes passed function_to_call.
-        """
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, partial(function_to_call, dataset_name=dataset_name, **kwargs)
-        )
 
     def _async_get_datasets(
         self, function_to_call: Callable, dataset_names: List[str], **kwargs

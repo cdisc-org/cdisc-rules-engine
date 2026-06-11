@@ -87,10 +87,6 @@ class InvalidCSVFile(EngineError):
     description = "CSV data is malformed."
 
 
-class NumberOfAttemptsExceeded(EngineError):
-    pass
-
-
 class InvalidDictionaryVariable(EngineError):
     description = (
         "Provided dictionary variable does not correspond to a dictionary term type"

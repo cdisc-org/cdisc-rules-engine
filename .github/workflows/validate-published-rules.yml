@@ -1,0 +1,136 @@
+# ==============================================================================
+# This workflow:
+#   1. Checks out cdisc-rules-engine (the engine itself)
+#   2. Checks out cdisc-open-rules (rules + test data) into ./open-rules/
+#   3. Installs engine Python dependencies
+#   4. Iterates every Published/ rule from cdisc-open-rules
+#   5. Runs the engine against each test case
+#   6. Compares actual output with expected results.csv baseline
+#   7. Publishes a Markdown report to Job Summary and as an artifact
+# ==============================================================================
+name: Validate Published Rules
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      rules_ref:
+        description: "Branch/tag/SHA of cdisc-open-rules to validate against"
+        required: false
+        default: "main"
+      core_ids:
+        description: "Space-separated list of rule IDs to validate (e.g. CORE-000001 CORE-000002). Leave blank to validate all."
+        required: false
+        default: ""
+
+jobs:
+  validate-published-rules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout cdisc-rules-engine
+      # -----------------------------------------------------------------------
+      - name: Checkout cdisc-rules-engine
+        uses: actions/checkout@v6
+        with:
+          repository: cdisc-org/cdisc-rules-engine
+          path: engine
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 2. Checkout cdisc-open-rules (rules + test data + helper scripts)
+      # -----------------------------------------------------------------------
+      - name: Checkout cdisc-open-rules
+        uses: actions/checkout@v6
+        with:
+          repository: cdisc-org/cdisc-open-rules
+          ref: ${{ inputs.rules_ref}}
+          path: open-rules
+
+      # -----------------------------------------------------------------------
+      # 2b. Debug — verify directory layout
+      # -----------------------------------------------------------------------
+      - name: Debug — list workspace layout
+        run: |
+          echo "=== Workspace root ==="
+          ls -la
+          echo "=== open-rules/ ==="
+          ls -la open-rules/ || echo "open-rules/ NOT FOUND"
+          echo "=== open-rules/Published/ (first 10) ==="
+          ls open-rules/Published/ 2>/dev/null | head -10 || echo "Published/ NOT FOUND"
+          echo "=== engine/ ==="
+          ls engine/ | head -10 || echo "engine/ NOT FOUND"
+
+      # -----------------------------------------------------------------------
+      # 3. Set up Python
+      # -----------------------------------------------------------------------
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # -----------------------------------------------------------------------
+      # 4. Install engine dependencies
+      # -----------------------------------------------------------------------
+      - name: Install engine dependencies
+        run: |
+          python -m venv venv
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r engine/requirements.txt
+
+      # -----------------------------------------------------------------------
+      # 5. Run validation for every Published rule
+      # -----------------------------------------------------------------------
+      - name: Run validation for all Published rules
+        id: validate
+        continue-on-error: true
+        run: |
+          chmod +x open-rules/.github/scripts/run_validation.sh
+
+          CORE_IDS_ARG=""
+          if [ -n "${{ inputs.core_ids }}" ]; then
+            CORE_IDS_ARG="--core-ids ${{ inputs.core_ids }}"
+          fi
+
+          ./venv/bin/python engine/scripts/validate_published_rules.py \
+            --rules-root "$(pwd)/open-rules" \
+            --engine-dir "$(pwd)/engine" \
+            --python-cmd "$(pwd)/venv/bin/python" \
+            --output-dir "$(pwd)" \
+            $CORE_IDS_ARG
+
+      # -----------------------------------------------------------------------
+      # 6. Upload both reports + raw results as artifacts
+      # -----------------------------------------------------------------------
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: published-rules-validation-${{ github.run_id }}
+          path: |
+            open-rules/Published/**/results/results.csv
+            summary_table.md
+            detail_report.md
+          if-no-files-found: warn
+
+      # -----------------------------------------------------------------------
+      # 7. Write ONLY the summary table to GitHub Actions Job Summary
+      # -----------------------------------------------------------------------
+      - name: Write summary table to workflow summary
+        if: always()
+        run: |
+          [ -f summary_table.md ] && cat summary_table.md >> $GITHUB_STEP_SUMMARY || true
+
+      # -----------------------------------------------------------------------
+      # 8. Fail the job if any rule failed
+      # -----------------------------------------------------------------------
+      - name: Check overall status
+        if: steps.validate.outcome == 'failure'
+        run: |
+          echo "One or more published rules failed validation — see the artifacts for detail_report.md."
+          exit 1

@@ -1,7 +1,6 @@
 import re
-import copy
 
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -25,9 +24,9 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundError,
     OperationError,
@@ -47,6 +46,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
+from cdisc_rules_engine.utilities.sdtm_utilities import is_custom_domain
 
 
 class RuleProcessor:
@@ -267,15 +267,43 @@ class RuleProcessor:
         self,
         rule: dict,
         standard: str,
-        use_case: str,
+        standard_substandard: str,
+        dataset_metadata,
+        custom_domain_use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
             return True
-        use_cases = rule.get("use_case") or []
-        if not use_cases:
+        use_cases = (
+            [uc.strip() for uc in rule.get("use_case", "").split(",")]
+            if rule.get("use_case")
+            else []
+        )
+        substandard = standard_substandard.upper()
+        if substandard not in USE_CASE_DOMAINS:
+            return False
+        domain_to_check = dataset_metadata.domain
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain_to_check = dataset_metadata.rdomain
+        # Handle ADaM datasets with AD prefix
+        if substandard == "ADAM" and domain_to_check.startswith("AD"):
+            return "ANALYSIS" in use_cases
+
+        # Standard domain check
+        allowed_domains = set()
+        for use in use_cases:
+            if use in USE_CASE_DOMAINS[substandard]:
+                allowed_domains.update(USE_CASE_DOMAINS[substandard][use])
+        if domain_to_check in allowed_domains:
             return True
-        use_cases = [uc.strip() for uc in use_cases.split(",")]
-        return use_case in use_cases
+
+        domain_is_custom = is_custom_domain(self.library_metadata, domain_to_check)
+        if not domain_is_custom:
+            return False
+        if not custom_domain_use_case:
+            raise ValueError(
+                f"Custom domain '{domain_to_check}' requires a use case -uc in validation command but none was provided."
+            )
+        return custom_domain_use_case in use_cases
 
     @classmethod
     def rule_applies_to_entity(
@@ -399,6 +427,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 term_value=operation.get("term_value"),
                 value_is_reference=operation.get("value_is_reference", False),
+                order_insensitive=operation.get("order_insensitive", True),
             )
             try:
                 # execute operation
@@ -519,66 +548,6 @@ class RuleProcessor:
         )
         return result
 
-    def get_size_unit_from_rule(self, rule: dict) -> Optional[str]:
-        """
-        Extracts size unit from rule if it was passed
-        """
-        rule_conditions: ConditionInterface = rule["conditions"]
-        for condition in rule_conditions.values():
-            value: dict = condition["value"]
-            if value["target"] == "dataset_size":
-                return value.get("unit")
-
-    def add_operator_to_rule_conditions(
-        self, rule: dict, target_to_operator_map: dict, domain: str
-    ):
-        """
-        Adds "operator" key to rule condition.
-        target_to_operator_map parameter is a dict
-        where keys are targets and values are operators.
-
-        The rule is passed and changed by reference.
-        """
-        conditions: ConditionInterface = rule["conditions"]
-        for condition in conditions.values():
-            target: str = (
-                condition.get("value", {}).get("target", "").replace("--", domain)
-            )
-            operator_to_add: Optional[Union[str, list]] = target_to_operator_map.get(
-                target
-            )
-            if not operator_to_add:
-                continue
-            if isinstance(operator_to_add, str):
-                condition["operator"] = operator_to_add
-            elif isinstance(operator_to_add, list):
-                nested_conditions = [
-                    {**condition, "operator": operator} for operator in operator_to_add
-                ]
-                condition.clear()  # delete all keys from dict
-                condition[AllowedConditionsKeys.ANY.value] = nested_conditions
-
-    def _preprocess_operation_params(
-        self, operation_params: OperationParams, domain_details: dict = None
-    ) -> OperationParams:
-        # uses shallow copy to not overwrite for subsequent
-        # operations and avoids costly deepcopy of dataframe
-        params_copy = copy.copy(operation_params)
-        current_domain = params_copy.domain
-        if domain_details.is_supp:
-            current_domain = domain_details.rdomain
-        for param_name in vars(params_copy):
-            if param_name in ("dataframe"):
-                continue
-            param_value = getattr(params_copy, param_name)
-            updated_value = self._replace_wildcards_in_value(
-                param_value, current_domain
-            )
-            if updated_value is not param_value:
-                updated_value = copy.deepcopy(updated_value)
-                setattr(params_copy, param_name, updated_value)
-        return params_copy
-
     def _replace_wildcards_in_value(self, value, domain: str):
         if value is None:
             return value
@@ -635,7 +604,8 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
-        standard,
+        standard: str,
+        substandard: str,
         use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
@@ -653,6 +623,8 @@ class RuleProcessor:
         if not self.rule_applies_to_use_case(
             rule,
             standard,
+            substandard,
+            dataset_metadata,
             use_case,
         ):
             reason = (

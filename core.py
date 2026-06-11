@@ -48,7 +48,7 @@ DEFAULT_CACHE_PATH = os.path.join(
 )
 
 
-def validate_encoding(ctx, param, value):
+def validate_encoding(_ctx, _param, value):
     if value is None:
         return DEFAULT_ENCODING
     try:
@@ -275,7 +275,7 @@ def _validate_no_arguments(logger) -> None:
     logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
-def load_custom_dotenv(ctx, param, value):
+def load_custom_dotenv(_ctx, _param, value):
     if not value:
         return value
     if os.path.exists(value):
@@ -283,7 +283,7 @@ def load_custom_dotenv(ctx, param, value):
     return value
 
 
-def load_custom_dotenv_from_data_options(ctx, param, value):
+def load_custom_dotenv_from_data_options(_ctx, _param, value):
     if not value:
         return value
     if isinstance(value, str):
@@ -384,7 +384,7 @@ def load_custom_dotenv_from_data_options(ctx, param, value):
     default=None,
     type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
     help=(
-        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Specifies the CDISC TIG use case for all custom domains in a validation run"
         "Any of INDH, PROD, NONCLIN, or ANALYSIS."
     ),
     envvar="USE_CASE",
@@ -600,6 +600,13 @@ def validate(  # noqa
     load_dotenv(dotenv_path)
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
+    if define_xml_path and dotenv_path and os.getenv("DEFINE_XML"):
+        dxp = Path(define_xml_path)
+        if not dxp.is_absolute() and dxp.parent == Path("."):
+            resolved = Path(dotenv_path).parent / define_xml_path
+            if resolved.is_file():
+                define_xml_path = str(resolved)
+
     if not custom_standard:
         standard = standard.lower()
         supported_standards = StandardTypes.values()
@@ -626,10 +633,8 @@ def validate(  # noqa
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     if standard == "tig":
-        if not substandard or not use_case:
-            logger.error(
-                "Standard 'tig' requires both --substandard and --use-case to be specified."
-            )
+        if not substandard:
+            logger.error("Standard 'tig' requires --substandard to be specified.")
             ctx.exit(2)
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(

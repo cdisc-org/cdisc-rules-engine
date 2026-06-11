@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import List, Union
 from dateutil.parser._parser import ParserError
 import traceback
+import pandas as pd
 
 from business_rules import export_rule_data
 from business_rules.engine import run
@@ -33,6 +34,7 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
+from cdisc_rules_engine.models.dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
@@ -58,6 +60,8 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
+
+pd.options.mode.copy_on_write = True
 
 
 class RulesEngine:
@@ -149,7 +153,9 @@ class RulesEngine:
                     )
                     break
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
-                    include_split = rule["domains"].get("include_split_datasets", False)
+                    include_split = (rule["domains"] or {}).get(
+                        "include_split_datasets", False
+                    )
                     if not include_split:
                         continue  # handling split datasets
                 dataset_results = self.validate_single_dataset(
@@ -195,9 +201,13 @@ class RulesEngine:
 
     def _truncate_dataset_errors(self, dataset_results, rule, dataset_metadata):
         for result in dataset_results:
-            if result.get("executionStatus") == "success":
+            if result.get("executionStatus") in [
+                ExecutionStatus.ISSUE_REPORTED.value,
+                ExecutionStatus.SUCCESS.value,
+            ]:
                 errors = result.get("errors", [])
                 if len(errors) > self.max_errors_per_rule:
+                    result["original_errors_len"] = len(errors)
                     result["errors"] = errors[: self.max_errors_per_rule]
                     logger.info(
                         f"Rule {rule.get('core_id')}: Truncated {len(errors)} errors to "
@@ -222,6 +232,7 @@ class RulesEngine:
                 rule,
                 dataset_metadata,
                 self.standard,
+                self.standard_substandard,
                 self.use_case,
             )
             if is_suitable:
@@ -264,16 +275,14 @@ class RulesEngine:
                 ]
         except Exception as e:
             logger.trace(e)
-            logger.error(
-                f"""Error occurred during validation.
+            logger.error(f"""Error occurred during validation.
             Error: {e}
             Error Type: {type(e)}
             Error Message: {str(e)}
             Dataset Name: {dataset_metadata.name}
             Rule ID: {rule.get("core_id", "unknown")}
             Full traceback: {traceback.format_exc()}
-            """
-            )
+            """)
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_metadata.name
             )
@@ -368,9 +377,9 @@ class RulesEngine:
             rule["conditions"], dataset.columns.to_list()
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
-        # Adding copy for now to avoid updating cached dataset
-        dataset = deepcopy(dataset)
         # preprocess dataset
+        if isinstance(dataset, DaskDataset):
+            dataset = deepcopy(dataset)
         dataset_preprocessor = DatasetPreprocessor(
             dataset, dataset_metadata, self.data_service, self.cache
         )
