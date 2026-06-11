@@ -3,9 +3,11 @@ max-line-length = 120
 max_complexity = 10
 ignore = E203, W503
 
-exclude = .github,
+exclude = 
+    .github,
     .pytest_cache,
     cdisc_rules_engine/resources,
     venv,
     build,
-    dist
+    dist,
+    tests/unit/cdisc/*

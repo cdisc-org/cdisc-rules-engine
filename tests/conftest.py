@@ -40,6 +40,13 @@ def pytest_collection_modifyitems(config, items):
         items[:] = [item for item in items if "regression" not in item.keywords]
 
 
+@pytest.fixture(autouse=True)
+def reset_service_singletons():
+    for cls in [InMemoryCacheService, LocalDataService, ConfigService]:
+        if getattr(cls, "_instance", None) is not None:
+            setattr(cls, "_instance", None)
+
+
 # Added the following fixture to access the
 # 'run_regression_tests' flag in test functions
 @pytest.fixture(scope="session")
@@ -1207,7 +1214,7 @@ def installed_meddra_dictionaries(request) -> dict:
     """
     cache_service = InMemoryCacheService.get_instance()
     # install dictionaries and save to cache
-    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
+    local_data_service = LocalDataService.get_instance(cache_service=cache_service, config=MagicMock())
     factory = MedDRATermsFactory(local_data_service)
 
     terms: dict = factory.install_terms(meddra_path)

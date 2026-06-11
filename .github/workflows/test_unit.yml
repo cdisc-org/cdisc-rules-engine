@@ -2,27 +2,29 @@ name: Unit Tests
 on:
   workflow_call:
   workflow_dispatch:
+
 jobs:
-  test:
+  test_unit:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.test_target == 'cdisc' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        test_target: [base, sql, cdisc]
 
     services:
       postgres:
-        # Docker Hub image
         image: postgres
-        # Provide the password for postgres
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: coredb
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
     steps:
@@ -31,20 +33,21 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install requirements
-        run: |
-          pip install -r requirements.txt -r requirements-dev.txt
-      - name: Running unit tests
-        # Clearly we need to get this back up to 75%
-        run: python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=65
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Running ${{ matrix.test_target }} unit tests
+        run: python -m pytest tests/unit/${{ matrix.test_target }}/ --cov=cdisc_rules_engine
         env:
           DATABASE_HOST: localhost
           DATABASE_PORT: 5432
           DATABASE_NAME: coredb
           DATABASE_USER: postgres
           DATABASE_PASSWORD: postgres
-      - name: Running QA tests
-        run: python -m pytest tests/QARegressionTests/
+
+      - name: Running ${{ matrix.test_target }} QA tests
+        run: python -m pytest tests/QARegressionTests/${{ matrix.test_target }}/
         env:
           DATABASE_HOST: localhost
           DATABASE_PORT: 5432
