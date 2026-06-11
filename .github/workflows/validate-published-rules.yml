@@ -21,7 +21,9 @@ on:
         required: false
         default: "main"
       core_ids:
-        description: "Space-separated list of rule IDs to validate (e.g. CORE-000001 CORE-000002). Leave blank to validate all."
+        description: >-
+          Space-separated list of rule IDs to validate
+          (e.g. CORE-000001 CORE-000002). Leave blank to validate all.
         required: false
         default: ""
 
