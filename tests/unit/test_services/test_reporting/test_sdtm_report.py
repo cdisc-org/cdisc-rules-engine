@@ -115,6 +115,78 @@ def test_get_summary_data(mock_validation_results):
         assert error == summary_data[i]
 
 
+def test_get_csv_rows_header(mock_validation_results):
+    report = SDTMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    header, _ = report.get_csv_rows()
+    assert header == ["Dataset", "Record", "Variable", "Value"]
+
+
+def test_get_csv_rows_produces_one_row_per_variable(mock_validation_results):
+    report = SDTMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    # 3 errors total (2 from CORE1, 1 from CORE2), each with 2 variables → 6 rows
+    assert len(rows) == 6
+    for row in rows:
+        assert len(row) == 4
+
+
+def test_get_csv_rows_row_values(mock_validation_results):
+    report = SDTMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    variables = {r[2] for r in rows}
+    assert variables == {"AESTDY", "DOMAIN", "TTVAR1", "TTVAR2"}
+    records = {r[1] for r in rows}
+    assert records == {"1", "9"}
+    for row in rows:
+        assert row[3] == "test"
+
+
+def test_get_csv_rows_strips_csv_suffix(mock_validation_results):
+    # Patch dataset field in Issue Details to include .csv suffix
+    report = SDTMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    for issue in report.data_sheets["Issue Details"]:
+        issue["dataset"] = "AE.csv"
+    _, rows = report.get_csv_rows()
+    assert all(r[0] == "AE" for r in rows)
+
+
+def test_get_csv_rows_empty_results():
+    report = SDTMReportData(
+        [],
+        ["test"],
+        [],
+        0.0,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    header, rows = report.get_csv_rows()
+    assert header == ["Dataset", "Record", "Variable", "Value"]
+    assert rows == []
+
+
 def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results):
     # forcing None and str comparison in summary and details
     mock_validation_results[0].id = None

@@ -1,56 +1,8 @@
-from typing import List
 import pandas as pd
 import pytest
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.enums.join_types import JoinTypes
-
-
-def test_filter_dataset_columns_by_metadata_and_rule():
-    """
-    Unit test for DataProcessor.filter_dataset_columns_by_metadata_and_rule function.
-    """
-    columns: List[str] = ["STUDYID", "DOMAIN", "AESEV", "AESER"]
-    define_metadata: List[dict] = [
-        {
-            "define_variable_name": "AESEV",
-            "define_variable_origin_type": "Collected",
-        },
-        {
-            "define_variable_name": "AESER",
-            "define_variable_origin_type": "Collected",
-        },
-    ]
-    library_metadata: dict = {
-        "STUDYID": {
-            "core": "Exp",
-        },
-        "DOMAIN": {
-            "core": "Exp",
-        },
-        "AESEV": {
-            "core": "Perm",
-        },
-        "AESER": {
-            "core": "Perm",
-        },
-        "AESEQ": {
-            "core": "Exp",
-        },
-    }
-    rule: dict = {
-        "variable_origin_type": "Collected",
-        "variable_core_status": "Perm",
-    }
-    filtered_columns: List[str] = (
-        DataProcessor.filter_dataset_columns_by_metadata_and_rule(
-            columns, define_metadata, library_metadata, rule
-        )
-    )
-    assert filtered_columns == [
-        "AESEV",
-        "AESER",
-    ]
 
 
 @pytest.mark.parametrize(

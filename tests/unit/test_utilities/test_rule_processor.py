@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from conftest import mock_data_service
 from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
@@ -23,7 +22,6 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
-from cdisc_rules_engine.models.operation_params import OperationParams
 
 
 @pytest.mark.parametrize(
@@ -377,47 +375,89 @@ def test_rule_applies_to_class(
 
 
 @pytest.mark.parametrize(
-    "rule_use_case, use_case, standard, outcome",
+    "dataset_name, domain, rdomain, rule_use_case, use_case, standard, standard_substandard, outcome, is_custom",
     [
-        # Basic use case tests - user provides "INDH" or "PROD"
-        ("INDH, PROD", "INDH", "tig", True),
-        ("INDH, PROD", "PROD", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("PROD", "PROD", "tig", True),
-        ("PROD", "INDH", "tig", False),
-        ("NONCLIN", "NONCLIN", "tig", True),
-        ("NONCLIN", "INDH", "tig", False),
-        # Tests for ADaM datasets
-        ("ANALYSIS", "ANALYSIS", "tig", True),
-        ("ANALYSIS", "ANALYSIS", "tig", True),
-        ("ANALYSIS", "INDH", "tig", False),
-        # Tests for supplementary datasets
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("INDH", "INDH", "tig", True),
-        ("PROD", "PROD", "tig", True),
-        # Tests for empty/None use cases in rule (should always return True)
-        ("", "INDH", "tig", True),
-        (None, "INDH", "tig", True),
-        # Tests for non-TIG standard (should always return True)
-        ("INDH", "INDH", "sdtmig", True),
-        ("NONCLIN", "NONCLIN", "sendct", True),
-        # Test case mismatch
-        ("INDH, PROD", "SAFETY", "tig", False),
+        # Basic use case tests - custom_domain_use_case is irrelevant for standard domains
+        ("AE", "AE", None, "INDH, PROD", None, "tig", "SDTM", True, False),
+        ("CM", "CM", None, "INDH", None, "tig", "SDTM", True, False),
+        ("TS", "TS", None, "INDH", None, "tig", "SDTM", True, False),
+        ("ES", "ES", None, "PROD", None, "tig", "SDTM", True, False),
+        ("BW", "BW", None, "NONCLIN", None, "tig", "SEND", True, False),
+        # Domain not in rule's use case domains
+        ("ES", "ES", None, "INDH", None, "tig", "SDTM", False, False),
+        ("BW", "BW", None, "INDH", None, "tig", "SEND", False, False),
+        # command line use_case is ignored for standard domains
+        ("ES", "ES", None, "PROD", "INDH", "tig", "SDTM", True, False),
+        # ADAM tests
+        ("ADAE", "ADAE", None, "ANALYSIS", None, "tig", "ADAM", True, False),
+        ("ADAE", "ADAE", None, "INDH", None, "tig", "ADAM", False, False),
+        # Supp tests
+        ("SUPPAE", None, "AE", "INDH", None, "tig", "SDTM", True, False),
+        ("SUPPQS", None, "QS", "INDH", None, "tig", "SDTM", True, False),
+        ("SUPPEC", None, "EC", "INDH", None, "tig", "SDTM", True, False),
+        ("SUPP--", None, "AE", "INDH", None, "tig", "SDTM", True, False),
+        ("SUPPPT", None, "PT", "PROD", None, "tig", "SDTM", True, False),
+        # Empty/None use cases in rule
+        ("AE", "AE", None, "", None, "tig", "SDTM", False, False),
+        ("AE", "AE", None, None, None, "tig", "SDTM", False, False),
+        # Non-TIG standard
+        ("AE", "AE", None, "INDH", None, "sdtmig", "SDTM", True, False),
+        ("BW", "BW", None, "NONCLIN", None, "sendct", "SEND", True, False),
+        # command line use_case ignored - AE is in INDH domains
+        ("AE", "AE", None, "INDH, PROD", "SAFETY", "tig", "SDTM", True, False),
+        # Custom domains (XYZ-prefixed)
+        ("XY", "XY", None, "INDH", "INDH", "tig", "SDTM", True, True),
+        ("XY", "XY", None, "INDH", "PROD", "tig", "SDTM", False, True),
+        ("ZZ", "ZZ", None, "PROD", "PROD", "tig", "SDTM", True, True),
     ],
 )
 def test_rule_applies_to_use_case(
     mock_data_service,
+    dataset_name,
+    domain,
+    rdomain,
     rule_use_case,
-    standard,
     use_case,
+    standard,
+    standard_substandard,
     outcome,
+    is_custom,
 ):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     rule = {"use_case": rule_use_case}
-    assert processor.rule_applies_to_use_case(rule, standard, use_case) == outcome
+    dataset_metadata = SDTMDatasetMetadata(
+        name=dataset_name,
+        first_record=(
+            {"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}
+        ),
+    )
+
+    with patch(
+        "cdisc_rules_engine.utilities.rule_processor.is_custom_domain",
+        return_value=is_custom,
+    ):
+        assert (
+            processor.rule_applies_to_use_case(
+                rule, standard, standard_substandard, dataset_metadata, use_case
+            )
+            == outcome
+        )
+
+
+def test_rule_applies_to_use_case_custom_domain_no_use_case_argument_raises(
+    mock_data_service,
+):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    rule = {"use_case": "INDH"}
+    dataset_metadata = SDTMDatasetMetadata(name="XY", first_record={"DOMAIN": "XY"})
+    with patch(
+        "cdisc_rules_engine.utilities.rule_processor.is_custom_domain",
+        return_value=True,
+    ):
+        with pytest.raises(ValueError, match="requires a use case"):
+            processor.rule_applies_to_use_case(
+                rule, "tig", "SDTM", dataset_metadata, None
+            )
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -764,62 +804,6 @@ def test_perform_rule_operation_with_null_operations(
     assert df.equals(new_data)
 
 
-def test_preprocess_operation_params_wildcard_replacement(mock_data_service):
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
-    operation_params = OperationParams(
-        core_id="test_id",
-        operation_id="test_op",
-        operation_name="test_operator",
-        dataframe=df,
-        target="--SEQ",
-        original_target="--SEQ",
-        domain="AE",
-        standard="sdtmig",
-        standard_version="3-4",
-        grouping=["--SEQ", "--DTC", "USUBJID"],
-        filter={"--STAT": "COMPLETED"},
-    )
-    domain_details = SDTMDatasetMetadata(
-        filename="ae.xpt", full_path="test/ae.xpt", name="AE", label="Adverse Events"
-    )
-    result = processor._preprocess_operation_params(operation_params, domain_details)
-    assert result.target == "AESEQ"
-    assert result.original_target == "AESEQ"
-    assert result.grouping == ["AESEQ", "AEDTC", "USUBJID"]
-    assert result.filter == {"AESTAT": "COMPLETED"}
-    # Check that original params and dataframe are not modified
-    assert operation_params.target == "--SEQ"
-    assert operation_params.grouping == ["--SEQ", "--DTC", "USUBJID"]
-    assert result.dataframe is operation_params.dataframe
-
-
-def test_preprocess_operation_params_supp_domain_uses_rdomain(mock_data_service):
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
-    operation_params = OperationParams(
-        core_id="test_id",
-        operation_id="test_op",
-        operation_name="test_operator",
-        dataframe=df,
-        target="--SEQ",
-        original_target="--SEQ",
-        domain=None,
-        standard="sdtmig",
-        standard_version="3-4",
-    )
-    domain_details = SDTMDatasetMetadata(
-        filename="suppae.xpt",
-        full_path="test/suppae.xpt",
-        name="SUPPAE",
-        label="Supplemental AE",
-        first_record={"RDOMAIN": "AE"},
-    )
-    result = processor._preprocess_operation_params(operation_params, domain_details)
-    assert result.target == "AESEQ"
-    assert result.original_target == "AESEQ"
-
-
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
 )
@@ -901,71 +885,6 @@ def test_perform_extract_metadata_operation(
     assert dataset_after_operation.equals(expected_dataset)
 
 
-def test_add_operator_to_conditions(mock_data_service):
-    """
-    Unit test for add_operator_to_rule_conditions method.
-    Checks nested conditions as well.
-    """
-    conditions = {
-        "all": [
-            {"name": "get_dataset", "value": {"target": "STUDYID"}},
-            {"name": "get_dataset", "value": {"target": "DOMAIN"}},
-            {
-                "any": [
-                    {"name": "get_dataset", "value": {"target": "--SEQ"}},
-                ],
-            },
-        ]
-    }
-    rule = {"conditions": ConditionCompositeFactory.get_condition_composite(conditions)}
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    target_to_operator_map: dict = {
-        "STUDYID": "equal_to",
-        "DOMAIN": [
-            "less_than",
-            "not_empty",
-        ],
-        "AESEQ": "empty",
-    }
-    processor.add_operator_to_rule_conditions(rule, target_to_operator_map, "AE")
-    assert rule["conditions"].to_dict() == {
-        "all": [
-            {
-                "name": "get_dataset",
-                "operator": "equal_to",
-                "value": {
-                    "target": "STUDYID",
-                },
-            },
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "less_than",
-                        "value": {"target": "DOMAIN"},
-                    },
-                    {
-                        "name": "get_dataset",
-                        "operator": "not_empty",
-                        "value": {"target": "DOMAIN"},
-                    },
-                ]
-            },
-            {
-                "any": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "empty",
-                        "value": {
-                            "target": "--SEQ",
-                        },
-                    },
-                ],
-            },
-        ]
-    }
-
-
 def test_extract_target_names_from_rule():
     conditions = {
         "any": [
@@ -1021,82 +940,6 @@ def test_extract_target_names_from_rule_output_variables():
         "USUBJID",
         "TARGET",
     ]
-
-
-@pytest.mark.parametrize(
-    "conditions",
-    [
-        {
-            "any": [
-                {
-                    "value": {
-                        "target": "dataset_label",
-                        "comparator": "Adverse Events",
-                    },
-                    "operator": "equal_to",
-                },
-                {
-                    "value": {"target": "dataset_size", "unit": "MB", "comparator": 5},
-                    "operator": "less_than",
-                },
-            ]
-        },
-        {
-            "any": [
-                {
-                    "value": {
-                        "target": "dataset_label",
-                        "comparator": "Adverse Events",
-                    },
-                    "operator": "equal_to",
-                },
-                {
-                    "all": [
-                        {
-                            "value": {
-                                "target": "dataset_size",
-                                "unit": "MB",
-                                "comparator": 5,
-                            },
-                            "operator": "less_than",
-                        },
-                    ]
-                },
-            ]
-        },
-        {
-            "not": {
-                "any": [
-                    {
-                        "value": {
-                            "target": "dataset_label",
-                            "comparator": "Adverse Events",
-                        },
-                        "operator": "equal_to",
-                    },
-                    {
-                        "all": [
-                            {
-                                "value": {
-                                    "target": "dataset_size",
-                                    "unit": "MB",
-                                    "comparator": 5,
-                                },
-                                "operator": "less_than",
-                            },
-                        ]
-                    },
-                ]
-            }
-        },
-    ],
-)
-def test_get_size_unit_from_rule(conditions: dict):
-    rule: dict = {
-        "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
-    }
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    assert processor.get_size_unit_from_rule(rule) == "MB"
 
 
 def test_duplicate_for_targets():

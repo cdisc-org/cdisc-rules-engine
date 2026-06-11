@@ -117,7 +117,7 @@
       "properties": {
         "operator": {
           "const": "get_codelist_attributes",
-          "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.\n"
+          "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.\n"
         }
       },
       "required": ["id", "operator", "name", "ct_attribute", "version"],
@@ -147,7 +147,7 @@
       "properties": {
         "operator": {
           "const": "get_library_class_domains",
-          "markdownDescription": "\nReturns the list of domain for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\", \"INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:\n\n```yaml\n- operator: get_library_class_domains\n  id: $trial_design_domains\n  domain_class: \"TRIAL DESIGN\"\n```\n"
+          "markdownDescription": "\nReturns the list of domains for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\", \"INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:\n\n```yaml\n- operator: get_library_class_domains\n  id: $trial_design_domains\n  domain_class: \"TRIAL DESIGN\"\n```\n"
         }
       },
       "required": ["id", "operator"],
@@ -267,7 +267,7 @@
       "properties": {
         "operator": {
           "const": "minus",
-          "markdownDescription": "\nComputes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A \u2216 B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.\n\n```yaml\nOperations:\n  - id: $expected_variables\n    operator: expected_variables\n  - id: $dataset_variables\n    operator: get_column_order_from_dataset\n  - id: $expected_minus_dataset\n    name: $expected_variables\n    operator: minus\n    subtract: $dataset_variables\n```\n"
+          "markdownDescription": "\nComputes set difference: elements in `name` that are not in `subtract`. By default a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A \u2216 B) is applied. Optional `order_insensitive` property allows to have the element order to be taken into consideration and only those `name` elements are removed which follow the same order as in `subtract` . Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.\n\n```yaml\nOperations:\n  - id: $expected_variables\n    operator: expected_variables\n  - id: $dataset_variables\n    operator: get_column_order_from_dataset\n  - id: $expected_minus_dataset\n    name: $expected_variables\n    operator: minus\n    subtract: $dataset_variables\n    order_insensitive: false\n```\n"
         }
       },
       "required": ["id", "operator", "name", "subtract"],
@@ -695,6 +695,9 @@
       "type": "string"
     },
     "value_is_reference": {
+      "type": "boolean"
+    },
+    "order_insensitive": {
       "type": "boolean"
     },
     "version": {

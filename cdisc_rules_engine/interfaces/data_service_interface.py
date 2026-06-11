@@ -58,15 +58,6 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> DatasetInterface:
-        """
-        Generic function to return dataset based on the type.
-        dataset_type param can be: contents, metadata, variables_metadata.
-        """
-
-    @abstractmethod
     def concat_split_datasets(
         self,
         func_to_call: Callable,

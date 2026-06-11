@@ -4,7 +4,11 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.minus import Minus, _set_difference_preserve_order
+from cdisc_rules_engine.operations.minus import (
+    Minus,
+    _set_difference_order_insensitive,
+    _set_difference_order_sensitive,
+)
 import pytest
 
 
@@ -32,10 +36,24 @@ def minus_params(operation_params: OperationParams) -> OperationParams:
         (["a", "", "b"], [""], ["a", "b"]),
         (["a", "", "b"], ["c"], ["a", "", "b"]),
         ([""], [""], []),
+        (["A", "C", "D", "B"], ["B", "D"], ["A", "C", "D"]),
+        (["A", "C", "D", "B"], ["A", "B", "D"], ["C", "D"]),
     ],
 )
-def test_set_difference_preserve_order(list_a, list_b, expected):
-    assert _set_difference_preserve_order(list_a, list_b) == expected
+def test_set_difference_order_sensitive(list_a, list_b, expected):
+    assert _set_difference_order_sensitive(list_a, list_b) == expected
+
+
+@pytest.mark.parametrize(
+    "list_a,list_b,expected",
+    [
+        (["c", "b", "a"], ["b"], ["c", "a"]),
+        (["A", "C", "D", "B"], ["B", "D"], ["A", "C"]),
+        (["A", "C", "D", "B"], ["A", "B", "D"], ["C"]),
+    ],
+)
+def test_set_difference_order_insensitive(list_a, list_b, expected):
+    assert _set_difference_order_insensitive(list_a, list_b) == expected
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -53,6 +71,48 @@ def test_minus_operation(minus_params: OperationParams, dataset_type):
         }
     )
 
+    operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
+    result = operation.execute()
+    assert list(result[minus_params.operation_id].iloc[0]) == ["AEDECOD"]
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_minus_operation_incorrect_order(minus_params: OperationParams, dataset_type):
+    eval_dataset = dataset_type.from_dict(
+        {
+            "$expected_variables": [
+                ["STUDYID", "DOMAIN", "AESEQ", "AETERM", "AEDECOD"],
+                ["STUDYID", "DOMAIN", "AESEQ", "AETERM", "AEDECOD"],
+            ],
+            "$dataset_variables": [
+                ["STUDYID", "AESEQ", "DOMAIN", "AETERM"],
+                ["STUDYID", "AESEQ", "DOMAIN", "AETERM"],
+            ],
+        }
+    )
+
+    minus_params.order_insensitive = False
+    operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
+    result = operation.execute()
+    assert list(result[minus_params.operation_id].iloc[0]) == ["DOMAIN", "AEDECOD"]
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_minus_operation_order_insensitive(minus_params: OperationParams, dataset_type):
+    eval_dataset = dataset_type.from_dict(
+        {
+            "$expected_variables": [
+                ["STUDYID", "DOMAIN", "AESEQ", "AETERM", "AEDECOD"],
+                ["STUDYID", "DOMAIN", "AESEQ", "AETERM", "AEDECOD"],
+            ],
+            "$dataset_variables": [
+                ["STUDYID", "AESEQ", "DOMAIN", "AETERM"],
+                ["STUDYID", "AESEQ", "DOMAIN", "AETERM"],
+            ],
+        }
+    )
+
+    minus_params.order_insensitive = True
     operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
     result = operation.execute()
     assert list(result[minus_params.operation_id].iloc[0]) == ["AEDECOD"]

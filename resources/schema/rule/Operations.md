@@ -168,7 +168,7 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
   version: TSVCDVER
 ```
 
-**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.
+**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.
 
 ### valid_codelist_dates
 
@@ -779,7 +779,7 @@ Operations:
 
 ### minus
 
-Computes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
+Computes set difference: elements in `name` that are not in `subtract`. By default a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B) is applied. Optional `order_insensitive` property allows to have the element order to be taken into consideration and only those `name` elements are removed which follow the same order as in `subtract` . Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
 
 ```yaml
 Operations:
@@ -791,6 +791,7 @@ Operations:
     name: $expected_variables
     operator: minus
     subtract: $dataset_variables
+    order_insensitive: false
 ```
 
 ### label_referenced_variable_metadata
@@ -893,7 +894,7 @@ Output
 
 ### get_library_class_domains
 
-Returns the list of domain for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS", "INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:
+Returns the list of domains for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS", "INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:
 
 ```yaml
 - operator: get_library_class_domains
