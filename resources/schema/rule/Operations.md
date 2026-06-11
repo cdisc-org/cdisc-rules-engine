@@ -168,7 +168,7 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
   version: TSVCDVER
 ```
 
-**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.
+**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.
 
 ### valid_codelist_dates
 

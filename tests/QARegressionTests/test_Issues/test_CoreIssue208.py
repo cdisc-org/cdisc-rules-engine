@@ -5,7 +5,6 @@ import unittest
 import pytest
 from conftest import get_python_executable
 
-
 """This regression test is for automating the validation of acceptancce criteria
 which is "For any variables that come from datasets and appear in the results,
 the variables should have the same case as the variable names in the dataset".

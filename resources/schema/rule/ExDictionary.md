@@ -1,6 +1,6 @@
 # External Dictionaries
 
-External dictionaries provide standardized terminology and coding systems for medical terms, drugs, and laboratory tests. This guide covers how to integrate and validate external dictionaries in both the Command Line Interface (CLI) and Rule Editor.
+External dictionaries provide standardized terminology and coding systems for medical terms, drugs, and laboratory tests. This guide covers how to integrate and validate external dictionaries in both the Command Line Interface (CLI).
 
 ## Supported Dictionaries
 
@@ -123,7 +123,7 @@ Directory must contain the `Loinc.csv` with capital 'L'
 
 ```
 
-## Operations & Rule Editor
+## Operations
 
 ### Dictionary Version Validation
 

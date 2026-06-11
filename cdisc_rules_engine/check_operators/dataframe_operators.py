@@ -476,10 +476,8 @@ class DataframeType(BaseType):
         elif part_to_validate == "prefix":
             series_to_validate = self.value[target].str.slice(stop=length)
         else:
-            raise ValueError(
-                f"Invalid part to validate: {part_to_validate}. \
-                    Valid values are: suffix, prefix"
-            )
+            raise ValueError(f"Invalid part to validate: {part_to_validate}. \
+                    Valid values are: suffix, prefix")
         series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
 

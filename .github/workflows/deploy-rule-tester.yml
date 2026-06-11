@@ -16,7 +16,11 @@ permissions:
   contents: read
 
 env:
-  creds: '{"clientId":"${{ vars.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ vars.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ vars.AZURE_TENANT_ID }}"}'
+  creds: >-
+    {"clientId":"${{ vars.AZURE_CLIENT_ID }}",
+    "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}",
+    "subscriptionId":"${{ vars.AZURE_SUBSCRIPTION_ID }}",
+    "tenantId":"${{ vars.AZURE_TENANT_ID }}"}
   functionAppName: cdisc-library-conformance-rules-generator-dev
   PYTHON_VERSION: "3.12"
 
@@ -39,7 +43,8 @@ jobs:
         with:
           app-name: ${{ env.functionAppName }}
           mask-inputs: false
-          app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}' # wait for this step to complete before the webapps-deploy step
+          # wait for this step to complete before the webapps-deploy step
+          app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}'
           general-settings-json: '{"linuxFxVersion": "PYTHON|${{ env.PYTHON_VERSION }}"}'
           slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
 

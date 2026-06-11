@@ -8,6 +8,7 @@
 [![PyPI](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine)
 [![Docker](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
-# CDISC Rules Engine (CORE)
-
-Open source offering of the CDISC Conformance Rules Engine — a tool for validating clinical trial data against CDISC data standards. CORE validates study data structure and conformance against both published CDISC conformance rules for the various CDISC standards and custom rules authored in the CORE rule format.
+Open source offering of the CDISC Conformance Rules Engine — a tool for validating
+clinical trial data against CDISC data standards. CORE validates study data structure
+and conformance against both published CDISC conformance rules for the various CDISC
+standards and custom rules authored in the CORE rule format.
