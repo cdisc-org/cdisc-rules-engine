@@ -11,7 +11,6 @@ requires-python = ">=3.12, <3.13"
 license = { text = "MIT" }
 authors = [{ name = "cdisc-org", email = "info@cdisc.org" }]
 dependencies = [
-    "azure-functions >=1.0.0",
     "business_rules_enhanced >=1.4.8",
     "cachetools >=6.1.0",
     "cdisc-library-client >=0.1.6",
@@ -38,6 +37,9 @@ dependencies = [
     "setuptools >=75.6.0",
     "titlecase >=2.4.1",
 ]
+
+[project.optional-dependencies]
+rule-tester = ["azure-functions >=1.0.0"]
 
 [dependency-groups]
 dev = [
