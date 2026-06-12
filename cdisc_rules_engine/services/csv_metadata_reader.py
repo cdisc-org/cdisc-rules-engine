@@ -126,7 +126,12 @@ class DatasetCSVMetadataReader:
         variable_name_to_size_map = {
             var: (
                 int(length)
-                if pd.notna(length) and (isinstance(length, int) or length.isdigit())
+                if pd.notna(length)
+                and (
+                    # Because NaN is a float, pandas forces an array of integers with any missing values to become floating point
+                    isinstance(length, int | float)
+                    or (isinstance(length, str) and length.isdigit())
+                )
                 else None
             )
             for var, length in zip(variable_names, dataset_meta_df["length"])
