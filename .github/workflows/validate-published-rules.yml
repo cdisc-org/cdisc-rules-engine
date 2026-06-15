@@ -21,7 +21,9 @@ on:
         required: false
         default: "main"
       core_ids:
-        description: "Space-separated list of rule IDs to validate (e.g. CORE-000001 CORE-000002). Leave blank to validate all."
+        description: >-
+          Space-separated list of rule IDs to validate
+          (e.g. CORE-000001 CORE-000002). Leave blank to validate all.
         required: false
         default: ""
 
@@ -80,9 +82,8 @@ jobs:
       - name: Install engine dependencies
         run: |
           python -m venv venv
-          ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install -r engine/requirements.txt
-
+          venv/bin/pip install --upgrade pip
+          venv/bin/pip install . --group dev
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
