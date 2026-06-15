@@ -48,8 +48,9 @@ source venv/bin/activate
 # Activate (Windows)
 .\venv\Scripts\Activate
 
-# Install dependencies
-python -m pip install -r requirements-dev.txt
+# Install dependencies and the package
+pip install --upgrade pip
+pip install . --group dev
 ```
 
 ---

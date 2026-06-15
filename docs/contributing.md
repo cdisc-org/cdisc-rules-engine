@@ -41,8 +41,7 @@ This project enforces consistent formatting and linting via pre-commit hooks.
 - [`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2) — Markdown linter
 - [`check-json`](https://github.com/pre-commit/pre-commit-hooks) — JSON syntax validator
 
-All tools except `markdownlint-cli2` are included in `requirements-dev.txt`.
-After installing dependencies, install the pre-commit hooks:
+Install the dev dependencies (into your venv) and the pre-commit hooks:
 
 ```bash
 pre-commit install
