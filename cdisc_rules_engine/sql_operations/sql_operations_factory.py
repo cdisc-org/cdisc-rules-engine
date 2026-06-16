@@ -43,6 +43,7 @@ from cdisc_rules_engine.sql_operations.whodrug_code_hierarchy import SqlWhodrugH
 from cdisc_rules_engine.sql_operations.standard_domains import SqlStandardDomainsOperation
 from cdisc_rules_engine.sql_operations.label_referenced_variable_metadata import SqlLabelReferencedVariableMetadata
 from cdisc_rules_engine.sql_operations.name_referenced_variable_metadata import SqlNameReferencedVariableMetadata
+from cdisc_rules_engine.sql_operations.get_countries import SqlGetCountriesOperation
 
 
 class SqlOperationsFactory:
@@ -92,6 +93,7 @@ class SqlOperationsFactory:
         "valid_define_external_dictionary_version": None,
         "get_define_external_dictionary_version": SqlDefineExternalDictionaryVersionOperation,
         "get_dataset_filtered_variables": None,
+        "get_countries": SqlGetCountriesOperation,
     }
 
     @classmethod
