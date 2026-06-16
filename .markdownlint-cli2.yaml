@@ -1,0 +1,13 @@
+config:
+  MD013:
+    line_length: 120
+    tables: false
+    code_blocks: false
+    headings: false
+  MD024:
+    siblings_only: true
+  MD029: false
+  MD033: false
+  MD041: false
+ignores:
+  - "resources/**"

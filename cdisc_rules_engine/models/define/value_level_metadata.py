@@ -164,12 +164,12 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 try:
                     datetime.fromisoformat(
                         dataframe[self.item.Name].replace("Z", "+00:00")
                     )
-                except:
+                except Exception:
                     return False
                 return True
             return True
@@ -182,7 +182,7 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.date.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 return False
             return True
 
@@ -194,7 +194,7 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.time.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 return False
             return True
 
@@ -206,12 +206,12 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 try:
                     datetime.fromisoformat(
                         dataframe[self.item.Name].replace("Z", "+00:00")
                     )
-                except:
+                except Exception:
                     return True
                 return False
             return False

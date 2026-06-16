@@ -10,7 +10,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
-
 define_metadata = [
     {
         "define_dataset_name": "AE",
