@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
+import dask.dataframe as dd
 
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -253,6 +254,10 @@ class DataProcessor:
                     suffixes=("", "_supp"),
                 )
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
+                left_dataset.data = dd.from_pandas(
+                    left_dataset.data.compute().reset_index(drop=True),
+                    npartitions=left_dataset.data.npartitions,
+                )
             else:
                 left_dataset = PandasDataset(
                     pd.merge(  # noqa
