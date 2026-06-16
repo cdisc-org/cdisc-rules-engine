@@ -100,7 +100,7 @@ def test_valid_parse_actions():
                 {
                     "Name": "AA",
                     "Keys": ["STUDYID", {"left": "USUBJID", "right": "RSUBJID"}],
-                    "Join_Type": "left",
+                    "Join Type": "left",
                 }
             ],
             [
