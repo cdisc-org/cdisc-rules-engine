@@ -308,7 +308,7 @@ class TestDatasetCSVMetadataReaderRead:
 
     def test_dataset_name_lookup_is_case_insensitive(self):
         """File name with mixed case should still match _variables.csv entry."""
-        variables_upper = VARIABLES_CSV.replace("patients.csv", "PATIENTS.CSV")
+        variables_upper = VARIABLES_CSV.replace("patients", "PATIENTS")
         _write(self._variables_path(), variables_upper)
         reader = DatasetCSVMetadataReader(str(self.data_path), "PATIENTS.CSV")
         result = reader.read()
