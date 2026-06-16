@@ -352,7 +352,7 @@ class SdtmStandardsContext(BaseStandardsContext):
                 merge_spec=merge_spec,
                 rule=rule,
             )
-        elif right == "supp--":
+        elif right.startswith("supp"):
             return self._do_supp_merge(
                 data_service,
                 original=original,
@@ -641,12 +641,13 @@ class SdtmStandardsContext(BaseStandardsContext):
         """
         Find the corresponding SUPP datasets, then perform a SUPP merge operation on the datasets.
         """
-        rdomain = dataset_metadata.rdomain
-        if target != "supp--" and rdomain not in target:
+        rdomain = dataset_metadata.rdomain if dataset_metadata.rdomain else dataset_metadata.domain
+
+        if not target.startswith("supp") and rdomain not in target:
             raise ValueError(f"Tried to SUPP merge {rdomain}, but the target domain {target} does not match.")
 
         supp_dataset = next(
-            (dataset for dataset in data_service.datasets if dataset.name.lower() == f"supp--{rdomain}"),
+            (dataset for dataset in data_service.datasets if dataset.name.lower() == f"supp{rdomain.lower()}"),
             None,
         )
         if not supp_dataset:

@@ -60,6 +60,8 @@ class SQLRule:
 
             if "Match Datasets" in rule_metadata:
                 executable_rule["datasets"] = cls.parse_datasets(rule_metadata.get("Match Datasets"))
+            if "Grouping_Variables" in rule_metadata:
+                executable_rule["grouping_variables"] = rule_metadata.get("Grouping_Variables")
             if "Output Variables" in rule_metadata.get("Outcome", {}):
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})["Output Variables"]
             return executable_rule
