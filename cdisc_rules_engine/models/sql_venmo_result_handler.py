@@ -150,7 +150,7 @@ class SqlVenmoResultHandler(BaseActions):
         self, data: List[dict], target_columns: dict[str, bool], schema: SqlTableSchema
     ) -> List[ValidationErrorEntity]:
         match self.rule.get("sensitivity"):
-            case Sensitivity.DATASET.value:
+            case Sensitivity.DATASET.value | Sensitivity.STUDY.value:
                 return [self._build_dataset_error(data, target_columns, schema)]
             case Sensitivity.RECORD.value | None:
                 return self._build_record_error_items(data, target_columns, schema)

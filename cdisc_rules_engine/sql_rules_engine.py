@@ -11,6 +11,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.sensitivity import Sensitivity
 
 # from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
@@ -71,6 +72,8 @@ class SQLRulesEngine:
     def sql_validate_single_rule(self, rule: dict):
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
+        is_study_sensitivity = rule.get("sensitivity") == Sensitivity.STUDY.value
+        study_error_already_reported = False
 
         # Collect all dataset metadata for builders that need it (e.g., DomainListDatasetBuilder)
         all_datasets = [
@@ -89,7 +92,22 @@ class SQLRulesEngine:
                 ),
             )
             if is_suitable:
-                results[dataset_metadata.name] = self.validate_single_dataset(rule, dataset_metadata, all_datasets)
+                if is_study_sensitivity and study_error_already_reported:
+                    results[dataset_metadata.name] = [
+                        ValidationErrorContainer(
+                            **{
+                                "dataset": dataset_metadata.filename,
+                                "domain": dataset_metadata.domain,
+                                "errors": [],
+                            }
+                        ).to_representation()
+                    ]
+                    continue
+
+                dataset_results = self.validate_single_dataset(rule, dataset_metadata, all_datasets)
+                results[dataset_metadata.name] = dataset_results
+                if is_study_sensitivity and self._contains_error_entries(dataset_results):
+                    study_error_already_reported = True
             else:
                 logger.info(f"Skipped dataset {dataset_metadata.name}. Reason: {reason}")
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
@@ -100,6 +118,16 @@ class SQLRulesEngine:
                 )
                 results[pp_ds_id] = [error_obj.to_representation()]
         return results
+
+    @staticmethod
+    def _contains_error_entries(result_entries: List[Union[dict, str]]) -> bool:
+        """
+        Returns True when a dataset result includes at least one reported validation error.
+        """
+        for entry in result_entries:
+            if isinstance(entry, dict) and entry.get("errors"):
+                return True
+        return False
 
     def validate_single_dataset(
         self,

@@ -651,7 +651,7 @@ class SdtmStandardsContext(BaseStandardsContext):
             None,
         )
         if not supp_dataset:
-            raise ValueError(f"Tried to SUPP merge {rdomain}, but could not find corresponding SUPP dataset.")
+            return original
 
         return SqlSuppMerge.perform_join(
             pgi=data_service.pgi,
