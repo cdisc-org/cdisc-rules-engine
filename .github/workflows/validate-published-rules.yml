@@ -83,7 +83,7 @@ jobs:
         run: |
           python -m venv venv
           venv/bin/pip install --upgrade pip
-          venv/bin/pip install ./engine --group dev
+          venv/bin/pip install --group engine/pyproject.toml:dev
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
