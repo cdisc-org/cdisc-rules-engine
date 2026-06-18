@@ -690,7 +690,7 @@ def sharepoint_xlsx_to_test_datasets(path: str) -> list[TestDataset]:
 
         # Step 4: Read the sheet for the dataset
         if filename in xlsx_data.sheet_names:
-            dataset_df = pd.read_excel(xlsx_data, sheet_name=filename)
+            dataset_df = pd.read_excel(xlsx_data, sheet_name=filename, keep_default_na=False, na_values=[""])
 
             # Step 5: Extract variable details (name, label, type, length)
             variables, col_type_dict = extract_variables(dataset_df)
