@@ -807,7 +807,7 @@ def test_validate_variable_metadata(mock_get_variables_metadata: MagicMock, vari
         pd.DataFrame.from_dict(
             {
                 "variable_name": ["STUDYID", "DOMAIN"],
-                "variable_size": [5, 20],
+                "variable_length": [5, 20],
                 "variable_label": ["Study Identifier", "Domain Name"],
                 "variable_data_type": ["Char", "Char"],
             }
@@ -872,7 +872,7 @@ def test_validate_variable_metadata_wrong_metadata(
         pd.DataFrame.from_dict(
             {
                 "variable_name": ["longer than eight", "longer than eight as well"],
-                "variable_size": [5, 20],
+                "variable_length": [5, 20],
                 "variable_label": [
                     "Study Identifier Very Long Longer than 40",
                     "Long Long Label Very Long Longer than 40 chars",
@@ -1313,7 +1313,7 @@ def test_validate_dataset_metadata_against_define_xml(
                 {
                     "define_variable_name": "TEST",
                     "define_variable_label": "TEST LABEL",
-                    "define_variable_size": 20,
+                    "define_variable_length": 20,
                     "define_variable_role": "VAR ROLE",
                     "define_variable_data_type": "Char",
                 }
@@ -1327,7 +1327,7 @@ def test_validate_dataset_metadata_against_define_xml(
                         "variable_label": [
                             "TEST Label",
                         ],
-                        "variable_size": [
+                        "variable_length": [
                             30,
                         ],
                         "variable_role": ["VAR ROLE"],
@@ -1340,9 +1340,9 @@ def test_validate_dataset_metadata_against_define_xml(
                     "domain": "AE",
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "variables": ["variable_size"],
-                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_size": 30}}],
-                    "message": ("Variable metadata variable_size " "does not match define variable size"),
+                    "variables": ["variable_length"],
+                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_length": 30}}],
+                    "message": ("Variable metadata variable_length " "does not match define variable size"),
                 }
             ],
         ),
@@ -1351,7 +1351,7 @@ def test_validate_dataset_metadata_against_define_xml(
                 {
                     "define_variable_name": "TEST2",
                     "define_variable_label": "TEST LABEL",
-                    "define_variable_size": 20,
+                    "define_variable_length": 20,
                     "define_variable_role": "VAR ROLE",
                     "define_variable_data_type": "Char",
                 }
@@ -1365,7 +1365,7 @@ def test_validate_dataset_metadata_against_define_xml(
                         "variable_label": [
                             "TEST Label",
                         ],
-                        "variable_size": [
+                        "variable_length": [
                             30,
                         ],
                         "variable_role": ["VAR ROLE"],
@@ -1378,9 +1378,9 @@ def test_validate_dataset_metadata_against_define_xml(
                     "domain": "AE",
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "variables": ["variable_size"],
-                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_size": 30}}],
-                    "message": ("Variable metadata variable_size " "does not match define variable size"),
+                    "variables": ["variable_length"],
+                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_length": 30}}],
+                    "message": ("Variable metadata variable_length " "does not match define variable size"),
                 }
             ],
         ),
@@ -1734,7 +1734,7 @@ def test_validate_split_dataset_variables_metadata(mock_async_get_datasets: Magi
         pd.DataFrame.from_dict(  # this part should flag an error
             {
                 "variable_name": ["STUDYIDLONG", "DOMAINLONG"],
-                "variable_size": [5, 20],
+                "variable_length": [5, 20],
                 "variable_label": [
                     "Study Identifier Study Identifier Very Long",
                     "Domain Name Domain Name Very Long",
@@ -1747,7 +1747,7 @@ def test_validate_split_dataset_variables_metadata(mock_async_get_datasets: Magi
         pd.DataFrame.from_dict(
             {
                 "variable_name": ["STUDYID", "DOMAIN"],
-                "variable_size": [5, 20],
+                "variable_length": [5, 20],
                 "variable_label": ["Study Identifier", "Domain Name"],
                 "variable_data_type": ["Char", "Char"],
             }

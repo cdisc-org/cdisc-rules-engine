@@ -28,16 +28,12 @@ class DummyDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
-        super(DummyDataService, self).__init__(
-            cache_service, reader_factory, config, **kwargs
-        )
+        super(DummyDataService, self).__init__(cache_service, reader_factory, config, **kwargs)
         self.data: List[DummyDataset] = kwargs.get("data")
         self.define_xml: str = kwargs.get("define_xml")
 
     @classmethod
-    def get_instance(
-        cls, cache_service: CacheServiceInterface, config: ConfigInterface, **kwargs
-    ):
+    def get_instance(cls, cache_service: CacheServiceInterface, config: ConfigInterface, **kwargs):
         return cls(
             cache_service=cache_service,
             reader_factory=DataReaderFactory(),
@@ -67,9 +63,7 @@ class DummyDataService(BaseDataService):
         else:
             return PandasDataset.from_dict({})
 
-    def get_raw_dataset_metadata(
-        self, dataset_name: str, **kwargs
-    ) -> SDTMDatasetMetadata:
+    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> SDTMDatasetMetadata:
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
         return SDTMDatasetMetadata(
             name=dataset_metadata["dataset_name"][0],
@@ -87,43 +81,27 @@ class DummyDataService(BaseDataService):
             "variable_name": [],
             "variable_order_number": [],
             "variable_label": [],
-            "variable_size": [],
+            "variable_length": [],
             "variable_data_type": [],
             "variable_format": [],
         }
         dataset: DummyDataset = self.get_dataset_data(dataset_name)
         for i, variable in enumerate(dataset.variables):
-            metadata_to_return["variable_name"] = metadata_to_return[
-                "variable_name"
-            ] + [variable.name]
-            metadata_to_return["variable_order_number"] = metadata_to_return[
-                "variable_order_number"
-            ] + [i + 1]
-            metadata_to_return["variable_label"] = metadata_to_return[
-                "variable_label"
-            ] + [variable.label]
-            metadata_to_return["variable_size"] = metadata_to_return[
-                "variable_size"
-            ] + [variable.length]
-            metadata_to_return["variable_data_type"] = metadata_to_return[
-                "variable_data_type"
-            ] + [variable.type]
-            metadata_to_return["variable_format"] = metadata_to_return[
-                "variable_format"
-            ] + [variable.format]
+            metadata_to_return["variable_name"] = metadata_to_return["variable_name"] + [variable.name]
+            metadata_to_return["variable_order_number"] = metadata_to_return["variable_order_number"] + [i + 1]
+            metadata_to_return["variable_label"] = metadata_to_return["variable_label"] + [variable.label]
+            metadata_to_return["variable_length"] = metadata_to_return["variable_length"] + [variable.length]
+            metadata_to_return["variable_data_type"] = metadata_to_return["variable_data_type"] + [variable.type]
+            metadata_to_return["variable_format"] = metadata_to_return["variable_format"] + [variable.format]
         return PandasDataset.from_dict(metadata_to_return)
 
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> PandasDataset:
+    def get_dataset_by_type(self, dataset_name: str, dataset_type: str, **params) -> PandasDataset:
         dataset_type_to_function_map: dict = {
             DatasetTypes.CONTENTS.value: self.get_dataset,
             DatasetTypes.METADATA.value: self.get_dataset_metadata,
             DatasetTypes.VARIABLES_METADATA.value: self.get_variables_metadata,
         }
-        return dataset_type_to_function_map[dataset_type](
-            dataset_name=dataset_name, **params
-        )
+        return dataset_type_to_function_map[dataset_type](dataset_name=dataset_name, **params)
 
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
         if not self.define_xml:
@@ -167,11 +145,7 @@ class DummyDataService(BaseDataService):
 
     @staticmethod
     def is_valid_data(dataset_paths: Sequence[str]):
-        if (
-            dataset_paths
-            and len(dataset_paths) == 1
-            and dataset_paths[0].lower().endswith(".json")
-        ):
+        if dataset_paths and len(dataset_paths) == 1 and dataset_paths[0].lower().endswith(".json"):
             with open(dataset_paths[0]) as fp:
                 json = load(fp)
                 return "datasets" in json

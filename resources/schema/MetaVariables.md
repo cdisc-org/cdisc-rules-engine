@@ -106,7 +106,7 @@ ItemGroupDef.ItemDef.Origin.Type
 
 ItemGroupDef.ItemRef.Role
 
-## define_variable_size
+## define_variable_length
 
 ItemGroupDef.ItemDef.Size
 
@@ -234,7 +234,7 @@ Variable short name
 
 Order of variable within dataset
 
-## variable_size
+## variable_length
 
 Variable size
 

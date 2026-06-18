@@ -41,7 +41,7 @@ def test_build_with_variable_metadata(mock_build):
             {
                 "variable_name": ["STUDYID", "USUBJID", "AETERM"],
                 "variable_label": ["Study ID", "Subject ID", "AE Term"],
-                "variable_size": [16, 20, 200],
+                "variable_length": [16, 20, 200],
                 "variable_order_number": [1, 2, 9],
                 "variable_data_type": ["text", "text", "text"],
                 "variable_format": ["$16.", "$20.", "$200."],
@@ -73,7 +73,7 @@ def test_build_with_variable_metadata(mock_build):
             "variable_value",
             "variable_order_number",
             "variable_label",
-            "variable_size",
+            "variable_length",
             "variable_data_type",
             "variable_format",
             "variable_value_length",
@@ -83,7 +83,7 @@ def test_build_with_variable_metadata(mock_build):
         studyid_rows = result[result["variable_name"] == "STUDYID"]
         assert len(studyid_rows) == 3
         assert all(studyid_rows["variable_label"] == "Study ID")
-        assert all(studyid_rows["variable_size"] == 16)
+        assert all(studyid_rows["variable_length"] == 16)
         assert all(studyid_rows["variable_data_type"] == "text")
         assert all(studyid_rows["variable_order_number"] == 1)
         for _, row in result.iterrows():
@@ -137,7 +137,7 @@ def test_concat_with_split_datasets():
             {
                 "variable_name": ["STUDYID", "USUBJID", "AETERM"],
                 "variable_label": ["Study ID", "Subject ID", "AE Term"],
-                "variable_size": [16, 20, 200],
+                "variable_length": [16, 20, 200],
                 "variable_order_number": [1, 2, 9],
                 "variable_data_type": ["text", "text", "text"],
                 "variable_format": ["$16.", "$20.", "$200."],
@@ -245,7 +245,7 @@ def test_concat_with_split_datasets():
                 "AE Term",
                 "AE Term",
             ],
-            "variable_size": [
+            "variable_length": [
                 16,
                 16,
                 16,

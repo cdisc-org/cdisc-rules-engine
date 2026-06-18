@@ -35,7 +35,7 @@ class SqlVariablesMetadataWithDefineDatasetBuilder(SqlBaseDatasetBuilder):
                 "variable_name": var_name,
                 "variable_order_number": var.order,
                 "variable_label": var.label or "",
-                "variable_size": var.length or 0,
+                "variable_length": var.length or 0,
                 "variable_data_type": var.type or "",
                 "variable_format": var.format or "",
             }
@@ -50,7 +50,7 @@ class SqlVariablesMetadataWithDefineDatasetBuilder(SqlBaseDatasetBuilder):
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
-        schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+        schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_format", "Char"))
 

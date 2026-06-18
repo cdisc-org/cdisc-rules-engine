@@ -25,7 +25,7 @@ DEFINE_VARIABLES_TYPE = {
     "define_variable_data_type": "Char",
     "define_variable_is_collected": "Bool",
     "define_variable_role": "Char",
-    "define_variable_size": "Num",
+    "define_variable_length": "Num",
     "define_variable_ccode": "Char",
     "define_variable_format": "Char",
     "define_variable_allowed_terms": "Char",

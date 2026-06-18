@@ -809,7 +809,7 @@ def define_xml_variable_validation_rule() -> dict:
         "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [],
         "domains": {"Include": [ALL_KEYWORD]},
-        "output_variables": ["variable_size"],
+        "output_variables": ["variable_length"],
         "rule_type": RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -818,7 +818,7 @@ def define_xml_variable_validation_rule() -> dict:
                         "name": "get_dataset",
                         "operator": "not_equal_to",
                         "value": {
-                            "target": "variable_size",
+                            "target": "variable_length",
                         },
                     }
                 ]
@@ -828,7 +828,7 @@ def define_xml_variable_validation_rule() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": ("Variable metadata variable_size " "does not match define variable size"),
+                    "message": ("Variable metadata variable_length " "does not match define variable size"),
                 },
             }
         ],

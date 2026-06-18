@@ -15,7 +15,7 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
         - "variable_value"
         - "variable_order_number"
         - "variable_label"
-        - "variable_size"
+        - "variable_length"
         - "variable_data_type"
         - "variable_format"
         - "variable_value_length"
@@ -24,9 +24,7 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
         variable_metadata = self.data_service.get_variables_metadata(
             dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
-        merged_df = data_contents_long_df.merge(
-            variable_metadata, how="left", on="variable_name"
-        )
+        merged_df = data_contents_long_df.merge(variable_metadata, how="left", on="variable_name")
         merged_df["variable_value_length"] = merged_df.apply(
             lambda row: ValuesDatasetBuilder.calculate_variable_value_length(
                 row["variable_value"], row["variable_data_type"]

@@ -12,7 +12,7 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
     Queries data_metadata table to get variable metadata (labels, formats, types).
 
     Example table structure (one row per variable):
-       variable_name | variable_order_number | variable_label | variable_size | variable_data_type | variable_format
+       variable_name | variable_order_number | variable_label | variable_length | variable_data_type | variable_format
     -----------------|----------------------|----------------|---------------|-------------------|----------------
        STUDYID       | 1                    | Study ID       | 16            | text              | $16.
        USUBJID       | 2                    | Subject ID     | 20            | text              | $20.
@@ -32,7 +32,7 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
-        schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+        schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_format", "Char"))
 
@@ -45,7 +45,7 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
             row["variable_name"] = variable.name.upper()
             row["variable_order_number"] = variable.order
             row["variable_label"] = variable.label
-            row["variable_size"] = variable.length
+            row["variable_length"] = variable.length
             row["variable_data_type"] = variable.type
             row["variable_format"] = variable.format
             rows.append(row)

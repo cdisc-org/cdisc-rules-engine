@@ -16,7 +16,7 @@ class VariableMetadataContainer(RepresentationInterface):
             "variable_name": self.names,
             "variable_order_number": self.order,
             "variable_label": self.labels,
-            "variable_size": self.sizes,
+            "variable_length": self.sizes,
             "variable_data_type": self.data_types,
             "variable_format": self.formats,
         }

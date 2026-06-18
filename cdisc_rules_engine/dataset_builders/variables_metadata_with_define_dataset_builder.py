@@ -11,13 +11,13 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         variable_name
         variable_order_number
         variable_label
-        variable_size
+        variable_length
         variable_data_type
         define_variable_name,
         define_variable_label,
         define_variable_data_type,
         define_variable_role,
-        define_variable_size,
+        define_variable_length,
         define_variable_code,
         define_variable_format,
         define_variable_allowed_terms,
@@ -35,9 +35,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         content_metadata: DatasetInterface = self.data_service.get_variables_metadata(
             dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
-        define_metadata: DatasetInterface = self.dataset_implementation.from_records(
-            variable_metadata
-        )
+        define_metadata: DatasetInterface = self.dataset_implementation.from_records(variable_metadata)
         return content_metadata.merge(
             define_metadata.data,
             left_on="variable_name",

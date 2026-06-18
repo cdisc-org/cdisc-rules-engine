@@ -287,7 +287,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_data_type": "",
             "define_variable_is_collected": "",
             "define_variable_role": "",
-            "define_variable_size": "",
+            "define_variable_length": "",
             "define_variable_ccode": "",
             "define_variable_format": "",
             "define_variable_allowed_terms": [],
@@ -295,7 +295,6 @@ class BaseDefineXMLReader(ABC):
             "define_variable_source_type": "",
             "define_variable_has_no_data": "",
             "define_variable_order_number": None,
-            "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
             "define_variable_mandatory": None,
@@ -304,9 +303,8 @@ class BaseDefineXMLReader(ABC):
         if itemdef:
             data["define_variable_mandatory"] = itemref.Mandatory
             data["define_variable_name"] = itemdef.Name
-            data["define_variable_size"] = itemdef.Length
-            data["define_variable_role"] = itemref.Role
             data["define_variable_length"] = itemdef.Length
+            data["define_variable_role"] = itemref.Role
             data["define_variable_data_type"] = itemdef.DataType
             data["define_variable_is_collected"] = self._get_variable_is_collected(itemdef)
             if itemdef.Description:

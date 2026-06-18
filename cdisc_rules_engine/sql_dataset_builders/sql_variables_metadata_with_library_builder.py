@@ -28,7 +28,7 @@ class SqlVariablesMetadataWithLibraryBuilder(SqlBaseDatasetBuilder):
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
-        schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+        schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_format", "Char"))
         for col, type in LIBRARY_VARIABLES_TYPE.items():
@@ -44,7 +44,7 @@ class SqlVariablesMetadataWithLibraryBuilder(SqlBaseDatasetBuilder):
                 "variable_name": var_name,
                 "variable_order_number": variable.order,
                 "variable_label": variable.label or "",
-                "variable_size": variable.length,
+                "variable_length": variable.length,
                 "variable_data_type": variable.type or "",
                 "variable_format": variable.format or "",
             }

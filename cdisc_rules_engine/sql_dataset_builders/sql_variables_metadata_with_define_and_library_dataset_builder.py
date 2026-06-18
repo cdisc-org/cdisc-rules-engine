@@ -49,7 +49,7 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
                 "variable_name": var.name.upper() if var else "",
                 "variable_order_number": var.order if var else 0,
                 "variable_label": var.label if var else "",
-                "variable_size": var.length if var else 0,
+                "variable_length": var.length if var else 0,
                 "variable_data_type": var.type if var else "",
                 "variable_has_empty_values": str(has_empty),
                 "variable_count": var_count,
@@ -65,7 +65,7 @@ class SqlVariablesMetadataWithDefineAndLibraryDatasetBuilder(SqlBaseDatasetBuild
             schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
             schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
             schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
-            schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+            schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
             schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
             schema.add_column(SqlColumnSchema.generated("variable_has_empty_values", "Bool"))
             schema.add_column(SqlColumnSchema.generated("variable_count", "Num"))

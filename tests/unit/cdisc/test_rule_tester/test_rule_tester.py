@@ -243,4 +243,4 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
         assert len(data["AE"][0]["errors"]) > 0
         error = data["AE"][0]["errors"][1]
         assert error["row"] == 3
-        assert error["value"] == {"variable_size": 8}
+        assert error["value"] == {"variable_length": 8}

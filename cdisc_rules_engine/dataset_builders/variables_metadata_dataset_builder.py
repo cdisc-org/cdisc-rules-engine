@@ -9,7 +9,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_name
         variable_order_number
         variable_label
-        variable_size
+        variable_length
         variable_data_type
         variable_format
         """

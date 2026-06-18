@@ -109,7 +109,7 @@ any:
 - `define_variable_label`
 - `define_variable_data_type`
 - `define_variable_role`
-- `define_variable_size`
+- `define_variable_length`
 - `define_variable_ccode`
 - `define_variable_format`
 - `define_variable_allowed_terms`
@@ -133,7 +133,7 @@ Attach variable codelist and codelist terms
 - `define_variable_label`
 - `define_variable_data_type`
 - `define_variable_role`
-- `define_variable_size`
+- `define_variable_length`
 - `define_variable_ccode`
 - `define_variable_format`
 - `define_variable_allowed_terms`
@@ -225,7 +225,7 @@ all:
 - `variable_value`
 - `variable_order_number`
 - `variable_label`
-- `variable_size`
+- `variable_length`
 - `variable_data_type`
 - `variable_format`
 - `variable_value_length`
@@ -340,7 +340,7 @@ Attach define xml metadata at value level
 - `variable_name`
 - `variable_order_number`
 - `variable_label`
-- `variable_size`
+- `variable_length`
 - `variable_data_type`
 - `variable_format`
 
@@ -383,7 +383,7 @@ Attach define xml metadata at variable level
 - `variable_name`
 - `variable_order_number`
 - `variable_label`
-- `variable_size`
+- `variable_length`
 - `variable_data_type`
 - `variable_format`
 - `variable_has_empty_values`
@@ -400,7 +400,7 @@ Attach define xml metadata at variable level
 
 - `variable_name`
 - `variable_label`
-- `variable_size`
+- `variable_length`
 - `variable_order_number`
 - `variable_data_type`
 - `define_variable_name`
@@ -408,7 +408,7 @@ Attach define xml metadata at variable level
 - `define_variable_data_type`
 - `define_variable_is_collected`
 - `define_variable_role`
-- `define_variable_size`
+- `define_variable_length`
 - `define_variable_ccode`
 - `define_variable_format`
 - `define_variable_allowed_terms`

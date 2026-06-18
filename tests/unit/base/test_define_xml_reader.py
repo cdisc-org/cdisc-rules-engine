@@ -145,7 +145,7 @@ def test_extract_variable_metadata(filename):
             "define_variable_name": "EXROUTE",
             "define_variable_label": "Route of Administration",
             "define_variable_data_type": "text",
-            "define_variable_size": 12,
+            "define_variable_length": 12,
             "define_variable_role": "Variable Qualifier",
             "define_variable_ccode": "C66729",
             "define_variable_allowed_terms": ["Subcutaneous Route of Administration"],

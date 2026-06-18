@@ -48,7 +48,7 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
         schema.add_column(SqlColumnSchema.generated("variable_value", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
-        schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+        schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_format", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_value_length", "Num"))
@@ -96,7 +96,7 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
                         CAST({col_hash} AS TEXT) as variable_value,
                         '{var_label}' as variable_label,
                         '{var_data_type}' as variable_data_type,
-                        {var_size} as variable_size,
+                        {var_size} as variable_length,
                         {var_order} as variable_order_number,
                         '{var_format}' as variable_format,
                         {length_expr} as variable_value_length
@@ -113,7 +113,7 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
                  {schema.get_column_hash("variable_value")},
                  {schema.get_column_hash("variable_label")},
                  {schema.get_column_hash("variable_data_type")},
-                 {schema.get_column_hash("variable_size")},
+                 {schema.get_column_hash("variable_length")},
                  {schema.get_column_hash("variable_order_number")},
                  {schema.get_column_hash("variable_format")},
                  {schema.get_column_hash("variable_value_length")})

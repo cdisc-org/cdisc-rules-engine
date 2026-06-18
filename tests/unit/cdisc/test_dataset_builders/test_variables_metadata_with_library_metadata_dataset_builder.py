@@ -35,7 +35,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         {
             "variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
             "variable_label": ["A", "B", "C", "D"],
-            "variable_size": [16, 16, 8, 8],
+            "variable_length": [16, 16, 8, 8],
             "variable_order_number": [1, 2, 9, 8],
             "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
@@ -154,7 +154,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     assert result.columns.tolist() == [
         "variable_name",
         "variable_label",
-        "variable_size",
+        "variable_length",
         "variable_order_number",
         "variable_data_type",
         "library_variable_name",
@@ -194,7 +194,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         {
             "variable_name": ["STUDYID", "USUBJID", "AETERM", "AEMODELVAR"],
             "variable_label": ["A", "B", "C", "A"],
-            "variable_size": [16, 16, 8, 8],
+            "variable_length": [16, 16, 8, 8],
             "variable_order_number": [1, 2, 9, 2000],
             "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
@@ -371,7 +371,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         [
             "variable_name",
             "variable_label",
-            "variable_size",
+            "variable_length",
             "variable_order_number",
             "variable_data_type",
             "library_variable_name",

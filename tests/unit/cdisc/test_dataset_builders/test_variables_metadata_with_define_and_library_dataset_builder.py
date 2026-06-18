@@ -43,7 +43,7 @@ def test_build_combined_metadata(
         {
             "variable_name": ["STUDYID", "USUBJID", "AETERM"],
             "variable_label": ["Study ID", "Subject ID", "AE Term"],
-            "variable_size": [16, 16, 200],
+            "variable_length": [16, 16, 200],
             "variable_order_number": [1, 2, 9],
             "variable_data_type": ["Char", "Char", "Char"],
         }
@@ -150,7 +150,7 @@ def test_build_combined_metadata(
     expected_columns = {
         "variable_name",
         "variable_label",
-        "variable_size",
+        "variable_length",
         "variable_order_number",
         "variable_data_type",
         "define_variable_name",
@@ -158,7 +158,7 @@ def test_build_combined_metadata(
         "define_variable_data_type",
         "define_variable_is_collected",
         "define_variable_role",
-        "define_variable_size",
+        "define_variable_length",
         "define_variable_ccode",
         "define_variable_format",
         "define_variable_allowed_terms",
@@ -187,7 +187,7 @@ def test_build_combined_metadata(
         assert row["library_variable_name"] == var
         assert row["variable_has_empty_values"] == (var in ["USUBJID", "AETERM"])
     studyid_row = result[result["variable_name"] == "STUDYID"].iloc[0]
-    assert studyid_row["variable_size"] == 16.0
+    assert studyid_row["variable_length"] == 16.0
     assert studyid_row["variable_order_number"] == 1.0
     assert studyid_row["variable_data_type"] == "Char"
     assert studyid_row["define_variable_role"] == "Identifier"
