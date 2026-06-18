@@ -178,9 +178,9 @@ class TestEdgeCases:
 
 VARIABLES_CSV = textwrap.dedent("""\
     dataset,variable,label,type,length
-    patients.csv,id,Patient ID,integer,10
-    patients.csv,name,Patient Name,string,50
-    patients.csv,age,Patient Age,integer,3
+    patients,id,Patient ID,integer,10
+    patients,name,Patient Name,string,50
+    patients,age,Patient Age,integer,3
 """)
 
 DATA_CSV = textwrap.dedent("""\
@@ -192,7 +192,7 @@ DATA_CSV = textwrap.dedent("""\
 
 DATASETS_CSV = textwrap.dedent("""\
     Filename,Label
-    patients.csv,Patient Dataset
+    patients,Patient Dataset
 """)
 
 
@@ -299,7 +299,7 @@ class TestDatasetCSVMetadataReaderRead:
     def test_variable_name_to_size_map_with_nan_length(self):
         variables_with_nan = textwrap.dedent("""\
             dataset,variable,label,type,length
-            patients.csv,id,Patient ID,integer,
+            patients,id,Patient ID,integer,
         """)
         _write(self._variables_path(), variables_with_nan)
         reader = DatasetCSVMetadataReader(str(self.data_path), "patients.csv")
@@ -308,7 +308,7 @@ class TestDatasetCSVMetadataReaderRead:
 
     def test_dataset_name_lookup_is_case_insensitive(self):
         """File name with mixed case should still match _variables.csv entry."""
-        variables_upper = VARIABLES_CSV.replace("patients.csv", "PATIENTS.CSV")
+        variables_upper = VARIABLES_CSV.replace("patients", "PATIENTS")
         _write(self._variables_path(), variables_upper)
         reader = DatasetCSVMetadataReader(str(self.data_path), "PATIENTS.CSV")
         result = reader.read()
