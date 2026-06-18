@@ -6,5 +6,7 @@ class ExistsOperator(BaseSqlOperator):
 
     def execute_operator(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
+        if target_column == "define.xml":
+            return self._do_check_operator(lambda: "TRUE" if self.sql_data_service.define_xml_path else "FALSE")
         result = target_column in self.operation_variables or self._exists(target_column)
         return self._do_check_operator(lambda: "TRUE" if result else "FALSE")
