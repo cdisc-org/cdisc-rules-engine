@@ -19,6 +19,7 @@ class DatasetCSVMetadataReader:
     ):
         self.file_path = file_path
         self.file_name = file_name
+        self.dataset = Path(file_name).stem
         self.encoding = encoding
         self.variables_csv_path = (
             Path(variables_csv_path)
@@ -32,87 +33,31 @@ class DatasetCSVMetadataReader:
         )
 
     def read(self) -> dict:
-        dataset_name = Path(self.file_name).stem.lower()
-
-        if not self.variables_csv_path.exists():
-            logger = logging.getLogger("validator")
-            logger.info("No variables file found for %s", dataset_name)
-            variables_meta = {}
-        else:
-            variables_meta = self.__get_variable_metadata(
-                dataset_name, self.variables_csv_path
-            )
-
-        metadata = {
-            "dataset_name": dataset_name.upper(),
-            "dataset_modification_date": datetime.fromtimestamp(
-                Path(self.file_path).stat().st_mtime
-            ).isoformat(),
-            "adam_info": {
-                "categorization_scheme": {},
-                "w_indexes": {},
-                "period": {},
-                "selection_algorithm": {},
-            },
-        }
-        metadata.update(variables_meta)
-        metadata.update(self.__data_meta())
-        metadata.update(self.__dataset_label())
+        metadata = {}
+        metadata.update(self.__dataset_metadata())
+        metadata.update(
+            {
+                "dataset_modification_date": datetime.fromtimestamp(
+                    Path(self.file_path).stat().st_mtime
+                ).isoformat(),
+                "adam_info": {
+                    "categorization_scheme": {},
+                    "w_indexes": {},
+                    "period": {},
+                    "selection_algorithm": {},
+                },
+            }
+        )
+        metadata.update(self.__variable_metadata())
+        metadata.update(self.__data_metadata())
         return metadata
 
-    def __get_variable_metadata(
-        self, dataset_name: str, variables_file_path: Path
-    ) -> dict:
-        logger = logging.getLogger("validator")
-        try:
-            meta_df = pd.read_csv(variables_file_path, encoding=self.encoding)
-        except (UnicodeDecodeError, UnicodeError) as e:
-            logger.error(
-                f"Could not decode CSV file {variables_file_path} with {self.encoding} encoding: {e}. "
-                f"Please specify the correct encoding using the -e flag."
-            )
-            return {}
-        except Exception as e:
-            logger.error("Error reading CSV file %s. %s", self.file_path, e)
-            return {}
-
-        meta_df["dataset"] = meta_df["dataset"].apply(
-            lambda x: Path(str(x)).stem.lower()
-        )
-
-        dataset_meta_df = meta_df[meta_df["dataset"] == dataset_name]
-
-        if dataset_meta_df.empty:
-            logger = logging.getLogger("validator")
-            logger.info("No dataset metadata found for %s", dataset_name)
-            return {}
-
-        variable_names = dataset_meta_df["variable"].tolist()
-        variable_labels = dataset_meta_df["label"].tolist()
-
-        variable_name_to_label_map = dict(zip(variable_names, variable_labels))
-        variable_name_to_data_type_map = dict(
-            zip(variable_names, dataset_meta_df["type"])
-        )
-        variable_name_to_size_map = {
-            var: (int(length) if pd.notna(length) else None)
-            for var, length in zip(variable_names, dataset_meta_df["length"])
-        }
-        return {
-            "variable_names": variable_names,
-            "variable_labels": variable_labels,
-            "variable_formats": [""] * len(variable_names),
-            "variable_name_to_label_map": variable_name_to_label_map,
-            "variable_name_to_data_type_map": variable_name_to_data_type_map,
-            "variable_name_to_size_map": variable_name_to_size_map,
-            "number_of_variables": len(variable_names),
-        }
-
-    def __dataset_label(self) -> dict:
+    def __dataset_metadata(self) -> dict:
         logger = logging.getLogger("validator")
 
         if not self.datasets_csv_path.exists():
-            return {}
+            logger.info("No datasets file found for %s", self.dataset)
+            return {"dataset_name": self.dataset}
 
         try:
             datasets_df = pd.read_csv(self.datasets_csv_path, encoding=self.encoding)
@@ -127,22 +72,81 @@ class DatasetCSVMetadataReader:
             logger.error("Error reading CSV file %s. %s", self.file_path, e)
             return {}
 
-        if "Filename" not in datasets_df.columns or "Label" not in datasets_df.columns:
+        if "Filename" not in datasets_df.columns:
             return {}
 
-        datasets_df["dataset"] = datasets_df["Filename"].apply(
-            lambda x: Path(str(x)).stem.lower()
+        match = datasets_df[datasets_df["Filename"] == self.dataset]
+
+        if match.empty or len(match) > 1:
+            return {}
+
+        single_match = match.iloc[0]
+
+        return {
+            "dataset_name": (
+                single_match["Dataset Name"]
+                if "Dataset Name" in datasets_df.columns
+                else str(single_match["Filename"]).upper()
+            ),
+            "dataset_label": str(single_match["Label"]),
+        }
+
+    def __variable_metadata(
+        self,
+    ) -> dict:
+        logger = logging.getLogger("validator")
+        if not self.variables_csv_path.exists():
+            logger.info("No variables file found for %s", self.dataset)
+            return {}
+        try:
+            meta_df = pd.read_csv(self.variables_csv_path, encoding=self.encoding)
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.error(
+                f"Could not decode CSV file {self.variables_csv_path} with {self.encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
+            )
+            return {}
+        except Exception as e:
+            logger.error("Error reading CSV file %s. %s", self.file_path, e)
+            return {}
+
+        dataset_meta_df = meta_df[meta_df["dataset"] == self.dataset]
+
+        if dataset_meta_df.empty:
+            logger.info("No dataset metadata found for %s", self.dataset)
+            return {}
+
+        variable_names = dataset_meta_df["variable"].tolist()
+        variable_labels = dataset_meta_df["label"].tolist()
+
+        variable_name_to_label_map = dict(zip(variable_names, variable_labels))
+        variable_name_to_data_type_map = dict(
+            zip(variable_names, dataset_meta_df["type"])
         )
+        variable_name_to_size_map = {
+            var: (
+                int(length)
+                if pd.notna(length)
+                and (
+                    # Because NaN is a float, pandas forces an array of integers with any missing values to become floating point
+                    isinstance(length, int | float)
+                    or (isinstance(length, str) and length.isdigit())
+                )
+                else None
+            )
+            for var, length in zip(variable_names, dataset_meta_df["length"])
+        }
+        return {
+            "variable_names": variable_names,
+            "variable_labels": variable_labels,
+            "variable_formats": [""] * len(variable_names),
+            "variable_name_to_label_map": variable_name_to_label_map,
+            "variable_name_to_data_type_map": variable_name_to_data_type_map,
+            "variable_name_to_size_map": variable_name_to_size_map,
+            "number_of_variables": len(variable_names),
+        }
 
-        current_dataset = Path(self.file_name).stem.lower()
-        match = datasets_df[datasets_df["dataset"] == current_dataset]
-
-        if match.empty:
-            return {}
-
-        return {"dataset_label": str(match.iloc[0]["Label"])}
-
-    def __data_meta(self):
+    def __data_metadata(self):
         logger = logging.getLogger("validator")
         result = {
             "dataset_length": 0,
