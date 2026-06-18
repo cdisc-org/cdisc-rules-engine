@@ -47,12 +47,8 @@ class BaseDatasetBuilder:
         self.library_metadata = library_metadata
         self.dataset_implementation = self.data_service.dataset_implementation
         if isinstance(dataset_metadata, SDTMDatasetMetadata):
-            self.domain = (
-                f"SUPP{dataset_metadata.rdomain}"
-                if dataset_metadata.rdomain
-                else dataset_metadata.domain
-            )
-            self.dataset_name = dataset_metadata.name
+            # This is created to support the get_dataset cached decorator
+            self.domain = dataset_metadata.unsplit_name
         self.name = self.__class__.__name__
 
     @abstractmethod
