@@ -8,14 +8,19 @@ class DataReaderInterface:
     """
 
     def __init__(
-        self, dataset_implementation=PandasDataset, encoding: str = DEFAULT_ENCODING
+        self,
+        dataset_implementation=PandasDataset,
+        encoding: str = DEFAULT_ENCODING,
+        variables_csv_path: str = None,
     ):
         """
         :param DatasetInterface dataset_implementation : The dataset type to return.
         :param str encoding : The encoding to use when reading files. Defaults to DEFAULT_ENCODING (e.g. utf-8).
+        :param str variables_csv_path : Optional path to a `_variables.csv` declaring variable metadata
         """
         self.dataset_implementation = dataset_implementation
         self.encoding = encoding
+        self.variables_csv_path = variables_csv_path
 
     def read(self, data):
         """

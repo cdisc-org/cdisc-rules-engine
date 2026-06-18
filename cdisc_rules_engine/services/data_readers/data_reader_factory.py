@@ -34,10 +34,12 @@ class DataReaderFactory(FactoryInterface):
         service_name: str = None,
         dataset_implementation=PandasDataset,
         encoding: str = None,
+        variables_csv_path: str = None,
     ):
         self._default_service_name = service_name
         self.dataset_implementation = dataset_implementation
         self.encoding = encoding
+        self.variables_csv_path = variables_csv_path
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataReaderInterface]):
@@ -58,7 +60,11 @@ class DataReaderFactory(FactoryInterface):
         if service_name in self._reader_map:
             reader_class = self._reader_map[service_name]
             encoding = self.encoding or DEFAULT_ENCODING
-            return reader_class(self.dataset_implementation, encoding=encoding)
+            return reader_class(
+                self.dataset_implementation,
+                encoding=encoding,
+                variables_csv_path=self.variables_csv_path,
+            )
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "
             f"given service name is {service_name}"

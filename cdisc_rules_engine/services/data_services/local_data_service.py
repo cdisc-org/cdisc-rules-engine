@@ -112,6 +112,7 @@ class LocalDataService(BaseDataService):
                         "dataset_implementation", PandasDataset
                     ),
                     encoding=encoding,
+                    variables_csv_path=kwargs.get("variables_csv_path"),
                 ),
                 config=config,
                 **kwargs,

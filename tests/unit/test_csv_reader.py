@@ -1,4 +1,5 @@
 import logging
+import os
 import tempfile
 import textwrap
 from datetime import datetime
@@ -351,6 +352,14 @@ class TestDatasetCSVMetadataReaderRead:
         assert result["first_record"] == {}
 
 
+CSV_READER_VARIABLES_CSV = textwrap.dedent("""\
+    dataset,variable,label,type,length
+    data,id,ID,Num,10
+    data,name,Name,Char,50
+    data,age,Age,Num,8
+""")
+
+
 class TestCSVReaderFromFile:
     """Tests for CSVReader.from_file()"""
 
@@ -358,8 +367,9 @@ class TestCSVReaderFromFile:
         self.tmpdir = tempfile.mkdtemp()
         self.csv_path = Path(self.tmpdir) / "data.csv"
         _write(self.csv_path, DATA_CSV)
+        _write(Path(self.tmpdir) / "_variables.csv", CSV_READER_VARIABLES_CSV)
 
-    def test_returns_dataframe(self):
+    def test_returns_pandas_dataset(self):
         reader = CSVReader()
         df = reader.from_file(str(self.csv_path))
         assert isinstance(df, PandasDataset)
@@ -393,6 +403,214 @@ class TestCSVReaderFromFile:
         df = reader.from_file(str(empty_path))
         assert df.empty
         assert list(df.columns) == ["id", "name", "age"]
+
+    def test_num_column_no_blanks_values_are_float(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert all(isinstance(v, float) for v in df["age"] if v is not None)
+
+    def test_num_column_no_blanks_correct_values(self):
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert df.iloc[0]["age"] == 30
+        assert df.iloc[1]["age"] == 25
+        assert df.iloc[2]["age"] == 40
+
+    def test_num_column_with_blanks_non_null_are_float(self):
+        csv = textwrap.dedent("""\
+            id,name,age
+            1,Alice,30
+            2,Bob,
+            3,Carol,40
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            blanks,id,ID,Num,10
+            blanks,name,Name,Char,50
+            blanks,age,Age,Num,8
+        """)
+        path = Path(self.tmpdir) / "blanks.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        non_null = [v for v in df["age"] if v is not None]
+        assert all(isinstance(v, float) for v in non_null)
+
+    def test_num_column_with_blanks_missing_is_none(self):
+        csv = textwrap.dedent("""\
+            id,name,age
+            1,Alice,30
+            2,Bob,
+            3,Carol,40
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            blanks,id,ID,Num,10
+            blanks,name,Name,Char,50
+            blanks,age,Age,Num,8
+        """)
+        path = Path(self.tmpdir) / "blanks.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert df.iloc[1]["age"] is None
+
+    def test_num_column_with_decimals_stays_float(self):
+        csv = textwrap.dedent("""\
+            id,name,score
+            1,Alice,10.5
+            2,Bob,20.0
+            3,Carol,30.8
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            decimals,id,ID,Num,10
+            decimals,name,Name,Char,50
+            decimals,score,Score,Num,8
+        """)
+        path = Path(self.tmpdir) / "decimals.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert all(isinstance(v, float) for v in df["score"] if v is not None)
+
+    def test_char_column_with_numeric_looking_values_stays_str(self):
+        csv = textwrap.dedent("""\
+            code,name
+            001,Alice
+            002,Bob
+            003,Carol
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            codes,code,Code,Char,3
+            codes,name,Name,Char,50
+        """)
+        path = Path(self.tmpdir) / "codes.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert all(isinstance(v, str) for v in df["code"])
+        assert df.iloc[0]["code"] == "001"
+
+    def test_char_blank_cell_becomes_none(self):
+        csv = textwrap.dedent("""\
+            id,status
+            1,ACTIVE
+            2,
+            3,INACTIVE
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            status,id,ID,Num,10
+            status,status,Status,Char,8
+        """)
+        path = Path(self.tmpdir) / "status.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert df.iloc[1]["status"] is None
+
+    def test_char_literal_na_not_converted_to_none(self):
+        csv = textwrap.dedent("""\
+            id,status
+            1,ACTIVE
+            2,NA
+            3,INACTIVE
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            status,id,ID,Num,10
+            status,status,Status,Char,8
+        """)
+        path = Path(self.tmpdir) / "status.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert df.iloc[1]["status"] == "NA"
+
+    def test_boolean_column_true_false_strings(self):
+        csv = textwrap.dedent("""\
+            id,active
+            1,True
+            2,False
+            3,TRUE
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            bools,id,ID,Num,10
+            bools,active,Active,Boolean,1
+        """)
+        path = Path(self.tmpdir) / "bools.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert df.iloc[0]["active"] is True
+        assert df.iloc[1]["active"] is False
+
+    def test_boolean_column_blank_becomes_none(self):
+        csv = textwrap.dedent("""\
+            id,active
+            1,True
+            2,
+            3,False
+        """)
+        variables = textwrap.dedent("""\
+            dataset,variable,label,type,length
+            bools,id,ID,Num,10
+            bools,active,Active,Boolean,1
+        """)
+        path = Path(self.tmpdir) / "bools.csv"
+        _write(path, csv)
+        _write(Path(self.tmpdir) / "_variables.csv", variables)
+        reader = CSVReader()
+        df = reader.from_file(str(path))
+        assert df.iloc[1]["active"] is None
+
+    def test_dataset_not_in_variables_csv_falls_back_to_inference(self):
+        """If _variables.csv exists but has no entry for this dataset,
+        pandas inference is used and no error is raised."""
+        _write(
+            Path(self.tmpdir) / "_variables.csv",
+            textwrap.dedent("""\
+            dataset,variable,label,type,length
+            other,id,ID,Num,10
+        """),
+        )
+        reader = CSVReader()
+        df = reader.from_file(str(self.csv_path))
+        assert isinstance(df, PandasDataset)
+        assert list(df.columns) == ["id", "name", "age"]
+
+    def test_missing_variables_csv_raises_invalid_csv_file(self):
+        vars_path = Path(self.tmpdir) / "_variables.csv"
+        if vars_path.exists():
+            os.remove(vars_path)
+        reader = CSVReader()
+        with pytest.raises(InvalidCSVFile):
+            reader.from_file(str(self.csv_path))
+
+    def test_encoding_error_in_variables_csv_raises_invalid_csv_file(self):
+        vars_path = Path(self.tmpdir) / "_variables.csv"
+        vars_path.write_bytes(
+            b"dataset,variable,label,type,length\ndata,id,caf\xe9,Num,10\n"
+        )
+        reader = CSVReader(encoding="utf-8")
+        with pytest.raises(InvalidCSVFile, match="_variables.csv"):
+            reader.from_file(str(self.csv_path))
+
+    def test_encoding_error_in_data_file_raises_invalid_csv_file(self):
+        self.csv_path.write_bytes(b"id,name,age\n1,Caf\xe9,30\n")
+        reader = CSVReader(encoding="utf-8")
+        with pytest.raises(InvalidCSVFile, match="data.csv"):
+            reader.from_file(str(self.csv_path))
 
 
 class TestCSVReaderToParquet:
