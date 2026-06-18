@@ -86,6 +86,7 @@ jobs:
           cd engine
           ../venv/bin/pip install . --group dev
           cd ..
+          venv/bin/pip install tabulate
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
