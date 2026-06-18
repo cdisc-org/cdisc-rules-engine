@@ -20,6 +20,9 @@ from cdisc_rules_engine.data_service.startup.populate_standards import (
 from cdisc_rules_engine.data_service.startup.populate_dictionaries import (
     populate_dictionaries,
 )
+from cdisc_rules_engine.data_service.startup.populate_helper_tables import (
+    populate_helper_tables,
+)
 from cdisc_rules_engine.models.dataset_metadata2 import (
     VariableMetadata,
 )
@@ -81,6 +84,7 @@ class PostgresQLDataService:
         populate_dictionaries(pgi, external_dictionaries)
         populate_codelists(pgi, cache_path, codelists)
         populate_standards(pgi)
+        populate_helper_tables(pgi)
 
         instance._update_define_xml_path(define_xml_path)
         instance._update_provided_codelists(provided_codelists)

@@ -1,0 +1,41 @@
+[
+  { "fda_guides": "Dyslipidemia Therapeutic Area User Guide v1" },
+  { "fda_guides": "Chronic Hepatitis B Therapeutic Area User Guide v1" },
+  {
+    "fda_guides": "Chronic Hepatitis C Therapeutic Area Data Standard User Guide v1"
+  },
+  { "fda_guides": "QT Studies Therapeutic Area User Guide v1" },
+  {
+    "fda_guides": "Diabetes Therapeutic Area User Guide v1.0 - Supplement for ADaM"
+  },
+  { "fda_guides": "Tuberculosis Therapeutic Area User Guide v2.0" },
+  { "fda_guides": "Diabetic Kidney Disease Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Ebola Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Rheumatoid Arthritis Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Malaria Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Kidney Transplant Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Influenza Therapeutic Area User Guide v1.1" },
+  { "fda_guides": "Virology Therapeutic Area User Guide v2.1" },
+  { "fda_guides": "Prostate Cancer Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Schizophrenia Therapeutic Area User Guide v1.1" },
+  {
+    "fda_guides": "Major Depressive Disorder Therapeutic Area User Guide v1.0"
+  },
+  { "fda_guides": "Traumatic Brain Injury Therapeutic Area User Guide v1.0" },
+  {
+    "fda_guides": "Duchenne Muscular Dystrophy Therapeutic Area User Guide v1.0"
+  },
+  { "fda_guides": "Vaccines Therapeutic Area User Guide v1.1" },
+  {
+    "fda_guides": "Chronic Obstructive Pulmonary Disease Therapeutic Area User Guide v1"
+  },
+  { "fda_guides": "Colorectal Cancer Therapeutic Area User Guide v1.0" },
+  { "fda_guides": "Huntington's Disease Therapeutic Area User Guide v1.0" },
+  {
+    "fda_guides": "Post Traumatic Stress Disorder Therapeutic Area User Guide v1.0"
+  },
+  {
+    "fda_guides": "Clostridium Difficile Associated Diarrhea Therapeutic Area User Guide v1.0"
+  },
+  { "fda_guides": "Acute Kidney Injury Therapeutic Area User Guide v1.0" }
+]
