@@ -253,7 +253,8 @@ class USDMReportData(BaseReportData):
             attributes = issue.get("attributes") or []
             values = issue.get("values") or []
             for attribute, value in zip(attributes, values):
-                rows.append([path, attribute, str(value)])
+                csv_value = "" if value in (None, "null") else value
+                rows.append([path, attribute, csv_value])
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:
