@@ -144,6 +144,9 @@ class LocalDataService(BaseDataService):
             basename(full_path).split(".")[1].upper()
         )
         df = reader.from_file(full_path)
+        # Build a simulated json pointer for the case where we are simulating json data.
+        if self.standard == "usdm":
+            df["_path"] = [f"/{dataset_name}/{i}" for i in range(len(df))]
         return df
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
