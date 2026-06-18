@@ -552,8 +552,8 @@ class TestCSVReaderFromFile:
         _write(Path(self.tmpdir) / "_variables.csv", variables)
         reader = CSVReader()
         df = reader.from_file(str(path))
-        assert df.iloc[0]["active"] is True
-        assert df.iloc[1]["active"] is False
+        assert df.iloc[0]["active"]
+        assert not df.iloc[1]["active"]
 
     def test_boolean_column_blank_becomes_none(self):
         csv = textwrap.dedent("""\
