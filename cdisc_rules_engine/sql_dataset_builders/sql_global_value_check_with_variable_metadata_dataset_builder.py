@@ -25,7 +25,7 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
         schema.add_column(SqlColumnSchema.generated("variable_value", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_data_type", "Char"))
-        schema.add_column(SqlColumnSchema.generated("variable_size", "Num"))
+        schema.add_column(SqlColumnSchema.generated("variable_length", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_format", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_value_length", "Num"))
@@ -45,7 +45,7 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
                 var.name.upper(): {
                     "label": var.label or "",
                     "data_type": var.type or "",
-                    "size": var.length or 0,
+                    "length": var.length or 0,
                     "order": var.order or 0,
                     "format": var.format or "",
                 }
@@ -68,7 +68,7 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
 
                     var_label = metadata.get("label", "")
                     var_data_type = metadata.get("data_type", "")
-                    var_size = metadata.get("size", 0)
+                    var_length = metadata.get("length", 0)
                     var_order = metadata.get("order", 0)
                     var_format = metadata.get("format", "")
 
@@ -92,7 +92,7 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
                             CAST({col_hash} AS TEXT) as variable_value,
                             '{var_label}' as variable_label,
                             '{var_data_type}' as variable_data_type,
-                            {var_size} as variable_size,
+                            {var_length} as variable_length,
                             {var_order} as variable_order_number,
                             '{var_format}' as variable_format,
                             {length_expr} as variable_value_length
@@ -110,7 +110,7 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
                     {schema.get_column_hash("variable_value")},
                     {schema.get_column_hash("variable_label")},
                     {schema.get_column_hash("variable_data_type")},
-                    {schema.get_column_hash("variable_size")},
+                    {schema.get_column_hash("variable_length")},
                     {schema.get_column_hash("variable_order_number")},
                     {schema.get_column_hash("variable_format")},
                     {schema.get_column_hash("variable_value_length")})
