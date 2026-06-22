@@ -32,7 +32,7 @@ class ParquetReader(DataReaderInterface):
     def _format_floats(
         self, dataframe: Union[pd.DataFrame, dd.DataFrame]
     ) -> Union[pd.DataFrame, dd.DataFrame]:
-        return dataframe.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
+        return dataframe.map(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def _read_dask(self, file_path):
         data = dd.read_parquet(file_path)
