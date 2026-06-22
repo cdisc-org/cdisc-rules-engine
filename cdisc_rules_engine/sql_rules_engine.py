@@ -215,7 +215,11 @@ class SQLRulesEngine:
 
         # Apply any operations
         operation_variables = SQLRuleProcessor.perform_rule_operations(
-            rule_copy, dataset_metadata, data_service=self.data_service, standards_context=self.standards_context
+            rule_copy,
+            dataset_id,
+            dataset_metadata,
+            data_service=self.data_service,
+            standards_context=self.standards_context,
         )
 
         # Translator between venmo and the check operators
