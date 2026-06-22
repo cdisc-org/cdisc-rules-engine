@@ -25,9 +25,11 @@ class ValidExDictCodeReferenceOperator(BaseSqlOperator):
             if filter_attribute == "class":
                 filter_conditions.append(f"('{filter_value}' IN (level_1, level_2, level_3, level_4))")
 
-            whodrug_condition = f"WHEN {self._column_sql(target_column, alias=False)} = 'MULTIPLE' THEN TRUE"
+            whodrug_condition = (
+                f"WHEN {self._column_sql(target_column, alias=False, null_return=True)} = 'MULTIPLE' THEN TRUE"
+            )
 
-        cast_expr = f"CAST({self._column_sql(target_column, alias=False)} AS TEXT)"
+        cast_expr = f"CAST({self._column_sql(target_column, alias=False, null_return=True)} AS TEXT)"
         code_expr = "term_code"
         if case_insensitive:
             cast_expr = f"LOWER({cast_expr})"

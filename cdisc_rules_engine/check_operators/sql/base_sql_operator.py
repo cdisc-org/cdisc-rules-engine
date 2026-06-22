@@ -219,6 +219,7 @@ class BaseSqlOperator:
         prefix: Optional[int] = None,
         suffix: Optional[int] = None,
         alias: bool = True,
+        null_return: bool = False,
     ) -> str:
         if column == DATASET_NAME:
             dataset_name = self.dataset_metadata.name
@@ -229,6 +230,8 @@ class BaseSqlOperator:
             return self._constant_sql(dataset_name, lowercase=lowercase)
 
         if not self._exists(column):
+            if null_return:
+                return "NULL"
             raise ColumnNotFoundError(
                 column_name=column,
                 table_id=self.table_id,
@@ -236,10 +239,8 @@ class BaseSqlOperator:
             )
 
         query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
-
         # Prepend the table alias
-        if alias:
-            query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
+        query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}" if alias else query
 
         # TODO: Throwing this temporarily, so we can determine which errors
         # are actually postgres errors and which are just rules which run on

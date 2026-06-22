@@ -16,7 +16,7 @@ class ValidWHODrugLevelReferenceOperator(BaseSqlOperator):
 
         query = f"""
             CASE
-                WHEN CAST({self._column_sql(target_column, alias=False)} AS TEXT) IN (
+                WHEN CAST({self._column_sql(target_column, alias=False, null_return=True)} AS TEXT) IN (
                     {union_query}
                 ) THEN TRUE
                 ELSE FALSE
