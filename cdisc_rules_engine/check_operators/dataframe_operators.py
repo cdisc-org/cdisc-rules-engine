@@ -1497,7 +1497,7 @@ class DataframeType(BaseType):
         return df.apply(check_inconsistency, axis=1)
 
     def next_column_exists_and_previous_is_null(self, row) -> bool:
-        row.reset_index(drop=True, inplace=True)
+        row = row.reset_index(drop=True)
         for index in row[
             row.isin(NULL_FLAVORS) | pd.isna(row)
         ].index:  # leaving null values only
