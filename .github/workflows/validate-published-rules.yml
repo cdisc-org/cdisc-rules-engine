@@ -117,7 +117,7 @@ jobs:
         with:
           name: published-rules-validation-${{ github.run_id }}
           path: |
-            open-rules/Published/**/results/results.csv
+            open-rules/Published/**/results/actual.csv
             summary_table.md
             detail_report.md
           if-no-files-found: warn
