@@ -20,36 +20,55 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
     def _execute_operation(self):
         ct_table = StaticTables.IG_CODELIST_TABLE_NAME.value
         attribute = self.params.ct_attribute
-        if not self.params.ct_version and not self.data_service.provided_codelists:
-            raise ValueError("Version must be provided for codelist attribute retrieval.")
-        ct_list = (
-            self.data_service.provided_codelists
-            if isinstance(self.data_service.provided_codelists, list)
-            else [self.data_service.provided_codelists]
-        )
-        provided_cts = [{"type": ct.split("ct-")[0], "version": ct.split("ct-")[1]} for ct in ct_list]
-        conditions = self.params.ct_conditions
 
         select_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, _COLUMN_MAP.get(attribute, "item_code"))
         version_date_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "version_date")
         std_type_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "standard_type")
 
-        where_clause = f"""({" OR ".join(f"({std_type_col_sql} = '{ct['type']}' AND {version_date_col_sql} = '{ct['version']}')" for ct in provided_cts)})"""  # noqa
+        where_clauses = []
 
-        query = f"""
-            SELECT DISTINCT {select_col_sql} AS value
-            FROM {ct_table}
-            WHERE {where_clause}
-        """
+        raw_versions = self.data_service.provided_codelists or self.params.ct_version
+        if raw_versions:
+            ct_list = raw_versions if isinstance(raw_versions, list) else [raw_versions]
+            provided_cts = self._parse_versions(ct_list)
+            where_clause = self._build_clauses(provided_cts, std_type_col_sql, version_date_col_sql)
+            where_clauses.append(where_clause)
 
-        condition_sql = """"""
+        conditions = self.params.ct_conditions
         if conditions:
             for condition in conditions:
                 for k, v in condition.items():
-                    _COLUMN_MAP.get(k)
-                    condition_sql += f""" AND {_COLUMN_MAP.get(k)} = '{v}'"""
+                    where_clauses.append(f"{_COLUMN_MAP.get(k)} = '{v}'")
 
-        if condition_sql:
-            query += condition_sql
+        base_query = f"SELECT DISTINCT {select_col_sql} AS value FROM {ct_table}"
+
+        if where_clauses:
+            query = f"{base_query} WHERE {' AND '.join(where_clauses)}"
+        else:
+            query = base_query
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
+
+    def _parse_versions(self, ct_list: list) -> list:
+        provided_cts = []
+        for ct in ct_list:
+            if isinstance(ct, str):
+                if "ct-" in ct:
+                    parts = ct.split("ct-")
+                    provided_cts.append({"type": parts[0], "version": parts[1]})
+                else:
+                    provided_cts.append({"type": None, "version": ct})
+        return provided_cts
+
+    def _build_clauses(self, provided_cts: list, std_type_col: str, version_date_col: str) -> str:
+        or_conditions = []
+        for ct in provided_cts:
+            and_conditions = []
+            if ct["type"]:
+                and_conditions.append(f"{std_type_col} = '{ct['type']}'")
+            if ct["version"]:
+                and_conditions.append(f"{version_date_col} = '{ct['version']}'")
+            if and_conditions:
+                or_conditions.append(f"({' AND '.join(and_conditions)})")
+
+        return f"({' OR '.join(or_conditions)})" if or_conditions else "TRUE"
