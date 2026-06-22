@@ -422,35 +422,22 @@ def process_test_case_dataset(
     data_service: Optional[PostgresQLDataService] = None,
 ):
     try:
-        metadata = get_metadata(ig_specs, define_xml_file_path)
-
-        # Execute rule in SQL engine
-        standards_context = StandardsFactory.get_standards_context(
-            ig_specs.get("standard"),
-            ig_specs.get("standard_version"),
-            ig_specs.get("standard_substandard"),
-            library_metadata=metadata,
-        )
-        ds = _initialize_data_service(data_test_datasets, standards_context, use_pgserver, data_service)
-        regression_errors["datasets_import_sql"] = "SUCCESS"
-        sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
-        regression_errors["results_present_sql"] = True
-        sql_regression = extract_results_regression(sql_results)
-        regression_errors["results_sql"] = sql_regression
-
-        # Execute in old engine
-        old_results = run_single_rule_validation(
+        sql_results, sql_regression = process_test_case_dataset_sql(
+            regression_errors,
+            define_xml_file_path,
             data_test_datasets,
+            ig_specs,
             rule,
-            define_xml=define_xml_file_path,
-            standard=ig_specs["standard"],
-            standard_version=ig_specs["standard_version"],
-            library_metadata=metadata,
+            use_pgserver=use_pgserver,
+            data_service=data_service,
         )
-        regression_errors["dataset_import_old"] = "SUCCESS"
-        regression_errors["results_present_old"] = True
-        old_regression = extract_results_regression(old_results)
-        regression_errors["results_old"] = old_regression
+        old_results, old_regression = process_test_case_dataset_old(
+            regression_errors,
+            define_xml_file_path,
+            data_test_datasets,
+            ig_specs,
+            rule,
+        )
 
         regression_errors["old_vs_sql"] = old_vs_sql_regression_comparison(old_regression, sql_regression)
 
@@ -473,6 +460,58 @@ def process_test_case_dataset(
             regression_errors["datasets_import_sql"] = f"pre_processor_error: {str(e)}"
         else:
             raise
+
+
+def process_test_case_dataset_sql(
+    regression_errors: dict,
+    define_xml_file_path: str,
+    data_test_datasets: list,
+    ig_specs: IGSpecification,
+    rule: dict,
+    use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
+):
+    metadata = get_metadata(ig_specs, define_xml_file_path)
+
+    standards_context = StandardsFactory.get_standards_context(
+        ig_specs.get("standard"),
+        ig_specs.get("standard_version"),
+        ig_specs.get("standard_substandard"),
+        library_metadata=metadata,
+    )
+    ds = _initialize_data_service(data_test_datasets, standards_context, use_pgserver, data_service)
+    regression_errors["datasets_import_sql"] = "SUCCESS"
+    sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
+    regression_errors["results_present_sql"] = True
+    sql_regression = extract_results_regression(sql_results)
+    regression_errors["results_sql"] = sql_regression
+
+    return sql_results, sql_regression
+
+
+def process_test_case_dataset_old(
+    regression_errors: dict,
+    define_xml_file_path: str,
+    data_test_datasets: list,
+    ig_specs: IGSpecification,
+    rule: dict,
+):
+    metadata = get_metadata(ig_specs, define_xml_file_path)
+
+    old_results = run_single_rule_validation(
+        data_test_datasets,
+        rule,
+        define_xml=define_xml_file_path,
+        standard=ig_specs["standard"],
+        standard_version=ig_specs["standard_version"],
+        library_metadata=metadata,
+    )
+    regression_errors["dataset_import_old"] = "SUCCESS"
+    regression_errors["results_present_old"] = True
+    old_regression = extract_results_regression(old_results)
+    regression_errors["results_old"] = old_regression
+
+    return old_results, old_regression
 
 
 def validate_engine_result(engine_result: list[dict], validated_result: list[dict]) -> dict:
