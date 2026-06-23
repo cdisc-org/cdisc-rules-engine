@@ -6,6 +6,7 @@ from numpy import nan
 
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidCSVFile
 from cdisc_rules_engine.interfaces import DataReaderInterface
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 import pandas as pd
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
@@ -18,6 +19,17 @@ class CSVReader(DataReaderInterface):
         "Number": float,
         "String": str,
     }
+
+    def __init__(
+        self,
+        dataset_implementation=PandasDataset,
+        encoding: str = DEFAULT_ENCODING,
+        variables_csv_path: str = None,
+    ):
+        super().__init__(
+            dataset_implementation=dataset_implementation, encoding=encoding
+        )
+        self.variables_csv_path = variables_csv_path
 
     def read(self, data):
         """
