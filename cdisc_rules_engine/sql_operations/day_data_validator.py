@@ -18,18 +18,24 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
         if not current_table:
             raise ValueError(f"Table for domain {self.params.domain} not found")
 
-        dm_table = self.data_service.pgi.schema.get_table("DM")
-        if not dm_table:
-            # Return 0 if DM doesn't exist
-            return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
-        joined_table = SqlJoinMerge.perform_join(
-            pgi=self.data_service.pgi,
-            left=current_table,
-            right=dm_table,
-            pivot_left=["USUBJID"],
-            pivot_right=["USUBJID"],
-            type="LEFT",
-        )
+        # If RFSTDTC is already present (e.g. the table was pre-joined with DM via
+        # Match Datasets before this operation ran), use it directly to avoid a
+        # redundant second join that would produce incorrect results.
+        if current_table.has_column("RFSTDTC"):
+            joined_table = current_table
+        else:
+            dm_table = self.data_service.pgi.schema.get_table("DM")
+            if not dm_table:
+                # Return 0 if DM doesn't exist
+                return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
+            joined_table = SqlJoinMerge.perform_join(
+                pgi=self.data_service.pgi,
+                left=current_table,
+                right=dm_table,
+                pivot_left=["USUBJID"],
+                pivot_right=["USUBJID"],
+                type="LEFT",
+            )
 
         if not joined_table.has_column(self.params.target):
             return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
