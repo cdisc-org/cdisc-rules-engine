@@ -60,6 +60,12 @@ class DataReaderFactory(FactoryInterface):
         if service_name in self._reader_map:
             reader_class = self._reader_map[service_name]
             encoding = self.encoding or DEFAULT_ENCODING
+            if reader_class is CSVReader:
+                return reader_class(
+                    self.dataset_implementation,
+                    encoding=encoding,
+                    variables_csv_path=self.variables_csv_path,
+                )
             return reader_class(
                 self.dataset_implementation,
                 encoding=encoding,
