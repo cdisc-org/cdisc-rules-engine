@@ -69,7 +69,6 @@ class DataReaderFactory(FactoryInterface):
             return reader_class(
                 self.dataset_implementation,
                 encoding=encoding,
-                variables_csv_path=self.variables_csv_path,
             )
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "
