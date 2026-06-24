@@ -269,6 +269,9 @@ class DataProcessor:
                     )
                 )
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
+                for qnam in qnam_list:
+                    if qnam in left_dataset.columns:
+                        left_dataset.data[qnam] = left_dataset.data[qnam].fillna(pd.NA)
             if not is_blank:
                 left_dataset[dynamic_key] = left_dataset[temp_key]
                 left_dataset = left_dataset.drop(columns=[temp_key])
