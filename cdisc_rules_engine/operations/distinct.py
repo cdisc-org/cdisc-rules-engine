@@ -57,16 +57,15 @@ class Distinct(BaseOperation):
                     )
 
                 result = grouped.apply(get_existing_column_names).reset_index()
-            elif isinstance(result.data, pd.DataFrame):
-                result = grouped.data[self.params.target].agg(
-                    self._unique_values_for_column
-                )
             else:
                 result = (
-                    grouped.data[self.params.target]
-                    .apply(lambda x: list(x.unique()))
+                    result.drop_duplicates(
+                        subset=self.params.grouping + [self.params.target]
+                    )
+                    .groupby(self.params.grouping, as_index=False, group_keys=False)
+                    .data[self.params.target]
+                    .apply(list)
                     .rename({self.params.target: self.params.operation_id})
-                    .to_frame()
                     .reset_index()
                 )
         return result
@@ -79,4 +78,4 @@ class Distinct(BaseOperation):
         return referenced_datasets
 
     def _unique_values_for_column(self, column):
-        return pd.Series({self.params.operation_id: list(column.unique())})
+        return list(column.unique())
