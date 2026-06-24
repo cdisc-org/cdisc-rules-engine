@@ -1,0 +1,587 @@
+[
+  {
+    "use": "Clinical study datasets",
+    "standard": "ADaM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "ADaMv2.1",
+    "property_version": "2.1"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "ADaM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "ADaMIGv1.0",
+    "property_version": "1.0"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "ADaM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "ADaMIGv1.1",
+    "property_version": "1.1"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "ADaM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "ADaMIGv1.2",
+    "property_version": "1.2"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "ADaM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "ADaMIGv1.3",
+    "property_version": "1.3"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.1",
+    "property_version": "1.1"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.1.1",
+    "property_version": "3.1.1"
+  },
+  {
+    "use": "Clinical and Nonclinical study datasets",
+    "standard": "SDTM, SEND",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.2",
+    "property_version": "1.2"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.1.2",
+    "property_version": "3.1.2"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIG Version 3.1.2 \nAmendment 1",
+    "property_version": "3.1.2"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIGv3.0",
+    "property_version": "3.0"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.3",
+    "property_version": "1.3"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.1.3",
+    "property_version": "3.1.3"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.4",
+    "property_version": "1.4"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.2",
+    "property_version": "3.2"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.5",
+    "property_version": "1.5"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CBER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.5",
+    "property_version": "1.5"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIGv3.1",
+    "property_version": "3.1"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CBER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIGv3.1",
+    "property_version": "3.1"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIGv3.1.1",
+    "property_version": "3.1.1"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIG-Genetox-v1.0",
+    "property_version": "1.0"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.6",
+    "property_version": "1.6"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SEND",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIG-DARTv1.1",
+    "property_version": "1.1"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.7",
+    "property_version": "1.7"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.3",
+    "property_version": "3.3"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv1.8",
+    "property_version": "1.8"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIG-ARv1.0",
+    "property_version": "1.0"
+  },
+  {
+    "use": "Nonclinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SENDIG-ARv1.0",
+    "property_version": "1.0"
+  },
+  {
+    "use": "Study data definition",
+    "standard": "Define",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "CDISC",
+    "property": "Define.xml-v1.0",
+    "property_version": "1.0"
+  },
+  {
+    "use": "Study data definition",
+    "standard": "Define",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "CDISC",
+    "property": "Define.xml-v2.0",
+    "property_version": "2.0"
+  },
+  {
+    "use": "Study data definition",
+    "standard": "Define",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "CDISC",
+    "property": "Define.xml-v2.1",
+    "property_version": "2.1"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMv2.0",
+    "property_version": "2.0"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "SDTM",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "CDISC",
+    "property": "SDTMIGv3.4",
+    "property_version": "3.4"
+  },
+  {
+    "use": "Regulatory Applications (IND, NDA, ANDA, BLA, master files)",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "ICH M2 WG",
+    "property": "eCTDv3.2.2",
+    "property_version": "3.2.2"
+  },
+  {
+    "use": "Regulatory Applications (IND, NDA, ANDA, BLA, master files)",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "M2 eCTD: Electronic Common Technical Document Specification",
+    "property_version": null
+  },
+  {
+    "use": "Postmarketing Safety Reporting- periodic reports for drugs and biologics",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "M2 eCTD: Electronic Common Technical Document Specification",
+    "property_version": null
+  },
+  {
+    "use": "Regulatory Applications (IND, NDA, ANDA, BLA, master files)",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "HL7 and ICH M8 WG",
+    "property": "eCTDv4.0",
+    "property_version": "4.0"
+  },
+  {
+    "use": "Regulatory Applications (IND, NDA, ANDA, BLA, master files)",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "ICH and FDA",
+    "property": "ICH Electronic Common Technical Document (eCTD) v4.0 Implementation Guide \nUS FDA Electronic Common Technical Document (eCTD) v4.0 Implementation Guide",
+    "property_version": "4.0"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- periodic reports for drugs and biologics",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "ICH Electronic Common Technical Document (eCTD) v4.0 Implementation Guide",
+    "property_version": "4.0"
+  },
+  {
+    "use": "Documents",
+    "standard": "PDF",
+    "fda_centers": "CBER, CDER, HFP, CDRH, CVM",
+    "exchange_format": "PDF",
+    "sdo": "ISO",
+    "property": "PDFv1.4 - 1.7",
+    "property_version": "1.4"
+  },
+  {
+    "use": "Documents",
+    "standard": "PDF",
+    "fda_centers": "CBER, CDER, HFP, CDRH, CVM",
+    "exchange_format": "PDF",
+    "sdo": "ISO",
+    "property": "PDFv1.4 - 1.7",
+    "property_version": "1.5"
+  },
+  {
+    "use": "Documents",
+    "standard": "PDF",
+    "fda_centers": "CBER, CDER, HFP, CDRH, CVM",
+    "exchange_format": "PDF",
+    "sdo": "ISO",
+    "property": "PDFv1.4 - 1.7",
+    "property_version": "1.6"
+  },
+  {
+    "use": "Documents",
+    "standard": "PDF",
+    "fda_centers": "CBER, CDER, HFP, CDRH, CVM",
+    "exchange_format": "PDF",
+    "sdo": "ISO",
+    "property": "PDFv1.4 - 1.7",
+    "property_version": "1.7"
+  },
+  {
+    "use": "Regulatory Applications",
+    "standard": "eCTD",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "PDF",
+    "sdo": "FDA",
+    "property": "PDF Technical Specifications Document",
+    "property_version": null
+  },
+  {
+    "use": "Medical Device submissions",
+    "standard": "eCopy",
+    "fda_centers": "CDRH",
+    "exchange_format": "PDF",
+    "sdo": "FDA",
+    "property": "eCopy",
+    "property_version": null
+  },
+  {
+    "use": "Medical Device submissions",
+    "standard": "eSTAR",
+    "fda_centers": "CDRH",
+    "exchange_format": "PDF",
+    "sdo": "FDA",
+    "property": "eSTAR",
+    "property_version": null
+  },
+  {
+    "use": "Analysis program files",
+    "standard": "ASCII",
+    "fda_centers": "CBER, CDER, CDRH",
+    "exchange_format": null,
+    "sdo": "ANSI",
+    "property": null,
+    "property_version": null
+  },
+  {
+    "use": "Clinical and Nonclinical study datasets- Transport",
+    "standard": "XPORT",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XPT",
+    "sdo": "SAS",
+    "property": "SAS Transport File Format (XPORT) v5",
+    "property_version": "5"
+  },
+  {
+    "use": "Clinical and Nonclinical study datasets- Transport",
+    "standard": "XPORT",
+    "fda_centers": "CDRH, HFP, CVM",
+    "exchange_format": "XPT",
+    "sdo": "SAS",
+    "property": "SAS Transport File Format (XPORT) v5",
+    "property_version": "5"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "aECG",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "HL7",
+    "property": "HL7 v3 Regulated Studies; Annotated ECG (aECG), Release 1",
+    "property_version": "3"
+  },
+  {
+    "use": "Clinical study datasets",
+    "standard": "aECG",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "HL7",
+    "property": "HL7 v3 IG: aECG, Release 2 - US Realm",
+    "property_version": "3"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events",
+    "standard": "ICSR",
+    "fda_centers": "CBER, CDER, CDRH, CVM",
+    "exchange_format": "XML",
+    "sdo": "ISO/HL7",
+    "property": "HL7 v3 Standard: Individual Case Safety Report, Release 2",
+    "property_version": "3"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events for Drugs and Biologics (ICSR)",
+    "standard": "ICSR",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "FDA Regional Implementation Guide for E2B(R3) Electronic Transmission of Individual Case Safety Reports for Drug and Biological Products v2.1 or earlier",
+    "property_version": "2.1"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events for Vaccines",
+    "standard": "ICSR",
+    "fda_centers": "CBER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "ICH E2B (R3) IG July 2013 and CBER Technical Specifications Document",
+    "property_version": null
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events for Animal Drugs (ICSR)",
+    "standard": "ICSR",
+    "fda_centers": "CVM",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "Electronic Submission of Animal AE Electronic Transmission Implementation Specifications VICH Validation Procedure Document (USFDACVM Regional Annex) v1.0.9",
+    "property_version": "1.0.9"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events for Animal Drugs (ICSR)",
+    "standard": "ICSR",
+    "fda_centers": "CVM",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "Electronic Submission of Animal AE Electronic Transmission Implementation Specifications VICH Step By Step Document (USFDACVM Regional Annex) v.1.0.5",
+    "property_version": "1.0.5"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Adverse Events for Medical Devices",
+    "standard": "ICSR",
+    "fda_centers": "CDRH",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "eMDR \u2013 electronic Medical Device Reporting\nHL7 v3: Individual Case Safety Report (ICSR R2) \nImplementation Specifications \nVersion 6",
+    "property_version": "3"
+  },
+  {
+    "use": "Postmarket Reporting- Product Information, Drug Product Listing",
+    "standard": "SPL",
+    "fda_centers": "CBER, CDER, CDRH, CVM",
+    "exchange_format": "XML",
+    "sdo": "HL7",
+    "property": "HL7 v3 Standard: Structured Product Labeling Release 5",
+    "property_version": "3"
+  },
+  {
+    "use": "Postmarketing Safety Reporting- Lot Distribution Reports",
+    "standard": "SPL",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "SPL IG w/Validation Procedures v1",
+    "property_version": "1"
+  },
+  {
+    "use": "Product Labeling submissions",
+    "standard": "SPL",
+    "fda_centers": "CBER, CDER",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "SPL IG w/Validation Procedures v1",
+    "property_version": "1"
+  },
+  {
+    "use": "Drug Product Listing (Post-market)",
+    "standard": "SPL",
+    "fda_centers": "CBER, CDER, CVM",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "SPL IG w/Validation Procedures v1",
+    "property_version": "1"
+  },
+  {
+    "use": "Structured Product Labeling (SPL)",
+    "standard": "SPL Image",
+    "fda_centers": "CBER, CDER, CVM",
+    "exchange_format": "JPG, XML",
+    "sdo": "FDA and NLM",
+    "property": "SPL IG w/Validation Procedures v1",
+    "property_version": "1"
+  },
+  {
+    "use": "Postmarket Reporting- Submission to Global UDI Database (GUDID)",
+    "standard": "SPL",
+    "fda_centers": "CDRH",
+    "exchange_format": "XML",
+    "sdo": "FDA",
+    "property": "HL7 SPL Implementation Specification\nv1.3 or later",
+    "property_version": "1.3"
+  },
+  {
+    "use": "Sharing structured information",
+    "standard": "XML",
+    "fda_centers": "CBER, CDER, CDRH",
+    "exchange_format": null,
+    "sdo": "W3C",
+    "property": "XMLv1.0 or later",
+    "property_version": "1.0"
+  },
+  {
+    "use": "High-throughput Sequencing (HTS) Data",
+    "standard": "BioCompute",
+    "fda_centers": "CBER, CDER, HFP",
+    "exchange_format": "HTS Bioinformatics workflows",
+    "sdo": "IEEE",
+    "property": "Current Version",
+    "property_version": null
+  }
+]

@@ -14,7 +14,17 @@ def _cg_taugs_schema():
     return table
 
 
-SCHEMA_MAP = {Path("taugs.json"): _cg_taugs_schema}
+def _fda_submission_standards_schema():
+    table = SqlTableSchema.static(StaticTables.FDA_STANDARDS_TABLE_NAME.value)
+    for col in ["use", "standard", "fda_centers", "exchange_format", "sdo", "property", "property_version"]:
+        table.add_column(SqlColumnSchema(name=col, hash=col, type="Char"))
+    return table
+
+
+SCHEMA_MAP = {
+    Path("taugs.json"): _cg_taugs_schema,
+    Path("fda-submission-standards.json"): _fda_submission_standards_schema,
+}
 
 ROOT_PATH = Path(__file__).parents[3]
 HELPER_DATA_PATH = ROOT_PATH / "resources/helper_data"
@@ -37,7 +47,6 @@ def populate_helper_tables(pgi: PostgresQLInterface):
         schema = schema_func()
         pgi.create_table(schema)
 
-        # try:
         with open(HELPER_DATA_PATH / file_path, "r") as f:
             data = json.load(f)
 
@@ -46,7 +55,3 @@ def populate_helper_tables(pgi: PostgresQLInterface):
             logger.info(f"Loaded helper table from {file_path}")
         else:
             logger.warning(f"No data found in helper table file: {file_path.name}")
-
-        # except Exception as e:
-        #     logger.error(f"Failed to load helper table {file_path.name}: {e}")
-        #     continue
