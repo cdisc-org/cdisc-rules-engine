@@ -65,7 +65,6 @@ class Distinct(BaseOperation):
                     .groupby(self.params.grouping, as_index=False, group_keys=False)
                     .data[self.params.target]
                     .apply(list)
-                    .rename({self.params.target: self.params.operation_id})
                     .reset_index()
                 )
         return result
