@@ -86,6 +86,7 @@ jobs:
           cd engine
           ../venv/bin/pip install . --group dev
           cd ..
+          venv/bin/pip install tabulate
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
@@ -116,7 +117,8 @@ jobs:
         with:
           name: published-rules-validation-${{ github.run_id }}
           path: |
-            open-rules/Published/**/results/results.csv
+            open-rules/Published/**/results/actual.csv
+            open-rules/Published/**/results/expected.csv
             summary_table.md
             detail_report.md
           if-no-files-found: warn
