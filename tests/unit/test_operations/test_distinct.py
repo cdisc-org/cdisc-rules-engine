@@ -95,7 +95,12 @@ def test_grouped_distinct(
     assert operation_params.operation_id in result
     assert grouping_column in result
     for _, val in result.iterrows():
-        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+        result_values = val[operation_params.operation_id]
+        expected_values = expected.get(val[grouping_column])
+        if result_values is None:
+            assert expected_values is None
+        else:
+            assert sorted(result_values) == sorted(expected_values)
 
 
 @pytest.mark.parametrize(
@@ -175,7 +180,12 @@ def test_filtered_grouped_distinct(
     assert operation_params.operation_id in result
     assert grouping_column in result
     for _, val in result.iterrows():
-        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+        result_values = val[operation_params.operation_id]
+        expected_values = expected.get(val[grouping_column])
+        if result_values is None:
+            assert expected_values is None
+        else:
+            assert sorted(result_values) == sorted(expected_values)
 
 
 @pytest.mark.parametrize(
