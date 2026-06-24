@@ -31,11 +31,11 @@ class SqlOperationParams:
     attribute_name: str = None
     subtract: str = None
     external_dictionary_type: str = None
+    codelist: str = None
 
     # standard_substandard: str = None
     # attribute_name: str = None
     # case_sensitive: bool = True
-    # codelist: str = None
     # codelist_code: str = None
     # codelists: list = None
     # ct_package: list = None

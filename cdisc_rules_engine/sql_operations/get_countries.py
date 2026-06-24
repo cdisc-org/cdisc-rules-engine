@@ -515,6 +515,11 @@ GENC_COUNTRY_CODES = [
     {"country_name": "Zimbabwe", "alpha_2": "ZW", "alpha_3": "ZWE"},
 ]
 
+CT_ATTRIBUTE_MAP = {
+    "ISO 3166": ISO_3166_COUNTRY_CODES,
+    "GENC": GENC_COUNTRY_CODES,
+}
+
 
 class SqlGetCountriesOperation(SqlBaseOperation):
 
@@ -526,12 +531,16 @@ class SqlGetCountriesOperation(SqlBaseOperation):
                 f"Invalid attribute name: {attribute}. Must be one of {list(ISO_3166_COUNTRY_CODES[0].keys())}"
             )
 
-        iso_names = {entry["country_name"] for entry in ISO_3166_COUNTRY_CODES}
-        master_list = ISO_3166_COUNTRY_CODES + [
-            entry for entry in GENC_COUNTRY_CODES if entry["country_name"] not in iso_names
-        ]
+        # we assume codelist is a string for now
+        if self.params.codelist not in CT_ATTRIBUTE_MAP:
+            iso_names = {entry["country_name"] for entry in ISO_3166_COUNTRY_CODES}
+            result_list = ISO_3166_COUNTRY_CODES + [
+                entry for entry in GENC_COUNTRY_CODES if entry["country_name"] not in iso_names
+            ]
+        else:
+            result_list = CT_ATTRIBUTE_MAP[self.params.codelist]
 
-        attribute_list = list({entry[attribute] for entry in master_list})
+        attribute_list = list({entry[attribute] for entry in result_list})
         query = self._format_variable_list_to_query(vars=attribute_list)
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
