@@ -136,6 +136,9 @@
         "operator": {
           "const": "does_not_equal_string_part",
           "markdownDescription": "\nComplement of `equals_string_part`\n"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value", "regex"],
@@ -224,6 +227,9 @@
         "operator": {
           "const": "equals_string_part",
           "markdownDescription": "\nChecks that the values in the target column equal the result of parsing the value in the comparison column with a regex\n\n> RDOMAIN equals characters 5 and 6 of SUPP dataset name\n\n```yaml\n- name: RDOMAIN\n  operator: equals_string_part\n  value: dataset_name\n  regex: \".{4}(..).*\"\n```\n"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value", "regex"],
