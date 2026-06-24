@@ -20,7 +20,7 @@ class Distinct(BaseOperation):
         result = self.params.dataframe
         if self.params.filter:
             result = self._filter_data(result)
-        if hasattr(result.data, 'compute'):
+        if hasattr(result.data, "compute"):
             result = PandasDataset(result.data.compute())
         value_is_reference = getattr(self.params, "value_is_reference", False)
         if not self.params.grouping:
