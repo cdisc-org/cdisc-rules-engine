@@ -2,6 +2,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
+import pandas as pd
 from cdisc_rules_engine.utilities.sdtm_utilities import tag_source
 
 
@@ -46,13 +47,17 @@ class DayDataValidator(BaseOperation):
             return dt.date()
         except TypeError:
             # Null date time
-            return None
+            return pd.NaT
         except ValueError:
             # Value is not iso format
-            return None
+            return pd.NaT
 
     def get_day_difference(self, delta: datetime) -> int:
-        if delta is None or (isinstance(delta, float) and np.isnan(delta)):
+        if (
+            delta is None
+            or delta is pd.NaT
+            or (isinstance(delta, float) and np.isnan(delta))
+        ):
             return ""
         # Return 1 if the --DTC value is the same as the DY
         return delta.days if delta.days < 0 else delta.days + 1
