@@ -31,6 +31,7 @@ dependencies = [
     "pympler >=1.1",
     "pyreadstat >=1.2.9, <2.0.0",
     "python-dotenv >=1.0.0",
+    "pytz >=2024.0",
     "pyyaml >=6.0.2",
     "redis >=4.5.0",
     "requests >=2.32.3",
