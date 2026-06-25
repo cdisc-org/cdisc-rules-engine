@@ -95,7 +95,13 @@ def test_grouped_distinct(
     assert operation_params.operation_id in result
     assert grouping_column in result
     for _, val in result.iterrows():
-        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+        expected_val = expected.get(val[grouping_column])
+        actual_val = val[operation_params.operation_id]
+        assert (
+            sorted(actual_val) == sorted(expected_val)
+            if expected_val is not None
+            else actual_val == expected_val
+        )
 
 
 @pytest.mark.parametrize(
@@ -175,7 +181,13 @@ def test_filtered_grouped_distinct(
     assert operation_params.operation_id in result
     assert grouping_column in result
     for _, val in result.iterrows():
-        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+        expected_val = expected.get(val[grouping_column])
+        actual_val = val[operation_params.operation_id]
+        assert (
+            sorted(actual_val) == sorted(expected_val)
+            if expected_val is not None
+            else actual_val == expected_val
+        )
 
 
 @pytest.mark.parametrize(
@@ -240,7 +252,7 @@ def test_distinct_value_is_reference(
     assert operation_params.operation_id in result
     assert len(result[operation_params.operation_id]) > 0
     for val in result[operation_params.operation_id]:
-        assert val == expected
+        assert sorted(val) == sorted(expected)
 
 
 @pytest.mark.parametrize(
@@ -316,4 +328,10 @@ def test_grouped_distinct_value_is_reference(
     assert operation_params.operation_id in result
     assert grouping_column in result
     for _, val in result.iterrows():
-        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+        expected_val = expected.get(val[grouping_column])
+        actual_val = val[operation_params.operation_id]
+        assert (
+            sorted(actual_val) == sorted(expected_val)
+            if expected_val is not None
+            else actual_val == expected_val
+        )

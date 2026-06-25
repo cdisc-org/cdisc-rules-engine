@@ -131,7 +131,6 @@ class BaseOperation:
             return self.evaluation_dataset
 
     def _handle_grouped_result(self, result):
-        # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
         if self.params.grouping_aliases:
             result = self._rename_grouping_columns(result)
@@ -144,13 +143,17 @@ class BaseOperation:
             grouping_columns, self.params.domain
         )
         result = result.reset_index()
+        self.evaluation_dataset["_row_order"] = list(
+            range(len(self.evaluation_dataset))
+        )
         merged = self.evaluation_dataset.merge(
             result[target_columns], on=grouping_columns, how="left"
         )
         self.data_service._replace_nans_in_specified_cols_with_none(
             merged, [self.params.operation_id]
         )
-        return self.evaluation_dataset.__class__(merged.data)
+        merged_data = merged.data.sort_values("_row_order").drop(columns=["_row_order"])
+        return self.evaluation_dataset.__class__(merged_data)
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
