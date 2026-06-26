@@ -63,14 +63,14 @@ class Distinct(BaseOperation):
                 )
                 result = grouped[self.params.target].agg(self._unique_values_for_column)
             else:
-                grouped = result.data.dropna(subset=[self.params.target]).groupby(
-                    self.params.grouping, group_keys=False
-                )
+                grouped = result.groupby(self.params.grouping, group_keys=False)
                 result = (
-                    grouped[self.params.target]
+                    grouped.data[self.params.target]  # original
                     .unique()
                     .rename({self.params.target: self.params.operation_id})
-                    .apply(list, meta=(self.params.operation_id, object))
+                )
+                result = (
+                    result.apply(list, meta=(self.params.operation_id, object))
                     .to_frame()
                     .reset_index()
                 )
