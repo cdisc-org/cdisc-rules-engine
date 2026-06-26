@@ -32,7 +32,7 @@ class Distinct(BaseOperation):
                 )
                 data = data.dropna().unique()
             else:
-                data = result[self.params.target].unique()
+                data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
             result = list(data)
@@ -58,7 +58,6 @@ class Distinct(BaseOperation):
 
                 result = grouped.apply(get_existing_column_names).reset_index()
             else:
-                operation_id = self.params.operation_id
                 result = (
                     result.drop_duplicates(
                         subset=self.params.grouping + [self.params.target]
@@ -66,8 +65,7 @@ class Distinct(BaseOperation):
                     .groupby(self.params.grouping, as_index=False, group_keys=False)[
                         self.params.target
                     ]
-                    .agg(list)
-                    .rename(columns={self.params.target: operation_id})
+                    .apply(lambda x: list(x.dropna()))
                     .reset_index()
                 )
         return result
