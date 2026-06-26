@@ -163,7 +163,7 @@ Complement of `equals_string_part`. Also has the optional parameter 'type_insens
 Checks that the values in the target column equal the result of parsing the value in the comparison column with a regex
 Has optional parameter:
 
-- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
+- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all leading and trailing zeroes will be removed in both strings and floats.
 
 > RDOMAIN equals characters 5 and 6 of SUPP dataset name
 
