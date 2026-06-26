@@ -68,6 +68,8 @@ class Distinct(BaseOperation):
                     .groupby(self.params.grouping, group_keys=False)[self.params.target]
                     .unique()
                     .apply(list, meta=(self.params.target, object))
+                    .rename_axis(self.params.grouping[0])
+                    .rename(self.params.target)
                 )
         return result
 
