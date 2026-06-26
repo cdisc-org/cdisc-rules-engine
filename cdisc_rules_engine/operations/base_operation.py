@@ -142,7 +142,7 @@ class BaseOperation:
         grouping_columns = self._replace_variable_wildcard(
             grouping_columns, self.params.domain
         )
-        result = result.reset_index()
+        result = result.reset_index(drop=True)
         self.evaluation_dataset["_row_order"] = list(
             range(len(self.evaluation_dataset))
         )

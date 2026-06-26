@@ -30,7 +30,7 @@ class Distinct(BaseOperation):
                     ),
                     axis=1,
                 )
-                data = data.dropna().unique()
+                data = data.unique()
             else:
                 data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
@@ -64,10 +64,12 @@ class Distinct(BaseOperation):
                 result = grouped[self.params.target].agg(self._unique_values_for_column)
             else:
                 result = (
-                    result.data.dropna(subset=[self.params.target])
-                    .drop_duplicates(subset=self.params.grouping + [self.params.target])
-                    .groupby(self.params.grouping, group_keys=False)[self.params.target]
-                    .apply(list, meta=(self.params.target, object))
+                    result.drop_duplicates(
+                        subset=self.params.grouping + [self.params.target]
+                    )
+                    .groupby(self.params.grouping, as_index=False, group_keys=False)
+                    .data[self.params.target]
+                    .apply(list)
                     .reset_index()
                 )
         return result
