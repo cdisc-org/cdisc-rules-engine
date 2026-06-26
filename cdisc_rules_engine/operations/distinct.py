@@ -58,13 +58,16 @@ class Distinct(BaseOperation):
 
                 result = grouped.apply(get_existing_column_names).reset_index()
             else:
+                operation_id = self.params.operation_id
                 result = (
                     result.drop_duplicates(
                         subset=self.params.grouping + [self.params.target]
                     )
-                    .groupby(self.params.grouping, as_index=False, group_keys=False)
-                    .data[self.params.target]
-                    .apply(list)
+                    .groupby(self.params.grouping, as_index=False, group_keys=False)[
+                        self.params.target
+                    ]
+                    .agg(list)
+                    .rename(columns={self.params.target: operation_id})
                     .reset_index()
                 )
         return result
