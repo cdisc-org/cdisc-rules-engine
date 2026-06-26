@@ -59,13 +59,12 @@ class Distinct(BaseOperation):
                 result = grouped.apply(get_existing_column_names).reset_index()
             else:
                 result = (
-                    result.drop_duplicates(
-                        subset=self.params.grouping + [self.params.target]
-                    )
+                    result.dropna(subset=[self.params.target])
+                    .drop_duplicates(subset=self.params.grouping + [self.params.target])
                     .groupby(self.params.grouping, as_index=False, group_keys=False)[
                         self.params.target
                     ]
-                    .apply(lambda x: list(x.dropna()))
+                    .apply(list)
                     .reset_index()
                 )
         return result
