@@ -70,8 +70,10 @@ class Distinct(BaseOperation):
                     grouped[self.params.target]
                     .unique()
                     .rename({self.params.target: self.params.operation_id})
+                    .apply(list, meta=(self.params.operation_id, object))
+                    .to_frame()
+                    .reset_index()
                 )
-                result = result.apply(list).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
