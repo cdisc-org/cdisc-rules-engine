@@ -64,7 +64,7 @@ class Distinct(BaseOperation):
                 result = grouped[self.params.target].agg(self._unique_values_for_column)
             else:
                 grouped = result.data.dropna(subset=[self.params.target]).groupby(
-                    self.params.grouping, as_index=False, group_keys=False
+                    self.params.grouping, group_keys=False
                 )
                 result = (
                     grouped[self.params.target]
