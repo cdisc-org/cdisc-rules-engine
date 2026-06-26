@@ -324,7 +324,7 @@ def replace_nan_values_in_df(df, columns):
         if col in df.columns:
             mask = pd.isna(df[col])
             if mask.any():
-                df[col] = df[col].where(~mask, other=None)
+                df.loc[mask, col] = None
     return df
 
 

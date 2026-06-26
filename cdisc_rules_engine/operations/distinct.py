@@ -65,11 +65,10 @@ class Distinct(BaseOperation):
             else:
                 result = (
                     result.data.dropna(subset=[self.params.target])
+                    .drop_duplicates(subset=self.params.grouping + [self.params.target])
                     .groupby(self.params.grouping, group_keys=False)[self.params.target]
-                    .unique()
                     .apply(list, meta=(self.params.target, object))
-                    .rename_axis(self.params.grouping[0])
-                    .rename(self.params.target)
+                    .reset_index()
                 )
         return result
 
