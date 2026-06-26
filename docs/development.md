@@ -48,8 +48,12 @@ source venv/bin/activate
 # Activate (Windows)
 .\venv\Scripts\Activate
 
-# Install dependencies and the package
+# install pip/update it
 pip install --upgrade pip
+# if this fails on Windows, try:
+python -m pip install --upgrade pip
+
+# Install dependencies (requires pip 26+)
 pip install . --group dev
 ```
 
