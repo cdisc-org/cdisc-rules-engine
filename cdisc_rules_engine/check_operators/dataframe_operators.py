@@ -859,6 +859,16 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def does_not_start_with(self, other_value):
+        return ~self.starts_with(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_end_with(self, other_value):
+        return ~self.ends_with(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def has_equal_length(self, other_value: dict):
         """
         Checks that the target length is the same as comparator.

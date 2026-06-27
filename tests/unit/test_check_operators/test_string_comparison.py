@@ -138,6 +138,58 @@ def test_ends_with(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "B", "D"]},
+            "VAR2",
+            PandasDataset,
+            [False, False, True],
+        ),
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "B", "D"]},
+            "VAR2",
+            DaskDataset,
+            [False, False, True],
+        ),
+    ],
+)
+def test_does_not_start_with(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.does_not_start_with(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["tt", "B", "D"]},
+            "VAR2",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["tt", "B", "D"]},
+            "VAR2",
+            DaskDataset,
+            [False, False, False],
+        ),
+    ],
+)
+def test_does_not_end_with(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.does_not_end_with(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
             {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "Bd", "lll"]},
             "VAR2",
             DaskDataset,
