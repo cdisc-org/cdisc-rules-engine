@@ -46,6 +46,7 @@ def test_equals_string_part(data, comparator, regex, dataset_type, expected_resu
     )
     assert result.equals(df.convert_to_series(expected_result))
 
+
 @pytest.mark.parametrize(
     "data,comparator,operator,regex,dataset_type,expected_result",
     [
