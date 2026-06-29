@@ -267,6 +267,30 @@ Substring matching
   value: "FOOBAR"
 ```
 
+### does_not_start_with
+
+Complement of `starts_with`. Returns True when the target does NOT start with the value.
+
+> DOMAIN not beginning with 'AP'
+
+```yaml
+- name: "DOMAIN"
+  operator: "does_not_start_with"
+  value: "AP"
+```
+
+### does_not_end_with
+
+Complement of `ends_with`. Returns True when the target does NOT end with the value.
+
+> DOMAIN not ending with 'FOOBAR'
+
+```yaml
+- name: "DOMAIN"
+  operator: "does_not_end_with"
+  value: "FOOBAR"
+```
+
 ### prefix_equal_to
 
 True if the `prefix` number of characters beginning a string in `name` match the string in `value`

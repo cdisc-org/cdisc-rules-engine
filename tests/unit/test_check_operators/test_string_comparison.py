@@ -138,6 +138,121 @@ def test_ends_with(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "B", "D"]},
+            "VAR2",
+            PandasDataset,
+            [False, False, True],
+        ),
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "B", "D"]},
+            "VAR2",
+            DaskDataset,
+            [False, False, True],
+        ),
+    ],
+)
+def test_does_not_start_with(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.does_not_start_with(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["tt", "B", "D"]},
+            "VAR2",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {"target": ["Att", "Btt", "Ctt"], "VAR2": ["tt", "B", "D"]},
+            "VAR2",
+            DaskDataset,
+            [False, False, False],
+        ),
+    ],
+)
+def test_does_not_end_with(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.does_not_end_with(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+# value_is_literal=True: comparator is a literal string, not a column name.
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected",
+    [
+        ({"target": ["Att", "Btt", "Axx"]}, "A", PandasDataset, [True, False, True]),
+        ({"target": ["Att", "Btt", "Axx"]}, "A", DaskDataset, [True, False, True]),
+    ],
+)
+def test_starts_with_literal(data, comparator, dataset_type, expected):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    opts = {"target": "target", "comparator": comparator, "value_is_literal": True}
+    assert dataframe_type.starts_with(opts).equals(df.convert_to_series(expected))
+    assert dataframe_type.does_not_start_with(opts).equals(
+        df.convert_to_series([not b for b in expected])
+    )
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected",
+    [
+        ({"target": ["Att", "Btt", "Cxx"]}, "tt", PandasDataset, [True, True, False]),
+        ({"target": ["Att", "Btt", "Cxx"]}, "tt", DaskDataset, [True, True, False]),
+    ],
+)
+def test_ends_with_literal(data, comparator, dataset_type, expected):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    opts = {"target": "target", "comparator": comparator, "value_is_literal": True}
+    assert dataframe_type.ends_with(opts).equals(df.convert_to_series(expected))
+    assert dataframe_type.does_not_end_with(opts).equals(
+        df.convert_to_series([not b for b in expected])
+    )
+
+
+# Missing target values must stay null-safe: starts_with/ends_with return a clean
+# boolean Series (missing -> False) so the negating operators don't crash on `~`.
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_does_not_start_with_is_null_safe(dataset_type):
+    df = dataset_type.from_dict({"target": ["Att", None, "Ctt"]})
+    dataframe_type = DataframeType({"value": df})
+    opts = {"target": "target", "comparator": "A", "value_is_literal": True}
+    assert dataframe_type.starts_with(opts).equals(
+        df.convert_to_series([True, False, False])
+    )
+    assert dataframe_type.does_not_start_with(opts).equals(
+        df.convert_to_series([False, True, True])
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_does_not_end_with_is_null_safe(dataset_type):
+    df = dataset_type.from_dict({"target": ["Att", None, "Cxx"]})
+    dataframe_type = DataframeType({"value": df})
+    opts = {"target": "target", "comparator": "tt", "value_is_literal": True}
+    assert dataframe_type.ends_with(opts).equals(
+        df.convert_to_series([True, False, False])
+    )
+    assert dataframe_type.does_not_end_with(opts).equals(
+        df.convert_to_series([False, True, True])
+    )
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
             {"target": ["Att", "Btt", "Ctt"], "VAR2": ["A", "Bd", "lll"]},
             "VAR2",
             DaskDataset,
