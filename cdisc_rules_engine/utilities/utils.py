@@ -327,7 +327,7 @@ def get_dictionary_path(directory_path: str, file_name: str) -> str:
 
 
 def convert_library_class_name_to_ct_class(class_name: str):
-    conversions = {"special-purpose": SPECIAL_PURPOSE}
+    conversions = {"special-purpose": SPECIAL_PURPOSE, "special-purpose datasets": SPECIAL_PURPOSE}
     return conversions.get(class_name.lower(), class_name.upper())
 
 
