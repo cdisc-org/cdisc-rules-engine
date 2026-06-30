@@ -1374,6 +1374,7 @@ def sdtm_standards_context() -> SdtmStandardsContext:
             custom_standard=None,
             progress=None,
             define_xml_path=None,
+            stf_file_path=None,
             validate_xml=None,
             sql_namespace="uid",
         )

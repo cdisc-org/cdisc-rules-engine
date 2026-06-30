@@ -13,6 +13,7 @@ from cdisc_rules_engine.services.data_readers.dataset_ndjson_reader import (
 )
 from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReader
 from cdisc_rules_engine.services.data_readers.usdm_json_reader import USDMJSONReader
+from cdisc_rules_engine.services.data_readers.stf_xml_reader import STFXMLReader
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -23,6 +24,7 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.PARQUET.value: ParquetReader,
         DataFormatTypes.JSON.value: DatasetJSONReader,
         DataFormatTypes.NDJSON.value: DatasetNDJSONReader,
+        DataFormatTypes.STF.value: STFXMLReader,
         DataFormatTypes.USDM.value: USDMJSONReader,
     }
 
@@ -49,6 +51,5 @@ class DataReaderFactory(FactoryInterface):
         if service_name in self._reader_map:
             return self._reader_map[service_name](self.dataset_implementation)
         raise ValueError(
-            f"Service name must be in {list(self._reader_map.keys())}, "
-            f"given service name is {service_name}"
+            f"Service name must be in {list(self._reader_map.keys())}, " f"given service name is {service_name}"
         )

@@ -5,6 +5,7 @@ class DataFormatTypes(BaseEnum):
     JSON = "JSON"
     NDJSON = "NDJSON"
     PARQUET = "PARQUET"
+    STF = "STF"
     USDM = "USDM"
     XLSX = "XLSX"
     XPT = "XPT"

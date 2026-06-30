@@ -198,6 +198,7 @@ def cli():
     ),
 )
 @click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
+@click.option("-stf", "--stf-file-path", required=False, help="Path to STF file")
 @click.option(
     "-vx",
     "--validate-xml",
@@ -255,6 +256,7 @@ def validate(
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
+    stf_file_path: str,
     validate_xml: str,
     sql_engine: bool,
     sql_namespace: str,
@@ -339,6 +341,7 @@ def validate(
         custom_standard,
         progress,
         define_xml_path,
+        stf_file_path,
         validate_xml_bool,
         sql_namespace,
     )
@@ -668,6 +671,7 @@ def test_validate():
             custom_standard = False
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
+            stf_file_path = None
             validate_xml = False
             json_output = os.path.join(temp_dir, "json_validation_output")
             xpt_output = os.path.join(temp_dir, "xpt_validation_output")
@@ -693,6 +697,7 @@ def test_validate():
                 custom_standard,
                 progress,
                 define_xml_path,
+                stf_file_path,
                 validate_xml,
                 sql_namespace,
             )
@@ -717,6 +722,7 @@ def test_validate():
                 custom_standard,
                 progress,
                 define_xml_path,
+                stf_file_path,
                 validate_xml,
                 sql_namespace,
             )

@@ -22,6 +22,7 @@ Validation_args = namedtuple(
         "custom_standard",
         "progress",
         "define_xml_path",
+        "stf_file_path",
         "validate_xml",
         "sql_namespace",
     ],

@@ -60,6 +60,9 @@ from cdisc_rules_engine.sql_dataset_builders.sql_domain_check_against_define_dat
 from cdisc_rules_engine.sql_dataset_builders.sql_global_value_check_with_variable_metadata_dataset_builder import (
     SqlGlobalValueCheckwithVariableMetadataDatasetBuilder,
 )
+from cdisc_rules_engine.sql_dataset_builders.sql_stf_dataset_builder import (
+    SqlSTFDatasetBuilder,
+)
 
 
 class SqlDatasetBuilderFactory:
@@ -86,6 +89,7 @@ class SqlDatasetBuilderFactory:
         RuleTypes.DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY.value: SqlDefineItemMetadataCheckAgainstLibraryDatasetBuilder,  # noqa: E501
         RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: SqlDomainCheckAgainstDefineDatasetBuilder,
         RuleTypes.GLOBAL_VALUE_CHECK_WITH_VARIABLE_METADATA.value: SqlGlobalValueCheckwithVariableMetadataDatasetBuilder,  # noqa: E501
+        RuleTypes.STF_METADATA_CHECK.value: SqlSTFDatasetBuilder,
     }
 
     @classmethod

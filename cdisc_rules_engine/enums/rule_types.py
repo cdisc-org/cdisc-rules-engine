@@ -24,3 +24,4 @@ class RuleTypes(BaseEnum):
     VALUE_CHECK_WITH_DATASET_METADATA = "Value Check with Dataset Metadata"
     VALUE_CHECK_WITH_VARIABLE_METADATA = "Value Check with Variable Metadata"
     GLOBAL_VALUE_CHECK_WITH_VARIABLE_METADATA = "Global Value Check with Variable Metadata"
+    STF_METADATA_CHECK = "STF Metadata Check"
