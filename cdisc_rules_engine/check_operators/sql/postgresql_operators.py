@@ -33,6 +33,7 @@ from .is_not_unique_relationship_operator import IsNotUniqueRelationshipOperator
 from .is_ordered_by_operator import IsOrderedByOperator
 from .is_ordered_set_operator import IsOrderedSetOperator
 from .is_ordered_subset_of_operator import IsOrderedSubsetOfOperator
+from .is_substring_of_operator import IsSubstringOfOperator
 from .is_unique_set_operator import IsUniqueSetOperator
 from .is_valid_external_dict_term_reference_operator import ValidExDictTermReferenceOperator
 from .is_valid_external_dict_code_reference_operator import ValidExDictCodeReferenceOperator
@@ -304,6 +305,8 @@ class PostgresQLOperators(BaseType):
         "is_not_latest_available_external_dictionary_version": lambda data: NotOperator(
             data, lambda d: IsLatestAvailableExDictVersionOperator(d)
         ),
+        "is_substring_of": lambda data: IsSubstringOfOperator(data),
+        "is_not_substring_of": lambda data: NotOperator(data, IsSubstringOfOperator),
     }
 
     def __init__(self, data):

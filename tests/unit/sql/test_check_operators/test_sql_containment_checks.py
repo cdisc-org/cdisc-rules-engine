@@ -360,3 +360,75 @@ def test_sql_not_contains_all(data, comparator, value_is_literal, expected_resul
     )
     expected_series = [expected_result] * len(data["target"])
     assert_series_equals(result, ~pd.Series(expected_series))
+
+
+IS_SUBSTRING_OF_TEST_DATA = [
+    (
+        {"target": ["QT", "ECG", "SYS"]},
+        "QT Studies",
+        True,
+        [True, False, False],
+    ),
+    (
+        {"target": ["B12", "C", "A"]},
+        ["Vitamin B12", "Vitamin A", "Zinc"],
+        True,
+        [True, False, True],
+    ),
+    (
+        {"target": ["LB", "AE", "DM"], "VAR2": ["LBCAT", "AETERM", "XX"]},
+        "VAR2",
+        False,
+        [True, True, False],
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        "$constant",
+        False,
+        [True, False, False],
+    ),
+    (
+        {"target": ["B", "c", "a"]},
+        "$list",
+        False,
+        [True, False, False],
+    ),
+    (
+        {"target": ["", None, "A"]},
+        "Vitamin A",
+        True,
+        [False, False, True],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    IS_SUBSTRING_OF_TEST_DATA,
+)
+def test_is_substring_of(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.is_substring_of(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    IS_SUBSTRING_OF_TEST_DATA,
+)
+def test_is_not_substring_of(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.is_not_substring_of(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, ~pd.Series(expected_result))
