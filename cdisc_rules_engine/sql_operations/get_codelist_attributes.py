@@ -8,6 +8,9 @@ _COLUMN_MAP = {
     "Codelist Code": "codelist_code",
     "Codelist Name": "name",
     "Term": "term",
+    "Synonyms": "synonym",
+    "Definition": "definition",
+    "Extensible": "extensible",
 }
 
 
@@ -21,7 +24,13 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
         ct_table = StaticTables.IG_CODELIST_TABLE_NAME.value
         attribute = self.params.ct_attribute
 
-        select_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, _COLUMN_MAP.get(attribute, "item_code"))
+        raw_col = self.data_service.pgi.schema.get_column_hash(ct_table, _COLUMN_MAP.get(attribute, "item_code"))
+
+        if attribute == "Synonym":
+            select_col_sql = f"TRIM(UNNEST(STRING_TO_ARRAY({raw_col}, ';')))"
+        else:
+            select_col_sql = raw_col
+
         version_date_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "version_date")
         std_type_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "standard_type")
 
@@ -40,7 +49,10 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
                 for k, v in condition.items():
                     where_clauses.append(f"{_COLUMN_MAP.get(k)} = '{v}'")
 
-        base_query = f"SELECT DISTINCT {select_col_sql} AS value FROM {ct_table}"
+        base_query = f"""
+            SELECT DISTINCT {select_col_sql} AS value
+            FROM {ct_table}
+        """
 
         if where_clauses:
             query = f"{base_query} WHERE {' AND '.join(where_clauses)}"
