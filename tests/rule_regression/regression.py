@@ -342,6 +342,7 @@ def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
                 custom_standard=None,
                 progress=None,
                 define_xml_path=define_xml_path,
+                stf_file_path=None,
                 validate_xml=None,
                 sql_namespace=None,
             )
