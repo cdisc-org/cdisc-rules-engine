@@ -36,7 +36,7 @@ class Distinct(BaseOperation):
                 )
                 data = data.dropna().unique()
             else:
-                data = result[self.params.target].unique()
+                data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
             result = list(data)
