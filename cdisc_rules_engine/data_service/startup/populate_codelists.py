@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.enums.static_tables import StaticTables
@@ -39,7 +39,6 @@ def populate_codelists(
     if not codelists:
         return
 
-    # TODO: Handle define extensible dict records
     codelists = [item for item in codelists if isinstance(item, str)]
 
     for file_path in codelists:
@@ -69,3 +68,19 @@ def populate_codelists(
         except Exception as e:
             logger.error(f"Failed to load codelist {file_path.name}: {e}")
             continue
+
+
+def add_extensible_terms(
+    pgi: PostgresQLInterface,
+    extensible_terms: Optional[Dict[str, Dict[str, Any]]] = None,
+):
+    """Add extensible terms to the codelists table in the database."""
+    if not extensible_terms:
+        return
+
+    data = []
+    for name, details in extensible_terms.items():
+        for val in details.get("extended_values", []):
+            data.append({"codelist_code": details.get("codelist"), "name": name, "extensible": "Yes", "value": val})
+    pgi.insert_data(StaticTables.IG_CODELIST_TABLE_NAME.value, data)
+    logger.info(f"Added extensible terms: {list(extensible_terms.keys())}")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from io import IOBase
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoader
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
@@ -13,6 +13,7 @@ from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.data_service.sql_data_preprocessor import SqlDataPreprocessor
 from cdisc_rules_engine.data_service.startup.populate_codelists import (
     populate_codelists,
+    add_extensible_terms,
 )
 from cdisc_rules_engine.data_service.startup.populate_standards import (
     populate_standards,
@@ -66,6 +67,7 @@ class PostgresQLDataService:
         use_pgserver: bool = False,
         codelists: Optional[List[Union[str, Dict]]] = None,
         provided_codelists: Optional[List | str] = None,
+        extensible_terms: Optional[Dict[str, Dict[str, Any]]] = None,
         external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
@@ -90,6 +92,7 @@ class PostgresQLDataService:
         instance._update_define_xml_path(define_xml_path)
         instance._update_stf_file_path(stf_file_path)
         instance._update_provided_codelists(provided_codelists)
+        instance._add_extensible_ct_terms(extensible_terms)
 
         return instance
 
@@ -127,6 +130,7 @@ class PostgresQLDataService:
         standards_context,
         codelists: Optional[List[Union[str, Dict]]] = None,
         provided_codelists: Optional[List | str] = None,
+        extensible_terms: Optional[Dict[str, Dict[str, Any]]] = None,
         external_dictionaries: Optional[SqlExternalDictionariesContainer] = None,
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
@@ -139,6 +143,7 @@ class PostgresQLDataService:
             use_pgserver=use_pgserver,
             codelists=codelists,
             provided_codelists=provided_codelists,
+            extensible_terms=extensible_terms,
             cache_path=cache_path,
             external_dictionaries=external_dictionaries,
             define_xml_path=define_xml_path,
@@ -211,3 +216,6 @@ class PostgresQLDataService:
 
     def _update_provided_codelists(self, provided_codelists: Optional[List | str] = None):
         self.provided_codelists = provided_codelists
+
+    def _add_extensible_ct_terms(self, extensible_terms: Dict[str, dict]):
+        add_extensible_terms(self.pgi, extensible_terms)
