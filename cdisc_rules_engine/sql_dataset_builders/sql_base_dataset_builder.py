@@ -117,8 +117,13 @@ class SqlBaseDatasetBuilder(ABC):
         define_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
         )
-        domain = self.dataset_metadata.domain or self.dataset_metadata.name
-        metadata = define_reader.extract_variables_metadata(domain)
+        domain = self.dataset_metadata.domain
+        rdomain = self.dataset_metadata.rdomain
+        name = self.dataset_metadata.name
+        if rdomain:
+            metadata = define_reader.extract_variables_metadata(domain_name=rdomain, name=domain)
+        else:
+            metadata = define_reader.extract_variables_metadata(domain_name=domain, name=name)
         for i, var in enumerate(metadata):
             metadata[i] = self._format_metadata_dict(var)
         return metadata
