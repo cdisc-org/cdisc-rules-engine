@@ -78,6 +78,10 @@ def add_extensible_terms(
     if not extensible_terms:
         return
 
+    pgi.execute_sql(
+        f"DELETE FROM {StaticTables.IG_CODELIST_TABLE_NAME.value} WHERE standard_type IS NULL AND extensible = 'Yes'"
+    )
+
     data = []
     for name, details in extensible_terms.items():
         for val in details.get("extended_values", []):

@@ -3,14 +3,17 @@ from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 
 _COLUMN_MAP = {
+    "Standard Type": "standard_type",
+    "Version Date": "version_date",
     "Term CCODE": "item_code",
-    "Term Signification": "value",
     "Codelist Code": "codelist_code",
+    "Extensible": "extensible",
     "Codelist Name": "name",
-    "Term": "term",
+    "Term Signification": "value",
     "Synonyms": "synonym",
     "Definition": "definition",
-    "Extensible": "extensible",
+    "Term": "term",
+    "Standard and Date": "standard_and_date",
 }
 
 
@@ -47,7 +50,9 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
         if conditions:
             for condition in conditions:
                 for k, v in condition.items():
-                    where_clauses.append(f"{_COLUMN_MAP.get(k)} = '{v}'")
+                    where_clauses.append(
+                        f"{_COLUMN_MAP.get(k)} = '{v}'" if v is not None else f"{_COLUMN_MAP.get(k)} IS NULL"
+                    )
 
         base_query = f"""
             SELECT DISTINCT {select_col_sql} AS value
