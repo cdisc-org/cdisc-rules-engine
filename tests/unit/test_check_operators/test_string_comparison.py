@@ -22,6 +22,20 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             DaskDataset,
             [True, True, False],
         ),
+        (
+            {"VAR2": ["<40"], "target": [40]},
+            "VAR2",
+            ".(.*)",
+            PandasDataset,
+            [False],
+        ),
+        (
+            {"VAR2": ["<40"], "target": [40]},
+            "VAR2",
+            ".(.*)",
+            DaskDataset,
+            [False],
+        ),
     ],
 )
 def test_equals_string_part(data, comparator, regex, dataset_type, expected_result):
@@ -30,6 +44,191 @@ def test_equals_string_part(data, comparator, regex, dataset_type, expected_resu
     result = dataframe_type.equals_string_part(
         {"target": "target", "comparator": comparator, "regex": regex}
     )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,operator,regex,dataset_type,expected_result",
+    [
+        (
+            {"VAR2": [">=40", "<=50"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            ".{2}(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">=40", "<=50"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            ".{2}(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">=040", "<=050"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            ".{2}(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">=040", "<=050"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            ".{2}(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">=42 ", "<=55 "], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".{2}(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">=42 ", "<=55 "], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".{2}(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">40", "<50"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            ".(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">45", "<52"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">45", "<52"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">40", "<50"], "target": [40.0, 50.0]},
+            "VAR2",
+            "equals_string_part",
+            ".(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">45", "<52"], "target": [40.0, 50.0]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": [">40", "<50"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".(.*)",
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {"VAR2": [">40", "<50"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            ".(.*)",
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {"VAR2": ["0040", "0050"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            "(.*)",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": ["0040", "0050"], "target": [40, 50]},
+            "VAR2",
+            "equals_string_part",
+            "(.*)",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": ["40", "50"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            "^[A-Za-z]+$",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": ["40", "50"], "target": [40, 50]},
+            "VAR2",
+            "does_not_equal_string_part",
+            "^[A-Za-z]+$",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {"VAR2": ["", ""], "target": [None, None]},
+            "VAR2",
+            "equals_string_part",
+            "(.*)",
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {"VAR2": ["", ""], "target": [None, None]},
+            "VAR2",
+            "equals_string_part",
+            "(.*)",
+            DaskDataset,
+            [False, False],
+        )
+    ],
+)
+def test_equals_string_part_type_insensitive(
+    data, comparator, operator, regex, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+
+    if operator == "equals_string_part":
+        result = dataframe_type.equals_string_part(
+            {
+                "target": "target",
+                "comparator": comparator,
+                "regex": regex,
+                "type_insensitive": True,
+            }
+        )
+    else:
+        result = dataframe_type.does_not_equal_string_part(
+            {
+                "target": "target",
+                "comparator": comparator,
+                "regex": regex,
+                "type_insensitive": True,
+            }
+        )
+
     assert result.equals(df.convert_to_series(expected_result))
 
 
