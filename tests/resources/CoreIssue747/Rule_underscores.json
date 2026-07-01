@@ -11,17 +11,17 @@
                 {
                   "Document": "IG v3.4",
                   "Section": "Table 3.2.1",
-                  "Cited_Guidance": "Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different."
+                  "Cited Guidance": "Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different."
                 },
                 {
                   "Document": "IG v3.4",
                   "Section": "3.2.1.1",
-                  "Cited_Guidance": "Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order. The identified keys for each dataset should be consistent with the description of the dataset structure as described in the Define-XML document."
+                  "Cited Guidance": "Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order. The identified keys for each dataset should be consistent with the description of the dataset structure as described in the Define-XML document."
                 }
               ],
               "Origin": "SDTM and SDTMIG Conformance Rules",
               "Version": "2.0",
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "CG0019",
                 "Version": "1"
               }
@@ -37,12 +37,12 @@
                 {
                   "Document": "IG v3.2",
                   "Section": "Table 3.2.1|3.2.1.1",
-                  "Cited_Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]|3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
+                  "Cited Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]|3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
                 }
               ],
               "Origin": "SDTM and SDTMIG Conformance Rules",
               "Version": "2.0",
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "CG0019",
                 "Version": "1"
               }
@@ -58,12 +58,12 @@
                 {
                   "Document": "IG v3.3",
                   "Section": "Table 3.2.1|3.2.1.1",
-                  "Cited_Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]||3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
+                  "Cited Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]||3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
                 }
               ],
               "Origin": "SDTM and SDTMIG Conformance Rules",
               "Version": "2.0",
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "CG0019",
                 "Version": "1"
               }
@@ -101,7 +101,7 @@
     }
   },
   "Sensitivity": "Record",
-  "Match_Datasets": [
+  "Match Datasets": [
     {
       "Keys": ["USUBJID"],
       "Name": "SUPP--"

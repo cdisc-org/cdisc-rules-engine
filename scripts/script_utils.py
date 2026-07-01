@@ -526,7 +526,7 @@ def load_and_parse_rule(rule_file):
         with open(rule_file, "r", encoding="utf-8") as file:
             if file_extension in [".yml", ".yaml"]:
                 loaded_data = yaml.safe_load(file)
-                return Rule.from_cdisc_metadata(replace_yml_spaces(loaded_data))
+                return Rule.from_cdisc_metadata(loaded_data)
             elif file_extension == ".json":
                 return Rule.from_cdisc_metadata(json.load(file))
             else:
@@ -602,18 +602,6 @@ def get_max_dataset_size(dataset_paths: Iterable[str]):
         if file_size > max_dataset_size:
             max_dataset_size = file_size
     return max_dataset_size
-
-
-def replace_yml_spaces(data):
-    if isinstance(data, dict):
-        return {
-            key.replace(" ", "_"): replace_yml_spaces(value)
-            for key, value in data.items()
-        }
-    elif isinstance(data, list):
-        return [replace_yml_spaces(item) for item in data]
-    else:
-        return data
 
 
 def library_metadata_not_found_message(standard, version, substandard=None):

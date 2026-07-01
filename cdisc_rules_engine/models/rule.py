@@ -32,14 +32,24 @@ class Rule:
         self.operations: List[dict] = record_params.get("operations")
         self.conditions: dict = record_params["conditions"]
         self.actions: dict = record_params["actions"]
-        self.output_variables: dict = record_params.get("output_variables")
+        self.output_variables: dict = record_params.get("output variables")
         self.grouping_variables: List[str] = record_params.get("grouping_variables", [])
+
+    @classmethod
+    def _get_key(cls, obj: dict, space_key: str, default=None):
+        """Get a value by key, supporting both space-format ('Rule Type') and
+        underscore-format ('Rule_Type') for backward compatibility with the
+        CDISC Library API which returns underscore keys."""
+        if space_key in obj:
+            return obj[space_key]
+        return obj.get(space_key.replace(" ", "_"), default)
 
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
-            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
+            scope = rule_metadata.get("Scope", {})
+            outcome = rule_metadata.get("Outcome", {})
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
                 "author": "CDISC",
@@ -49,48 +59,35 @@ class Rule:
                 "description": rule_metadata.get("Description"),
                 "authorities": authorities,
                 "standards": cls.parse_standards(authorities),
-                "classes": rule_metadata.get("Scope", {}).get("Classes"),
-                "domains": rule_metadata.get("Scope", {}).get("Domains"),
-                "entities": rule_metadata.get("Scope", {}).get("Entities"),
-                "rule_type": rule_metadata.get("Rule_Type"),
+                "classes": scope.get("Classes"),
+                "domains": scope.get("Domains"),
+                "entities": scope.get("Entities"),
+                "rule_type": cls._get_key(rule_metadata, "Rule Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
-                "actions": cls.parse_actions(rule_metadata.get("Outcome")),
-                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
-                "data_structures": rule_metadata.get("Scope", {}).get(
-                    "Data_Structures"
-                ),
+                "actions": cls.parse_actions(outcome),
+                "use_case": cls._get_key(scope, "Use Case"),
+                "data_structures": cls._get_key(scope, "Data Structures"),
                 "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
-            if "Match_Datasets" in rule_metadata:
-                executable_rule["datasets"] = cls.parse_datasets(
-                    rule_metadata.get("Match_Datasets")
-                )
-            if "Output_Variables" in rule_metadata.get("Outcome", {}):
-                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
-                    "Output_Variables"
-                ]
-            if "Grouping_Variables" in rule_metadata:
-                executable_rule["grouping_variables"] = rule_metadata.get(
-                    "Grouping_Variables"
-                )
+            match_datasets = cls._get_key(rule_metadata, "Match Datasets")
+            if match_datasets is not None:
+                executable_rule["datasets"] = cls.parse_datasets(match_datasets)
+
+            output_variables = cls._get_key(outcome, "Output Variables")
+            if output_variables is not None:
+                executable_rule["output_variables"] = output_variables
+
+            grouping_variables = cls._get_key(rule_metadata, "Grouping Variables")
+            if grouping_variables is not None:
+                executable_rule["grouping_variables"] = grouping_variables
+
             return executable_rule
         else:
             return rule_metadata
-
-    @classmethod
-    def spaces_to_underscores(cls, obj):
-        if isinstance(obj, dict):
-            return {
-                key.replace(" ", "_"): cls.spaces_to_underscores(value)
-                for key, value in obj.items()
-            }
-        if isinstance(obj, list):
-            return [cls.spaces_to_underscores(item) for item in obj]
-        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
@@ -200,8 +197,8 @@ class Rule:
                 ],
                 "wildcard": data.get("Wildcard", "**"),
             }
-            if "Join_Type" in data:
-                join_data["join_type"] = data.get("Join_Type")
+            if "Join Type" in data:
+                join_data["join_type"] = data.get("Join Type")
             if "Child" in data:
                 join_data["child"] = data.get("Child")
             datasets.append(join_data)
