@@ -49,8 +49,8 @@ class BaseReportData(ABC):
             if value is None:
                 processed_values.append(null_placeholder)
                 continue
-            value = value.strip()
-            if value == "" or value.lower() == "nan":
+            stripped = value.strip()
+            if stripped == "" or stripped.lower() == "nan":
                 processed_values.append(null_placeholder)
             else:
                 processed_values.append(value)
