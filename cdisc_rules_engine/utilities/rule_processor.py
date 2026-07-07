@@ -683,8 +683,6 @@ class RuleProcessor:
         seen: set[str] = set()
         conditions: ConditionInterface = rule["conditions"]
         for condition in conditions.values():
-            if condition.get("operator") == "not_exists":
-                continue
             target: str = condition["value"].get("target")
             if target is None:
                 continue
