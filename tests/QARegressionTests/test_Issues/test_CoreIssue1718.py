@@ -1,6 +1,5 @@
 import os
 import subprocess
-import pytest
 import json
 from conftest import get_python_executable
 

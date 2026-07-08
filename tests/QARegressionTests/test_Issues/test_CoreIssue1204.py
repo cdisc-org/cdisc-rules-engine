@@ -1,5 +1,4 @@
 import subprocess
-import pytest
 from conftest import get_python_executable
 
 

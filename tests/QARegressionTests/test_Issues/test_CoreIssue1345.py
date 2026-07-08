@@ -32,12 +32,7 @@ def generate_report():
             "CoreIssue1345",
         ),
         "-lr",
-        os.path.join(
-            "tests",
-            "resources",
-            "CoreIssue1345",
-            "CG0019.yml"
-        ),
+        os.path.join("tests", "resources", "CoreIssue1345", "CG0019.yml"),
         "-l",
         "error",
         "-ps",

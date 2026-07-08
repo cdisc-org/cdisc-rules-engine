@@ -2,8 +2,8 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
+
 
 class TerminalCommandTestCase(unittest.TestCase):
     @classmethod

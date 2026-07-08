@@ -2,7 +2,6 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     entity_details_sheet,

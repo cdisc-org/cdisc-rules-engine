@@ -5,7 +5,6 @@ import os
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
-import pytest
 
 
 class TestCoreIssue390(unittest.TestCase):
