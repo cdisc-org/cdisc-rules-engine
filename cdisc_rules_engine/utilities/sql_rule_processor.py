@@ -72,6 +72,8 @@ class SQLRuleProcessor:
                 subtract=operation.get("subtract"),
                 external_dictionary_type=operation.get("external_dictionary_type"),
                 codelist=operation.get("codelist"),
+                domain_class=operation.get("domain_class"),
+                case_sensitive=operation.get("case_sensitive", True),
                 table=operation_table,
                 use_rule_type_table=operation.get("use_rule_type_table", False),
             )

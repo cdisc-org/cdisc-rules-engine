@@ -8,7 +8,7 @@ from .helpers import assert_series_equals, create_sql_operators
     [
         ({"target": ["Att", "", None]}, [False, True, True]),
         ({"target": [1, 2, None]}, [False, False, True]),
-        ({"other": [1, 2, None]}, [True, True, True]),
+        ({"other": [1, 2, None]}, [False, False, False]),
     ],
 )
 def test_empty(data, expected_result):

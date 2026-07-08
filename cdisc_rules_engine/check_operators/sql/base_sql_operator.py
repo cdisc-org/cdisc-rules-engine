@@ -489,7 +489,7 @@ class BaseSqlOperator:
             raise ValueError(f"Variable {target} does not exist.")
 
         if variable.type != "constant":
-            raise ValueError(f"Variable {target} is not a constant.")
+            return f"(NOT EXISTS (SELECT 1 FROM ({variable.query}) AS op))"
 
         # Handle parameterized constants
         query = variable.query

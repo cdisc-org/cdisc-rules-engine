@@ -136,6 +136,14 @@ class SdtmStandardsContext(BaseStandardsContext):
                 return variables_metadata
         return []
 
+    def get_domain_class(self, domain: str):
+        domain_details = self.get_domain_metadata(domain)
+        if domain_details:
+            parent_class = domain_details.get("_links", {}).get("parentClass", {})
+            if parent_class:
+                return convert_library_class_name_to_ct_class(parent_class.get("title"))
+        return None
+
     def get_model_metadata(self):
         model_metadata = self.library_metadata.model_metadata
         return model_metadata

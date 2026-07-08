@@ -34,6 +34,10 @@ class BaseStandardsContext(ABC):
         pass
 
     @abstractmethod
+    def get_domain_class(self, domain: str):
+        pass
+
+    @abstractmethod
     def get_model_metadata(self):
         pass
 

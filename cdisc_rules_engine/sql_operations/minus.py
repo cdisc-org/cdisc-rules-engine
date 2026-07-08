@@ -10,6 +10,7 @@ class SqlMinusOperation(SqlBaseOperation):
         """
         domain = self.params.domain
         dataset_id = self.data_service.pgi.schema.get_table_hash(domain)
+        case_sensitive = self.params.case_sensitive
 
         name_param = self.params.name
         subtract_param = self.params.subtract
@@ -17,10 +18,12 @@ class SqlMinusOperation(SqlBaseOperation):
         name_query = self._resolve_param(name_param, domain, dataset_id)
         subtract_query = self._resolve_param(subtract_param, domain, dataset_id)
 
+        case_value = "UPPER(value)" if not case_sensitive else "value"
+
         query = f"""
-            SELECT value FROM ({name_query}) AS name_q
+            SELECT {case_value} AS value FROM ({name_query}) AS name_q
             EXCEPT
-            SELECT value FROM ({subtract_query}) AS subtract_q
+            SELECT {case_value} AS value FROM ({subtract_query}) AS subtract_q
         """
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
