@@ -196,7 +196,13 @@ class SqlVenmoResultHandler(BaseActions):
         seen_groups: set = set()
         result: List[ValidationErrorEntity] = []
         for row in data:
-            group_key = tuple(row.get(schema.get_column_hash(key)) for key in grouping_variables)
+            if "filter_by_dataset" in grouping_variables:
+                dataset_name = row.get(schema.get_column_hash("dataset_name"))
+                if dataset_name != self.dataset_metadata.name:
+                    continue
+            group_key = tuple(
+                row.get(schema.get_column_hash(key)) for key in grouping_variables if key not in ["filter_by_dataset"]
+            )
             if group_key not in seen_groups:
                 seen_groups.add(group_key)
                 result.append(self._create_error_for_row(row, schema, target_columns))
