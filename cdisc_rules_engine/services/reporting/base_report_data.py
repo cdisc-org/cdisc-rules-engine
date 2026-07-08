@@ -49,17 +49,23 @@ class BaseReportData(ABC):
             if value is None:
                 processed_values.append(null_placeholder)
                 continue
-            value = value.strip()
-            if value == "" or value.lower() == "nan":
+            stripped = value.strip()
+            if stripped == "" or stripped.lower() == "nan":
                 processed_values.append(null_placeholder)
             else:
                 processed_values.append(value)
         return processed_values
 
-    @abstractmethod
     def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         """
-        Return (header, rows) for the CSV output format.
+        Return (header, sorted_rows) for the CSV output format.
         Each row is a list of string values matching the header columns.
+        Sorting is applied lexicographically by full column order.
         """
+        header, rows = self._get_csv_rows()
+        return header, sorted(rows, key=lambda row: tuple(row))
+
+    @abstractmethod
+    def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+        """Return (header, rows) before base-class sorting is applied."""
         pass
