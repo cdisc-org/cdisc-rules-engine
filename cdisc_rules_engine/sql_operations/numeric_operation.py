@@ -13,13 +13,14 @@ class SqlNumericOperation(SqlBaseOperation):
         self.function = function
 
     def _execute_operation(self):
-        dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
+        table = self.params.table if self.params.use_rule_type_table else self.params.domain
+        dataset_id = self.data_service.pgi.schema.get_table_hash(table)
 
         # Special case for counting size of whole dataset
         if self.params.target is None:
             column_id = "*"
         else:
-            column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
+            column_id = self.data_service.pgi.schema.get_column_hash(table, self.params.target)
 
         where_clause = self.construct_where_clause()
 
@@ -27,9 +28,7 @@ class SqlNumericOperation(SqlBaseOperation):
             query = f"SELECT {self.function}({column_id}) AS value FROM {dataset_id} {where_clause}"
             return SqlOperationResult(query=query, type="constant", subtype="Num")
         else:
-            grouping_columns = [
-                self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
-            ]
+            grouping_columns = [self.data_service.pgi.schema.get_column(table, group) for group in self.params.grouping]
 
             where_conditions = []
             params = {}

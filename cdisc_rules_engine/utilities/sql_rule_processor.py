@@ -49,6 +49,7 @@ class SQLRuleProcessor:
             # change -- pattern to domain name
             target_variable: str = operation.get("name", None)
             operation_domain: str = operation.get("domain", dataset_metadata.domain)
+            operation_table = dataset_id
             if target_variable:
                 target_variable = standards_context.replace_domain_code(dataset_metadata, target_variable)
 
@@ -71,6 +72,8 @@ class SQLRuleProcessor:
                 subtract=operation.get("subtract"),
                 external_dictionary_type=operation.get("external_dictionary_type"),
                 codelist=operation.get("codelist"),
+                table=operation_table,
+                use_rule_type_table=operation.get("use_rule_type_table", False),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)

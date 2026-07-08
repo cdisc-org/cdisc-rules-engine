@@ -32,6 +32,8 @@ class SqlOperationParams:
     subtract: str = None
     external_dictionary_type: str = None
     codelist: str = None
+    table: str = None
+    use_rule_type_table: str = None
 
     # standard_substandard: str = None
     # attribute_name: str = None
