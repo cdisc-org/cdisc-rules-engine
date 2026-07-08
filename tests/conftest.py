@@ -42,6 +42,12 @@ def run_regression_tests(request):
     return request.config.getoption("-m") == "regression"
 
 
+@pytest.fixture(autouse=True)
+def _reset_data_service_singleton():
+    yield
+    LocalDataService._instance = None
+
+
 def mock_get_dataset(dataset_name):
     dataframe_map = {
         "ae.xpt": PandasDataset.from_dict(

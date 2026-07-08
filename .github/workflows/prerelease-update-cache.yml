@@ -13,7 +13,8 @@ jobs:
         with:
           # https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
           # git bash: ssh-keygen -t ed25519 -C "github-actions@cdisc.org"
-          # Add public key (.pub one) as a deploy key at Your repo -> Settings -> Security -> Deploy keys, check "Allow write access".
+          # Add public key (.pub one) as a deploy key at 
+          # Your repo -> Settings -> Security -> Deploy keys, check "Allow write access".
           # Add private key as a secret at Your repo -> Settings -> Security -> Secrets and variables -> Actions
           ssh-key: ${{ secrets.GH_ACTION_PRIVATE_KEY }}
 
@@ -22,8 +23,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install requirements
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .
 
       - name: Run Update Cache Script
         run: python core.py update-cache

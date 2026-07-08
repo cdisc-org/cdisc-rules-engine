@@ -14,6 +14,10 @@ def _check_column_exists_in_dataset(row, target_col_name, referenced_datasets):
     return None
 
 
+def _apply_dropna_list(x):
+    return list(x.dropna())
+
+
 class Distinct(BaseOperation):
     def _execute_operation(self):
         result = self.params.dataframe
@@ -32,7 +36,7 @@ class Distinct(BaseOperation):
                 )
                 data = data.dropna().unique()
             else:
-                data = result[self.params.target].unique()
+                data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
             result = list(data)
@@ -57,17 +61,16 @@ class Distinct(BaseOperation):
                     )
 
                 result = grouped.apply(get_existing_column_names).reset_index()
-            elif isinstance(result.data, pd.DataFrame):
-                result = grouped.data[self.params.target].agg(
-                    self._unique_values_for_column
-                )
             else:
                 result = (
-                    grouped.data[self.params.target]
-                    .unique()
-                    .rename({self.params.target: self.params.operation_id})
+                    result.drop_duplicates(
+                        subset=self.params.grouping + [self.params.target]
+                    )
+                    .groupby(self.params.grouping, as_index=False, group_keys=False)
+                    .data[self.params.target]
+                    .apply(_apply_dropna_list)
+                    .reset_index()
                 )
-                result = result.apply(list).to_frame().reset_index()
         return result
 
     def _get_referenced_datasets(self):
@@ -78,4 +81,4 @@ class Distinct(BaseOperation):
         return referenced_datasets
 
     def _unique_values_for_column(self, column):
-        return pd.Series({self.params.operation_id: list(column.unique())})
+        return list(column.unique())

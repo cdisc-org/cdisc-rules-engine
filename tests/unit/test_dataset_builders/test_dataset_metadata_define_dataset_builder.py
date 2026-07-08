@@ -11,7 +11,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
-
 define_metadata = [
     {
         "define_dataset_name": "TS",
@@ -145,16 +144,13 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
 
     expected_df = pd.DataFrame(
         [
-            expected_results["ts.xpt"],
-            expected_results["dm.xpt"],
             expected_results["ae.xpt"],
+            expected_results["dm.xpt"],
+            expected_results["ts.xpt"],
         ]
     ).astype(object)
 
-    result_df = result.data[expected_df.columns].reset_index(drop=True)
+    result_df = result.data[expected_df.columns]
 
-    # Check that columns are the same
     assert list(result_df.columns) == list(expected_df.columns), "Columns do not match"
-
-    # Check that the values in each column match
     pd.testing.assert_frame_equal(result_df, expected_df)

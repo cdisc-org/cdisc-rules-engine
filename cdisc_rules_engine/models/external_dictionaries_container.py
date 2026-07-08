@@ -14,7 +14,6 @@ from cdisc_rules_engine.models.dictionaries.base_dictionary_validator import (
 )
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
 
-
 DICTIONARY_VALIDATORS = {
     DictionaryTypes.MEDDRA.value: MedDRAValidator,
     DictionaryTypes.LOINC.value: LoincValidator,

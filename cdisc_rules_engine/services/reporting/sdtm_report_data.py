@@ -347,7 +347,7 @@ class SDTMReportData(BaseReportData):
             )
         return errors
 
-    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+    def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["Dataset", "Record", "Variable", "Value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
@@ -356,7 +356,8 @@ class SDTMReportData(BaseReportData):
             variables = issue.get("variables") or []
             values = issue.get("values") or []
             for variable, value in zip(variables, values):
-                rows.append([dataset, record, variable, str(value)])
+                csv_value = "" if value in (None, "null") else value
+                rows.append([dataset, record, variable, csv_value])
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:

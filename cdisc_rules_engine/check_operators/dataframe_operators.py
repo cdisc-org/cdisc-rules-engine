@@ -228,8 +228,16 @@ class DataframeType(BaseType):
             target_val = custom_str_conversion(target_val)
             comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
-            target_val = target_val.lower() if target_val else None
-            comparison_val = comparison_val.lower() if comparison_val else None
+            target_val = (
+                target_val.lower()
+                if isinstance(target_val, str) and target_val
+                else None
+            )
+            comparison_val = (
+                comparison_val.lower()
+                if isinstance(comparison_val, str) and comparison_val
+                else None
+            )
             return target_val == comparison_val
         return target_val == comparison_val
 
@@ -275,8 +283,16 @@ class DataframeType(BaseType):
             target_val = custom_str_conversion(target_val)
             comparison_val = custom_str_conversion(comparison_val)
         if case_insensitive:
-            target_val = target_val.lower() if target_val else None
-            comparison_val = comparison_val.lower() if comparison_val else None
+            target_val = (
+                target_val.lower()
+                if isinstance(target_val, str) and target_val
+                else None
+            )
+            comparison_val = (
+                comparison_val.lower()
+                if isinstance(comparison_val, str) and comparison_val
+                else None
+            )
             return target_val != comparison_val
         return target_val != comparison_val
 
@@ -476,10 +492,8 @@ class DataframeType(BaseType):
         elif part_to_validate == "prefix":
             series_to_validate = self.value[target].str.slice(stop=length)
         else:
-            raise ValueError(
-                f"Invalid part to validate: {part_to_validate}. \
-                    Valid values are: suffix, prefix"
-            )
+            raise ValueError(f"Invalid part to validate: {part_to_validate}. \
+                    Valid values are: suffix, prefix")
         series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
 
@@ -698,6 +712,12 @@ class DataframeType(BaseType):
     def is_not_contained_by_case_insensitive(self, other_value):
         return ~self.is_contained_by_case_insensitive(other_value)
 
+    @staticmethod
+    def _map_regex(series, func):
+        # pandas 3 returns nullable BooleanDtype from .map(); normalize to numpy
+        # bool so ~ and & behave identically for both positive and negated callers.
+        return series.map(func, na_action="ignore").fillna(False).astype(bool)
+
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def prefix_matches_regex(self, other_value):
@@ -707,10 +727,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & converted_strings.astype(str).map(
-            lambda x: re.search(comparator, x[:prefix]) is not None
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix]) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -721,10 +741,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & ~converted_strings.astype(str).map(
-            lambda x: re.search(comparator, x[:prefix]) is not None
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix]) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -735,10 +755,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & converted_strings.astype(str).map(
-            lambda x: re.search(comparator, x[-suffix:]) is not None
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:]) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -749,10 +769,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & ~converted_strings.astype(str).map(
-            lambda x: re.search(comparator, x[-suffix:]) is not None
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:]) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -762,10 +782,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & converted_strings.astype(str).str.match(
-            comparator
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -775,10 +795,10 @@ class DataframeType(BaseType):
         converted_strings = self.value[target].map(
             lambda x: self._regex_str_conversion(x)
         )
-        results = converted_strings.notna() & ~converted_strings.astype(str).str.match(
-            comparator
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x) is not None,
         )
-        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1499,7 +1519,7 @@ class DataframeType(BaseType):
         return df.apply(check_inconsistency, axis=1)
 
     def next_column_exists_and_previous_is_null(self, row) -> bool:
-        row.reset_index(drop=True, inplace=True)
+        row = row.reset_index(drop=True)
         for index in row[
             row.isin(NULL_FLAVORS) | pd.isna(row)
         ].index:  # leaving null values only

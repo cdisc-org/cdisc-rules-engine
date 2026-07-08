@@ -187,6 +187,38 @@ def test_get_csv_rows_empty_results():
     assert rows == []
 
 
+def test_get_csv_rows_preserves_blank_values_for_none_and_empty_string(
+    mock_validation_results,
+):
+    mock_validation_results[0].results[0]["errors"][0]["value"]["AESTDY"] = None
+    mock_validation_results[0].results[0]["errors"][0]["value"]["DOMAIN"] = ""
+    report = SDTMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+
+    _, rows = report.get_csv_rows()
+    assert [
+        row[3] for row in rows if row[1] == "1" and row[2] in {"AESTDY", "DOMAIN"}
+    ] == [
+        "",
+        "",
+    ]
+
+    details = report.get_detailed_data()
+    detail_row = next(
+        row
+        for row in details
+        if row["core_id"] == "CORE1"
+        and row["row"] == 1
+        and row["variables"] == ["AESTDY", "DOMAIN"]
+    )
+    assert detail_row["values"] == ["null", "null"]
+
+
 def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results):
     # forcing None and str comparison in summary and details
     mock_validation_results[0].id = None

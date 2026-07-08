@@ -94,7 +94,7 @@ class JSONataProcessor:
     @staticmethod
     @cache
     def get_all_custom_functions(
-        jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...]
+        jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     ):
         builtins_and_customs = [
             ("utils", DefaultFilePaths.JSONATA_UTILS.value),

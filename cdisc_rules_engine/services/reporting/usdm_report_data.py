@@ -245,7 +245,7 @@ class USDMReportData(BaseReportData):
             )
         return errors
 
-    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+    def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["path", "attribute", "value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
@@ -253,7 +253,8 @@ class USDMReportData(BaseReportData):
             attributes = issue.get("attributes") or []
             values = issue.get("values") or []
             for attribute, value in zip(attributes, values):
-                rows.append([path, attribute, str(value)])
+                csv_value = "" if value in (None, "null") else value
+                rows.append([path, attribute, csv_value])
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:

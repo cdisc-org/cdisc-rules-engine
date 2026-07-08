@@ -1,12 +1,15 @@
 # PyPI Integration
 
-CORE is available as a Python package for direct integration into your own pipelines and tooling.
+CORE is available as a Python package for direct integration into your own pipelines
+and tooling.
 
 ```bash
 pip install cdisc-rules-engine
 ```
 
-This installs the engine underlying the CLI and executable, but **does not include `core.py`** or the CLI entrypoints. If you need the full CLI, use the [executable or source code](quick-start.md) instead.
+This installs the engine underlying the CLI and executable, but **does not include
+`core.py`** or the CLI entrypoints. If you need the full CLI, use the
+[executable or source code](quick-start.md) instead.
 
 ---
 
@@ -14,10 +17,16 @@ This installs the engine underlying the CLI and executable, but **does not inclu
 
 Installing the package alone is not enough to run validations. You also need:
 
-1. **The rules cache** — download the contents of `resources/cache/` from the [repository](https://github.com/cdisc-org/cdisc-rules-engine) and store them somewhere in your project. Keep this in sync with the package version you're using.
-2. **A CDISC Library API key** — required for controlled terminology and library metadata. See [update-cache](cli-reference.md#updating-the-cache-update-cache) for how to obtain one.
+1. **The rules cache** — download the contents of `resources/cache/` from the
+   [repository](https://github.com/cdisc-org/cdisc-rules-engine) and store them
+   somewhere in your project. Keep this in sync with the package version you're using.
+2. **A CDISC Library API key** — required for controlled terminology and library
+   metadata. See [update-cache](cli-reference.md#updating-the-cache-update-cache)
+   for how to obtain one.
 
-The package also includes the USDM and Dataset-JSON schemas, available if you use the dataset reader classes in `cdisc_rules_engine/services/data_readers` or the metadata readers in `cdisc_rules_engine/services`.
+The package also includes the USDM and Dataset-JSON schemas, available if you use the
+dataset reader classes in `cdisc_rules_engine/services/data_readers` or the metadata
+readers in `cdisc_rules_engine/services`.
 
 ---
 
@@ -66,15 +75,17 @@ Retrieve rules for a standard and version:
 
 ```python
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-
 cache = load_rules_cache("path/to/rules/cache")
 # Note: version uses dashes, not dots
 rule_keys = cache.get_all_by_prefix(get_rules_cache_key("sdtmig", "3-4"))
 rules = [cache.get(key) for key in rule_keys[0]]
 ```
 
-`get_all_by_prefix` returns a nested list of cache keys, not rule objects directly. Fetch the actual rule dicts by calling cache.get() on each key.
-Each rule is a dict with keys: `core_id`, `domains`, `author`, `reference`, `sensitivity`, `executability`, `description`, `authorities`, `standards`, `classes`, `rule_type`, `conditions`, `actions`, `output_variables`.
+`get_all_by_prefix` returns a nested list of cache keys, not rule objects directly.
+Fetch the actual rule dicts by calling cache.get() on each key.
+Each rule is a dict with keys: `core_id`, `domains`, `author`, `reference`,
+`sensitivity`, `executability`, `description`, `authorities`, `standards`, `classes`,
+`rule_type`, `conditions`, `actions`, `datasets`, `output_variables`.
 
 If you have rules in raw CDISC metadata format, convert them first:
 
@@ -145,7 +156,11 @@ for rule in ae_rules:
         value_level_metadata=None,
     )
     try:
-        was_triggered = run(rule=rule, defined_variables=dataset_variable, defined_actions=core_actions)
+        was_triggered = run(
+            rule=rule,
+            defined_variables=dataset_variable,
+            defined_actions=core_actions
+        )
         if was_triggered:
             all_results.extend(results)
     except Exception as e:
@@ -168,7 +183,11 @@ for rule in ae_rules:
 
 ## Option B: RulesEngine Class
 
-More setup, but handles dataset reading, preprocessing, and multi-domain validation. The source code in `cdisc_rules_engine/rules_engine.py` and the existing CLI implementation in `core.py` are the best reference for wiring this together — the initializer arguments map closely to the CLI flags documented in the [CLI Reference](cli-reference.md).
+More setup, but handles dataset reading, preprocessing, and multi-domain validation.
+The source code in `cdisc_rules_engine/rules_engine.py` and the existing CLI
+implementation in `core.py` are the best reference for wiring this together — the
+initializer arguments map closely to the CLI flags documented in the
+[CLI Reference](cli-reference.md).
 
 ### Step 1: Prepare Dataset Metadata
 
@@ -197,7 +216,8 @@ datasets = [
 ]
 ```
 
-You don't need to manually create `PandasDataset` or `DatasetVariable` objects for Option B — the engine handles this internally.
+You don't need to manually create `PandasDataset` or `DatasetVariable` objects for
+Option B — the engine handles this internally.
 
 ### Step 2: Initialize Library Metadata
 
@@ -214,8 +234,13 @@ standard = "sdtmig"
 standard_version = "3-4"
 standard_substandard = None
 
-standard_metadata = cache.get(get_standard_details_cache_key(standard, standard_version, standard_substandard))
-model_metadata = cache.get(get_model_details_cache_key_from_ig(standard_metadata)) if standard_metadata else {}
+standard_metadata = cache.get(
+    get_standard_details_cache_key(standard, standard_version, standard_substandard)
+)
+model_metadata = (
+    cache.get(get_model_details_cache_key_from_ig(standard_metadata))
+    if standard_metadata else {}
+)
 
 ct_packages = ["sdtmct-2021-12-17"]  # replace with your CT package versions
 ct_package_metadata = {pkg: cache.get(pkg) for pkg in ct_packages}
@@ -223,8 +248,16 @@ ct_package_metadata = {pkg: cache.get(pkg) for pkg in ct_packages}
 library_metadata = LibraryMetadataContainer(
     standard_metadata=standard_metadata,
     model_metadata=model_metadata,
-    variables_metadata=cache.get(get_library_variables_metadata_cache_key(standard, standard_version, standard_substandard)),
-    variable_codelist_map=cache.get(get_variable_codelist_map_cache_key(standard, standard_version, standard_substandard)),
+    variables_metadata=cache.get(
+        get_library_variables_metadata_cache_key(
+            standard, standard_version, standard_substandard
+        )
+    ),
+    variable_codelist_map=cache.get(
+        get_variable_codelist_map_cache_key(
+            standard, standard_version, standard_substandard
+        )
+    ),
     ct_package_metadata=ct_package_metadata,
 )
 ```
@@ -275,7 +308,8 @@ rules_engine = RulesEngine(
 
 ### Step 5: Run Validation
 
-Note the `ConditionCompositeFactory` conversion step — this is required before passing rules to `validate_single_rule`:
+Note the `ConditionCompositeFactory` conversion step — this is required before passing
+rules to `validate_single_rule`:
 
 ```python
 import time
@@ -288,7 +322,9 @@ validation_results = []
 for rule in rules:
     try:
         if isinstance(rule["conditions"], dict):
-            rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
+            rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
+                rule["conditions"]
+            )
         results = rules_engine.validate_single_rule(rule, datasets)
         flattened = [r for domain_results in results.values() for r in domain_results]
         validation_results.append(RuleValidationResult(rule, flattened))
@@ -337,11 +373,16 @@ reporting_services = reporting_factory.get_report_services()
 
 **Cache key format** — always use dashes in version strings (`3-4`, not `3.4`).
 
-**`column_prefix_map`** — maps the `--` variable prefix to the dataset domain (e.g. `{"--": "AE"}`), resolving placeholders like `--SEQ` → `AESEQ`.
+**`column_prefix_map`** — maps the `--` variable prefix to the dataset domain
+(e.g. `{"--": "AE"}`), resolving placeholders like `--SEQ` → `AESEQ`.
 
-**External dictionaries** — pass an `ExternalDictionariesContainer` to `RulesEngine` if validating rules that require MedDRA, WHODrug, LOINC, UNII, MedRT, or SNOMED. See the [External Dictionary Reference](https://cdisc-org.github.io/conformance-rules-editor/#/exdictionary).
+**External dictionaries** — pass an `ExternalDictionariesContainer` to `RulesEngine`
+if validating rules that require MedDRA, WHODrug, LOINC, UNII, MedRT, or SNOMED.
+See the
+[External Dictionary Reference](https://cdisc-org.github.io/cdisc-open-rules/#/exdictionary).
 
-**Dask** — set `max_dataset_size=0` when initializing `DataServiceFactory` to force Dask processing for all datasets.
+**Dask** — set `max_dataset_size=0` when initializing `DataServiceFactory` to force
+Dask processing for all datasets.
 
 **Windows compatibility** — add `freeze_support()` for multiprocessing:
 
@@ -363,7 +404,9 @@ if __name__ == "__main__":
 - `full_path` must be set in `SDTMDatasetMetadata` when using the `RulesEngine` approach
 - The rule's `domains.Include` must match your dataset's domain
 - `standard_version` format must be consistent throughout (`3-4`, not `3.4`)
-- CT package metadata must be present in the cache if validating against controlled terminology
+- CT package metadata must be present in the cache if validating against controlled
+  terminology
 - When using `define.xml`, the file must be named `define.xml` and the path must be valid
 - If using external dictionaries, verify all file paths are correct and accessible
-- Don't forget the `ConditionCompositeFactory` conversion before calling `validate_single_rule` (Option B)
+- Don't forget the `ConditionCompositeFactory` conversion before calling
+  `validate_single_rule` (Option B)

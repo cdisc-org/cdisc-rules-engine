@@ -8,13 +8,15 @@
 [![PyPI](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine)
 [![Docker](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
-CORE is the open-source offering of the CDISC Conformance Rules Engine — a tool for validating clinical trial data against CDISC data standards.
+CORE is the open-source offering of the CDISC Conformance Rules Engine — a tool for
+validating clinical trial data against CDISC data standards.
 
 ---
 
 ## Scope
 
-CORE validates study datasets against published CDISC conformance rules for the following standards:
+CORE validates study datasets against published CDISC conformance rules for the following
+standards:
 
 | Standard               | Description                                      |
 | ---------------------- | ------------------------------------------------ |
@@ -25,7 +27,9 @@ CORE validates study datasets against published CDISC conformance rules for the 
 | **FDA Business Rules** | FDA submission conformance rules                 |
 | **USDM**               | Unified Study Definitions Model                  |
 
-CORE validates data _structure and conformance_ against published rules. It is not a replacement for clinical review, statistical analysis, or submission readiness assessment. Rule logic is defined in [`cdisc-open-rules`](https://github.com/cdisc-org/cdisc-open-rules).
+CORE validates data _structure and conformance_ against published rules. It is not a
+replacement for clinical review, statistical analysis, or submission readiness assessment.
+Rule logic is defined in [`cdisc-open-rules`](https://github.com/cdisc-org/cdisc-open-rules).
 
 ---
 
@@ -45,8 +49,14 @@ CORE validates data _structure and conformance_ against published rules. It is n
 
 ## Community & Support
 
-- **Questions & Discussions:** [GitHub Discussions — Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a)
-- **Bug Reports & Feature Requests:** [GitHub Issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
-- **Rule Contributions:** [cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
-- **CDISC Library API:** [wiki.cdisc.org — Getting Started](https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication)
-- **Published CDISC Conformance Rules Github**[cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
+- **Questions & Discussions:**
+  [GitHub Discussions — Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a)
+- **Bug Reports & Feature Requests:**
+  [GitHub Issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+- **Rule Contributions:**
+  [cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
+- **CDISC Library API:**
+  [wiki.cdisc.org — Getting Started](https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication)
+- **Published CDISC Conformance Rules GitHub:**
+  [cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
+  
