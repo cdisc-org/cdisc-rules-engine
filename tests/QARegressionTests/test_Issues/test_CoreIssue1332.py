@@ -9,7 +9,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_ap_domain_should_be_correctly_substituted():
     # Run the command in the terminal
     command = [

@@ -7,7 +7,6 @@ import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1558(unittest.TestCase):
     def test_raw_report(self):
         # Run the command in the terminal

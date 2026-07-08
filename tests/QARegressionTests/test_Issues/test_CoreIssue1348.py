@@ -177,7 +177,6 @@ _issue_details = [
 ]
 
 
-@pytest.mark.regression
 class TestCoreIssue1348:
     @pytest.mark.parametrize(
         "rule_name, dataset, issue_summary, details",

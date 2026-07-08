@@ -13,7 +13,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 class TestCoreIssue715(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal

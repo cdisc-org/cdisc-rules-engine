@@ -36,9 +36,8 @@ def generate_report():
             "tests",
             "resources",
             "CoreIssue1345",
+            "CG0019.yml"
         ),
-        "-r",
-        "CDISC.SDTMIG.CG0019",
         "-l",
         "error",
         "-ps",
@@ -59,7 +58,6 @@ def generate_report():
     return json_report_path, json_report
 
 
-@pytest.mark.regression
 class TestCoreIssue1345:
     def test_engine_correctly_merges_datasets_and_flags_row_uniqueness_issues(
         self, generate_report

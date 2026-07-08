@@ -6,7 +6,6 @@ import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 def test_multiple_xlsx_files_shows_helpful_error():
     """Test that multiple XLSX files show a helpful error message about single file limitation"""
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -54,7 +53,6 @@ def test_multiple_xlsx_files_shows_helpful_error():
         ), "Expected explanation of XLSX limitation"
 
 
-@pytest.mark.regression
 def test_folder_with_xlsx_files_works_with_excel_service():
     """Test that a folder with a single XLSX file now works with ExcelDataService"""
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -95,7 +93,6 @@ def test_folder_with_xlsx_files_works_with_excel_service():
         ), "XLSX files should now be recognized as valid"
 
 
-@pytest.mark.regression
 def test_folder_with_unsupported_formats_shows_helpful_error():
     """Test that folders with truly unsupported formats (like PDF) show helpful error messages"""
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -142,7 +139,6 @@ def test_folder_with_unsupported_formats_shows_helpful_error():
         ), "Expected format guidance in error message"
 
 
-@pytest.mark.regression
 def test_empty_folder_shows_helpful_error():
     with tempfile.TemporaryDirectory() as temp_dir:
         command = [
@@ -173,7 +169,6 @@ def test_empty_folder_shows_helpful_error():
         ), "Expected helpful error message for empty folder"
 
 
-@pytest.mark.regression
 def test_valid_xpt_files_work_normally():
     command = [
         get_python_executable(),
@@ -200,7 +195,6 @@ def test_valid_xpt_files_work_normally():
     ), "Should find valid XPT file"
 
 
-@pytest.mark.regression
 def test_mixed_folder_processes_valid_files():
     with tempfile.TemporaryDirectory() as temp_dir:
         valid_xpt = os.path.join("tests", "resources", "test_dataset.xpt")

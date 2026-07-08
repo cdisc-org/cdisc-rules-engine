@@ -12,7 +12,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_validate_define_xml_against_lib_metadata():
     command = [
         f"{get_python_executable()}",

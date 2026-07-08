@@ -3,7 +3,6 @@ import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 def test_non_existing_dataset_shows_helpful_error():
     """Test that the engine displays a helpful error message if dataset files are not found"""
     command = [

@@ -6,7 +6,6 @@ import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue984:
     def test_define_subversion_ignored(self):
         # Run the command in the terminal

@@ -6,7 +6,6 @@ import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1248:
     @pytest.mark.parametrize(
         "command,rules_report,num_issues",

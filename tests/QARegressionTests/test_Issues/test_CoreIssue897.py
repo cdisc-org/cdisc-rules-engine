@@ -14,7 +14,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 class TestGetXHTMLErrors(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal

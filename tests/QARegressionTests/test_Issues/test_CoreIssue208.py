@@ -28,7 +28,6 @@ def find_value(json_data, key):
     return results
 
 
-@pytest.mark.regression
 class JSONSearchTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
