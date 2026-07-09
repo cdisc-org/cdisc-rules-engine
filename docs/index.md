@@ -24,7 +24,7 @@ validating clinical trial data against CDISC data standards.
 | **SDTM** or **FDA Business Rules**          | The **Verisian Engine** — [verisianHQ/cdisc-rules-engine](https://github.com/verisianHQ/cdisc-rules-engine) |
 | **TIG**, **USDM**, **ADaM**, or **SEND**    | The **CDISC Engine** (this repository), as described below                                                  |
 
-This split is temporary and reflects, differing underlying architectures — the Verisian Engine is
+This split is temporary and reflects differing underlying architectures — the Verisian Engine is
 built on SQL, while the CDISC Engine (this repository) is built on pandas/dask/jsonata. These
 implementations will be harmonized over time, at which point this section will be
 updated to reflect the change.
