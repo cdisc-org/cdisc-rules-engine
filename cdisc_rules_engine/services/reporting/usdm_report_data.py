@@ -245,7 +245,7 @@ class USDMReportData(BaseReportData):
             )
         return errors
 
-    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+    def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["path", "attribute", "value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
