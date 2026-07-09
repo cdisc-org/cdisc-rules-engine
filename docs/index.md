@@ -87,4 +87,3 @@ Rule logic is defined in [`cdisc-open-rules`](https://github.com/cdisc-org/cdisc
   [wiki.cdisc.org — Getting Started](https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication)
 - **Published CDISC Conformance Rules GitHub:**
   [cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules)
-  
