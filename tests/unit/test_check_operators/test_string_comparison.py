@@ -201,7 +201,7 @@ def test_equals_string_part(data, comparator, regex, dataset_type, expected_resu
             "(.*)",
             DaskDataset,
             [False, False],
-        )
+        ),
     ],
 )
 def test_equals_string_part_type_insensitive(
