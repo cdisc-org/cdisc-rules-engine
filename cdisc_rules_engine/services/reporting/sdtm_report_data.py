@@ -347,7 +347,7 @@ class SDTMReportData(BaseReportData):
             )
         return errors
 
-    def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
+    def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["Dataset", "Record", "Variable", "Value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
