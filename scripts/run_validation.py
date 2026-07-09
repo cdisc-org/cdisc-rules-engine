@@ -194,6 +194,11 @@ def run_validation(args: Validation_args):
         engine_logger.info(
             f"Running {len(rules)} rules against {len(datasets)} datasets"
         )
+        if len(rules) == 0:
+            raise ValueError(
+                "No rules were selected for this standard/version — "
+                "nothing to execute, aborting before report generation"
+            )
         start = time.time()
         results = []
         # instantiate logger in each child process to maintain log level
