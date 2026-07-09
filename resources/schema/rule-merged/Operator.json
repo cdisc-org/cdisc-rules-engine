@@ -134,6 +134,16 @@
     {
       "properties": {
         "operator": {
+          "const": "does_not_end_with",
+          "markdownDescription": "\nComplement of `ends_with`. Returns True when the target does NOT end with the value.\n\n> DOMAIN not ending with 'FOOBAR'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"does_not_end_with\"\n  value: \"FOOBAR\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "does_not_equal_string_part",
           "markdownDescription": "\nComplement of `equals_string_part`\n"
         }
@@ -149,6 +159,16 @@
         }
       },
       "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_start_with",
+          "markdownDescription": "\nComplement of `starts_with`. Returns True when the target does NOT start with the value.\n\n> DOMAIN not beginning with 'AP'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"does_not_start_with\"\n  value: \"AP\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
       "type": "object"
     },
     {

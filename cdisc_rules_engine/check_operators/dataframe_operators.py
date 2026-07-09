@@ -841,7 +841,9 @@ class DataframeType(BaseType):
         if self.value.is_series(comparison_data):
             # need to convert series to tuple to make startswith operator work correctly
             comparison_data: Tuple[str] = tuple(comparison_data)
-        results = self.value[target].str.startswith(comparison_data)
+        # na=False keeps the result a clean boolean Series when target values are
+        # missing, so negating operators (does_not_start_with) stay null-safe.
+        results = self.value[target].str.startswith(comparison_data, na=False)
         return results
 
     @log_operator_execution
@@ -854,8 +856,20 @@ class DataframeType(BaseType):
         if self.value.is_series(comparison_data):
             # need to convert series to tuple to make endswith operator work correctly
             comparison_data: Tuple[str] = tuple(comparison_data)
-        results = self.value[target].str.endswith(comparison_data)
+        # na=False keeps the result a clean boolean Series when target values are
+        # missing, so negating operators (does_not_end_with) stay null-safe.
+        results = self.value[target].str.endswith(comparison_data, na=False)
         return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_start_with(self, other_value):
+        return ~self.starts_with(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_end_with(self, other_value):
+        return ~self.ends_with(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
