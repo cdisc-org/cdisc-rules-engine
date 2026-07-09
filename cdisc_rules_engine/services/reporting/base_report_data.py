@@ -56,14 +56,30 @@ class BaseReportData(ABC):
                 processed_values.append(value)
         return processed_values
 
+    @staticmethod
+    def _csv_sort_key(row: list[str]) -> tuple:
+        """
+        Sorts numeric fields numerically rather than lexicographically.
+
+        Each field becomes (0, int_value) for pure integers or (1, str_value)
+        for everything else, so numbers sort before strings and 2 < 10.
+        """
+        parts = []
+        for field in row:
+            try:
+                parts.append((0, int(field), ""))
+            except ValueError:
+                parts.append((1, 0, field))
+        return tuple(parts)
+
     def get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         """
         Return (header, sorted_rows) for the CSV output format.
         Each row is a list of string values matching the header columns.
-        Sorting is applied lexicographically by full column order.
+        Sorting is applied by full column order.
         """
         header, rows = self._get_csv_rows()
-        return header, sorted(rows, key=lambda row: tuple(row))
+        return header, sorted(rows, key=self._csv_sort_key)
 
     @abstractmethod
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
