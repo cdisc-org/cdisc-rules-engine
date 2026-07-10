@@ -248,13 +248,29 @@ class USDMReportData(BaseReportData):
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["path", "attribute", "value"]
         rows = []
-        for issue in self.data_sheets.get("Issue Details", []):
-            path = issue.get("path") or ""
-            attributes = issue.get("attributes") or []
-            values = issue.get("values") or []
-            for attribute, value in zip(attributes, values):
-                csv_value = "" if value in (None, "null") else value
-                rows.append([path, attribute, csv_value])
+        for validation_result in self._results:
+            for result in validation_result.results or []:
+                if (
+                    result.get("executionStatus")
+                    == ExecutionStatus.EXECUTION_ERROR.value
+                ):
+                    for error in self._error_details(validation_result, result):
+                        path = (
+                            error.get("entity")
+                            or result.get("entity")
+                            or result.get("dataset")
+                            or ""
+                        )
+                        csv_value = error.get("values") or error.get("message") or ""
+                        rows.append([path, "EXECUTION_ERROR", csv_value])
+                else:
+                    for issue in self._issue_details(validation_result, result):
+                        path = issue.get("path") or ""
+                        attributes = issue.get("attributes") or []
+                        values = issue.get("values") or []
+                        for attribute, value in zip(attributes, values):
+                            csv_value = "" if value in (None, "null") else value
+                            rows.append([path, attribute, csv_value])
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:

@@ -350,14 +350,28 @@ class SDTMReportData(BaseReportData):
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["Dataset", "Record", "Variable", "Value"]
         rows = []
-        for issue in self.data_sheets.get("Issue Details", []):
-            dataset = (issue.get("dataset") or "").removesuffix(".csv")
-            record = str(issue.get("row", ""))
-            variables = issue.get("variables") or []
-            values = issue.get("values") or []
-            for variable, value in zip(variables, values):
-                csv_value = "" if value in (None, "null") else value
-                rows.append([dataset, record, variable, csv_value])
+        for validation_result in self._results:
+            for result in validation_result.results or []:
+                if (
+                    result.get("executionStatus")
+                    == ExecutionStatus.EXECUTION_ERROR.value
+                ):
+                    for error in self._error_details(validation_result, result):
+                        dataset_val = (
+                            error.get("dataset") or result.get("dataset") or ""
+                        )
+                        dataset = dataset_val.removesuffix(".csv")
+                        csv_value = error.get("values") or error.get("message") or ""
+                        rows.append([dataset, "", "EXECUTION_ERROR", csv_value])
+                else:
+                    for issue in self._issue_details(validation_result, result):
+                        dataset = (issue.get("dataset") or "").removesuffix(".csv")
+                        record = str(issue.get("row", ""))
+                        variables = issue.get("variables") or []
+                        values = issue.get("values") or []
+                        for variable, value in zip(variables, values):
+                            csv_value = "" if value in (None, "null") else value
+                            rows.append([dataset, record, variable, csv_value])
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:
