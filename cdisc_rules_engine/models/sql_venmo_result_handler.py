@@ -181,6 +181,11 @@ class SqlVenmoResultHandler(BaseActions):
         """
         return [self._create_error_for_row(row, schema, target_columns) for row in data]
 
+    def _resolve_grouping_variable(self, var: str) -> str:
+        """Resolve the -- prefix in a grouping variable to the current dataset's domain prefix."""
+        domain = self.dataset_metadata.domain or ""
+        return var.replace("--", domain)
+
     def _build_group_error_items(
         self, data: List[dict], target_columns: dict[str, bool], schema: SqlTableSchema
     ) -> List[ValidationErrorEntity]:
@@ -193,6 +198,10 @@ class SqlVenmoResultHandler(BaseActions):
         if not grouping_variables:
             return self._build_record_error_items(data, target_columns, schema)
 
+        resolved_grouping_variables = [
+            self._resolve_grouping_variable(var) for var in grouping_variables if var not in ["filter_by_dataset"]
+        ]
+
         seen_groups: set = set()
         result: List[ValidationErrorEntity] = []
         for row in data:
@@ -200,9 +209,7 @@ class SqlVenmoResultHandler(BaseActions):
                 dataset_name = row.get(schema.get_column_hash("dataset_name"))
                 if dataset_name != self.dataset_metadata.name:
                     continue
-            group_key = tuple(
-                row.get(schema.get_column_hash(key)) for key in grouping_variables if key not in ["filter_by_dataset"]
-            )
+            group_key = tuple(row.get(schema.get_column_hash(key)) for key in resolved_grouping_variables)
             if group_key not in seen_groups:
                 seen_groups.add(group_key)
                 result.append(self._create_error_for_row(row, schema, target_columns))
