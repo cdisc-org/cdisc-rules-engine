@@ -363,15 +363,16 @@ class SDTMReportData(BaseReportData):
                         dataset = dataset_val.removesuffix(".csv")
                         csv_value = error.get("values") or error.get("message") or ""
                         rows.append([dataset, "", "EXECUTION_ERROR", csv_value])
-                else:
-                    for issue in self._issue_details(validation_result, result):
-                        dataset = (issue.get("dataset") or "").removesuffix(".csv")
-                        record = str(issue.get("row", ""))
-                        variables = issue.get("variables") or []
-                        values = issue.get("values") or []
-                        for variable, value in zip(variables, values):
-                            csv_value = "" if value in (None, "null") else value
-                            rows.append([dataset, record, variable, csv_value])
+
+        for issue in self.data_sheets.get("Issue Details", []):
+            dataset = (issue.get("dataset") or "").removesuffix(".csv")
+            record = str(issue.get("row", ""))
+            variables = issue.get("variables") or []
+            values = issue.get("values") or []
+            for variable, value in zip(variables, values):
+                csv_value = "" if value in (None, "null") else value
+                rows.append([dataset, record, variable, csv_value])
+
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:

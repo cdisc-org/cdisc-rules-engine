@@ -271,7 +271,7 @@ def test_get_csv_rows_execution_error_detailed_message(mock_validation_results):
     mock_validation_results[1].results[0][
         "executionStatus"
     ] = ExecutionStatus.EXECUTION_ERROR.value
-    mock_validation_results[1].results[0]["dataset"] = "json.csv"
+    mock_validation_results[1].results[0]["dataset"] = "AE.csv"
     mock_validation_results[1].results[0]["message"] = "rule execution error"
     detailed_message = (
         "\n  Error parsing JSONata Rule for Core Id: CORE-000998\n"
@@ -291,5 +291,5 @@ def test_get_csv_rows_execution_error_detailed_message(mock_validation_results):
     error_rows = [r for r in rows if r[2] == "EXECUTION_ERROR"]
     assert len(error_rows) == 1
     dataset, record, variable, value = error_rows[0]
-    assert dataset == "json"
+    assert dataset == "AE"
     assert value == detailed_message

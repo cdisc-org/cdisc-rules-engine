@@ -263,14 +263,15 @@ class USDMReportData(BaseReportData):
                         )
                         csv_value = error.get("values") or error.get("message") or ""
                         rows.append([path, "EXECUTION_ERROR", csv_value])
-                else:
-                    for issue in self._issue_details(validation_result, result):
-                        path = issue.get("path") or ""
-                        attributes = issue.get("attributes") or []
-                        values = issue.get("values") or []
-                        for attribute, value in zip(attributes, values):
-                            csv_value = "" if value in (None, "null") else value
-                            rows.append([path, attribute, csv_value])
+
+        for issue in self.data_sheets.get("Issue Details", []):
+            path = issue.get("path") or ""
+            attributes = issue.get("attributes") or []
+            values = issue.get("values") or []
+            for attribute, value in zip(attributes, values):
+                csv_value = "" if value in (None, "null") else value
+                rows.append([path, attribute, csv_value])
+
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:
