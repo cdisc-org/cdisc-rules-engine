@@ -809,6 +809,7 @@ class DataframeType(BaseType):
         column with a regex
         """
         target = other_value.get("target")
+        type_insensitive = other_value.get("type_insensitive", False)
         comparator = other_value.get("comparator")
         regex = other_value.get("regex")
         value_is_literal: bool = other_value.get("value_is_literal", False)
@@ -821,7 +822,11 @@ class DataframeType(BaseType):
         self.value[parsed_id] = parsed_data
         return self.value.apply(
             lambda row: self._check_equality(
-                row, target, parsed_id, value_is_literal=False
+                row,
+                target,
+                parsed_id,
+                value_is_literal=False,
+                type_insensitive=type_insensitive,
             ),
             axis=1,
         )
