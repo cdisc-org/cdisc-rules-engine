@@ -448,6 +448,8 @@ class BaseSqlOperator:
                 return self._is_empty_sql_column(target, alias)
             elif target in self.operation_variables:
                 return self._is_empty_sql_operation_variable(target)
+            else:
+                return "FALSE"
 
         if isinstance(target, str) and target == "":
             return "TRUE"

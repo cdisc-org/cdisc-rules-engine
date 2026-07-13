@@ -6,6 +6,8 @@ from copy import deepcopy
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
+from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
+
 if TYPE_CHECKING:
     from cdisc_rules_engine.data_service.postgresql_data_service import (
         PostgresQLDataService,
@@ -134,7 +136,9 @@ class SqlDataPreprocessor:
                 if part_col:
                     select_items.append(f"{part_col.hash} AS {target_col.hash}")
                 else:
-                    select_items.append(f"NULL AS {target_col.hash}")
+                    select_items.append(
+                        f"CAST(NULL AS {SQLSerialiser.column_type_to_sql_type(target_col.type)}) AS {target_col.hash}"
+                    )
 
             union_parts.append(f"SELECT {', '.join(select_items)} FROM public.{part_hash}")
         return union_parts
