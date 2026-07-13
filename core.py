@@ -188,7 +188,7 @@ def _gather_csv_metadata_files(dataset_path: tuple[str]) -> list[str]:
             [
                 str(p)
                 for p in dp_path.parent.glob("*")
-                if p.is_file() and p.name in {"datasets.csv", "variables.csv"}
+                if p.is_file() and p.name in {"_datasets.csv", "_variables.csv"}
             ]
         )
     return all_files_in_dp
