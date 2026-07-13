@@ -5,6 +5,9 @@ from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperatio
 class SqlDistinctOperation(SqlBaseOperation):
     def _execute_operation(self):
         dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
+        if not dataset_id:
+            query = self._empty_result_set_query()
+            return SqlOperationResult(query=query, type="collection", subtype="Char", params={})
         column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
         column_type = self.data_service.pgi.schema.get_column(self.params.domain, self.params.target).type
 

@@ -246,3 +246,10 @@ class SqlBaseOperation:
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [var["name"].replace("--", domain) for var in variables_metadata]
+
+    @staticmethod
+    def _empty_result_set_query() -> str:
+        """
+        Returns a SQL query that produces an empty result set with a single column named 'value'.
+        """
+        return "SELECT value FROM (VALUES (NULL)) AS t(value) WHERE FALSE"
