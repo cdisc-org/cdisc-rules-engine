@@ -18,15 +18,11 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
         if not current_table:
             raise ValueError(f"Table for domain {self.params.domain} not found")
 
-        # If RFSTDTC is already present (e.g. the table was pre-joined with DM via
-        # Match Datasets before this operation ran), use it directly to avoid a
-        # redundant second join that would produce incorrect results.
         if current_table.has_column("RFSTDTC"):
             joined_table = current_table
         else:
             dm_table = self.data_service.pgi.schema.get_table("DM")
             if not dm_table:
-                # Return 0 if DM doesn't exist
                 return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
             joined_table = SqlJoinMerge.perform_join(
                 pgi=self.data_service.pgi,
@@ -40,7 +36,6 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
         if not joined_table.has_column(self.params.target):
             return SqlOperationResult(query="SELECT 0 AS value", type="constant", subtype="Num")
 
-        # This handles date parsing and validation using COMPLETE_DATE_REGEX
         target_date_col = self.data_service.pgi.generate_date_column(joined_table.name, self.params.target)
 
         if not joined_table.has_column("RFSTDTC"):
@@ -48,8 +43,8 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
 
         rfstdtc_date_col = self.data_service.pgi.generate_date_column(joined_table.name, "RFSTDTC")
 
-        # Build the DY calculation query for a specific record using the generated date columns
-        id_col = self.data_service.pgi.schema.get_column_hash(self.params.domain, "id")
+        id_col = self.data_service.pgi.schema.get_column_hash(joined_table.name, "id")
+
         query = f"""
         SELECT
             CASE
@@ -60,7 +55,7 @@ class SqlDayDataValidatorOperation(SqlBaseOperation):
                     DATE({target_date_col.hash}) - DATE({rfstdtc_date_col.hash})
             END AS value
         FROM {joined_table.hash}
-        WHERE {id_col} = $1
+        WHERE {id_col} = $id
         """
 
-        return SqlOperationResult(query=query, type="constant", subtype="Num", params={"$1": "id"})
+        return SqlOperationResult(query=query, type="constant", subtype="Num", params={"$id": "id"})
