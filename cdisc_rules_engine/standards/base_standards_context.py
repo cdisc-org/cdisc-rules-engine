@@ -10,6 +10,7 @@ from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.utilities.utils import get_sided_match_keys
 
 
 class BaseStandardsContext(ABC):
@@ -89,15 +90,16 @@ class BaseStandardsContext(ABC):
         """
         right: str = merge_spec.get("domain_name").lower()
         join_type = merge_spec.get("join_type", "INNER")
-        # For now we assume pivot columns are always the same in left and right
-        pivot_columns = merge_spec.get("match_key", [])
+        match_keys = merge_spec.get("match_key", [])
+        pivot_left = get_sided_match_keys(match_keys, "left")
+        pivot_right = get_sided_match_keys(match_keys, "right")
 
         joined_schema = SqlJoinMerge.perform_join(
             pgi=ds.pgi,
             left=ds.pgi.schema.get_table(original),
             right=ds.pgi.schema.get_table(right),
-            pivot_left=pivot_columns,
-            pivot_right=pivot_columns,
+            pivot_left=pivot_left,
+            pivot_right=pivot_right,
             type=join_type.upper(),
         )
 
