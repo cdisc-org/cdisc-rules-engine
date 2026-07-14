@@ -67,6 +67,8 @@ class SDTMReportData(BaseReportData):
             self._args.substandard if hasattr(self._args, "substandard") else None
         )
         use_case = self._args.use_case if hasattr(self._args, "use_case") else None
+        self._issue_execution_status: dict[int, str] = {}
+        self._issue_csv_fallback_dataset: dict[int, str] = {}
         self.data_sheets = {
             "Conformance Details": self.get_conformance_details_data(
                 define_version,
@@ -340,31 +342,33 @@ class SDTMReportData(BaseReportData):
         """
         errors = []
         for result in validation_result.results or []:
-            errors = (
-                errors
-                + self._issue_details(validation_result, result)
-                + self._error_details(validation_result, result)
-            )
+            issue_items = self._issue_details(validation_result, result)
+            error_items = self._error_details(validation_result, result)
+            for error_item in error_items:
+                self._issue_execution_status[id(error_item)] = (
+                    ExecutionStatus.EXECUTION_ERROR.value
+                )
+                self._issue_csv_fallback_dataset[id(error_item)] = (
+                    result.get("dataset") or ""
+                )
+            errors = errors + issue_items + error_items
         return errors
 
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["Dataset", "Record", "Variable", "Value"]
         rows = []
-        for validation_result in self._results:
-            for result in validation_result.results or []:
-                if (
-                    result.get("executionStatus")
-                    == ExecutionStatus.EXECUTION_ERROR.value
-                ):
-                    for error in self._error_details(validation_result, result):
-                        dataset_val = (
-                            error.get("dataset") or result.get("dataset") or ""
-                        )
-                        dataset = dataset_val.removesuffix(".csv")
-                        csv_value = error.get("values") or error.get("message") or ""
-                        rows.append([dataset, "", "EXECUTION_ERROR", csv_value])
-
         for issue in self.data_sheets.get("Issue Details", []):
+            if (
+                self._issue_execution_status.get(id(issue))
+                == ExecutionStatus.EXECUTION_ERROR.value
+            ):
+                dataset_val = issue.get(
+                    "dataset"
+                ) or self._issue_csv_fallback_dataset.get(id(issue), "")
+                dataset = dataset_val.removesuffix(".csv")
+                csv_value = issue.get("values") or issue.get("message") or ""
+                rows.append([dataset, "", "EXECUTION_ERROR", csv_value])
+                continue
             dataset = (issue.get("dataset") or "").removesuffix(".csv")
             record = str(issue.get("row", ""))
             variables = issue.get("variables") or []
