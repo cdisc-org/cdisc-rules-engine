@@ -163,7 +163,7 @@ class TestValidate(unittest.TestCase):
             "--meddra",
             os.path.join("tests", "resources", "dictionaries", "meddra"),
             "-r",
-            "CORE-000237",
+            os.path.join("tests", "resources", "Rule-CG0027.json"),
             "-lr",
             os.path.join("tests", "resources", "CG0272.yml"),
             "-p",
