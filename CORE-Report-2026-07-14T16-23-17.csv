@@ -1,0 +1,3 @@
+Dataset,Record,Variable,Value
+BG,,EXECUTION_ERROR,"Failed to execute rule operation. Operation: min_date, Target: SJSTDTC, Domain: SJ, Error: 'Timestamp' object has no attribute 'lower'"
+CL,,EXECUTION_ERROR,"Failed to execute rule operation. Operation: min_date, Target: SJSTDTC, Domain: SJ, Error: 'Timestamp' object has no attribute 'lower'"

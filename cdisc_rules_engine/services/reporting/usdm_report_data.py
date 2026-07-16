@@ -41,6 +41,8 @@ class USDMReportData(BaseReportData):
             template,
             **kwargs,
         )
+        self._issue_execution_status: dict[int, str] = {}
+        self._issue_csv_fallback_path: dict[int, str] = {}
         self.data_sheets = {
             "Conformance Details": self.get_conformance_details_data(),
             "Entity Details": self.get_entity_details_data(),
@@ -238,23 +240,39 @@ class USDMReportData(BaseReportData):
         """
         errors = []
         for result in validation_result.results or []:
-            errors = (
-                errors
-                + self._issue_details(validation_result, result)
-                + self._error_details(validation_result, result)
-            )
+            issue_items = self._issue_details(validation_result, result)
+            error_items = self._error_details(validation_result, result)
+            for error_item in error_items:
+                self._issue_execution_status[id(error_item)] = (
+                    ExecutionStatus.EXECUTION_ERROR.value
+                )
+                self._issue_csv_fallback_path[id(error_item)] = (
+                    result.get("entity") or result.get("dataset") or ""
+                )
+            errors = errors + issue_items + error_items
         return errors
 
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["path", "attribute", "value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
+            if (
+                self._issue_execution_status.get(id(issue))
+                == ExecutionStatus.EXECUTION_ERROR.value
+            ):
+                path = issue.get("entity") or self._issue_csv_fallback_path.get(
+                    id(issue), ""
+                )
+                csv_value = issue.get("values") or issue.get("message") or ""
+                rows.append([path, "EXECUTION_ERROR", csv_value])
+                continue
             path = issue.get("path") or ""
             attributes = issue.get("attributes") or []
             values = issue.get("values") or []
             for attribute, value in zip(attributes, values):
                 csv_value = "" if value in (None, "null") else value
                 rows.append([path, attribute, csv_value])
+
         return header, rows
 
     def get_rules_report_data(self) -> list[dict]:
