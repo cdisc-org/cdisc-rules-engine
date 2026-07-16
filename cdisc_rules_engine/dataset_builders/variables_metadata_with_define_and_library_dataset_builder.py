@@ -1,6 +1,7 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from typing import List
 from cdisc_rules_engine.models.dataset import DatasetInterface
+import pandas as pd
 
 
 class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
@@ -31,6 +32,14 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
         define_variable_codelist_coded_values,
         define_variable_codelist_coded_codes,
         define_variable_mandatory,
+        define_vlm_present,
+        define_vlm_item_count,
+        define_vlm_ccodes,
+        define_vlm_has_codelist_any,
+        define_vlm_has_codelist_all,
+        define_vlm_ccode_missing_any,
+        define_vlm_ccode_matches_library_any,
+        define_vlm_ccode_matches_library_all,
         library_variable_name,
         library_variable_label,
         library_variable_data_type,
@@ -93,6 +102,88 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
                 axis=1,
                 result_type="expand",
             )
+        )
+
+        # Third merge: add VLM summary columns
+        define_vlm_records: List[dict] = self.get_define_xml_value_level_metadata()
+        define_vlm_dataset = self.dataset_implementation.from_records(define_vlm_records)
+        define_vlm_df = define_vlm_dataset.data
+        has_vlm = not define_vlm_df.empty
+
+        required_vlm_cols = [
+            "define_variable_name",
+            "define_vlm_ccode",
+            "define_vlm_has_codelist",
+        ]
+
+        # Normalize VLM columns so groupby is safe
+        define_vlm_df = define_vlm_df.reindex(columns=required_vlm_cols)
+        define_vlm_df["define_vlm_ccode"] = define_vlm_df["define_vlm_ccode"].fillna("")
+        define_vlm_df["define_vlm_has_codelist"] = (
+            define_vlm_df["define_vlm_has_codelist"].fillna(False).astype(bool)
+        )
+
+        if has_vlm:
+            vlm_summary = (
+                define_vlm_df.groupby("define_variable_name", as_index=False)
+                .agg(
+                    define_vlm_item_count=("define_vlm_ccode", "count"),
+                    define_vlm_ccodes=(
+                        "define_vlm_ccode",
+                        lambda x: sorted(set(v for v in x if v != ""))
+                    ),
+                    define_vlm_has_codelist_any=("define_vlm_has_codelist", "any"),
+                    define_vlm_has_codelist_all=("define_vlm_has_codelist", "all"),
+                    define_vlm_ccode_missing_any=(
+                        "define_vlm_ccode",
+                        lambda x: (x == "").any()
+                    ),
+                )
+            )
+            vlm_summary["define_vlm_present"] = True
+        else:
+            vlm_summary = pd.DataFrame(columns=[
+                "define_variable_name",
+                "define_vlm_item_count",
+                "define_vlm_ccodes",
+                "define_vlm_has_codelist_any",
+                "define_vlm_has_codelist_all",
+                "define_vlm_ccode_missing_any",
+                "define_vlm_present",
+            ])
+
+        vlm_summary = vlm_summary.rename(columns={"define_variable_name": "variable_name"})
+        final_dataframe = final_dataframe.merge(
+            vlm_summary,
+            how="left",
+            on="variable_name",
+        )
+        final_dataframe.drop(columns=["define_variable_name_y"], errors="ignore", inplace=True)
+
+        final_dataframe["define_vlm_present"] = (
+            final_dataframe["define_vlm_present"].fillna(False)
+        )
+        final_dataframe["define_vlm_item_count"] = (
+            final_dataframe["define_vlm_item_count"].fillna(0).astype(int)
+        )
+        final_dataframe["define_vlm_ccodes"] = final_dataframe["define_vlm_ccodes"].apply(
+            lambda x: x if isinstance(x, list) else []
+        )
+        for col in ["define_vlm_has_codelist_any", "define_vlm_has_codelist_all",
+                    "define_vlm_ccode_missing_any"]:
+            final_dataframe[col] = final_dataframe[col].fillna(False)
+
+        final_dataframe["define_vlm_ccode_matches_library_any"] = final_dataframe.apply(
+            lambda row: row["library_variable_ccode"] in row["define_vlm_ccodes"]
+            if row["define_vlm_ccodes"] else False,
+            axis=1,
+        )
+        final_dataframe["define_vlm_ccode_matches_library_all"] = final_dataframe.apply(
+            lambda row: (
+                bool(row["define_vlm_ccodes"])
+                and all(c == row["library_variable_ccode"] for c in row["define_vlm_ccodes"])
+            ),
+            axis=1,
         )
 
         return final_dataframe
