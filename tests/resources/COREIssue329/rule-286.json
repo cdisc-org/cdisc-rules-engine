@@ -15,10 +15,10 @@
                   "Document": "IG v3.2",
                   "Item": "Assumption 3",
                   "Section": "7.4",
-                  "Cited_Guidance": "Further information about the parameters is included below in Table 1. TSVAL may have controlled terminology depending on the value of TSPARMCD"
+                  "Cited Guidance": "Further information about the parameters is included below in Table 1. TSVAL may have controlled terminology depending on the value of TSPARMCD"
                 }
               ],
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "CG0286",
                 "Version": "1"
               }
@@ -37,10 +37,10 @@
                   "Document": "IG v3.3",
                   "Item": "Assumption 3",
                   "Section": "7.4",
-                  "Cited_Guidance": "Further information about the parameters is included Appendix C1, Trial Summary Codes. TSVAL may have controlled terminology depending on the value of TSPARMCD. Conditions for including parameters are included in Appendix C1, Trial Summary Codes."
+                  "Cited Guidance": "Further information about the parameters is included Appendix C1, Trial Summary Codes. TSVAL may have controlled terminology depending on the value of TSPARMCD. Conditions for including parameters are included in Appendix C1, Trial Summary Codes."
                 }
               ],
-              "Rule_Identifier": {
+              "Rule Identifier": {
                 "Id": "CG0286",
                 "Version": "1"
               }
