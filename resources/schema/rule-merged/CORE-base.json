@@ -85,7 +85,8 @@
             "RELREF",
             "RELSPEC",
             "RELSUB",
-            "SUPP--"
+            "SUPP--",
+            "TUMOR"
           ],
           "type": "string"
         },

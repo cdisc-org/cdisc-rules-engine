@@ -14,6 +14,10 @@ def _check_column_exists_in_dataset(row, target_col_name, referenced_datasets):
     return None
 
 
+def _apply_dropna_list(x):
+    return list(x.dropna())
+
+
 class Distinct(BaseOperation):
     def _execute_operation(self):
         result = self.params.dataframe
@@ -32,7 +36,7 @@ class Distinct(BaseOperation):
                 )
                 data = data.dropna().unique()
             else:
-                data = result[self.params.target].unique()
+                data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
             result = list(data)
@@ -64,7 +68,7 @@ class Distinct(BaseOperation):
                     )
                     .groupby(self.params.grouping, as_index=False, group_keys=False)
                     .data[self.params.target]
-                    .apply(list)
+                    .apply(_apply_dropna_list)
                     .reset_index()
                 )
         return result
