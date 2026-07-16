@@ -1,0 +1,57 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: xxx.
+                Document: IG v3.4
+                Item: Item 3.b.
+                Section: '2.6'
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0011
+              Version: '1'
+            Version: '2.0'
+        Version: '3.4'
+Check:
+  any:
+    - all:
+        # Case 1: Variable lacks variable-level codelist
+        - name: define_variable_ccode
+          operator: empty
+        # BUT has VLM items with codelists that match library
+        - name: define_vlm_has_codelist_any
+          operator: equal_to
+          value: true
+        - name: define_vlm_ccode_matches_library_any
+          operator: equal_to
+          value: true
+Core:
+  Id: CDISC.SDTMIG.CG0011
+  Status: Draft
+  Version: '1'
+Description: Variable has no variable-level codelist but has Value Level Metadata (VLM) with codelists that match the library standard. This indicates potential metadata inconsistency where codelist is defined at VLM level rather than   variable level.
+Executability: Fully Executable
+Outcome:
+  Message:
+    Variable {{variable_name}} lacks variable-level CodeList but has VLM items 
+    with CodeList matching library standard {{library_variable_ccode}}. 
+    Consider defining codelist at variable level.
+  Output Variables:
+    - variable_name
+    - define_variable_ccode
+    - library_variable_ccode
+    - define_vlm_ccodes
+    - define_vlm_ccode_matches_library_any
+
+Rule Type: Variable Metadata Check against Define XML and Library Metadata
+Scope:
+  Domains:
+    Include:
+      - VS
+  Classes:
+    Include:
+      - STUDY REFERENCE
+Sensitivity: Record
+  

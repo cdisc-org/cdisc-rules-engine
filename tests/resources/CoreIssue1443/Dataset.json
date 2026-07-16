@@ -1,0 +1,59 @@
+{
+    "datasets": [
+        {
+            "filename": "vs.xpt",
+            "label": "Vital Signs",
+            "domain": "VS",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "VSSEQ",
+                    "label": "Sequence Number",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "VSTESTCD",
+                    "label": "Vital Sign Test Code",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "VSTEST",
+                    "label": "Vital Sign Test Name",
+                    "type": "char",
+                    "length": 40
+                },
+                {
+                    "name": "VSORRESU",
+                    "label": "Original Result Units",
+                    "type": "char",
+                    "length": 20
+                },
+                {
+                    "name": "VSSTRESC",
+                    "label": "Character Result/Finding in Std Format",
+                    "type": "char",
+                    "length": 8
+                }
+            ]
+        }
+    ]
+}
