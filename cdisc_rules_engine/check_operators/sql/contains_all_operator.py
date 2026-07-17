@@ -145,18 +145,67 @@ class ContainsAllOperator(BaseSqlOperator):
 
         def sql():
             collection_sql = self._collection_sql(target_variable)
-            comparator_sql = self._constant_sql(comparator)
 
-            return f"""CASE
-                        WHEN NOT EXISTS (SELECT 1 FROM {collection_sql}) THEN false
-                        WHEN EXISTS (
-                            SELECT 1 FROM {collection_sql} AS collection_values(value)
-                            WHERE collection_values.value IS NULL
-                               OR collection_values.value = ''
-                               OR collection_values.value NOT LIKE '%' || {comparator_sql} || '%'
-                        ) THEN false
-                        ELSE true
-                       END"""
+            comparator_is_collection_variable = (
+                isinstance(comparator, str)
+                and comparator in self.operation_variables
+                and self.operation_variables[comparator].type == "collection"
+            )
+
+            if comparator_is_collection_variable:
+                comparator_collection_sql = self._collection_sql(comparator)
+                return f"""CASE
+                            WHEN NOT EXISTS (SELECT 1 FROM {collection_sql} AS tv(value)
+                                             WHERE tv.value IS NOT NULL AND tv.value != '') THEN false
+                            WHEN (
+                                SELECT COUNT(DISTINCT cv.value)
+                                FROM {comparator_collection_sql} AS cv(value)
+                                WHERE cv.value IS NOT NULL AND cv.value != ''
+                                AND cv.value IN (
+                                    SELECT DISTINCT tv.value
+                                    FROM {collection_sql} AS tv(value)
+                                    WHERE tv.value IS NOT NULL AND tv.value != ''
+                                )
+                            ) = (
+                                SELECT COUNT(DISTINCT cv.value)
+                                FROM {comparator_collection_sql} AS cv(value)
+                                WHERE cv.value IS NOT NULL AND cv.value != ''
+                            )
+                            THEN true
+                            ELSE false
+                           END"""
+            elif isinstance(comparator, list):
+                if len(comparator) == 0:
+                    return "true"
+                values_clause = ", ".join(f"({self._constant_sql(v)})" for v in comparator)
+                return f"""CASE
+                            WHEN NOT EXISTS (SELECT 1 FROM {collection_sql} AS tv(value)
+                                             WHERE tv.value IS NOT NULL AND tv.value != '') THEN false
+                            WHEN (
+                                SELECT COUNT(DISTINCT cv.value)
+                                FROM (VALUES {values_clause}) AS cv(value)
+                                WHERE cv.value IS NOT NULL AND cv.value != ''
+                                AND cv.value IN (
+                                    SELECT DISTINCT tv.value
+                                    FROM {collection_sql} AS tv(value)
+                                    WHERE tv.value IS NOT NULL AND tv.value != ''
+                                )
+                            ) = {len(comparator)}
+                            THEN true
+                            ELSE false
+                           END"""
+            else:
+                comparator_sql = self._constant_sql(comparator)
+                return f"""CASE
+                            WHEN NOT EXISTS (SELECT 1 FROM {collection_sql}) THEN false
+                            WHEN EXISTS (
+                                SELECT 1 FROM {collection_sql} AS collection_values(value)
+                                WHERE collection_values.value IS NULL
+                                   OR collection_values.value = ''
+                                   OR collection_values.value NOT LIKE '%' || {comparator_sql} || '%'
+                            ) THEN false
+                            ELSE true
+                           END"""
 
         return self._do_check_operator(sql)
 

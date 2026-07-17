@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from .helpers import create_sql_operators, assert_series_equals
 
 CONTAINS_TEST_DATA = [
@@ -432,3 +433,46 @@ def test_is_not_substring_of(data, comparator, value_is_literal, expected_result
         }
     )
     assert_series_equals(result, ~pd.Series(expected_result))
+
+
+def test_sql_contains_all_collection_target_collection_comparator():
+    """Test contains_all when both target and comparator are collection operation variables."""
+    extra_vars = {
+        "$collection_abc": SqlOperationResult(
+            query="SELECT value FROM (VALUES ('A'), ('B'), ('C')) as t(value)",
+            type="collection",
+            subtype="Char",
+        )
+    }
+    # One-row table so the global result is returned once
+    sql_ops = create_sql_operators({"dummy": ["X"]}, extra_operation_variables=extra_vars)
+
+    # $collection_abc = [A, B, C] contains all of $list = [A, B] => True
+    result = sql_ops.contains_all({"target": "$collection_abc", "comparator": "$list", "value_is_literal": False})
+    assert_series_equals(result, [True])
+
+    # $list = [A, B] does NOT contain all of $collection_abc = [A, B, C] => False
+    result = sql_ops.contains_all({"target": "$list", "comparator": "$collection_abc", "value_is_literal": False})
+    assert_series_equals(result, [False])
+
+
+def test_sql_contains_all_collection_target_list_comparator():
+    """Test contains_all when target is a collection variable and comparator is a plain list."""
+    extra_vars = {
+        "$collection_abc": SqlOperationResult(
+            query="SELECT value FROM (VALUES ('A'), ('B'), ('C')) as t(value)",
+            type="collection",
+            subtype="Char",
+        )
+    }
+    sql_ops = create_sql_operators({"dummy": ["X"]}, extra_operation_variables=extra_vars)
+
+    # $collection_abc = [A, B, C] contains all of [A, B] => True
+    result = sql_ops.contains_all({"target": "$collection_abc", "comparator": ["A", "B"], "value_is_literal": True})
+    assert_series_equals(result, [True])
+
+    # $collection_abc = [A, B, C] does NOT contain all of [A, B, D] => False
+    result = sql_ops.contains_all(
+        {"target": "$collection_abc", "comparator": ["A", "B", "D"], "value_is_literal": True}
+    )
+    assert_series_equals(result, [False])
