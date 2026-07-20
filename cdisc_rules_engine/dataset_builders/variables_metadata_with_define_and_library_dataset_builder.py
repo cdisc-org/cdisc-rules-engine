@@ -158,7 +158,7 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
             how="left",
             on="variable_name",
         )
-        final_dataframe.drop(columns=["define_variable_name_y"], errors="ignore", inplace=True)
+        final_dataframe = final_dataframe.drop(columns=["define_variable_name_y"], errors="ignore")
 
         final_dataframe["define_vlm_present"] = (
             final_dataframe["define_vlm_present"].fillna(False)
