@@ -1,10 +1,8 @@
 import unittest
 import pandas as pd
 from cdisc_rules_engine.check_operators.helpers import flatten_list
-import pytest
 
 
-@pytest.mark.regression
 class TestFlattenList(unittest.TestCase):
     def test_flatten_list_with_array_column(self):
         data = pd.DataFrame({"ARRAY_COLUMN": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]})

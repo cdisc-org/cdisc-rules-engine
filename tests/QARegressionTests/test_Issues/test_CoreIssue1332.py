@@ -1,7 +1,6 @@
 import os
 import subprocess
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -9,7 +8,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_ap_domain_should_be_correctly_substituted():
     # Run the command in the terminal
     command = [

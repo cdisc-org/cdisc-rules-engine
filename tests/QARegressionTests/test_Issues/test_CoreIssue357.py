@@ -1,11 +1,9 @@
 import os
 import subprocess
 import unittest
-import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TerminalCommandTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

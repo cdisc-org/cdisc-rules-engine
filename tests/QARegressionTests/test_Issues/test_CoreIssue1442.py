@@ -5,7 +5,6 @@ import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1442:
     @pytest.mark.parametrize(
         "command",

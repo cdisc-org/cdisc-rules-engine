@@ -1,7 +1,6 @@
 import subprocess
 import os
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -11,10 +10,9 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_negative_dataset():
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue164", "Negative_Dataset.json")
@@ -73,10 +71,9 @@ def test_negative_dataset():
     os.remove(file_name)
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_positive_dataset():
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue164", "Positive_Dataset.json")

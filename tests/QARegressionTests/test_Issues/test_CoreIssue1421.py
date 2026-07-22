@@ -1,7 +1,6 @@
 import os
 import subprocess
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     dataset_details_sheet,
@@ -12,7 +11,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_validate_define_xml_against_lib_metadata():
     command = [
         f"{get_python_executable()}",

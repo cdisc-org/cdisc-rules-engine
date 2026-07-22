@@ -2,12 +2,10 @@ import os
 import subprocess
 import unittest
 
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1316(unittest.TestCase):
     def test_new_rule(self):
         # Run the command in the terminal

@@ -1,15 +1,13 @@
 import os
 import subprocess
 import unittest
-import openpyxl
-import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.skip(reason="No library metadata found")
 class TestCoreIssue1487(unittest.TestCase):
-    def test_positive_dataset(self):
-        # Run the command in the terminal
+    "The updated engine throws an error for unsupported version, which is expected behavior."
+
+    def test_unsupported_sdtmig_5_0_version_returns_metadata_error(self):
         command = [
             f"{get_python_executable()}",
             "-m",
@@ -18,37 +16,33 @@ class TestCoreIssue1487(unittest.TestCase):
             "-s",
             "sdtmig",
             "-v",
-            "5-0",
+            "5.0",
             "-d",
             os.path.join("tests", "resources", "CoreIssue1487"),
             "-r",
             "CORE-000354",
         ]
-        subprocess.run(command, check=True)
 
-        # Get the latest created Excel file
-        files = os.listdir()
-        excel_files = [
-            file
-            for file in files
-            if file.startswith("CORE-Report-") and file.endswith(".xlsx")
-        ]
-        excel_file_path = sorted(excel_files)[-1]
-        # # Open the Excel file
-        workbook = openpyxl.load_workbook(excel_file_path)
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+        )
 
-        assert "Rules Report" in workbook.sheetnames
-        rules_sheet = workbook["Rules Report"]
-        target_row = None
-        for row in rules_sheet.iter_rows(min_row=2, values_only=True):
-            if row[0] == "CORE-000354":
-                target_row = row
-                break
-        assert target_row, "Rule CORE-000354 not present in 'Rules Report' sheet."
+        error_output = result.stderr + result.stdout
+
         assert (
-            target_row[4] and "was requested but is not available" in target_row[4]
-        ), "Expected error message for CORE-000354 not found."
-        assert target_row[5] == "SKIPPED", "CORE-000354 status should be SKIPPED."
+            result.returncode != 0
+        ), "Expected validation command to fail, but it succeeded."
 
-        if os.path.exists(excel_file_path):
-            os.remove(excel_file_path)
+        assert (
+            "LibraryMetadataNotFoundError" in error_output
+        ), f"Expected LibraryMetadataNotFoundError, but got:\n{error_output}"
+
+        assert (
+            "No library metadata found for standard 'sdtmig' version '5.0'."
+            in error_output
+        ), (
+            "Expected missing library metadata error for SDTMIG 5.0, "
+            f"but got:\n{error_output}"
+        )

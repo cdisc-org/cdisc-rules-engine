@@ -5,10 +5,8 @@ import os
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
-import pytest
 
 
-@pytest.mark.regression
 class TestCoreIssue390(unittest.TestCase):
     def test_get_define_version_from_define20(self):
         path_to_define = os.path.join("tests", "resources", "test_defineV20-SDTM.xml")

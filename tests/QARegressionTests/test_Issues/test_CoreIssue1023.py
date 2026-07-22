@@ -2,11 +2,9 @@ import os
 import subprocess
 import json
 
-import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1023:
 
     def test_dataset_utf8(self):

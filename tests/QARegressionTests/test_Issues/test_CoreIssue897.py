@@ -2,7 +2,6 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     entity_details_sheet,
@@ -14,7 +13,6 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 class TestGetXHTMLErrors(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal

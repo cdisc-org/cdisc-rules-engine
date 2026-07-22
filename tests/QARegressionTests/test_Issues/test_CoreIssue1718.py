@@ -1,11 +1,9 @@
 import os
 import subprocess
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1718:
     def test_max_issues(self):
         # Run the command in the terminal
