@@ -228,7 +228,7 @@ def test_build_combined_metadata(
     aeterm_row = result[result["variable_name"] == "AETERM"].iloc[0]
     assert aeterm_row["define_vlm_present"]
     assert aeterm_row["define_vlm_item_count"] == 2
-    assert aeterm_row["define_vlm_ccodes"] == []          # no codelists on either VLM item
+    assert aeterm_row["define_vlm_ccodes"] == []  # no codelists on either VLM item
     assert not aeterm_row["define_vlm_has_codelist_any"]
     assert not aeterm_row["define_vlm_has_codelist_all"]
     assert aeterm_row["define_vlm_ccode_missing_any"]  # both ccodes are empty

@@ -76,16 +76,19 @@ def test_vlm_fallback_codelist_check():
 
     # Verify that VSORRESU issue is detected
     assert len(variables_names_values) >= 1, "Expected at least one variable issue"
-    assert any("VSORRESU" in str(val) for val in variables_names_values), \
-        "Expected VSORRESU to be in issue variables"
+    assert any(
+        "VSORRESU" in str(val) for val in variables_names_values
+    ), "Expected VSORRESU to be in issue variables"
 
     # Check Core ID
     core_id_column = sheet[issue_sheet_coreid_column]
     core_id_column_values = [
         cell.value for cell in core_id_column[1:] if cell.value is not None
     ]
-    assert any("SEND49" in str(val) or "CDISC.SENDIG.49" in str(val) for val in core_id_column_values), \
-        f"Expected SEND49 rule to report issues. Found: {core_id_column_values}"
+    assert any(
+        "SEND49" in str(val) or "CDISC.SENDIG.49" in str(val)
+        for val in core_id_column_values
+    ), f"Expected SEND49 rule to report issues. Found: {core_id_column_values}"
 
     # Go to the "Rules Report" sheet
     rules_values = [
@@ -96,14 +99,14 @@ def test_vlm_fallback_codelist_check():
     # Verify rule execution
     assert len(rules_values) > 0, "Expected rule results in Rules Report"
     rule_ids = [row[0] for row in rules_values if row]
-    assert any("SEND49" in str(rid) or "CDISC.SENDIG.49" in str(rid) for rid in rule_ids), \
-        f"Expected SEND49 rule in Rules Report. Found: {rule_ids}"
+    assert any(
+        "SEND49" in str(rid) or "CDISC.SENDIG.49" in str(rid) for rid in rule_ids
+    ), f"Expected SEND49 rule in Rules Report. Found: {rule_ids}"
 
     # Verify rule reported an issue
     for row in rules_values:
         if row and ("SEND49" in str(row[0]) or "CDISC.SENDIG.49" in str(row[0])):
-            assert "ISSUE REPORTED" in str(row), \
-                "Expected SEND49 to report an ISSUE"
+            assert "ISSUE REPORTED" in str(row), "Expected SEND49 to report an ISSUE"
             break
 
 
@@ -155,5 +158,6 @@ def test_vlm_with_variable_level_codelist():
     ]
 
     # Verify that VSORRESU is NOT flagged when variable-level codelist is present
-    assert not any("VSORRESU" in str(val) for val in variables_names_values), \
-        "Expected VSORRESU NOT to be flagged when variable-level codelist is present"
+    assert not any(
+        "VSORRESU" in str(val) for val in variables_names_values
+    ), "Expected VSORRESU NOT to be flagged when variable-level codelist is present"
