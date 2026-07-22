@@ -389,7 +389,7 @@ def test_does_not_end_with(data, comparator, dataset_type, expected_result):
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
-    
+
 
 @pytest.mark.parametrize(
     "data,comparator,dataset_type,expected_result",
