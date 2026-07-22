@@ -96,6 +96,30 @@
       "const": "define_vlm_ccode"
     },
     {
+      "const": "define_vlm_ccode_matches_library_all"
+    },
+    {
+      "const": "define_vlm_ccode_matches_library_any"
+    },
+    {
+      "const": "define_vlm_ccode_missing_any"
+    },
+    {
+      "const": "define_vlm_ccodes"
+    },
+    {
+      "const": "define_vlm_has_codelist_all"
+    },
+    {
+      "const": "define_vlm_has_codelist_any"
+    },
+    {
+      "const": "define_vlm_item_count"
+    },
+    {
+      "const": "define_vlm_present"
+    },
+    {
       "const": "define_vlm_codelist_coded_values"
     },
     {
