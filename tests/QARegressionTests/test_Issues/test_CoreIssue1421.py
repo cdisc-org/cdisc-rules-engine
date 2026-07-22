@@ -118,10 +118,7 @@ def test_validate_define_xml_against_lib_metadata():
     rule_row = rules_values[0]
 
     assert rule_row[0] == "CDISC.SDTMIG.CG0999"
-    assert (
-        rule_row[4]
-        == "Issue with codelist definition in the Define-XML document."
-    )
+    assert rule_row[4] == "Issue with codelist definition in the Define-XML document."
     assert rule_row[5] == "EXECUTION ERROR"
 
     # Go to the "Dataset Details" sheet
@@ -145,7 +142,9 @@ def test_validate_define_xml_against_lib_metadata():
 
     # Go to the "Issue Summary" sheet
     issue_summary_sheet = workbook["Issue Summary"]
-    summary_values = [row for row in issue_summary_sheet.iter_rows(values_only=True)][1:]
+    summary_values = [row for row in issue_summary_sheet.iter_rows(values_only=True)][
+        1:
+    ]
     summary_values = [row for row in summary_values if any(row)]
 
     assert len(summary_values) == 2
