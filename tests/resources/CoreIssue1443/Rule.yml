@@ -104,12 +104,12 @@ Authorities:
             Version: '5.0'
         Version: '1.2'
 Check:
-    all:
-      - name: define_variable_ccode
-        operator: empty
-      - name: define_vlm_has_codelist_any
-        operator: equal_to
-        value: true
+  all:
+    - name: define_variable_ccode
+      operator: empty
+    - name: define_vlm_has_codelist_any
+      operator: equal_to
+      value: true
 Core:
   Id: CDISC.SENDIG.49
   Status: Draft
@@ -119,7 +119,8 @@ Description: 'For a variable identified in the SENDIG as being subject to CDISC
   document must properly reference the Controlled Terminology Codelist used.'
 Executability: Fully Executable
 Outcome:
-  Message: 'As a controlled terminology codelist exists for the variable in the SEND domain, the codelist must be referenced for the variable in the define.xml'
+  Message: 'As a controlled terminology codelist exists for the variable in the SEND
+   domain, the codelist must be referenced for the variable in the define.xml'
   Output Variables:
     - variable_name
     - define_variable_ccode
