@@ -55,6 +55,10 @@ class OperationParams:
     map: List[dict] = None
     original_target: str = None
     regex: str = None
+    find: str = None
+    replace: str = None
+    on_no_match: str = "keep_original"
+    flags: str = ""
     returntype: str = None
     source: str = None
     target: str = None
