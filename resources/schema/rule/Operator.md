@@ -11,6 +11,7 @@ Basic value comparisons and presence checks for evaluating equality, inequality,
 Value comparison. Works for both string and number.
 Has optional parameter:
 
+- 'value_is_literal' when true, the value parameter is treated as a literal value rather than a column name to look up in the dataset.
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
 - 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
 - 'round_values' when true, both the target and value will be rounded to the nearest integer
@@ -21,6 +22,7 @@ Has optional parameter:
 - name: --OCCUR
   operator: equal_to
   value: "N"
+  value_is_literal: true
 ```
 
 > IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).
@@ -50,11 +52,12 @@ Has optional parameter:
 - name: EXDOSE
   operator: equal_to
   value: 0
+  value_is_literal: true
 ```
 
 ### not_equal_to
 
-Complement of `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_literal', 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -62,11 +65,12 @@ Complement of `equal_to`. Also has the optional parameters 'value_is_reference',
 - name: --OCCUR
   operator: not_equal_to
   value: "Y"
+  value_is_literal: true
 ```
 
 ### equal_to_case_insensitive
 
-Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_literal', 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -74,15 +78,16 @@ Case insensitive `equal_to`. Also has the optional parameters 'value_is_referenc
 - name: DSTERM
   operator: equal_to_case_insensitive
   value: Informed consent obtained
+  value_is_literal: true
 ```
 
 ### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_literal', 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 ### greater_than
 
-Value comparison
+Value comparison. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 > TSVAL > 0
 
@@ -90,11 +95,20 @@ Value comparison
 - name: TSVAL
   operator: greater_than
   value: 0
+  value_is_literal: true
+```
+
+> TSVAL > AGE
+
+```yaml
+- name: TSVAL
+  operator: greater_than
+  value: AGE
 ```
 
 ### greater_than_or_equal_to
 
-Value comparison
+Value comparison. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 > TSVAL >= 0
 
@@ -102,11 +116,20 @@ Value comparison
 - name: TSVAL
   operator: greater_than_or_equal_to
   value: 1
+  value_is_literal: true
+```
+
+> TSVAL >= AGE
+
+```yaml
+- name: TSVAL
+  operator: greater_than_or_equal_to
+  value: AGE
 ```
 
 ### less_than
 
-Value comparison
+Value comparison. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 > TSVAL < 1
 
@@ -114,18 +137,36 @@ Value comparison
 - name: TSVAL
   operator: less_than
   value: 1
+  value_is_literal: true
+```
+
+> TSVAL < "VISITNUM"
+
+```yaml
+- name: TSVAL
+  operator: less_than
+  value: "VISITNUM"
 ```
 
 ### less_than_or_equal_to
 
-Value comparison
+Value comparison. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
-> TSVAL <= 1
+> TSVAL <= AGE
 
 ```yaml
 - name: TSVAL
   operator: less_than_or_equal_to
-  value: 1
+  value: AGE
+```
+
+> TSVAL <= 5
+
+```yaml
+- name: TSVAL
+  operator: less_than_or_equal_to
+  value: 5
+  value_is_literal: true
 ```
 
 ### empty
@@ -156,14 +197,15 @@ Text-based operations including regex pattern matching, substring operations, pr
 
 ### does_not_equal_string_part
 
-Complement of `equals_string_part`. Also has the optional parameter 'type_insensitive'.
+Complement of `equals_string_part`. Also has the optional parameters 'type_insensitive' and 'value_is_literal'.
 
 ### equals_string_part
 
 Checks that the values in the target column equal the result of parsing the value in the comparison column with a regex
-Has optional parameter:
+Has optional parameters:
 
 - 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all leading and trailing zeroes will be removed in both strings and floats.
+- 'value_is_literal' when true, the value parameter is treated as a literal value rather than a column name to look up in the dataset.
 
 > RDOMAIN equals characters 5 and 6 of SUPP dataset name
 
@@ -173,6 +215,16 @@ Has optional parameter:
   type_insensitive: true
   value: dataset_name
   regex: ".{4}(..).*"
+```
+
+> RDOMAIN equals the first 2 characters of the literal string "AEADVERSE"
+
+```yaml
+- name: RDOMAIN
+  operator: equals_string_part
+  value: "AEADVERSE"
+  value_is_literal: true
+  regex: "(..).*"
 ```
 
 ### matches_regex
@@ -249,7 +301,7 @@ Complement of `suffix_matches_regex`
 
 ### starts_with
 
-Substring matching
+Substring matching. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 > DOMAIN beginning with 'AP'
 
@@ -257,11 +309,20 @@ Substring matching
 - name: "DOMAIN"
   operator: "starts_with"
   value: "AP"
+  value_is_literal: true
+```
+
+> DOMAIN beginning with the value found in the $domain_prefix column
+
+```yaml
+- name: "DOMAIN"
+  operator: "starts_with"
+  value: "$domain_prefix"
 ```
 
 ### ends_with
 
-Substring matching
+Substring matching. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 > DOMAIN ending with 'FOOBAR'
 
@@ -269,11 +330,20 @@ Substring matching
 - name: "DOMAIN"
   operator: "ends_with"
   value: "FOOBAR"
+  value_is_literal: true
+```
+
+> DOMAIN ending with the value found in the $domain_suffix column
+
+```yaml
+- name: "DOMAIN"
+  operator: "ends_with"
+  value: "$domain_suffix"
 ```
 
 ### prefix_equal_to
 
-True if the `prefix` number of characters beginning a string in `name` match the string in `value`
+True if the `prefix` number of characters beginning a string in `name` match the string in `value`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 ```yaml
 - name: dataset_name
@@ -282,13 +352,23 @@ True if the `prefix` number of characters beginning a string in `name` match the
   value: DOMAIN
 ```
 
+> First 2 characters of dataset_name equal the literal string "AP"
+
+```yaml
+- name: dataset_name
+  operator: prefix_equal_to
+  prefix: 2
+  value: "AP"
+  value_is_literal: true
+```
+
 ### prefix_not_equal_to
 
 Complement of `prefix_equal_to`
 
 ### suffix_equal_to
 
-True if the `suffix` number of characters ending a string in `name` match the string in `value`
+True if the `suffix` number of characters ending a string in `name` match the string in `value`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 ```yaml
 - name: dataset_name
@@ -297,13 +377,23 @@ True if the `suffix` number of characters ending a string in `name` match the st
   value: DOMAIN
 ```
 
+> Last 2 characters of dataset_name equal the literal string "SC"
+
+```yaml
+- name: dataset_name
+  operator: suffix_equal_to
+  suffix: 2
+  value: "SC"
+  value_is_literal: true
+```
+
 ### suffix_not_equal_to
 
 Complement of `suffix_equal_to`
 
 ### contains
 
-Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
+Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 The operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.
 
@@ -313,6 +403,15 @@ Example:
 - name: "--TOXGR" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']
   operator: "contains"
   value: "GRADE" # True if 'GRADE' is an element in the list
+  value_is_literal: true
+```
+
+> --TOXGR contains the value found in the $operation_result column
+
+```yaml
+- name: "--TOXGR"
+  operator: "contains"
+  value: "$operation_result"
 ```
 
 ### does_not_contain
@@ -327,7 +426,7 @@ Complement of `contains`. Returns True when the value is NOT contained within th
 
 ### contains_case_insensitive
 
-True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.
+True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal value rather than a column name.
 
 Example:
 
@@ -335,6 +434,16 @@ Example:
 - name: "--TOXGR" # Column containing lists like ['Grade', 'Severity', 'Onset']
   operator: "contains_case_insensitive"
   value: "grade" # True if 'Grade'/'GRADE'/'grade' exists in the list
+  value_is_literal: true
+```
+
+> --TOXGR case-insensitively contains the value found in the $operation_result
+> column (comparator resolved as a column reference, not a literal)
+
+```yaml
+- name: "--TOXGR"
+  operator: "contains_case_insensitive"
+  value: "$operation_result"
 ```
 
 ### does_not_contain_case_insensitive
