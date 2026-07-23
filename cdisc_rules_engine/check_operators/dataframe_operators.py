@@ -152,10 +152,14 @@ class DataframeType(BaseType):
         return list(dict.fromkeys(columns))
 
     def get_comparator_data(self, comparator, value_is_literal: bool = False):
-        if value_is_literal:
+        if value_is_literal or isinstance(comparator, list):
             return comparator
-        else:
-            return self.value.get(comparator, comparator)
+        if comparator not in self.value.columns:
+            raise ValueError(
+                f"Column '{comparator}' not found in dataset. If you intended to "
+                "compare against a literal value, set value_is_literal: true."
+            )
+        return self.value.get(comparator)
 
     @log_operator_execution
     def is_column_of_iterables(self, column):
@@ -264,12 +268,10 @@ class DataframeType(BaseType):
         if value_is_reference:
             dynamic_column_name = row[comparator]
             comparison_data = row[dynamic_column_name]
+        elif value_is_literal:
+            comparison_data = comparator
         else:
-            comparison_data = (
-                comparator
-                if comparator not in row or value_is_literal
-                else row[comparator]
-            )
+            comparison_data = row[comparator]
         both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
             row[target]
         )
