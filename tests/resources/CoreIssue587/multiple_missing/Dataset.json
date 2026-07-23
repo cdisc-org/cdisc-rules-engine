@@ -1,0 +1,34 @@
+{
+  "datasets": [
+    {
+      "filename": "adsl.xpt",
+      "label": "Subject-Level Analysis Dataset",
+      "domain": "ADSL",
+      "variables": [
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "char",
+          "length": 12
+        },
+        {
+          "name": "TRT01AN",
+          "label": "Actual Treatment for Period 01 (N)",
+          "type": "num",
+          "length": 8
+        },
+        {
+          "name": "TRT02AN",
+          "label": "Actual Treatment for Period 02 (N)",
+          "type": "num",
+          "length": 8
+        }
+      ],
+      "records": {
+        "USUBJID": ["SUBJ001"],
+        "TRT01AN": [1],
+        "TRT02AN": [2]
+      }
+    }
+  ]
+}

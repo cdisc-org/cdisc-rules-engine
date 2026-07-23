@@ -530,6 +530,29 @@
       },
       "required": ["id", "operator", "name", "namespace"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "regex_find_replace"
+        },
+        "find": {
+          "type": "string"
+        },
+        "replace": {
+          "type": "string"
+        },
+        "on_no_match": {
+          "type": "string",
+          "enum": ["keep_original", "set_null", "set_empty", "error"]
+        },
+        "flags": {
+          "type": "string",
+          "pattern": "^[ims]*$"
+        }
+      },
+      "required": ["id", "operator", "name", "find", "replace"],
+      "type": "object"
     }
   ],
   "properties": {
@@ -677,6 +700,20 @@
     },
     "regex": {
       "type": "string"
+    },
+    "find": {
+      "type": "string"
+    },
+    "replace": {
+      "type": "string"
+    },
+    "on_no_match": {
+      "type": "string",
+      "enum": ["keep_original", "set_null", "set_empty", "error"]
+    },
+    "flags": {
+      "type": "string",
+      "pattern": "^[ims]*$"
     },
     "returntype": {
       "type": "string",
