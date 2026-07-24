@@ -139,6 +139,8 @@ def test_folder_with_unsupported_formats_shows_helpful_error():
 
 
 def test_empty_folder_shows_helpful_error():
+    """Test that validating an empty -d folder exits non-zero and surfaces a
+    helpful "No valid dataset files found" message instead of crashing."""
     with tempfile.TemporaryDirectory() as temp_dir:
         command = [
             get_python_executable(),
@@ -169,6 +171,9 @@ def test_empty_folder_shows_helpful_error():
 
 
 def test_valid_xpt_files_work_normally():
+    """Regression check that a valid .xpt file passed via -dp still validates
+    normally, confirming the format-detection logic added for XLSX handling
+    didn't break existing XPT support."""
     command = [
         get_python_executable(),
         "-m",
@@ -195,6 +200,9 @@ def test_valid_xpt_files_work_normally():
 
 
 def test_mixed_folder_processes_valid_files():
+    """Test that a -d folder containing one valid .xpt file alongside an
+    empty/invalid .xlsx file still processes the valid dataset without
+    crashing."""
     with tempfile.TemporaryDirectory() as temp_dir:
         valid_xpt = os.path.join("tests", "resources", "test_dataset.xpt")
         if os.path.exists(valid_xpt):

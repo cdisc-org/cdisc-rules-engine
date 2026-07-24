@@ -5,6 +5,13 @@ from conftest import get_python_executable
 
 
 class TerminalCommandTestCase(unittest.TestCase):
+    """Regression test for SEND rule 266 (variable not allowed in SDTM/SEND
+    model) run against a negative dataset.
+
+    Note: this only asserts that a report file is produced, it does not check
+    the rule's actual findings/issue content.
+    """
+
     @classmethod
     def setUpClass(cls):
         # Run the command in the terminal
@@ -17,7 +24,7 @@ class TerminalCommandTestCase(unittest.TestCase):
             "sdtmig",
             "-v",
             "3.4",
-            "-r",
+            "-lr",
             "tests/resources/CoreIssue357/SENDIG_266_rule.json",
             "-dp",
             "tests/resources/CoreIssue357/SENDIG_266_negative_testdata_datasets.json",
@@ -34,6 +41,8 @@ class TerminalCommandTestCase(unittest.TestCase):
         cls.excel_file_path = sorted(excel_files)[-1]
 
     def test_command_execution(self):
+        """Test that validating against the local SEND-266 rule produces an
+        Excel report file."""
         # Check if the Excel file is created
         self.assertTrue(
             os.path.exists(self.excel_file_path),

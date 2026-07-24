@@ -54,6 +54,10 @@ class TestCoreIssue1442:
         ],
     )
     def test_positive_dataset(self, command):
+        """Test that both ways of targeting mixed-format datasets - explicit
+        -dp paths mixing .xpt/.ndjson/.json, and a -d directory filtered
+        with -ft json - correctly identify CDISC_Pilot_Study.json as the
+        "JSON file name" entry in the Conformance Details sheet."""
         # Run the command in the terminal
         subprocess.run(command, check=True)
 

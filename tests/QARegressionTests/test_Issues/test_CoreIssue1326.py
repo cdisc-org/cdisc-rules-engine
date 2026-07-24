@@ -15,6 +15,9 @@ from QARegressionTests.globals import (
 
 class TestPrefTerm(unittest.TestCase):
     def test_positive_dataset(self):
+        """Verify the USDM study-phase codelist consistency rule (DDF00015)
+        reports zero issues (SUCCESS) against a StudyVersion dataset where
+        the study phase code/decode values are consistent with the codelist."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -80,6 +83,9 @@ class TestPrefTerm(unittest.TestCase):
             os.remove(excel_file_path)
 
     def test_negative_dataset(self):
+        """Verify the same DDF00015 rule flags exactly 7 rows where the study
+        phase code/decode pairs are mismatched or inconsistent with the
+        Trial Phase Response codelist (C66737)."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",

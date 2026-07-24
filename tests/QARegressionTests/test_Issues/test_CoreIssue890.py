@@ -14,6 +14,9 @@ from QARegressionTests.globals import (
 
 class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
     def test_positive_dataset(self):
+        """Verify the SENDIG SEND282 delimited-codelist rule reports SUCCESS
+        (0 issues) against a positive dataset when validated with an explicit
+        CT package (sendct-2025-09-26)."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -80,6 +83,9 @@ class TestColumnConsistsOfDelimitedCodelists(unittest.TestCase):
             os.remove(excel_file_path)
 
     def test_negative_dataset(self):
+        """Verify the same SEND282 rule flags 2 issues on the PP domain
+        (4 records) when validated against a negative dataset with the same
+        explicit CT package."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",

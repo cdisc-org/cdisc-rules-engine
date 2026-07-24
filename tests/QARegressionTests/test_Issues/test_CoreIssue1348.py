@@ -190,6 +190,11 @@ class TestCoreIssue1348:
     def test_not_as_first_condition_same_errors_as_all_condition(
         self, rule_name, dataset, issue_summary, details
     ):
+        """Verify a rule whose Check starts with a `not:` condition
+        (DDF00015_not.yaml) produces byte-identical Issue_Details/
+        Issue_Summary output to the logically-equivalent rule using `all:`
+        (DDF00015_all.yaml), for both positive and negative datasets --
+        confirming condition-evaluation order doesn't change results."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",

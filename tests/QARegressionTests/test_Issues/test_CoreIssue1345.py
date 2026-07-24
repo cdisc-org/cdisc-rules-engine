@@ -8,6 +8,8 @@ from conftest import get_python_executable
 
 @pytest.fixture
 def generate_report():
+    """Run CG0019.yml against the DM/SUPPDM/EC/SUPPEC/RELREC dataset
+    fixture and return the parsed JSON report for reuse by both tests."""
     # Run the command in the terminal
     command = [
         f"{get_python_executable()}",
@@ -57,6 +59,9 @@ class TestCoreIssue1345:
     def test_engine_correctly_merges_datasets_and_flags_row_uniqueness_issues(
         self, generate_report
     ):
+        """Verify merging DM with its SUPPDM does not spuriously flag any
+        DM/SUPPDM rows, while the unrelated EC dataset still produces its
+        expected 2 issues (merge logic doesn't affect unrelated datasets)."""
         json_report_path, json_report = generate_report
         dataset_filenames = {
             d["filename"].upper() for d in json_report.get("Dataset_Details", [])
@@ -118,6 +123,9 @@ class TestCoreIssue1345:
     def test_engine_correctly_processes_relrec_when_supp_datasets_provided(
         self, generate_report
     ):
+        """Verify RELREC is processed correctly (yielding exactly 2 issues)
+        when SUPP-- datasets are also present, and that this doesn't disturb
+        the EC dataset's own 2 issues from the other test."""
         json_report_path, json_report = generate_report
         # Open the JSON report file
         dataset_filenames = {

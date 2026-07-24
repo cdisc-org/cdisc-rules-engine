@@ -8,6 +8,10 @@ class TestCoreIssue1487(unittest.TestCase):
     "The updated engine throws an error for unsupported version, which is expected behavior."
 
     def test_unsupported_sdtmig_5_0_version_returns_metadata_error(self):
+        """Test that requesting an unsupported standard version (sdtmig 5.0,
+        for which no library metadata is cached) fails fast with
+        LibraryMetadataNotFoundError, before rules are even loaded.
+        """
         command = [
             f"{get_python_executable()}",
             "-m",
@@ -19,8 +23,8 @@ class TestCoreIssue1487(unittest.TestCase):
             "5.0",
             "-d",
             os.path.join("tests", "resources", "CoreIssue1487"),
-            "-r",
-            "CORE-000354",
+            "-lr",
+            os.path.join("tests", "resources", "library_rules", "CORE-000354.json"),
         ]
 
         result = subprocess.run(

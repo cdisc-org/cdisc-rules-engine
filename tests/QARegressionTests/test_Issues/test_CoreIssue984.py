@@ -7,6 +7,9 @@ from conftest import get_python_executable
 
 class TestCoreIssue984:
     def test_define_subversion_ignored(self):
+        """Test that a Define-XML sub-version string doesn't break standard/
+        version matching (Conformance_Details still reports SDTMIG / 2.1.5).
+        """
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -15,8 +18,8 @@ class TestCoreIssue984:
             "validate",
             "-s",
             "sdtmig",
-            "-r",
-            "CORE-000007",
+            "-lr",
+            os.path.join("tests", "resources", "library_rules", "CORE-000007.json"),
             "-v",
             "3.4",
             "-dp",

@@ -10,7 +10,8 @@ class TestCoreIssue1248:
     @pytest.mark.parametrize(
         "command,rules_report,num_issues",
         [
-            # define path provided will lead to successful execution
+            # Case 1: -dxp explicitly points to the Define-XML file, even though
+            # it lives in a subfolder unrelated to -dp -> validation succeeds.
             (
                 [
                     f"{get_python_executable()}",
@@ -51,7 +52,8 @@ class TestCoreIssue1248:
                 ],
                 2,
             ),
-            # JSON data file and no define.xml in same folder and no -dxp param will provide error
+            # Case 2: JSON data with no adjacent define.xml and no -dxp given ->
+            # engine cannot locate a Define-XML and reports an execution error.
             (
                 [
                     f"{get_python_executable()}",
@@ -84,7 +86,8 @@ class TestCoreIssue1248:
                 ],
                 1,
             ),
-            # no define.xml in same path as data.xlsx file will provide error
+            # Case 3: xlsx data with no define.xml alongside it and no -dxp
+            # given -> same as case 2, execution error for a different format.
             (
                 [
                     f"{get_python_executable()}",
@@ -117,8 +120,11 @@ class TestCoreIssue1248:
                 ],
                 1,
             ),
-            # define.xml in same folder as the data.xls and no -dxp provided will provide error until
-            # in ExcelDataService dataset metadata creation full_path=dataset_name
+            # Case 4: define.xml sits in the same folder as data.xlsx but -dxp
+            # is still not given -> still an execution error (known limitation:
+            # ExcelDataService dataset metadata creation uses
+            # full_path=dataset_name, so it does not auto-discover a sibling
+            # define.xml the way -dp with a JSON/xlsx path might elsewhere).
             (
                 [
                     f"{get_python_executable()}",
@@ -160,6 +166,8 @@ class TestCoreIssue1248:
         ],
     )
     def test_define_path_used(self, command, rules_report, num_issues):
+        """Verify how the engine resolves the Define-XML path (-dxp) relative
+        to the data path (-dp) across the four scenarios documented above."""
         subprocess.run(command, check=True)
 
         # Get the latest created report file

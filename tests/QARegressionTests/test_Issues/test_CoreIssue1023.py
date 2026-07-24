@@ -8,7 +8,8 @@ from conftest import get_python_executable
 class TestCoreIssue1023:
 
     def test_dataset_utf8(self):
-        """Test that the engine correctly handles dataset files with utf8 encoding"""
+        """Test that the engine correctly handles dataset files with utf8
+        encoding."""
         command = [
             f"{get_python_executable()}",
             "-m",
@@ -18,8 +19,10 @@ class TestCoreIssue1023:
             "sdtmig",
             "-v",
             "3.4",
-            "-r",
-            "CORE-000766",
+            "-lr",
+            os.path.join(
+                "tests", "resources", "library_rules", "CORE-000766.json"
+            ),
             "-e",
             "utf8",
             "-dp",

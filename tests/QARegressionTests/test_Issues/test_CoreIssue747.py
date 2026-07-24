@@ -18,6 +18,10 @@ including the supp and split domains"""
 
 
 def test_CG0019():
+    """Verify CG0019 reports 4 issues across split EC domains (ECAA, ECBB)
+    plus SUPPEC, using a Define-XML that describes the split/supp structure,
+    confirming the rule correctly evaluates split and supplemental datasets
+    together."""
     command = (
         f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue747", "Rule_underscores.json")

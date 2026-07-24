@@ -21,6 +21,8 @@ the scope skip problem is resolved """
 
 
 def test_negative_dataset():
+    """Verify CG0202 is SKIPPED (0 issues) when the dataset contains no SUPP
+    domains — only DM is present, so the rule's scope has nothing to check."""
     command = (
         f"{get_python_executable()} -m core validate -s sdtmig -v 3.3 -lr "
         + os.path.join("tests", "resources", "CoreIssue576", "Rule_underscores.json")
@@ -75,6 +77,9 @@ def test_negative_dataset():
 
 
 def test_positive_dataset():
+    """Verify CG0202 runs to SUCCESS (0 issues) when SUPPAE and SUPPEC are
+    present, confirming the fix for the scope-skip bug that previously
+    prevented the rule from evaluating datasets with SUPP domains."""
     command = (
         f"{get_python_executable()} -m core validate -s sdtmig -v 3.3 -lr "
         + os.path.join("tests", "resources", "CoreIssue576", "Rule_underscores.json")

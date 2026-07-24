@@ -7,6 +7,9 @@ from conftest import get_python_executable
 
 class TestCoreIssue1501(unittest.TestCase):
     def test_raw_report(self):
+        """Test that the --raw-report/-rr CLI flag causes the JSON report
+        output to include an additional "results_data" key alongside the
+        standard report sections."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
