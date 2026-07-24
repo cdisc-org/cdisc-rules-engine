@@ -20,9 +20,7 @@ class TestCoreIssue1023:
             "-v",
             "3.4",
             "-lr",
-            os.path.join(
-                "tests", "resources", "library_rules", "CORE-000766.json"
-            ),
+            os.path.join("tests", "resources", "library_rules", "CORE-000766.json"),
             "-e",
             "utf8",
             "-dp",
