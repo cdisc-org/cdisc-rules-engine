@@ -2,14 +2,15 @@ import os
 import subprocess
 import unittest
 
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1316(unittest.TestCase):
     def test_new_rule(self):
+        """Verify a new local rule (checking EXROUTE equals a fixed value and
+        that library_variable_ccode is non-empty) runs against test_dataset.json
+        and reports exactly 591 issues with an ISSUE REPORTED status."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
