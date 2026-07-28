@@ -88,7 +88,9 @@ class RegexFindReplace(BaseOperation):
             try:
                 return pattern.sub(replace, text)
             except re.error as exc:
-                raise OperationError(f"Error applying regex pattern '{pattern.pattern}' to value '{text}': {exc}") from exc
+                raise OperationError(
+                    f"Error applying regex pattern '{pattern.pattern}' to value '{text}': {exc}"
+                ) from exc
 
         if on_no_match == "keep_original":
             return text
