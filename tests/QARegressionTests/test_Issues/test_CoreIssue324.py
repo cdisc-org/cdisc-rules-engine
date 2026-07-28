@@ -2,11 +2,9 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TerminalCommandTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -35,6 +33,11 @@ class TerminalCommandTestCase(unittest.TestCase):
         cls.excel_file_path = sorted(excel_files)[-1]
 
     def test_excel_file_contents(self):
+        """Regression check for the Excel report's structure/terminology
+        migration: the legacy "Bundle Details" sheet no longer exists, a
+        "Conformance Details" sheet is present, and the Issue Summary,
+        Issue Details, and Rules Report sheets use the "CORE-ID" column
+        instead of the legacy "RULE-ID" column."""
         # Check if the Excel file is created
         self.assertTrue(
             os.path.exists(self.excel_file_path),
