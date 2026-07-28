@@ -588,7 +588,7 @@ Date and time specific operations for comparing dates, validating date completen
 
 ### date_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal date value rather than a column name.
 
 The `date_component` parameter accepts: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"microsecond"`, or `"auto"`.
 
@@ -601,15 +601,25 @@ When `date_component: "auto"` is used, the operator automatically detects the pr
   date_component: "auto"
 ```
 
+> AESTDTC equals the literal date "1997-07-16" (not the contents of a column named
+> 1997-07-16)
+
+```yaml
+- name: "AESTDTC"
+  operator: "date_equal_to"
+  value: "1997-07-16"
+  value_is_literal: true
+```
+
 ### date_not_equal_to
 
 Complement of `date_equal_to`
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`. Also has the optional parameter 'value_is_literal'.
 
 ### date_greater_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal date value rather than a column name.
 
 > Year part of BRTHDTC > 2021
 
@@ -618,11 +628,13 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
   operator: "date_greater_than"
   date_component: "year"
   value: "2021"
+  value_is_literal: true
+
 ```
 
 ### date_greater_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal date value rather than a column name.
 
 > Year part of BRTHDTC >= 2021
 
@@ -631,11 +643,12 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
   operator: "date_greater_than_or_equal_to"
   date_component: "year"
   value: "2021"
+  value_is_literal: true
 ```
 
 ### date_less_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal date value rather than a column name.
 
 > AEENDTC < AESTDTC
 
@@ -665,7 +678,7 @@ Operations:
 
 ### date_less_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`. Has optional parameter 'value_is_literal' — when true, the value parameter is treated as a literal date value rather than a column name.
 
 > AEENDTC <= AESTDTC
 
