@@ -72,7 +72,7 @@ def test_vlm_fallback_codelist_check():
     values_column = sheet[issue_sheet_values_column]
     values_column_values = [
         cell.value for cell in values_column[1:] if cell.value is not None
-    ]    
+    ]
 
     # DEBUG: print all issue details rows
     print("\n=== Issue Details (first 10 rows) ===")
@@ -161,7 +161,7 @@ def test_vlm_with_variable_level_codelist():
     values_column = sheet[issue_sheet_values_column]
     values_column_values = [
         cell.value for cell in values_column[1:] if cell.value is not None
-    ]    
+    ]
 
     # Verify that VSORRESU is NOT flagged when variable-level codelist is present
     assert not any(
