@@ -6,6 +6,7 @@ from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
     rules_report_sheet,
+    issue_sheet_values_column,
     issue_sheet_variable_column,
     issue_sheet_coreid_column,
 )
@@ -67,18 +68,24 @@ def test_vlm_fallback_codelist_check():
         cell.value for cell in variables_names_column[1:] if cell.value is not None
     ]
 
+    # Check Value(s) column
+    values_column = sheet[issue_sheet_values_column]
+    values_column_values = [
+        cell.value for cell in values_column[1:] if cell.value is not None
+    ]    
+
     # DEBUG: print all issue details rows
     print("\n=== Issue Details (first 10 rows) ===")
     for row in sheet.iter_rows(min_row=1, max_row=11, values_only=True):
         if any(row):
             print(row)
-    print(f"\nColumn I values: {variables_names_values}")
+    print(f"\nColumn I values: {values_column_values}")
 
     # Verify that VSORRESU issue is detected
     assert len(variables_names_values) >= 1, "Expected at least one variable issue"
     assert any(
-        "VSORRESU" in str(val) for val in variables_names_values
-    ), "Expected VSORRESU to be in issue variables"
+        "VSORRESU" in str(val) for val in values_column_values
+    ), "Expected VSORRESU to be in issue values"
 
     # Check Core ID
     core_id_column = sheet[issue_sheet_coreid_column]
@@ -151,13 +158,12 @@ def test_vlm_with_variable_level_codelist():
     workbook = openpyxl.load_workbook(excel_file_path)
     sheet = workbook[issue_datails_sheet]
 
-    # Check Variable(s) column
-    variables_names_column = sheet[issue_sheet_variable_column]
-    variables_names_values = [
-        cell.value for cell in variables_names_column[1:] if cell.value is not None
-    ]
+    values_column = sheet[issue_sheet_values_column]
+    values_column_values = [
+        cell.value for cell in values_column[1:] if cell.value is not None
+    ]    
 
     # Verify that VSORRESU is NOT flagged when variable-level codelist is present
     assert not any(
-        "VSORRESU" in str(val) for val in variables_names_values
-    ), "Expected VSORRESU NOT to be flagged when variable-level codelist is present"
+        "VSORRESU" in str(val) for val in values_column_values
+    ), "Expected VSORRESU NOT to be in issue values when variable-level codelist is present"
