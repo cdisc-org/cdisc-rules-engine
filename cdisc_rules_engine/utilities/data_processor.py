@@ -97,7 +97,7 @@ class DataProcessor:
 
     @staticmethod
     def merge_on_relrec_record(
-        relrec_row: pd.Series,
+        relrec_row: dict,
         left_dataset: DatasetInterface,
         datasets: List[dict],
         dataset_preprocessor: DatasetPreprocessor,
