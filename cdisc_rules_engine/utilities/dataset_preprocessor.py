@@ -347,7 +347,7 @@ class DatasetPreprocessor:
                     if col not in merged_record:
                         merged_record[col] = None
             results.append(merged_record)
-        return child_records.__class__.from_records(results)
+        return pd.DataFrame.from_records(results)
 
     def _filter_parents_by_standard_keys(
         self,
@@ -479,7 +479,7 @@ class DatasetPreprocessor:
                     if col not in merged_record:
                         merged_record[col] = None
             results.append(merged_record)
-        return child_records.__class__.from_records(results)
+        return pd.DataFrame.from_records(results)
 
     def _update_dataset_with_merged_records(
         self,
