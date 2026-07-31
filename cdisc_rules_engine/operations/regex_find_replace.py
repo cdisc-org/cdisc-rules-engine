@@ -3,17 +3,15 @@ import pandas as pd
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
+from cdisc_rules_engine.constants.operation_constants import NO_MATCH_POLICIES, REGEX_FLAG_MAP
 
 
 class RegexFindReplace(BaseOperation):
-    _NO_MATCH_POLICIES = {"keep_original", "set_null", "set_empty", "error"}
-    _FLAG_MAP = {
-        "i": re.IGNORECASE,
-        "m": re.MULTILINE,
-        "s": re.DOTALL,
-    }
-
     def _execute_operation(self):
+        """
+        Finds and replaces text in a target column using regex pattern matching.
+        Returns a Series with transformed values based on the replace pattern and no_match policy.
+        """
         operation_id = self.params.operation_id
         target = self.params.target
         find = getattr(self.params, "find", None) or getattr(self.params, "regex", None)
@@ -54,22 +52,22 @@ class RegexFindReplace(BaseOperation):
             raise OperationError("regex_find_replace requires find (or regex)")
         if replace is None:
             raise OperationError("regex_find_replace requires replace")
-        if on_no_match not in self._NO_MATCH_POLICIES:
+        if on_no_match not in NO_MATCH_POLICIES:
             raise OperationError(
                 f"Invalid on_no_match: {on_no_match}. "
-                f"Must be one of {sorted(self._NO_MATCH_POLICIES)}"
+                f"Must be one of {sorted(NO_MATCH_POLICIES)}"
             )
-        invalid_flags = [f for f in flags_str if f not in self._FLAG_MAP]
+        invalid_flags = [f for f in flags_str if f not in REGEX_FLAG_MAP]
         if invalid_flags:
             raise OperationError(
                 f"Invalid flags: {''.join(invalid_flags)}. "
-                f"Allowed flags: {''.join(sorted(self._FLAG_MAP.keys()))}"
+                f"Allowed flags: {''.join(sorted(REGEX_FLAG_MAP.keys()))}"
             )
 
     def _parse_flags(self, flags_str):
         flags = 0
         for ch in flags_str:
-            flags |= self._FLAG_MAP[ch]
+            flags |= REGEX_FLAG_MAP[ch]
         return flags
 
     def _compile_pattern(self, find, flags):

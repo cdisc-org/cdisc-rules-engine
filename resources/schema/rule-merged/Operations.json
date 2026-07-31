@@ -534,7 +534,8 @@
     {
       "properties": {
         "operator": {
-          "const": "regex_find_replace"
+          "const": "regex_find_replace",
+          "markdownDescription": "\nFinds and replaces text in a dataset column using regex pattern matching.\n\n**Parameters:**\n- `name` (required): Column name to perform the replacement on\n- `find` or `regex` (required): Regex pattern to search for\n- `replace` (required): Replacement string (can include backreferences like `\\1`, `\\2`)\n- `on_no_match` (optional): Policy when pattern doesn't match. Options: `keep_original` (default), `set_null`, `set_empty`, `error`\n- `flags` (optional): Regex flags as a string: `i` (case-insensitive), `m` (multiline), `s` (dotall)\n\n**Example:**\n\n```yaml\nOperations:\n  - id: $normalized_value\n    name: PPSTRESC\n    operator: regex_find_replace\n    find: '(\\d+)\\s*mg'\n    replace: '\\1 milligrams'\n    on_no_match: keep_original\n    flags: i\n"
         },
         "find": {
           "type": "string"
