@@ -1,0 +1,376 @@
+{
+  "core_id": "CORE-000007",
+  "author": "CDISC",
+  "reference": [
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "DTHDTC[The date or date and time of death, represented in a standardized character format.] DTHFL[An indication that the subject died.]",
+            "Document": "Model v2.0",
+            "Item": "DTHDTC|DTHFL",
+            "Section": "Demographics"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0435",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "A value of 'Y' indicates the subject died. Should be Y or null. Should be populated even when the death date is unknown.",
+            "Document": "Model v1.4",
+            "Section": "2.2.6"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0435",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "A value of \"Y\" indicates the subject died. Should be \"Y\" or null. Should be populated even when the death date is unknown.",
+            "Document": "Model v1.7",
+            "Section": "Table 2.2.6.1"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0435",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "DTHDTC[The date or date and time of death, represented in a standardized character format.]|DTHFL[An indication that the subject died.]",
+            "Document": "SDTM v2.1",
+            "Item": "DTHDTC|DTHFL",
+            "Section": "3.2.1 Demographics"
+          }
+        ],
+        "Origin": "TIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "TIG0587",
+          "Version": "1"
+        },
+        "Version": "1.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+            "Document": "FDA",
+            "Section": "FDAB006"
+          }
+        ],
+        "Origin": "FDA Business Rules",
+        "Rule_Identifier": {
+          "Id": "FB0606",
+          "Version": "1"
+        },
+        "Version": "1.5"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+            "Document": "FDA",
+            "Section": "FDAB006"
+          }
+        ],
+        "Origin": "FDA Business Rules",
+        "Rule_Identifier": {
+          "Id": "FB0606",
+          "Version": "1"
+        },
+        "Version": "1.5"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+            "Document": "FDA",
+            "Section": "FDAB006"
+          }
+        ],
+        "Origin": "FDA Business Rules",
+        "Rule_Identifier": {
+          "Id": "FB0606",
+          "Version": "1"
+        },
+        "Version": "1.5"
+      }
+    ]
+  ],
+  "sensitivity": "Record",
+  "executability": "fully executable",
+  "description": "When Date/Time of Death (DTHDTC) in the DM dataset is populated then death flag (DTHFL) should be populated as 'Y' in the DM dataset for the corresponding subject.",
+  "authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "DTHDTC[The date or date and time of death, represented in a standardized character format.] DTHFL[An indication that the subject died.]",
+                  "Document": "Model v2.0",
+                  "Item": "DTHDTC|DTHFL",
+                  "Section": "Demographics"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0435",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.4"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "A value of 'Y' indicates the subject died. Should be Y or null. Should be populated even when the death date is unknown.",
+                  "Document": "Model v1.4",
+                  "Section": "2.2.6"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0435",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "A value of \"Y\" indicates the subject died. Should be \"Y\" or null. Should be populated even when the death date is unknown.",
+                  "Document": "Model v1.7",
+                  "Section": "Table 2.2.6.1"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0435",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "TIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "DTHDTC[The date or date and time of death, represented in a standardized character format.]|DTHFL[An indication that the subject died.]",
+                  "Document": "SDTM v2.1",
+                  "Item": "DTHDTC|DTHFL",
+                  "Section": "3.2.1 Demographics"
+                }
+              ],
+              "Origin": "TIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "TIG0587",
+                "Version": "1"
+              },
+              "Version": "1.0"
+            }
+          ],
+          "Substandard": "SDTM",
+          "Version": "1.0"
+        }
+      ]
+    },
+    {
+      "Organization": "FDA",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+                  "Document": "FDA",
+                  "Section": "FDAB006"
+                }
+              ],
+              "Origin": "FDA Business Rules",
+              "Rule_Identifier": {
+                "Id": "FB0606",
+                "Version": "1"
+              },
+              "Version": "1.5"
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+                  "Document": "FDA",
+                  "Section": "FDAB006"
+                }
+              ],
+              "Origin": "FDA Business Rules",
+              "Rule_Identifier": {
+                "Id": "FB0606",
+                "Version": "1"
+              },
+              "Version": "1.5"
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "All death information should be populated for subjects that died during the study including any post treatment follow-up.",
+                  "Document": "FDA",
+                  "Section": "FDAB006"
+                }
+              ],
+              "Origin": "FDA Business Rules",
+              "Rule_Identifier": {
+                "Id": "FB0606",
+                "Version": "1"
+              },
+              "Version": "1.5"
+            }
+          ],
+          "Version": "3.4"
+        }
+      ]
+    }
+  ],
+  "standards": [
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.2",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.3",
+      "Substandard": null
+    },
+    {
+      "Name": "TIG",
+      "Version": "1.0",
+      "Substandard": "SDTM"
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.2",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.3",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    }
+  ],
+  "classes": {
+    "Include": [
+      "SPECIAL PURPOSE"
+    ]
+  },
+  "domains": {
+    "Include": [
+      "DM"
+    ]
+  },
+  "entities": null,
+  "rule_type": "Record Data",
+  "conditions": {
+    "all": [
+      {
+        "name": "get_dataset",
+        "operator": "non_empty",
+        "value": {
+          "comparator": null,
+          "target": "DTHDTC"
+        }
+      },
+      {
+        "name": "get_dataset",
+        "operator": "not_equal_to",
+        "value": {
+          "comparator": "Y",
+          "target": "DTHFL"
+        }
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_dataset_error_objects",
+      "params": {
+        "message": "DTHDTC is populated but DTHFL in DM dataset is not \"Y\"."
+      }
+    }
+  ],
+  "use_case": "INDH",
+  "data_structures": null,
+  "status": "Published",
+  "output_variables": [
+    "DTHDTC",
+    "DTHFL"
+  ]
+}
