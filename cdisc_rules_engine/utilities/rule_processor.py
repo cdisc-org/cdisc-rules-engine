@@ -373,6 +373,10 @@ class RuleProcessor:
                 target = BaseOperation._replace_variable_wildcard(
                     target, wildcard_replacement
                 )
+            if domain and domain.startswith(("SUPP", "SQ")) and domain.endswith("--"):
+                rdomain = getattr(dataset_metadata, "rdomain", None)
+                if rdomain:
+                    domain = domain.replace("--", rdomain)
 
             # get necessary operation
             operation_params = OperationParams(
