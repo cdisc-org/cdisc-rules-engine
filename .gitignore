@@ -129,6 +129,7 @@ dmypy.json
 # CORE reports
 CORE-Report*.xlsx
 CORE-Report*.json
+CORE-Report*.csv
 # Pyre type checker
 .pyre/
 
