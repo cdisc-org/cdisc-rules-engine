@@ -3,7 +3,10 @@ import pandas as pd
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
-from cdisc_rules_engine.constants.operation_constants import NO_MATCH_POLICIES, REGEX_FLAG_MAP
+from cdisc_rules_engine.constants.operation_constants import (
+    NO_MATCH_POLICIES,
+    REGEX_FLAG_MAP,
+)
 
 
 class RegexFindReplace(BaseOperation):
