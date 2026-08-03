@@ -7,4 +7,3 @@ REGEX_FLAG_MAP = {
     "m": re.MULTILINE,
     "s": re.DOTALL,
 }
-
