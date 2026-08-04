@@ -1,0 +1,34 @@
+{
+  "datasets": [
+    {
+      "filename": "adsl.xpt",
+      "label": "Subject-Level Analysis Dataset",
+      "domain": "ADSL",
+      "variables": [
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "char",
+          "length": 12
+        },
+        {
+          "name": "TRT99AN",
+          "label": "Actual Treatment for Period 99 (N)",
+          "type": "num",
+          "length": 8
+        },
+        {
+          "name": "TRT99A",
+          "label": "Actual Treatment for Period 99",
+          "type": "char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "USUBJID": ["SUBJ001"],
+        "TRT99AN": [1],
+        "TRT99A": ["Active"]
+      }
+    }
+  ]
+}

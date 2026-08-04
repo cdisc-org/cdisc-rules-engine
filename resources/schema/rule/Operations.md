@@ -1386,6 +1386,30 @@ Operations:
 
 Note that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.
 
+### regex_find_replace
+
+Finds and replaces text in a dataset column using regex pattern matching.
+
+**Parameters:**
+- `name` (required): Column name to perform the replacement on
+- `find` or `regex` (required): Regex pattern to search for
+- `replace` (required): Replacement string (can include backreferences like `\1`, `\2`)
+- `on_no_match` (optional): Policy when pattern doesn't match. Options: `keep_original` (default), `set_null`, `set_empty`, `error`
+- `flags` (optional): Regex flags as a string: `i` (case-insensitive), `m` (multiline), `s` (dotall)
+
+**Example:**
+
+```yaml
+Operations:
+  - id: $normalized_value
+    name: PPSTRESC
+    operator: regex_find_replace
+    find: '(\d+)\s*mg'
+    replace: '\1 milligrams'
+    on_no_match: keep_original
+    flags: i
+```
+
 ### split_by
 
 Splits a dataset column by a given delimiter
