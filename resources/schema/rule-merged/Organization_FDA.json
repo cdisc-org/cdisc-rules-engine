@@ -41,7 +41,10 @@
                         }
                       }
                     ],
-                    "required": ["Document", "Cited Guidance"],
+                    "required": [
+                      "Document",
+                      "Cited Guidance"
+                    ],
                     "type": "object"
                   },
                   "type": "array"
@@ -52,7 +55,9 @@
                       "const": "Success"
                     }
                   },
-                  "required": ["Type"],
+                  "required": [
+                    "Type"
+                  ],
                   "type": "object"
                 },
                 "Origin": {
@@ -68,7 +73,9 @@
                   "type": "object"
                 },
                 "Version": {
-                  "enum": ["1.5"]
+                  "enum": [
+                    "1.5"
+                  ]
                 }
               },
               "type": "object"
@@ -84,7 +91,11 @@
                 "const": "SDTMIG"
               },
               "Version": {
-                "enum": ["3.2", "3.3", "3.4"]
+                "enum": [
+                  "3.2",
+                  "3.3",
+                  "3.4"
+                ]
               }
             },
             "type": "object"
@@ -95,7 +106,11 @@
                 "const": "SENDIG"
               },
               "Version": {
-                "enum": ["3.0", "3.1", "3.1.1"]
+                "enum": [
+                  "3.0",
+                  "3.1",
+                  "3.1.1"
+                ]
               }
             },
             "type": "object"
@@ -106,7 +121,9 @@
                 "const": "SENDIG-AR"
               },
               "Version": {
-                "enum": ["1.0"]
+                "enum": [
+                  "1.0"
+                ]
               }
             },
             "type": "object"
@@ -117,7 +134,10 @@
                 "const": "SENDIG-DART"
               },
               "Version": {
-                "enum": ["1.1", "1.2"]
+                "enum": [
+                  "1.1",
+                  "1.2"
+                ]
               }
             },
             "type": "object"
@@ -128,7 +148,9 @@
                 "const": "SENDIG-GENETOX"
               },
               "Version": {
-                "enum": ["1.0"]
+                "enum": [
+                  "1.0"
+                ]
               }
             },
             "type": "object"

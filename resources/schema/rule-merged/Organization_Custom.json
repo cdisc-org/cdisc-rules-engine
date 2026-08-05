@@ -9,7 +9,10 @@
       "type": "string",
       "description": "Name of your custom organization",
       "not": {
-        "enum": ["CDISC", "FDA"]
+        "enum": [
+          "CDISC",
+          "FDA"
+        ]
       }
     },
     "Standards": {
@@ -45,7 +48,9 @@
                       "description": "Version of the rule"
                     }
                   },
-                  "required": ["Id"],
+                  "required": [
+                    "Id"
+                  ],
                   "type": "object"
                 },
                 "Version": {
@@ -55,7 +60,10 @@
                 "Criteria": {
                   "properties": {
                     "Type": {
-                      "enum": ["Failure", "Success"],
+                      "enum": [
+                        "Failure",
+                        "Success"
+                      ],
                       "type": "string"
                     },
                     "Plain Language Expression": {
@@ -70,30 +78,46 @@
                           "type": "string"
                         }
                       },
-                      "required": ["Rule"],
+                      "required": [
+                        "Rule"
+                      ],
                       "type": "object"
                     }
                   },
-                  "required": ["Type"],
+                  "required": [
+                    "Type"
+                  ],
                   "anyOf": [
                     {
-                      "required": ["Logical Expression"]
+                      "required": [
+                        "Logical Expression"
+                      ]
                     },
                     {
-                      "required": ["Plain Language Expression"]
+                      "required": [
+                        "Plain Language Expression"
+                      ]
                     }
                   ],
                   "type": "object"
                 }
               },
-              "required": ["Origin", "Rule Identifier", "Version"],
+              "required": [
+                "Origin",
+                "Rule Identifier",
+                "Version"
+              ],
               "type": "object"
             },
             "minItems": 1,
             "type": "array"
           }
         },
-        "required": ["Name", "References", "Version"],
+        "required": [
+          "Name",
+          "References",
+          "Version"
+        ],
         "type": "object"
       },
       "minItems": 1,
@@ -141,7 +165,10 @@
         },
         "OutputType": {
           "type": "string",
-          "enum": ["Check", "Listing"],
+          "enum": [
+            "Check",
+            "Listing"
+          ],
           "description": "Output type of the rule validation result"
         },
         "Keywords": {
@@ -155,7 +182,11 @@
       "additionalProperties": true
     }
   },
-  "required": ["Organization", "Standards", "Category"],
+  "required": [
+    "Organization",
+    "Standards",
+    "Category"
+  ],
   "type": "object",
   "$defs": {
     "metadata": {
