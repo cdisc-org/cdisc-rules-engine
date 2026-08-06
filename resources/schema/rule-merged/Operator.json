@@ -457,6 +457,26 @@
     {
       "properties": {
         "operator": {
+          "const": "is_consecutive_ordered_set",
+          "markdownDescription": "\nTrue if the dataset rows are in ascending order of values within `name`, grouped by `value`, and there are no skips between successive sequence values.\n\nThis extends `is_ordered_set` with continuity checking.\n\nRules:\n- Duplicates are allowed (e.g., 1, 1, 2, 3).\n- The sequence may start at any integer.\n- Null/empty/non-numeric values in `name` evaluate to false (strict behavior).\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_consecutive_ordered_set\n      value: USUBJID\n```\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_consecutive_ordered_set\n      value:\n        - USUBJID\n        - \"--TESTCD\"\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_consecutive_ordered_set",
+          "markdownDescription": "\nComplement of `is_consecutive_ordered_set`\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "is_unique_relationship",
           "markdownDescription": "\nRelationship Integrity Check looking for a 1-1 relationship between name and value. Ensures uniqueness of both name and value.\n\n> AETERM and AEDECOD has a 1-to-1 relationship\n\n```yaml\n- name: AETERM\n  operator: is_unique_relationship\n  value: AEDECOD\n```\n"
         }

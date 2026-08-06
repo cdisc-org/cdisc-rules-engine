@@ -1402,6 +1402,174 @@ class DataframeType(BaseType):
     def is_not_ordered_set(self, other_value):
         return ~self.is_ordered_set(other_value)
 
+    def _coerce_sequence_value_to_int(self, value):
+        """
+        Attempts to coerce a sequence value to an integer for continuity checks.
+
+        Accepted as valid:
+        - int values
+        - float values that represent whole numbers (for example 2.0)
+        - numeric strings matching optional sign and digits (for example "-1", "03")
+
+        Rejected as invalid:
+        - null/NaN/empty values
+        - non-integer floats (for example 2.5)
+        - non-numeric strings (for example "A1", "UNK")
+
+        Returns:
+        - (True, int_value) when conversion is valid
+        - (False, None) when value cannot be used in consecutive sequence logic
+        """
+        if value is None or value == "" or pd.isna(value):
+            return False, None
+        if isinstance(value, (int, np.integer)):
+            return True, int(value)
+        if isinstance(value, (float, np.floating)):
+            if float(value).is_integer():
+                return True, int(value)
+            return False, None
+        if isinstance(value, str):
+            stripped = value.strip()
+            if re.fullmatch(r"[+-]?\d+", stripped):
+                return True, int(stripped)
+        return False, None
+
+    def _check_consecutive_partition(self, partition: pd.Series) -> pd.Series:
+        """
+        Validates consecutive sequence rules for one grouped partition of target values.
+
+        The partition is evaluated in its existing row order (same order used by
+        is_ordered_set checks). For each row:
+        - First valid numeric value initializes the running previous value.
+        - Next valid value must be equal to previous (duplicate allowed) or
+        previous + 1 (strictly consecutive step).
+        - Any null/empty/non-numeric value is marked False (strict behavior).
+        - Any numeric jump greater than 1 or decrease is marked False.
+
+        Returns:
+        - A boolean Series aligned to partition index, where each element
+        indicates whether that row satisfies the consecutive rule.
+        """
+        result = pd.Series(True, index=partition.index, dtype="bool")
+        prev_val = None
+        has_prev = False
+
+        for idx, raw in partition.items():
+            valid, current = self._coerce_sequence_value_to_int(raw)
+            if not valid:
+                result.at[idx] = False
+                continue
+
+            if not has_prev:
+                prev_val = current
+                has_prev = True
+                continue
+
+            if current == prev_val or current == prev_val + 1:
+                prev_val = current
+            else:
+                result.at[idx] = False
+                prev_val = current
+
+        return result
+
+    def _check_ordered_partition_strict(self, partition: pd.Series) -> pd.Series:
+        """
+        Validates ascending order for one grouped partition using strict numeric rules.
+
+        Rules:
+        - Values are evaluated in existing row order.
+        - Null/empty/non-numeric values are marked False.
+        - Valid numeric values must be non-decreasing (duplicates allowed).
+        """
+        result = pd.Series(True, index=partition.index, dtype="bool")
+        prev_val = None
+        has_prev = False
+
+        for idx, raw in partition.items():
+            valid, current = self._coerce_sequence_value_to_int(raw)
+            if not valid:
+                result.at[idx] = False
+                continue
+
+            if not has_prev:
+                prev_val = current
+                has_prev = True
+                continue
+
+            if current < prev_val:
+                result.at[idx] = False
+
+            prev_val = current
+
+        return result
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_consecutive_ordered_set(self, other_value):
+        """
+        Checks whether the values in the target column are consecutive and ordered
+        within each group defined by the comparator.
+
+        This operator extends is_ordered_set by adding continuity validation:
+        after grouping rows by comparator, target values must be in ascending order
+        and each next value must be either:
+        - the same as the previous value (duplicates allowed), or
+        - exactly previous + 1 (no skips allowed).
+
+        Strict behavior:
+        - Null, empty, or non-numeric target values are marked False.
+        - These rows are not silently ignored, so data quality issues are visible.
+
+        Parameters in other_value:
+        - target: the column containing sequence values to validate.
+        - comparator: one grouping column (string) or multiple grouping columns (list).
+
+        Example:
+        - Group USUBJID = 01 with SEQ [1, 1, 2, 3] -> all True
+        - Group USUBJID = 01 with SEQ [1, 2, 4] -> row with 4 is False (skip at 3)
+        - Group USUBJID = 01 with SEQ [1, None, 2] -> row with None is False
+        """
+        target = other_value.get("target")
+        value = other_value.get("comparator")
+
+        if not isinstance(value, (str, list)):
+            raise Exception("Comparator must be a String or list of Strings")
+        if isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise Exception("All comparator values must be Strings")
+
+        grouping = [value] if isinstance(value, str) else value
+
+        # keep existing ordering semantics
+        data = self.value.get(grouping + [target])
+        ordered_result = (
+            data.groupby(grouping, dropna=False)[target]
+            .transform(self._check_ordered_partition_strict)
+            .sort_index()
+        )
+
+        # compute strict consecutive semantics on realized dataframe
+        consecutive_result = (
+            data.groupby(grouping, dropna=False)[target]
+            .transform(self._check_consecutive_partition)
+            .sort_index()
+        )
+
+        ordered_result = self.value.convert_to_series(ordered_result).sort_index()
+        consecutive_result = self.value.convert_to_series(consecutive_result).astype(
+            "bool"
+        )
+
+        return ordered_result & consecutive_result
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_consecutive_ordered_set(self, other_value):
+        """
+        Complement of is_consecutive_ordered_set.
+        """
+        return ~self.is_consecutive_ordered_set(other_value)
+
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def has_next_corresponding_record(self, other_value: dict):
