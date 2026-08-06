@@ -1419,7 +1419,7 @@ class DataframeType(BaseType):
         Returns:
         - (True, int_value) when conversion is valid
         - (False, None) when value cannot be used in consecutive sequence logic
-        """        
+        """
         if value is None or value == "" or pd.isna(value):
             return False, None
         if isinstance(value, (int, np.integer)):
@@ -1509,8 +1509,8 @@ class DataframeType(BaseType):
     def is_consecutive_ordered_set(self, other_value):
         """
         Checks whether the values in the target column are consecutive and ordered
-        within each group defined by the comparator.  
-        
+        within each group defined by the comparator.
+
         This operator extends is_ordered_set by adding continuity validation:
         after grouping rows by comparator, target values must be in ascending order
         and each next value must be either:
@@ -1565,7 +1565,7 @@ class DataframeType(BaseType):
     def is_not_consecutive_ordered_set(self, other_value):
         """
         Complement of is_consecutive_ordered_set.
-        """        
+        """
         return ~self.is_consecutive_ordered_set(other_value)
 
     @log_operator_execution
