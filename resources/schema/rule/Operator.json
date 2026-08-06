@@ -103,6 +103,11 @@
       "type": "object"
     },
     {
+      "properties": { "operator": { "const": "does_not_end_with" } },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
       "properties": {
         "operator": { "const": "equal_to" },
         "round_values": { "type": "boolean" },
@@ -429,6 +434,11 @@
     },
     {
       "properties": { "operator": { "const": "starts_with" } },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "does_not_start_with" } },
       "required": ["operator", "value"],
       "type": "object"
     },
