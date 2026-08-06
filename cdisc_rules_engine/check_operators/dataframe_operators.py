@@ -1556,7 +1556,9 @@ class DataframeType(BaseType):
         )
 
         ordered_result = self.value.convert_to_series(ordered_result).sort_index()
-        consecutive_result = self.value.convert_to_series(consecutive_result).astype("bool")
+        consecutive_result = self.value.convert_to_series(consecutive_result).astype(
+            "bool"
+        )
 
         return ordered_result & consecutive_result
 
