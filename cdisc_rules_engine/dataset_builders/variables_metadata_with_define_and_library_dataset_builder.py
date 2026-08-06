@@ -64,26 +64,35 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
             define_metadata.data,
             left_on="variable_name",
             right_on="define_variable_name",
-            how="left",
+            how="outer",
+        )
+        # Add united variable name column to use for library merge
+        merged_data["united_variable_name"] = merged_data["variable_name"].where(
+            merged_data["variable_name"].notna(),
+            merged_data["define_variable_name"],
         )
         # Second merge: add library metadata
-        final_dataframe = merged_data.merge(
-            library_data[
-                [
-                    "library_variable_name",
-                    "library_variable_label",
-                    "library_variable_data_type",
-                    "library_variable_role",
-                    "library_variable_core",
-                    "library_variable_has_codelist",
-                    "library_variable_ccode",
-                    "library_variable_order_number",
-                ]
-            ],
-            how="left",
-            left_on="variable_name",
-            right_on="library_variable_name",
-        ).fillna("")
+        final_dataframe = (
+            merged_data.merge(
+                library_data[
+                    [
+                        "library_variable_name",
+                        "library_variable_label",
+                        "library_variable_data_type",
+                        "library_variable_role",
+                        "library_variable_core",
+                        "library_variable_has_codelist",
+                        "library_variable_ccode",
+                        "library_variable_order_number",
+                    ]
+                ],
+                how="left",
+                left_on="united_variable_name",
+                right_on="library_variable_name",
+            )
+            .drop(columns=["united_variable_name"])
+            .fillna("")
+        )
 
         final_dataframe[["variable_has_empty_values", "variable_is_empty"]] = (
             final_dataframe.apply(
