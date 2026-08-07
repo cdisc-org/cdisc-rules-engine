@@ -1167,6 +1167,10 @@ Operations:
     id: $num_sponsor_ids
     operator: record_count
 ```
+### value_equals
+
+
+
 
 ### variable_count
 

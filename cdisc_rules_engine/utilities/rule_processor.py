@@ -423,6 +423,7 @@ class RuleProcessor:
                 regex=operation.get("regex"),
                 returntype=operation.get("returntype"),
                 source=operation.get("source"),
+                value=operation.get("value"),
                 standard=standard,
                 standard_substandard=standard_substandard,
                 standard_version=standard_version,

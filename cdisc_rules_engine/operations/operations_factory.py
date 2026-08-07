@@ -55,6 +55,7 @@ from cdisc_rules_engine.operations.valid_external_dictionary_code import (
 from cdisc_rules_engine.operations.valid_external_dictionary_code_term_pair import (
     ValidExternalDictionaryCodeTermPair,
 )
+from cdisc_rules_engine.operations.value_equals import ValueEquals
 from cdisc_rules_engine.operations.variable_exists import VariableExists
 from cdisc_rules_engine.operations.variable_names import VariableNames
 from cdisc_rules_engine.operations.variable_value_count import VariableValueCount
@@ -144,6 +145,7 @@ class OperationsFactory(FactoryInterface):
         "valid_external_dictionary_code": ValidExternalDictionaryCode,
         "valid_external_dictionary_code_term_pair": ValidExternalDictionaryCodeTermPair,
         "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
+        "value_equals": ValueEquals,        
         "get_dataset_filtered_variables": GetDatasetFilteredVariables,
         "get_xhtml_errors": GetXhtmlErrors,
     }
