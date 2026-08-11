@@ -333,6 +333,9 @@ def test_ends_with(data, comparator, dataset_type, expected_result):
     assert result.equals(df.convert_to_series(expected_result))
 
 
+# A column comparator is converted to a tuple, and str.startswith(tuple) matches
+# "starts with ANY element" rather than comparing row-wise. "Ctt" starts with none
+# of A/B/D, so starts_with is [True, True, False] and this is its complement.
 @pytest.mark.parametrize(
     "data,comparator,dataset_type,expected_result",
     [
@@ -359,6 +362,8 @@ def test_does_not_start_with(data, comparator, dataset_type, expected_result):
     assert result.equals(df.convert_to_series(expected_result))
 
 
+# Same "any element" behavior as does_not_start_with above: every target ends with
+# "tt", so ends_with is [True, True, True] and this is its complement.
 @pytest.mark.parametrize(
     "data,comparator,dataset_type,expected_result",
     [
