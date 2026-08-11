@@ -809,6 +809,7 @@ class DataframeType(BaseType):
         column with a regex
         """
         target = other_value.get("target")
+        type_insensitive = other_value.get("type_insensitive", False)
         comparator = other_value.get("comparator")
         regex = other_value.get("regex")
         value_is_literal: bool = other_value.get("value_is_literal", False)
@@ -821,7 +822,11 @@ class DataframeType(BaseType):
         self.value[parsed_id] = parsed_data
         return self.value.apply(
             lambda row: self._check_equality(
-                row, target, parsed_id, value_is_literal=False
+                row,
+                target,
+                parsed_id,
+                value_is_literal=False,
+                type_insensitive=type_insensitive,
             ),
             axis=1,
         )
@@ -1476,7 +1481,7 @@ class DataframeType(BaseType):
         target = other_value.get("target")
         min_count: int = other_value.get("comparator") or 1
         group_by_column = other_value.get("within")
-        grouped = self.value.groupby([group_by_column, target])
+        grouped = self.value.groupby([group_by_column, target], dropna=False)
         meta = (target, bool)
         results = grouped.apply(
             lambda x: self.validate_series_length(x, target, min_count), meta=meta

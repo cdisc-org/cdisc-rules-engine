@@ -547,6 +547,9 @@
         },
         {
           "$ref": "CORE-base.json#/$defs/DataStructure"
+        },
+        {
+          "$ref": "CORE-base.json#/$defs/EntityName"
         }
       ]
     },
