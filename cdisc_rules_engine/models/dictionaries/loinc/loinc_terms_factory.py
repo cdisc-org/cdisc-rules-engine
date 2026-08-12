@@ -44,7 +44,7 @@ class LoincTermsFactory(TermsFactoryInterface):
                     text_line = decode_line(bytes_line)
                     values = next(csv.reader(StringIO(text_line)))
                     if len(values) < 9:
-                        return MissingDataError(
+                        raise MissingDataError(
                             message="Loinc term found without required fields provided"
                         )
                     term = LoincTerm(
