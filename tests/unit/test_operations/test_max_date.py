@@ -3,8 +3,7 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.utilities.utils import format_date
-import pandas as pd
+from cdisc_rules_engine.check_operators.helpers import format_date_preserving_precision
 import pytest
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
@@ -18,14 +17,14 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
     [
         (
             {"dates": ["2001-01-01", "", "2022-01-05"]},
-            format_date(pd.to_datetime("2022-01-05")),
+            format_date_preserving_precision("2022-01-05"),
             PandasDataset,
             None,
         ),
         ({"dates": [None, None]}, "", PandasDataset, None),
         (
             {"dates": ["2001-01-01", "", "2022-01-05"]},
-            format_date(pd.to_datetime("2022-01-05")),
+            format_date_preserving_precision("2022-01-05"),
             DaskDataset,
             None,
         ),

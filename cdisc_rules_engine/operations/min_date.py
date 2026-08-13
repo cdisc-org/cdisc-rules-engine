@@ -1,19 +1,19 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.utilities.utils import format_date
+from cdisc_rules_engine.check_operators.helpers import format_date_preserving_precision
 
 
 class MinDate(BaseOperation):
     def _execute_operation(self):
-        data = pd.to_datetime(
-            self.params.dataframe[self.params.target], format="ISO8601"
-        )
+        original = self.params.dataframe[self.params.target]
+        data = pd.to_datetime(original, format="ISO8601")
+
         if not self.params.grouping:
-            min_date = data.min()
-            if isinstance(min_date, pd._libs.tslibs.nattype.NaTType):
+            if data.isna().all():
                 result = ""
             else:
-                result = format_date(min_date)
+                min_idx = data.idxmin()
+                result = format_date_preserving_precision(original.loc[min_idx])
             return pd.Series(result, index=self.evaluation_dataset.index)
 
         grouping_cols = self.params.grouping
@@ -21,7 +21,10 @@ class MinDate(BaseOperation):
             grouping_cols = [grouping_cols]
 
         group_keys = [self.params.dataframe[col] for col in grouping_cols]
-        min_dates = data.groupby(group_keys).min().apply(format_date)
+        idx_of_min = data.groupby(group_keys).idxmin()
+        min_dates = idx_of_min.apply(
+            lambda idx: format_date_preserving_precision(original.loc[idx])
+        )
 
         if len(grouping_cols) == 1:
             lookup_keys = self.evaluation_dataset[grouping_cols[0]]
