@@ -414,3 +414,11 @@ def custom_str_conversion(x):
         elif isinstance(x, float):
             return f"{x:.0f}" if x.is_integer() else str(x).strip()
     return x
+
+
+def format_date(d):
+    if pd.isna(d):
+        return ""
+    if d.hour == 0 and d.minute == 0 and d.second == 0 and d.microsecond == 0:
+        return d.strftime("%Y-%m-%d")
+    return d.isoformat()
