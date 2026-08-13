@@ -14,11 +14,23 @@ class MinDate(BaseOperation):
                 result = ""
             else:
                 result = format_date(min_date)
+            return pd.Series(result, index=self.evaluation_dataset.index)
+
+        grouping_cols = self.params.grouping
+        if isinstance(grouping_cols, str):
+            grouping_cols = [grouping_cols]
+
+        group_keys = [self.params.dataframe[col] for col in grouping_cols]
+        min_dates = data.groupby(group_keys).min().apply(format_date)
+
+        if len(grouping_cols) == 1:
+            lookup_keys = self.evaluation_dataset[grouping_cols[0]]
         else:
-            grouping_cols = self.params.grouping
-            if isinstance(grouping_cols, str):
-                grouping_cols = [grouping_cols]
-            group_keys = [self.params.dataframe[col] for col in grouping_cols]
-            min_dates = data.groupby(group_keys).transform("min")
-            result = min_dates.apply(format_date)
+            lookup_keys = pd.Series(
+                list(zip(*[self.evaluation_dataset[c] for c in grouping_cols])),
+                index=self.evaluation_dataset.index,
+            )
+
+        result = lookup_keys.map(min_dates).fillna("")
+        result.index = self.evaluation_dataset.index
         return result

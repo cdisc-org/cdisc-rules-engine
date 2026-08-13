@@ -14,11 +14,23 @@ class MaxDate(BaseOperation):
                 result = ""
             else:
                 result = format_date(max_date)
+            return pd.Series(result, index=self.evaluation_dataset.index)
+        grouping_cols = self.params.grouping
+        if isinstance(grouping_cols, str):
+            grouping_cols = [grouping_cols]
+
+        group_keys = [self.params.dataframe[col] for col in grouping_cols]
+        max_dates = data.groupby(group_keys).max().apply(format_date)
+
+        # Build lookup: single key -> scalar dict, multi-key -> tuple-keyed dict
+        if len(grouping_cols) == 1:
+            lookup_keys = self.evaluation_dataset[grouping_cols[0]]
         else:
-            grouping_cols = self.params.grouping
-            if isinstance(grouping_cols, str):
-                grouping_cols = [grouping_cols]
-            group_keys = [self.params.dataframe[col] for col in grouping_cols]
-            max_dates = data.groupby(group_keys).transform("max")
-            result = max_dates.apply(format_date)
+            lookup_keys = pd.Series(
+                list(zip(*[self.evaluation_dataset[c] for c in grouping_cols])),
+                index=self.evaluation_dataset.index,
+            )
+
+        result = lookup_keys.map(max_dates).fillna("")
+        result.index = self.evaluation_dataset.index
         return result
