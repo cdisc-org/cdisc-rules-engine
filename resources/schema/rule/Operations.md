@@ -1169,8 +1169,81 @@ Operations:
 ```
 ### value_equals
 
+Compares a target column value against a specified value, returning matching variable names. When the target is a single variable column, returns the variable name if the value matches, or an empty list if it does not. When the target is a variable-list column (containing lists of variable names per row), evaluates each listed variable against the specified value and returns only those variable names where the value matched.
 
+**Required Parameters:**
 
+- `name`: Target column name to check
+- `value`: Value to compare against (can be scalar, list, or null)
+
+**Null Semantics:**
+
+When `value` is null, only true null values (as determined by `pd.isna()`) are matched. Empty strings, zero, or other "falsy" values are not considered null.
+
+**Single Column Example:**
+
+Given a dataset:
+
+```yaml
+PPSTRESU
+3
+5
+3
+```
+
+and the following operation:
+
+```yaml
+Operations:
+  - id: $ppstresu_equals_3
+    operator: value_equals
+    name: PPSTRESU
+    value: 3
+```
+
+This will result in:
+```yaml
+PPSTRESU  $ppstresu_equals_3
+3         [PPSTRESU]
+5         []
+3         [PPSTRESU]
+```
+
+Variable-List Column Example:
+
+```markdown
+Given a dataset where one column contains lists of variable names to check:
+
+$var_list        A     B     C
+[A, B]           1     null  5
+[B, C]           2     3     null
+```
+
+Operations:
+  - id: $vars_equal_null
+    operator: value_equals
+    name: $var_list
+    value: null
+
+This will result in:
+```yaml
+$var_list  A  B     C     $vars_equal_null
+[A, B]     1  null  5     [B]
+[B, C]     2  3     null  [C]
+```
+
+Null Value Example:
+
+To detect rows where a specific variable is null:
+```yaml
+Operations:
+  - id: $status_is_null
+    operator: value_equals
+    name: STATUS
+    value: null
+```
+
+will return [STATUS] for rows where STATUS is null (via pd.isna()), and [] for rows where STATUS has any other value (including empty string).
 
 ### variable_count
 
