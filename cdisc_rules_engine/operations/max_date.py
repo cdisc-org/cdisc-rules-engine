@@ -23,9 +23,12 @@ class MaxDate(BaseOperation):
         group_keys = [self.params.dataframe[col] for col in grouping_cols]
         idx_of_max = data.groupby(group_keys).idxmax()
         max_dates = idx_of_max.apply(
-            lambda idx: format_date_preserving_precision(original.loc[idx])
+            lambda idx: (
+                ""
+                if pd.isna(idx)
+                else format_date_preserving_precision(original.loc[idx])
+            )
         )
-
         if len(grouping_cols) == 1:
             lookup_keys = self.evaluation_dataset[grouping_cols[0]]
         else:

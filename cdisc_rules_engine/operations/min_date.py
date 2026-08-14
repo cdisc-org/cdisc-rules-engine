@@ -23,7 +23,11 @@ class MinDate(BaseOperation):
         group_keys = [self.params.dataframe[col] for col in grouping_cols]
         idx_of_min = data.groupby(group_keys).idxmin()
         min_dates = idx_of_min.apply(
-            lambda idx: format_date_preserving_precision(original.loc[idx])
+            lambda idx: (
+                ""
+                if pd.isna(idx)
+                else format_date_preserving_precision(original.loc[idx])
+            )
         )
 
         if len(grouping_cols) == 1:
