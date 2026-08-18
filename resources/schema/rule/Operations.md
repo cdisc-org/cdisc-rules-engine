@@ -1202,39 +1202,46 @@ Operations:
 ```
 
 This will result in:
-```yaml
+
+```
 PPSTRESU  $ppstresu_equals_3
 3         [PPSTRESU]
 5         []
 3         [PPSTRESU]
 ```
 
-Variable-List Column Example:
+**Variable-List Column Example:**
 
-```markdown
 Given a dataset where one column contains lists of variable names to check:
 
+```
 $var_list        A     B     C
 [A, B]           1     null  5
 [B, C]           2     3     null
 ```
 
+and the following operation:
+
+```yaml
 Operations:
   - id: $vars_equal_null
     operator: value_equals
     name: $var_list
     value: null
+```
 
 This will result in:
-```yaml
+
+```
 $var_list  A  B     C     $vars_equal_null
 [A, B]     1  null  5     [B]
 [B, C]     2  3     null  [C]
 ```
 
-Null Value Example:
+**Null Value Example:**
 
 To detect rows where a specific variable is null:
+
 ```yaml
 Operations:
   - id: $status_is_null
@@ -1243,7 +1250,7 @@ Operations:
     value: null
 ```
 
-will return [STATUS] for rows where STATUS is null (via pd.isna()), and [] for rows where STATUS has any other value (including empty string).
+will return `[STATUS]` for rows where STATUS is null (via `pd.isna()`), and `[]` for rows where STATUS has any other value (including empty string).
 
 ### variable_count
 
