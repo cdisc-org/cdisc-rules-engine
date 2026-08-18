@@ -179,12 +179,15 @@ class RuleProcessor:
         Check that domain name match with only
         AP / APFA / APRELSUB / SUPP / SQ naming pattern
         """
-        supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
-        supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
+        domains_to_check = set(domains_to_check)
+        supp_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
+        ap_domains = {f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"}
 
-        return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            dataset_metadata.is_supp or dataset_metadata.is_ap
-        )
+        if dataset_metadata.is_supp and (domains_to_check & supp_domains):
+            return True
+        if dataset_metadata.is_ap and (domains_to_check & ap_domains):
+            return True
+        return False
 
     def rule_applies_to_data_structure(
         self, rule, dataset_metadata: SDTMDatasetMetadata
