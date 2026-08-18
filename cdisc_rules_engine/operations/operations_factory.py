@@ -145,7 +145,7 @@ class OperationsFactory(FactoryInterface):
         "valid_external_dictionary_code": ValidExternalDictionaryCode,
         "valid_external_dictionary_code_term_pair": ValidExternalDictionaryCodeTermPair,
         "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
-        "value_equals": ValueEquals,        
+        "value_equals": ValueEquals,
         "get_dataset_filtered_variables": GetDatasetFilteredVariables,
         "get_xhtml_errors": GetXhtmlErrors,
     }

@@ -46,8 +46,8 @@ def test_value_equals_null_matches_only_true_null(
     assert operation_params.operation_id in result
     assert result[operation_params.operation_id].tolist() == [
         ["PPSTRESU"],  # true null -> match
-        [],            # empty string -> no match
-        [],            # non-null value -> no match
+        [],  # empty string -> no match
+        [],  # non-null value -> no match
     ]
 
 
@@ -73,7 +73,7 @@ def test_value_equals_variable_list_target_returns_only_matching_variables(
 
     assert operation_params.operation_id in result
     assert result[operation_params.operation_id].tolist() == [
-        ["B"],       # row 1: A=1, B=3
-        ["A"],       # row 2: A=3, B=2
+        ["B"],  # row 1: A=1, B=3
+        ["A"],  # row 2: A=3, B=2
         ["A", "B"],  # row 3: A=3, B=3
     ]
