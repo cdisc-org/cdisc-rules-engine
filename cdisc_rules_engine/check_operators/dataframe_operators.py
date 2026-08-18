@@ -1467,7 +1467,7 @@ class DataframeType(BaseType):
         target = other_value.get("target")
         min_count: int = other_value.get("comparator") or 1
         group_by_column = other_value.get("within")
-        grouped = self.value.groupby([group_by_column, target])
+        grouped = self.value.groupby([group_by_column, target], dropna=False)
         meta = (target, bool)
         results = grouped.apply(
             lambda x: self.validate_series_length(x, target, min_count), meta=meta
