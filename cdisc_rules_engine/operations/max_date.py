@@ -21,7 +21,9 @@ class MaxDate(BaseOperation):
             grouping_cols = [grouping_cols]
 
         group_keys = [self.params.dataframe[col] for col in grouping_cols]
-        idx_of_max = data.groupby(group_keys).idxmax()
+        idx_of_max = data.groupby(group_keys).apply(
+            lambda s: s.idxmax() if s.notna().any() else pd.NA
+        )
         max_dates = idx_of_max.apply(
             lambda idx: (
                 ""

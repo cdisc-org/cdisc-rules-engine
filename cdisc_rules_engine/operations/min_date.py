@@ -21,7 +21,9 @@ class MinDate(BaseOperation):
             grouping_cols = [grouping_cols]
 
         group_keys = [self.params.dataframe[col] for col in grouping_cols]
-        idx_of_min = data.groupby(group_keys).idxmin()
+        idx_of_min = data.groupby(group_keys).apply(
+            lambda s: s.idxmin() if s.notna().any() else pd.NA
+        )
         min_dates = idx_of_min.apply(
             lambda idx: (
                 ""
