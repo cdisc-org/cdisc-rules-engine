@@ -208,7 +208,10 @@ class DataframeType(BaseType):
         """
         if value_is_reference:
             dynamic_column_name = row[comparator]
-            comparison_data = row[dynamic_column_name]
+            if dynamic_column_name not in row.index:
+                comparison_data = None
+            else:
+                comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
@@ -263,7 +266,10 @@ class DataframeType(BaseType):
         """
         if value_is_reference:
             dynamic_column_name = row[comparator]
-            comparison_data = row[dynamic_column_name]
+            if dynamic_column_name not in row.index:
+                comparison_data = None
+            else:
+                comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
