@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.models.operation_params import OperationParams
 
+import pandas as pd
 import pytest
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.data_services.data_service_factory import (
@@ -334,4 +335,66 @@ def test_grouped_distinct_value_is_reference(
             sorted(actual_val) == sorted(expected_val)
             if expected_val is not None
             else actual_val == expected_val
+        )
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        PandasDataset.from_dict({"values": [], "patient": []}),
+        DaskDataset.from_dict({"values": [], "patient": []}),
+    ],
+)
+def test_grouped_distinct_empty_dataset(data, operation_params: OperationParams):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "values"
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = None
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "patient" in result
+    assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        PandasDataset.from_dict(
+            {
+                "values": [11, 12, 12, 5, 18, 9],
+                "patient": [1, 2, 2, 1, 2, 1],
+                "cat": [1, 1, 1, 1, 1, 1],
+            }
+        ),
+        DaskDataset.from_dict(
+            {
+                "values": [11, 12, 12, 5, 18, 9],
+                "patient": [1, 2, 2, 1, 2, 1],
+                "cat": [1, 1, 1, 1, 1, 1],
+            }
+        ),
+    ],
+)
+def test_filtered_grouped_distinct_zero_row_result(
+    data, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "values"
+    operation_params.filter = {"cat": 999}
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = None
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "patient" in result
+    assert len(result) == len(data)
+    for _, val in result.iterrows():
+        assert val[operation_params.operation_id] is None or (
+            isinstance(val[operation_params.operation_id], float)
+            and pd.isna(val[operation_params.operation_id])
         )
