@@ -2,7 +2,6 @@ import json
 import os
 import subprocess
 import unittest
-import pytest
 from conftest import get_python_executable
 
 """This regression test is for automating the validation of acceptancce criteria
@@ -28,7 +27,6 @@ def find_value(json_data, key):
     return results
 
 
-@pytest.mark.regression
 class JSONSearchTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -59,6 +57,10 @@ class JSONSearchTestCase(unittest.TestCase):
         cls.json_file_path = sorted(json_files)[-1]
 
     def test_searched_values_are_capital(self):
+        """Verifies that USUBJID/SEQ values surfaced in the generated JSON
+        report retain the same (uppercase) case as the corresponding values
+        in the source dataset, rather than being altered by report
+        generation."""
         # Read the generated JSON file
         with open(self.json_file_path, "r") as file:
             json_data = json.load(file)

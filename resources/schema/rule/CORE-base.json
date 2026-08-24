@@ -141,19 +141,36 @@
       "additionalProperties": false,
       "properties": {
         "Left": {
-          "$ref": "#/$defs/VariableName"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VariableName"
+            },
+            {
+              "$ref": "#/$defs/USDMFieldName"
+            }
+          ]
         },
         "Right": {
-          "$ref": "#/$defs/VariableName"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VariableName"
+            },
+            {
+              "$ref": "#/$defs/USDMFieldName"
+            }
+          ]
         }
       },
       "required": ["Left", "Right"],
       "type": "object"
     },
+    "EntityName": {
+      "pattern": "^[A-Z](([a-z]+[A-Z]?)*)$",
+      "type": "string"
+    },
     "PascalCases": {
       "items": {
-        "pattern": "^[A-Z](([a-z]+[A-Z]?)*)$",
-        "type": "string"
+        "$ref": "#/$defs/EntityName"
       },
       "minItems": 1,
       "type": "array"
@@ -180,6 +197,13 @@
       "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*$",
       "type": "string"
     },
+    "USDMFieldName": {
+      "pattern": "^[a-z][a-zA-Z0-9_]*(\\.([a-z][a-zA-Z0-9_]*|[A-Z][a-zA-Z0-9_]*))*$",
+      "type": "string"
+    },
+    "USDMPrimitiveType": {
+      "enum": ["string", "integer", "boolean", "decimal", "date"]
+    },
     "VariableReference": {
       "anyOf": [
         {
@@ -187,6 +211,9 @@
         },
         {
           "$ref": "#/$defs/OperationResultId"
+        },
+        {
+          "$ref": "#/$defs/USDMFieldName"
         }
       ],
       "description": "Can reference either a dataset variable name or an operation result"
@@ -414,6 +441,12 @@
               },
               {
                 "$ref": "#/$defs/DataStructure"
+              },
+              {
+                "$ref": "#/$defs/EntityName"
+              },
+              {
+                "$ref": "#/$defs/USDMPrimitiveType"
               }
             ]
           },
@@ -425,6 +458,9 @@
               "anyOf": [
                 {
                   "$ref": "#/$defs/VariableName"
+                },
+                {
+                  "$ref": "#/$defs/USDMFieldName"
                 },
                 {
                   "$ref": "#/$defs/LeftRightKeys"
@@ -550,19 +586,29 @@
               "additionalProperties": false,
               "properties": {
                 "Exclude": {
-                  "$ref": "#/$defs/PascalCases"
+                  "items": {
+                    "anyOf": [
+                      { "const": "ALL" },
+                      { "$ref": "#/$defs/PascalCases/items" }
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array"
                 },
                 "Include": {
-                  "$ref": "#/$defs/PascalCases"
+                  "items": {
+                    "anyOf": [
+                      { "const": "ALL" },
+                      { "$ref": "#/$defs/PascalCases/items" }
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array"
                 }
               },
               "anyOf": [
-                {
-                  "required": ["Exclude"]
-                },
-                {
-                  "required": ["Include"]
-                }
+                { "required": ["Exclude"] },
+                { "required": ["Include"] }
               ],
               "type": "object"
             }
