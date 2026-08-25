@@ -127,7 +127,7 @@ class RulesEngine:
         ):
             return self.data_service.dataset_paths[0]
 
-    def validate_single_rule(self, rule: dict):
+    def validate_single_rule(self, rule: dict):  # noqa
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
@@ -152,10 +152,10 @@ class RulesEngine:
                         f"Skipping remaining datasets."
                     )
                     break
+                include_split = (rule["domains"] or {}).get(
+                    "include_split_datasets", False
+                )
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
-                    include_split = (rule["domains"] or {}).get(
-                        "include_split_datasets", False
-                    )
                     if not include_split:
                         continue  # handling split datasets
                 dataset_results = self.validate_single_dataset(
@@ -166,9 +166,10 @@ class RulesEngine:
                     self._truncate_dataset_errors(
                         dataset_results, rule, dataset_metadata
                     )
-
-                results[dataset_metadata.unsplit_name] = dataset_results
-
+                if include_split:
+                    results[dataset_metadata.name] = dataset_results
+                else:
+                    results[dataset_metadata.unsplit_name] = dataset_results
                 if not self.errors_per_dataset_flag:
                     total_errors, limit_reached = (
                         self._update_total_errors_and_check_limit(

@@ -76,7 +76,10 @@ class BaseDatasetBuilder:
     @cached("get_dataset")
     def get_dataset(self):
         # If validating dataset content, ensure split datasets are handled.
-        if self.dataset_metadata.is_split:
+        include_split_datasets = bool(
+            (self.rule.get("domains") or {}).get("include_split_datasets", False)
+        )
+        if self.dataset_metadata.is_split and not include_split_datasets:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -86,14 +89,15 @@ class BaseDatasetBuilder:
                 ),
             )
         else:
-            # single dataset. the most common case
             dataset: DatasetInterface = self.build()
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
     def get_dataset_contents(self):
-        # If validating dataset content, ensure split datasets are handled.
-        if self.dataset_metadata.is_split:
+        include_split_datasets = bool(
+            (self.rule.get("domains") or {}).get("include_split_datasets", False)
+        )
+        if self.dataset_metadata.is_split and not include_split_datasets:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -103,7 +107,7 @@ class BaseDatasetBuilder:
                 ),
             )
         else:
-            # single dataset. the most common case
+            # single dataset, OR split dataset being processed independently
             dataset: DatasetInterface = self.data_service.get_dataset(
                 dataset_name=self.dataset_metadata.name
             )

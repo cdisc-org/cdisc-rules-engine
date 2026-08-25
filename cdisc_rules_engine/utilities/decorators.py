@@ -57,6 +57,11 @@ def cached(cache_key: str):  # noqa: C901
                 else kwargs.get("domain_name")
             )
             name = instance.name if hasattr(instance, "name") else kwargs.get("name")
+            dataset_metadata = getattr(instance, "dataset_metadata", None)
+            if dataset_metadata is not None:
+                name = getattr(dataset_metadata, "name", None) or name
+                domain_name = getattr(dataset_metadata, "domain", None) or domain_name
+
             if (
                 hasattr(instance, "cache_service")
                 and instance.cache_service is not None
