@@ -160,7 +160,7 @@ class TestValidate(unittest.TestCase):
             "-s",
             "sdtmig",
             "-v",
-            "3.4",
+            "3.2",
             "-dp",
             os.path.join("resources", "datasets", "ae.xpt"),
             "-lr",
@@ -173,9 +173,7 @@ class TestValidate(unittest.TestCase):
         self.assertNotIn("error", stderr.lower())
         self.assertFalse(self.error_keyword in stdout)
 
-    def test_validate_local_exclude_rule(self):
-        """Test that -er excludes a rule within a -lr local rules directory
-        (counterpart to test_validate_local_rule's include-filter case)."""
+    def test_validate_no_rules(self):
         args = [
             "python",
             "core.py",
@@ -188,8 +186,33 @@ class TestValidate(unittest.TestCase):
             os.path.join("resources", "datasets", "ae.xpt"),
             "-lr",
             os.path.join("tests", "resources", "rules"),
-            "-er",
+            "-r",
             "CORE-000473",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 1)
+        self.assertIn(
+            "no rules were selected for this standard/version",
+            stderr.lower(),
+        )
+
+    def test_validate_local_exclude_rule(self):
+        """Test that -er excludes a rule within a -lr local rules directory
+        (counterpart to test_validate_local_rule's include-filter case)."""
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.2",
+            "-dp",
+            os.path.join("resources", "datasets", "ae.xpt"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-er",
+            "CORE-000012",
             "-l",
             "error",
         ]
