@@ -17,7 +17,7 @@ def _check_column_exists_in_dataset(
 
 
 def _apply_dropna_list(x):
-    return list(x.dropna())
+    return sorted(x.dropna())
 
 
 class Distinct(BaseOperation):
@@ -44,7 +44,7 @@ class Distinct(BaseOperation):
                 data = result[self.params.target].dropna().unique()
             if len(data) > 0 and isinstance(data[0], bytes):
                 data = data.astype(str)
-            result = list(data)
+            result = sorted(data)
         else:
             if value_is_reference:
                 target = self.params.target
@@ -69,7 +69,7 @@ class Distinct(BaseOperation):
                             axis=1,
                         )
                         return pd.Series(
-                            {operation_id: list(values.dropna().sort_index().unique())}
+                            {operation_id: sorted(values.dropna().unique())}
                         )
 
                     result = grouped.apply(get_existing_column_names).reset_index()

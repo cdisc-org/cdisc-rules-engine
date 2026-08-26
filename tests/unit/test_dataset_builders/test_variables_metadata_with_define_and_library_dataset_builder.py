@@ -135,7 +135,7 @@ def test_build_combined_metadata(
 
     # Create builder
     builder = VariablesMetadataWithDefineAndLibraryDatasetBuilder(
-        rule=None,
+        rule={"domains": {}},
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
         cache_service=InMemoryCacheService(),
         rule_processor=None,
