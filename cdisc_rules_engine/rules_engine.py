@@ -224,9 +224,17 @@ class RulesEngine:
         This function is an entrypoint to validation process.
         It validates a given rule against datasets.
         """
+        rule_ids = sorted(
+            {
+                ref[0]["Rule_Identifier"]["Id"]
+                for ref in rule.get("reference", [])
+                if ref and "Rule_Identifier" in ref[0]
+            }
+        )
+
         logger.info(
             f"Validating {dataset_metadata.name}. "
-            f"rule={rule}. dataset_path={dataset_metadata.full_path}. datasets={self.data_service.get_datasets()}."
+            f"core_id={rule.get('core_id')} rule_ids={','.join(rule_ids)}"
         )
         try:
             is_suitable, reason = self.rule_processor.is_suitable_for_validation(
