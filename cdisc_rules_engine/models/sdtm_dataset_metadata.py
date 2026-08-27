@@ -71,7 +71,8 @@ class SDTMDatasetMetadata(DatasetMetadata):
     def is_ap(self) -> bool:
         """
         Returns true if APID variable exists in first_record for non-supp datasets,
-        or if rdomain is exactly 4 characters and starts with AP for supp datasets.
+        or if the dataset name starts with AP for non-supp datasets,
+        or if rdomain starts with AP for supp datasets.
         """
         if self.is_supp:
             return (
@@ -80,7 +81,10 @@ class SDTMDatasetMetadata(DatasetMetadata):
                 and self.rdomain.startswith("AP")
             )
         first_record = self.first_record or {}
-        return "APID" in first_record
+        if "APID" in first_record:
+            return True
+
+        return self.name.startswith("AP")
 
     @property
     def ap_suffix(self) -> str:

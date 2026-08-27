@@ -154,8 +154,86 @@ def _validate_csv_data_paths(
     return list(filtered)
 
 
+def _has_multiple_usdm_json_files(
+    standard: str, found_formats: set, dataset_paths: list
+) -> bool:
+    """Returns True if USDM standard is used with more than one JSON file found."""
+    is_usdm_standard = bool(standard) and standard.lower() == "usdm"
+    return (
+        is_usdm_standard
+        and DataFormatTypes.JSON.value in found_formats
+        and len(dataset_paths) > 1
+    )
+
+
+def _check_mixed_xlsx_formats(arg_name: str, found_formats: set) -> str | None:
+    """Returns the error message if XLSX is mixed with other formats, else None."""
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
+        return (
+            f"Argument {arg_name} contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
+            f"Excel format (XLSX) validation only supports single files.\n"
+            f"Please provide either a single XLSX file or use other supported formats: "
+            f"{VALIDATION_FORMATS_MESSAGE}"
+        )
+    return None
+
+
+def _gather_csv_metadata_files(dataset_path: tuple[str]) -> list[str]:
+    """Gathers provided dataset paths plus any sibling datasets.csv/variables.csv files."""
+    all_files_in_dp = []
+    for dp in dataset_path:
+        all_files_in_dp.append(dp)
+        dp_path = Path(dp)
+        all_files_in_dp.extend(
+            [
+                str(p)
+                for p in dp_path.parent.glob("*")
+                if p.is_file() and p.name in {"_datasets.csv", "_variables.csv"}
+            ]
+        )
+    return all_files_in_dp
+
+
+def _directory_empty_message(data: str, found_formats: set) -> str:
+    """Returns the appropriate error message when no valid dataset paths remain."""
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
+        return (
+            f"Multiple XLSX files found in directory: {data}\n"
+            f"Excel format (XLSX) validation only supports single files.\n"
+            f"Please provide either a single XLSX file or use other supported formats: "
+            f"{VALIDATION_FORMATS_MESSAGE}"
+        )
+    return (
+        f"No valid dataset files found in directory: {data}\n"
+        f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+        f"Please ensure your directory contains files in one of these formats."
+    )
+
+
+def _dataset_path_empty_message(found_formats: set, filetype: str) -> str:
+    """Returns the appropriate error message when no valid dataset paths remain."""
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
+        return (
+            f"Multiple XLSX files provided.\n"
+            f"Excel format (XLSX) validation only supports single files.\n"
+            f"Please provide either a single XLSX file or use other supported formats: "
+            f"{VALIDATION_FORMATS_MESSAGE}"
+        )
+    if filetype:
+        return (
+            f"Provided dataset path does not match the specified file type.\n"
+            f"Specified format: {filetype}\n"
+            f"Please ensure the file extension matches the selected format."
+        )
+    return (
+        f"No valid dataset files provided.\n"
+        f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+        f"Please ensure your files are in one of these formats."
+    )
+
+
 def _validate_data_directory(
-    data: str, logger, filetype: str = None
+    data: str, logger, filetype: str = None, standard: str = None
 ) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
     # Added filetype argument to filter files by extension if provided
@@ -169,41 +247,34 @@ def _validate_data_directory(
             [str(p) for p in Path(data).rglob("*") if p.is_file()]
         )
 
-    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
+    if _has_multiple_usdm_json_files(standard, found_formats, dataset_paths):
         logger.error(
-            f"Argument --data contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
-            f"Excel format (XLSX) validation only supports single files.\n"
-            f"Please provide either a single XLSX file or use other supported formats: "
-            f"{VALIDATION_FORMATS_MESSAGE}"
+            f"Multiple JSON files found in directory: {data}\n"
+            f"USDM validation only supports a single JSON file."
         )
         return [], set()
-    elif DataFormatTypes.CSV.value in found_formats:
+
+    xlsx_mixed_message = _check_mixed_xlsx_formats("--data", found_formats)
+    if xlsx_mixed_message:
+        logger.error(xlsx_mixed_message)
+        return [], set()
+
+    if DataFormatTypes.CSV.value in found_formats:
         try:
             dataset_paths = _validate_csv_data_paths(dataset_paths)
         except InvalidCSVFile as e:
             logger.error(e)
             return [], set()
+
     if not dataset_paths:
-        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
-            logger.error(
-                f"Multiple XLSX files found in directory: {data}\n"
-                f"Excel format (XLSX) validation only supports single files.\n"
-                f"Please provide either a single XLSX file or use other supported formats: "
-                f"{VALIDATION_FORMATS_MESSAGE}"
-            )
-        else:
-            logger.error(
-                f"No valid dataset files found in directory: {data}\n"
-                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
-                f"Please ensure your directory contains files in one of these formats."
-            )
+        logger.error(_directory_empty_message(data, found_formats))
         return [], set()
 
     return dataset_paths, found_formats
 
 
 def _validate_dataset_paths(
-    dataset_path: tuple[str], logger, filetype: str
+    dataset_path: tuple[str], logger, filetype: str, standard
 ) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
     if filetype:
@@ -219,52 +290,29 @@ def _validate_dataset_paths(
     else:
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
 
-    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
+    if _has_multiple_usdm_json_files(standard, found_formats, dataset_paths):
         logger.error(
-            f"Argument --dataset-path contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
-            f"Excel format (XLSX) validation only supports single files.\n"
-            f"Please provide either a single XLSX file or use other supported formats: "
-            f"{VALIDATION_FORMATS_MESSAGE}"
+            "Multiple JSON files provided for --dataset-path.\n"
+            "USDM validation only supports a single JSON file."
         )
         return [], set()
-    elif DataFormatTypes.CSV.value in found_formats:
-        all_files_in_dp = []
 
-        for dp in dataset_path:
-            all_files_in_dp.append(dp)
-            dp_path = Path(dp)
-            all_files_in_dp.extend(
-                [
-                    str(p)
-                    for p in dp_path.parent.glob("*")
-                    if p.is_file() and p.name in {"datasets.csv", "variables.csv"}
-                ]
-            )
+    xlsx_mixed_message = _check_mixed_xlsx_formats("--dataset-path", found_formats)
+    if xlsx_mixed_message:
+        logger.error(xlsx_mixed_message)
+        return [], set()
+
+    if DataFormatTypes.CSV.value in found_formats:
         try:
-            dataset_paths = _validate_csv_data_paths(all_files_in_dp)
+            dataset_paths = _validate_csv_data_paths(
+                _gather_csv_metadata_files(dataset_path)
+            )
         except InvalidCSVFile as e:
             logger.error(e)
             return [], set()
+
     if not dataset_paths:
-        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
-            logger.error(
-                f"Multiple XLSX files provided.\n"
-                f"Excel format (XLSX) validation only supports single files.\n"
-                f"Please provide either a single XLSX file or use other supported formats: "
-                f"{VALIDATION_FORMATS_MESSAGE}"
-            )
-        elif filetype:
-            logger.error(
-                f"Provided dataset path does not match the specified file type.\n"
-                f"Specified format: {filetype}\n"
-                f"Please ensure the file extension matches the selected format."
-            )
-        else:
-            logger.error(
-                f"No valid dataset files provided.\n"
-                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
-                f"Please ensure your files are in one of these formats."
-            )
+        logger.error(_dataset_path_empty_message(found_formats, filetype))
         return [], set()
 
     return dataset_paths, found_formats
@@ -656,12 +704,14 @@ def validate(  # noqa
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit(2)
-        dataset_paths, found_formats = _validate_data_directory(data, logger, filetype)
+        dataset_paths, found_formats = _validate_data_directory(
+            data, logger, filetype, standard
+        )
         if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = _validate_dataset_paths(
-            dataset_path, logger, filetype
+            dataset_path, logger, filetype, standard
         )
         if not dataset_paths:
             ctx.exit(2)

@@ -2,7 +2,6 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     entity_details_sheet,
@@ -14,9 +13,10 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 class TestGetXHTMLErrors(unittest.TestCase):
     def test_positive_dataset(self):
+        """Verify the get_xhtml_errors operator (DDF00187) reports SUCCESS
+        (0 issues) when narrative content is valid, well-formed XHTML."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -82,6 +82,9 @@ class TestGetXHTMLErrors(unittest.TestCase):
             os.remove(excel_file_path)
 
     def test_negative_dataset(self):
+        """Verify the same rule flags 4 issues on NarrativeContentItem
+        (out of 170 total entities) when the narrative content contains
+        malformed/non-conformant XHTML."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",

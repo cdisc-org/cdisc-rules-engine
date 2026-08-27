@@ -35,7 +35,7 @@ def test_get_study_domains_with_duplicates(
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
-        assert sorted(val) == ["AE", "DM", "DM1", "TV"]
+        assert val == ["AE", "DM", "DM1", "TV"]
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
@@ -63,4 +63,4 @@ def test_get_study_domains_with_missing_domains(
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
-        assert sorted(val) == ["", "AE", "DM1", "TV"]
+        assert val == ["", "AE", "DM1", "TV"]

@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.models.operation_params import OperationParams
 
+import pandas as pd
 import pytest
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.data_services.data_service_factory import (
@@ -16,11 +17,11 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
     [
         (
             PandasDataset.from_dict({"values": [11, 12, 12, 5, 18, 9]}),
-            [11, 12, 5, 18, 9],
+            [5, 9, 11, 12, 18],
         ),
         (
             DaskDataset.from_dict({"values": [11, 12, 12, 5, 18, 9]}),
-            [11, 12, 5, 18, 9],
+            [5, 9, 11, 12, 18],
         ),
     ],
 )
@@ -44,14 +45,14 @@ def test_distinct(data, expected, operation_params: OperationParams):
             PandasDataset.from_dict(
                 {"values": [11, 12, 12, 5, 18, 9], "patient": [1, 2, 2, 1, 2, 1]}
             ),
-            {1: [11, 5, 9], 2: [12, 18]},
+            {1: [5, 9, 11], 2: [12, 18]},
             None,
         ),
         (
             DaskDataset.from_dict(
                 {"values": [11, 12, 12, 5, 18, 9], "patient": [1, 2, 2, 1, 2, 1]}
             ),
-            {1: [11, 5, 9], 2: [12, 18]},
+            {1: [5, 9, 11], 2: [12, 18]},
             None,
         ),
         (
@@ -62,7 +63,7 @@ def test_distinct(data, expected, operation_params: OperationParams):
                     "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
-            {1: [11, 5, 9], 2: [12, 18], 3: None},
+            {1: [5, 9, 11], 2: [12, 18], 3: None},
             ["subject"],
         ),
         (
@@ -73,7 +74,7 @@ def test_distinct(data, expected, operation_params: OperationParams):
                     "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
-            {1: [11, 5, 9], 2: [12, 18], 3: None},
+            {1: [5, 9, 11], 2: [12, 18], 3: None},
             ["subject"],
         ),
     ],
@@ -98,7 +99,7 @@ def test_grouped_distinct(
         expected_val = expected.get(val[grouping_column])
         actual_val = val[operation_params.operation_id]
         assert (
-            sorted(actual_val) == sorted(expected_val)
+            actual_val == expected_val
             if expected_val is not None
             else actual_val == expected_val
         )
@@ -116,7 +117,7 @@ def test_grouped_distinct(
                     "scat": ["a", "a", "a", "a", "a", "b"],
                 }
             ),
-            {1: [11, 5], 2: [12]},
+            {1: [5, 11], 2: [12]},
             None,
             {"cat": 1, "scat": "a"},
         ),
@@ -129,7 +130,7 @@ def test_grouped_distinct(
                     "scat": ["a", "a", "a", "a", "a", "b"],
                 }
             ),
-            {1: [11, 5], 2: [12]},
+            {1: [5, 11], 2: [12]},
             None,
             {"cat": 1, "scat": "a"},
         ),
@@ -143,7 +144,7 @@ def test_grouped_distinct(
                     "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
-            {1: [11, 5], 2: [12], 3: None},
+            {1: [5, 11], 2: [12], 3: None},
             ["subject"],
             {"cat": 1, "scat": "a"},
         ),
@@ -157,7 +158,7 @@ def test_grouped_distinct(
                     "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
-            {1: [11, 5], 2: [12], 3: None},
+            {1: [5, 11], 2: [12], 3: None},
             ["subject"],
             {"cat": 1, "scat": "a"},
         ),
@@ -184,7 +185,7 @@ def test_filtered_grouped_distinct(
         expected_val = expected.get(val[grouping_column])
         actual_val = val[operation_params.operation_id]
         assert (
-            sorted(actual_val) == sorted(expected_val)
+            actual_val == expected_val
             if expected_val is not None
             else actual_val == expected_val
         )
@@ -207,7 +208,7 @@ def test_filtered_grouped_distinct(
                     "LBCAT": ["CAT1", "CAT2"],
                 }
             ),
-            ["LBTEST", "LBSEQ"],
+            ["LBSEQ", "LBTEST"],
         ),
         (
             DaskDataset.from_dict(
@@ -223,7 +224,7 @@ def test_filtered_grouped_distinct(
                     "LBCAT": ["CAT1", "CAT2"],
                 }
             ),
-            ["LBTEST", "LBSEQ"],
+            ["LBSEQ", "LBTEST"],
         ),
     ],
 )
@@ -252,7 +253,7 @@ def test_distinct_value_is_reference(
     assert operation_params.operation_id in result
     assert len(result[operation_params.operation_id]) > 0
     for val in result[operation_params.operation_id]:
-        assert sorted(val) == sorted(expected)
+        assert val == expected
 
 
 @pytest.mark.parametrize(
@@ -274,7 +275,7 @@ def test_distinct_value_is_reference(
                     "LBCAT": ["CAT1", "CAT2"],
                 }
             ),
-            {1: ["LBTEST", "LBSEQ"], 2: ["LBTEST", "LBSEQ", "LBCAT"]},
+            {1: ["LBSEQ", "LBTEST"], 2: ["LBCAT", "LBSEQ", "LBTEST"]},
             ["subject"],
         ),
         (
@@ -293,7 +294,7 @@ def test_distinct_value_is_reference(
                     "LBCAT": ["CAT1", "CAT2"],
                 }
             ),
-            {1: ["LBTEST", "LBSEQ"], 2: ["LBTEST", "LBSEQ", "LBCAT"]},
+            {1: ["LBSEQ", "LBTEST"], 2: ["LBCAT", "LBSEQ", "LBTEST"]},
             ["subject"],
         ),
     ],
@@ -331,7 +332,69 @@ def test_grouped_distinct_value_is_reference(
         expected_val = expected.get(val[grouping_column])
         actual_val = val[operation_params.operation_id]
         assert (
-            sorted(actual_val) == sorted(expected_val)
+            actual_val == expected_val
             if expected_val is not None
             else actual_val == expected_val
+        )
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        PandasDataset.from_dict({"values": [], "patient": []}),
+        DaskDataset.from_dict({"values": [], "patient": []}),
+    ],
+)
+def test_grouped_distinct_empty_dataset(data, operation_params: OperationParams):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "values"
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = None
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "patient" in result
+    assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        PandasDataset.from_dict(
+            {
+                "values": [11, 12, 12, 5, 18, 9],
+                "patient": [1, 2, 2, 1, 2, 1],
+                "cat": [1, 1, 1, 1, 1, 1],
+            }
+        ),
+        DaskDataset.from_dict(
+            {
+                "values": [11, 12, 12, 5, 18, 9],
+                "patient": [1, 2, 2, 1, 2, 1],
+                "cat": [1, 1, 1, 1, 1, 1],
+            }
+        ),
+    ],
+)
+def test_filtered_grouped_distinct_zero_row_result(
+    data, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "values"
+    operation_params.filter = {"cat": 999}
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = None
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "patient" in result
+    assert len(result) == len(data)
+    for _, val in result.iterrows():
+        assert val[operation_params.operation_id] is None or (
+            isinstance(val[operation_params.operation_id], float)
+            and pd.isna(val[operation_params.operation_id])
         )

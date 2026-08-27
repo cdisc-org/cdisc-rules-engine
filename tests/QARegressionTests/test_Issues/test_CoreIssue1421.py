@@ -1,7 +1,6 @@
 import os
 import subprocess
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     dataset_details_sheet,
@@ -12,8 +11,11 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_validate_define_xml_against_lib_metadata():
+    """Validates that codelist definitions in a Define-XML are checked
+    against CDISC library CT metadata via rule CDISC.SDTMIG.CG0999: verifies
+    issue rows/columns, per-dataset record counts (AE, DM, EC, EX, SUPPEC),
+    and that only DM and SUPPEC datasets report issues."""
     command = [
         f"{get_python_executable()}",
         "-m",

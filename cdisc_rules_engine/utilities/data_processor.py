@@ -59,13 +59,16 @@ class DataProcessor:
             pass
         except ValueError:
             pass
+        has_filter = bool(filter_value) and not (
+            isinstance(filter_value, float) and pd.isna(filter_value)
+        )
         return (
             df.from_dict(
                 df[
                     DataProcessor.convert_float_merge_keys(df[col]) == str(filter_value)
                 ].to_dict()
             )
-            if filter_value
+            if has_filter
             else df
         )
 
@@ -94,7 +97,7 @@ class DataProcessor:
 
     @staticmethod
     def merge_on_relrec_record(
-        relrec_row: pd.Series,
+        relrec_row: dict,
         left_dataset: DatasetInterface,
         datasets: List[dict],
         dataset_preprocessor: DatasetPreprocessor,
@@ -178,15 +181,15 @@ class DataProcessor:
     ) -> DatasetInterface:
         """
         1. Find each record within relrec_dataset where RDOMAIN matches the
-          left_dataset_domain_name
+        left_dataset_domain_name
         2. Join each of these (left) records with all other (right) records in
-          relrec_dataset sharing the same STUDYID, USUBJID, RELID
+        relrec_dataset sharing the same STUDYID, USUBJID, RELID
         3. For each record in this new dataset:
             1. Filter the left and right datasets by the criteria
             2. Rename the right dataset columns with wildcards and a "RELREC." dataset
-              specifier
+            specifier
             3. Join the records referenced by the left side with the records referenced
-              by the right side
+            by the right side
             4. Union the results
         """
         relrec_for_domain = DataProcessor.filter_relrec_for_domain(
@@ -196,7 +199,7 @@ class DataProcessor:
             DataProcessor.merge_on_relrec_record(
                 relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
             )
-            for _, relrec_row in relrec_for_domain.iterrows()
+            for relrec_row in relrec_for_domain.to_dict("records")
         ]
         result = (
             objs[0].concat(objs[1:], ignore_index=True)
