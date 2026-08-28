@@ -32,7 +32,7 @@ jobs:
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
           --copy-metadata pandas
-          --copy-metadata dask
+          --recursive-copy-metadata dask
           --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas
           --add-data=resources/cache:resources/cache
           --add-data=resources/templates:resources/templates
@@ -47,7 +47,7 @@ jobs:
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
           --copy-metadata pandas
-          --copy-metadata dask
+          --recursive-copy-metadata dask
           --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas
           --add-data=resources/cache:resources/cache
           --add-data=resources/templates:resources/templates
@@ -62,7 +62,7 @@ jobs:
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
           --copy-metadata pandas
-          --copy-metadata dask
+          --recursive-copy-metadata dask
           --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas"
           --hidden-import numpy
           --hidden-import numpy.core._methods
