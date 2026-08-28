@@ -103,6 +103,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install twine
+          pip install build
           pip install .
       - name: Build package
         run: |
