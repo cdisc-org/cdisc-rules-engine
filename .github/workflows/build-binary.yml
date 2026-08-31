@@ -31,6 +31,7 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.ico
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
           --copy-metadata pandas
           --recursive-copy-metadata dask
           --copy-metadata pyarrow
@@ -47,6 +48,7 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.icns
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
           --copy-metadata pandas
           --recursive-copy-metadata dask
           --copy-metadata pyarrow
@@ -63,6 +65,7 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.ico
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
           --copy-metadata pandas
           --recursive-copy-metadata dask
           --copy-metadata pyarrow
