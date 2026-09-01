@@ -477,6 +477,15 @@
       },
       "required": ["id", "operator", "name", "namespace"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "value_equals"
+        }
+      },
+      "required": ["id", "operator", "name", "value"],
+      "type": "object"
     }
   ],
   "properties": {
@@ -643,6 +652,9 @@
     },
     "term_pref_term": {
       "type": "string"
+    },
+    "value": {
+      "type": ["string", "number", "boolean", "null", "array"]
     },
     "value_is_reference": {
       "type": "boolean"

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Any
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
@@ -57,6 +57,7 @@ class OperationParams:
     regex: str = None
     returntype: str = None
     source: str = None
+    value: Any = None
     target: str = None
     subtract: str = None
     order_insensitive: bool = True
