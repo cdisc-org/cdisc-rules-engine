@@ -1,18 +1,45 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.check_operators.helpers import format_date_preserving_precision
 
 
 class MinDate(BaseOperation):
     def _execute_operation(self):
+        original = self.params.dataframe[self.params.target]
+        data = pd.to_datetime(original, format="ISO8601")
+
         if not self.params.grouping:
-            data = pd.to_datetime(self.params.dataframe[self.params.target])
-            min_date = data.min()
-            if isinstance(min_date, pd._libs.tslibs.nattype.NaTType):
+            if data.isna().all():
                 result = ""
             else:
-                result = min_date.isoformat()
+                min_idx = data.idxmin()
+                result = format_date_preserving_precision(original.loc[min_idx])
+            return pd.Series(result, index=self.evaluation_dataset.index)
+
+        grouping_cols = self.params.grouping
+        if isinstance(grouping_cols, str):
+            grouping_cols = [grouping_cols]
+
+        group_keys = [self.params.dataframe[col] for col in grouping_cols]
+        idx_of_min = data.groupby(group_keys).apply(
+            lambda s: s.idxmin() if s.notna().any() else pd.NA
+        )
+        min_dates = idx_of_min.apply(
+            lambda idx: (
+                ""
+                if pd.isna(idx)
+                else format_date_preserving_precision(original.loc[idx])
+            )
+        )
+
+        if len(grouping_cols) == 1:
+            lookup_keys = self.evaluation_dataset[grouping_cols[0]]
         else:
-            result = self.params.dataframe.groupby(
-                self.params.grouping, as_index=False
-            ).min()
+            lookup_keys = pd.Series(
+                list(zip(*[self.evaluation_dataset[c] for c in grouping_cols])),
+                index=self.evaluation_dataset.index,
+            )
+
+        result = lookup_keys.map(min_dates).fillna("")
+        result.index = self.evaluation_dataset.index
         return result

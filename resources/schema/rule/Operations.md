@@ -1063,7 +1063,7 @@ If no filter or group is provided, returns the number of records in the dataset.
 
 If both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
-**Wildcard Filtering:** Filter values ending with % will match any records where the column value starts with the specified prefix. For example, RACE% will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
+**Wildcard Filtering:** Filter values ending with & will match any records where the column value starts with the specified prefix. For example, RACE& will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
 
 **Regex Transformation:** If regex is provided along with group, the regex pattern will be applied to transform grouping column values before grouping. The regex is only applied to columns where the pattern matches the data type. For example, using regex `^\d{4}-\d{2}-\d{2}` on a column containing `2022-01-14T08:00` will extract `2022-01-14` for grouping purposes.
 

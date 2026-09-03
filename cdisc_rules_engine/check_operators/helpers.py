@@ -334,6 +334,26 @@ def _truncate_by_precision(
     )
 
 
+def format_date_preserving_precision(original_str: str) -> str:
+    precision = detect_datetime_precision(original_str)
+    if precision is None:
+        return ""
+    dt = truncate_datetime_to_precision(original_str, precision)
+
+    if precision >= DatePrecision.second:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S")
+    elif precision == DatePrecision.minute:
+        return dt.strftime("%Y-%m-%dT%H:%M")
+    elif precision == DatePrecision.hour:
+        return dt.strftime("%Y-%m-%dT%H")
+    elif precision == DatePrecision.day:
+        return dt.strftime("%Y-%m-%d")
+    elif precision == DatePrecision.month:
+        return dt.strftime("%Y-%m")
+    else:  # year
+        return dt.strftime("%Y")
+
+
 def _compare_with_inferred_precision(
     operator_func,
     target: str,

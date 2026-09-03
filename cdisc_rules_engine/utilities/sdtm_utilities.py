@@ -547,3 +547,9 @@ def tag_source(
     dataset[SOURCE_DATASET_NAME] = dataset_metadata.name
     dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
     return dataset
+
+
+def has_split_siblings(
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> bool:
+    return len(get_corresponding_datasets(datasets, dataset_metadata)) > 1

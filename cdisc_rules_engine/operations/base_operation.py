@@ -212,6 +212,9 @@ class BaseOperation:
         for item in grouping_list:
             if item in self.evaluation_dataset.columns:
                 operation_col = self.evaluation_dataset[item]
+                if operation_col.empty:
+                    expanded.append(item)
+                    continue
                 first_val = operation_col.iloc[0]
                 if (
                     isinstance(first_val, (list, tuple))

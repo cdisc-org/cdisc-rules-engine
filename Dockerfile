@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     jq \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y \
     python3.12 \
     python3.12-venv \
     python3-pip \

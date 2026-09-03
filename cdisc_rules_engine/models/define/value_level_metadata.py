@@ -69,7 +69,7 @@ class ValueLevelMetadata:
 
     def greater_than(self):
         def gt(dataframe):
-            return dataframe[self.item.Name] < self._convert_to_datatype(
+            return dataframe[self.item.Name] > self._convert_to_datatype(
                 self.check_values[0], dataframe[self.item.Name]
             )
 
