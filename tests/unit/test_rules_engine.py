@@ -1482,7 +1482,7 @@ def test_validate_dataset_metadata_against_define_xml(
                 pd.DataFrame.from_dict(
                     {
                         "variable_name": [
-                            "TEST",
+                            "TEST2",
                         ],
                         "variable_label": [
                             "TEST Label",
@@ -1543,13 +1543,25 @@ def test_validate_variable_metadata_against_define_xml(
         full_path="CDISC01/test",
     )
     mock_get_datasets.return_value = [dataset_metadata]
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
-        dataset_metadata=dataset_metadata,
-        rule=define_xml_variable_validation_rule,
+    df = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "TEST": ["TEST", "TEST", "TEST"],
+                "TEST2": ["TEST", "TEST", "TEST"],
+            }
+        )
     )
-    assert validation_result == expected_validation_result
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+        return_value=df,
+    ):
+        validation_result: List[dict] = RulesEngine(
+            standard="sdtmig"
+        ).validate_single_dataset(
+            dataset_metadata=dataset_metadata,
+            rule=define_xml_variable_validation_rule,
+        )
+        assert validation_result == expected_validation_result
 
 
 @pytest.mark.parametrize(
