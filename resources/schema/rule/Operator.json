@@ -247,6 +247,16 @@
       "type": "object"
     },
     {
+      "properties": { "operator": { "const": "is_consecutive_ordered_set" } },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "is_not_consecutive_ordered_set" } },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
       "properties": { "operator": { "const": "is_unique_relationship" } },
       "required": ["operator", "value"],
       "type": "object"
