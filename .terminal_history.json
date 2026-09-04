@@ -1,0 +1,1076 @@
+{
+  "version": 1,
+  "workspacePath": "c:\\Repos\\cdisc-rules-engine-fork",
+  "entries": [
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1785331894671,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remote add upstream https://github.com/cdisc-org/cdisc-rules-engine.git",
+      "timestamp": 1785415297965,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785415335862,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python scripts/merge_schema_markdown.py",
+      "timestamp": 1785521061596,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "npm i prettier",
+      "timestamp": 1785521076213,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "npx prettier resources/schema/rule-merged/*.json --write",
+      "timestamp": 1785521092068,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python scripts/merge_schema_markdown.py",
+      "timestamp": 1785521407175,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1785521618684,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git merge main",
+      "timestamp": 1785521670534,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push --set-upstream origin 587_corerules_1689",
+      "timestamp": 1785521744737,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remove -f",
+      "timestamp": 1785521811813,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remove -v",
+      "timestamp": 1785521818726,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remote -v",
+      "timestamp": 1785521826130,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status",
+      "timestamp": 1785521831352,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785521938392,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull upstream 587_corerules_1689",
+      "timestamp": 1785522103870,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785522138750,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python scripts/merge_schema_markdown.py",
+      "timestamp": 1785522603366,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status",
+      "timestamp": 1785523449013,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -c \"f=open('cdisc_rules_engine/constants/operation_constants.py','rb'); content=f.read(); f.close(); print(content[-5:])\"",
+      "timestamp": 1785523476130,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785523520864,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull upstream 587_corerules_1689\ngit push upstream 587_corerules_1689",
+      "timestamp": 1785523561567,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -c \"\nwith open('cdisc_rules_engine/constants/operation_constants.py', 'r') as f:\n    content = f.read()\nwith open('cdisc_rules_engine/constants/operation_constants.py', 'w', newline='\\n') as f:\n    f.write(content.rstrip() + '\\n')\n\"",
+      "timestamp": 1785523936960,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git add cdisc_rules_engine/constants/operation_constants.py\ngit commit -m \"Fix W292: ensure LF newline at end of file\"\ngit pull upstream 587_corerules_1689\ngit push upstream 587_corerules_1689",
+      "timestamp": 1785523970969,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git show upstream/587_corerules_1689:cdisc_rules_engine/constants/operation_constants.py | xxd | tail -3",
+      "timestamp": 1785524060709,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git show upstream/587_corerules_1689:cdisc_rules_engine/constants/operation_constants.py | Format-Hex | Select-Object -Last 3",
+      "timestamp": 1785524093983,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.autocrlf false\npython -c \"\nwith open('cdisc_rules_engine/constants/operation_constants.py', 'r') as f:\n    content = f.read()\nwith open('cdisc_rules_engine/constants/operation_constants.py', 'w', newline='\\n') as f:\n    f.write(content.rstrip() + '\\n')\n\"\ngit add cdisc_rules_engine/constants/operation_constants.py\ngit commit -m \"Fix W292: add missing newline at end of file\"\ngit push upstream 587_corerules_1689\ngit config core.autocrlf true",
+      "timestamp": 1785524143371,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git ls-files --stage cdisc_rules_engine/constants/operation_constants.py",
+      "timestamp": 1785524239265,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git cat-file -p 39de598c0ba916850b5ba46782d3893e29908573 | Format-Hex | Select-Object -Last",
+      "timestamp": 1785524286751,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git cat-file -p 39de598c0ba916850b5ba46782d3893e29908573 | Format-Hex | Select-Object -Last 2",
+      "timestamp": 1785524315205,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.autocrlf false\ngit cat-file -p 39de598c0ba916850b5ba46782d3893e29908573 > /tmp/op_const_fixed.py\nprintf '\\n' >> /tmp/op_const_fixed.py\ngit hash-object -w /tmp/op_const_fixed.py",
+      "timestamp": 1785524750987,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.autocrlf false\ngit cat-file -p 39de598c0ba916850b5ba46782d3893e29908573 | Out-File -Encoding utf8NoBOM -NoNewline op_const_fixed.py\nAdd-Content -NoNewline -Encoding utf8NoBOM op_const_fixed.py \"`n\"\n$newHash = git hash-object -w op_const_fixed.py\ngit update-index --cacheinfo \"100644,$newHash,cdisc_rules_engine/constants/operation_constants.py\"\ngit commit -m \"Fix W292: add missing newline at end of file\"\ngit push upstream 587_corerules_1689\ngit config core.autocrlf true\nRemove-Item op_const_fixed.py",
+      "timestamp": 1785524796691,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.autocrlf false\npython -c \"\nimport subprocess, os\ncontent = subprocess.check_output(['git', 'cat-file', '-p', '39de598c0ba916850b5ba46782d3893e29908573'])\nwith open('op_const_fixed.py', 'wb') as f:\n    f.write(content + b'\\n')\n\"\n$newHash = git hash-object -w op_const_fixed.py\ngit update-index --cacheinfo \"100644,$newHash,cdisc_rules_engine/constants/operation_constants.py\"\ngit commit -m \"Fix W292: add missing newline at end of file\"\ngit push upstream 587_corerules_1689\ngit config core.autocrlf true\nRemove-Item op_const_fixed.py",
+      "timestamp": 1785524898635,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785524983288,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.autocrlf false\npython -c \"\nimport subprocess\ncontent = subprocess.check_output(['git', 'cat-file', '-p', '39de598c0ba916850b5ba46782d3893e29908573'])\nwith open('op_const_fixed.py', 'wb') as f:\n    f.write(content + b'\\n')\n\"\n$newHash = git hash-object -w op_const_fixed.py\ngit update-index --cacheinfo \"100644,$newHash,cdisc_rules_engine/constants/operation_constants.py\"\ngit commit -m \"Fix W292: re-add missing newline at end of file\"\ngit push upstream 587_corerules_1689\ngit config core.autocrlf true\nRemove-Item op_const_fixed.py",
+      "timestamp": 1785525278007,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull upstream 587_corerules_1689",
+      "timestamp": 1785760432654,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull upstream 587_corerules_1689\ngit config core.autocrlf false\npython -c \"\nimport subprocess\nresult = subprocess.check_output(['git', 'ls-files', '--stage', 'cdisc_rules_engine/constants/operation_constants.py'])\ncurrent_hash = result.decode().split()[1]\ncontent = subprocess.check_output(['git', 'cat-file', '-p', current_hash])\nfixed = content.rstrip() + b'\\n'\nwith open('op_const_fixed.py', 'wb') as f:\n    f.write(fixed)\n\"\n$newHash = git hash-object -w op_const_fixed.py\ngit update-index --cacheinfo \"100644,$newHash,cdisc_rules_engine/constants/operation_constants.py\"\ngit commit -m \"Fix W391: remove extra blank line at end of file\"\ngit push upstream 587_corerules_1689\ngit config core.autocrlf true\nRemove-Item op_const_fixed.py",
+      "timestamp": 1785760668463,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black cdisc_rules_engine/operations/regex_find_replace.py",
+      "timestamp": 1785761015928,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git add cdisc_rules_engine/operations/regex_find_replace.py",
+      "timestamp": 1785761025497,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git commit -m \"Apply black formatting to regex_find_replace\"",
+      "timestamp": 1785761035814,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push upstream 587_corerules_1689",
+      "timestamp": 1785761047382,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_x7f4ey.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_x7f4ey.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1785951356131,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_mh7plh.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_mh7plh.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1785951356283,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1785951387957,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1785951394817,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 930_is_ordered_set_operator",
+      "timestamp": 1785951426162,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout 930_is_ordered_set_operator",
+      "timestamp": 1785951432246,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_7qss4w.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_7qss4w.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1785953771708,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1785953775898
+    },
+    {
+      "command": "python scripts/merge_schema_markdown.py",
+      "timestamp": 1785965059760,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest test_value_set_checks.py -q",
+      "timestamp": 1785965140202,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_check_operators/test_value_set_checks.py -q",
+      "timestamp": 1785965290154,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_merge_schema_markdown.py -q",
+      "timestamp": 1785965323334,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python scripts/merge_schema_markdown.py",
+      "timestamp": 1785965479000,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "npx prettier resources/schema/rule-merged/*.json --write",
+      "timestamp": 1785965494523,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push -u origin HEAD",
+      "timestamp": 1785965639875,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch --show-current",
+      "timestamp": 1785966095059,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status",
+      "timestamp": 1785966098974,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "got log --oneline --decorate -5",
+      "timestamp": 1785966110286,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git log --oneline --decorate -5",
+      "timestamp": 1785966120896,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remote -v",
+      "timestamp": 1785966173842,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch -vv",
+      "timestamp": 1785966179804,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push -u upstream 930_is_ordered_set_operator",
+      "timestamp": 1786019565659,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 dataframe_operators.py test_value_set_checks.py --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "timestamp": 1786019918812,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "dir",
+      "timestamp": 1786019981851,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_checks.py --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "timestamp": 1786020057569,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\check_operators\\dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_checks.py --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "timestamp": 1786020094985,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\check_operators\\dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_checks.py --count --statstics",
+      "timestamp": 1786020117094,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\check_operators\\dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_checks.py --count --statistics",
+      "timestamp": 1786020128444,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push",
+      "timestamp": 1786020156175,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black cdisc_rules_engine\\check_operators\\dataframe_operators.py",
+      "timestamp": 1786020266824,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check cdisc_rules_engine\\check_operators\\dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_check.py",
+      "timestamp": 1786020303452,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check cdisc_rules_engine\\check_operators\\dataframe_operators.py tests\\unit\\test_check_operators\\test_value_set_checks.py",
+      "timestamp": 1786020312573,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push",
+      "timestamp": 1786020368715,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1786021927247,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1786021932881,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 1760_does_not_contain_bug",
+      "timestamp": 1786021951714,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout 1760_does_not_contain_bug",
+      "timestamp": 1786021958898,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1786024082835,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 530_define_variable_has_method",
+      "timestamp": 1786024116845,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout 530_define_variable_has_method",
+      "timestamp": 1786024123183,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1786122854151,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "bit branch 1062_value_in_list_operator",
+      "timestamp": 1786122908874,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 1062_value_in_list_operator",
+      "timestamp": 1786122913488,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout 1062_value_in_list_operator",
+      "timestamp": 1786122921973,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest test_value_equals.py -q",
+      "timestamp": 1786125432281,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest test\\unit\\test_operations\\test_value_equals.py -q",
+      "timestamp": 1786125481750,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests\\unit\\test_operations\\test_value_equals.py -q",
+      "timestamp": 1786125490587,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remote -v",
+      "timestamp": 1786134379945,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push -u upstream 1062_value_in_list_operator",
+      "timestamp": 1786134422440,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_olgw6d.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_olgw6d.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1786623124867,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_gp2wd8.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_gp2wd8.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1786623124872,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1786623127858,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1786623147468,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_i5bu4.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_i5bu4.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1786729857478,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_operations/test_value_equals.py -q",
+      "timestamp": 1786729857705,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest test_value_equals.py -q",
+      "timestamp": 1786730323085,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests\\unit\\test_operations\\test_value_equals.py -q",
+      "timestamp": 1786730337007,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_rjl7p8.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_rjl7p8.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787060275488,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_av1z.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_av1z.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787060275517,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_operations/test_value_equals.py -q",
+      "timestamp": 1787060597005,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests/unit -q",
+      "timestamp": 1787060651841,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff main...HEAD",
+      "timestamp": 1787060691918,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status",
+      "timestamp": 1787060698245,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push",
+      "timestamp": 1787060749354,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pip install black flake8",
+      "timestamp": 1787063787841,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\operations\\value_equals.py `\n       cdisc_rules_engine\\operations\\operations_factory.py `\n       tests\\unit\\test_operations\\test_value_equals.py `\n       --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "timestamp": 1787063801218,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\operations\\value_equals.py `\n       cdisc_rules_engine\\operations\\operations_factory.py `\n       tests\\unit\\test_operations\\test_value_equals.py `\n       --count --statistics",
+      "timestamp": 1787063812444,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\operations\\value_equals.py `\n  cdisc_rules_engine\\operations\\operations_factory.py `\n  tests\\unit\\test_operations\\test_value_equals.py",
+      "timestamp": 1787063851411,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black tests\\unit\\test_operations\\test_value_equals.py",
+      "timestamp": 1787063895697,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\operations\\value_equals.py `\n  cdisc_rules_engine\\operations\\operations_factory.py `\n  tests\\unit\\test_operations\\test_value_equals.py",
+      "timestamp": 1787063908677,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff -- tests\\unit\\test_operations\\test_value_equals.py",
+      "timestamp": 1787063936056,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\operations\\value_equals.py `\n  cdisc_rules_engine\\operations\\operations_factory.py `\n  tests\\unit\\test_operations\\test_value_equals.py",
+      "timestamp": 1787063992242,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests\\unit\\test_operations\\test_value_equals.py -q",
+      "timestamp": 1787064002303,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 cdisc_rules_engine\\operations\\value_equals.py `\n       cdisc_rules_engine\\operations\\operations_factory.py `\n       tests\\unit\\test_operations\\test_value_equals.py `\n       --count --statistics",
+      "timestamp": 1787064010931,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests\\unit\\ --cov=cdisc_rules_engine --cov-fail-under=75",
+      "timestamp": 1787064092127,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest tests\\QARegressionTests\\",
+      "timestamp": 1787064895367,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push",
+      "timestamp": 1787064929299,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1787066011151,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 1816_get_model_filtered_variable_fix",
+      "timestamp": 1787159592477,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout 1816_get_model_filtered_variable_fix",
+      "timestamp": 1787159600891,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python collect_usage_restrictions.py",
+      "timestamp": 1787164388402,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "cd .\\cdisc_rules_engine\\",
+      "timestamp": 1787164427611,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python collect_usage_restrictions.py",
+      "timestamp": 1787164429634,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork\\cdisc_rules_engine"
+    },
+    {
+      "command": "cd..",
+      "timestamp": 1787164489806,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork\\cdisc_rules_engine"
+    },
+    {
+      "command": "move .\\cdisc_rules_engine\\collect_usage_restrictions.py .",
+      "timestamp": 1787164503862,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python collect_usage_restrictions.py",
+      "timestamp": 1787164514452,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_ebxarg.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_ebxarg.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787168017191,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_hgxqlf.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_hgxqlf.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787678821895,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_70vu78.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_70vu78.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787678821899,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1787678823362,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_xf6pr2.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_xf6pr2.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787754911657,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_eat36e.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_eat36e.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787754911661,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_91z6r.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_91z6r.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787754911667,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1787755257733,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_yc1zbm.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_yc1zbm.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787756962227,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_fn9q5.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_fn9q5.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787756963321,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m venv venv",
+      "timestamp": 1787758291209,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": ".\\venv\\Scripts\\Activate",
+      "timestamp": 1787758302010,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "pip install --upgrade pip",
+      "timestamp": 1787758325444,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pip install --upgrade pip",
+      "timestamp": 1787758357403,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "pip install . --group dev",
+      "timestamp": 1787758475808,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_vmcitn.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_vmcitn.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787947054902,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_6pz1lq.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_6pz1lq.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1787947054907,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1787947067673,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1787947121077,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_0p95kf.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_0p95kf.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788180105482,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1788180106237,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_3xk8u.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_3xk8u.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788180153209,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1788182034433,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_kxek0q.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_kxek0q.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788182034828,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_936rt.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_936rt.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788182038971,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1788194357358,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1788194365168,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -c \"import odmlib; from pathlib import Path; print(Path(odmlib.__file__).parent / 'data' / 'valuesets.json')\"",
+      "timestamp": 1788195078966,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1788362190142,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1788362196864,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python core.py validate -s sdtmig -v 3-2 -d C:\\New_test\\Large_Data -me 20 True",
+      "timestamp": 1788362559515,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python core.py validate -s sdtmig -v 3-2 -d C:\\New_test\\Large_Data",
+      "timestamp": 1788368309965,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_5grcz8.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_5grcz8.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788373938707,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_8e5i15.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_8e5i15.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788373996916,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": ".\\venv\\Scripts\\Activate",
+      "timestamp": 1788443353115,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  -q",
+      "timestamp": 1788443363672,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --select=E9,F63,F7,F82 --show-source --statistics\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --statistics",
+      "timestamp": 1788443464339,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py",
+      "timestamp": 1788443563643,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --select=E9,F63,F7,F82 --show-source --statistics\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --statistics\n\npython -m pytest `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  -q",
+      "timestamp": 1788443580444,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff -- `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py",
+      "timestamp": 1788443611064,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --statistics\n\npython -m pytest tests\\unit\\test_operations\\test_get_model_filtered_variables.py -q\npython -m pytest tests\\unit\\test_operations -q",
+      "timestamp": 1788443923526,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status --short",
+      "timestamp": 1788444149811,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff --check",
+      "timestamp": 1788444189663,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff --stat",
+      "timestamp": 1788444197695,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff",
+      "timestamp": 1788444206279,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --select=E9,F63,F7,F82 --show-source --statistics\n\nflake8 `\n  cdisc_rules_engine\\utilities\\sdtm_utilities.py `\n  tests\\unit\\test_operations\\test_get_model_filtered_variables.py `\n  --count --statistics",
+      "timestamp": 1788444259931,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "$env:CDISC_LIBRARY_API_KEY = \"fakekey12341234\"\n\npython -m pytest tests/unit/ `\n  --cov=cdisc_rules_engine `\n  --cov-fail-under=75\n\npython -m pytest tests/QARegressionTests/",
+      "timestamp": 1788445395472,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "Measure-Command { git add -- <changed-file-1> <changed-file-2> }\nMeasure-Command { git status --porcelain=v2 -uno }\nMeasure-Command { git status --porcelain=v2 }",
+      "timestamp": 1788445861902,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "Measure-Command { git add -- sdtm_utilities.py }",
+      "timestamp": 1788445903738,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "Measure-Command { git add -- test_get_model_filtered_variables.py }",
+      "timestamp": 1788445922159,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "Measure-Command { git status --porcelain=v2 -uno }",
+      "timestamp": 1788445937628,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "Measure-Command { git status --porcelain=v2 }",
+      "timestamp": 1788445946115,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.fsmonitor true",
+      "timestamp": 1788445973127,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git config core.untrackedCache true",
+      "timestamp": 1788445978883,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_yaswxo.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_yaswxo.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788446025571,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_1cyee7.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_1cyee7.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788446025574,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_dhuas5.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_dhuas5.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788446953376,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_h4c4wx.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_h4c4wx.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788446966676,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_ty210r.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_ty210r.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788447954711,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "& \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_cvgo7e.ps1\"; Remove-Item \"C:\\Users\\A5F02~1.NIE\\AppData\\Local\\Temp\\wshist_cvgo7e.ps1\" -ErrorAction SilentlyContinue",
+      "timestamp": 1788447954715,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& c:\\Repos\\cdisc-rules-engine-fork\\.venv\\Scripts\\Activate.ps1)",
+      "timestamp": 1788447967802,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git status",
+      "timestamp": 1788447980129,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch --show-current",
+      "timestamp": 1788448025720,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch --show-current; git status --short --branch",
+      "timestamp": 1788448039105,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git fetch origin",
+      "timestamp": 1788448062122,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff origin/main...HEAD",
+      "timestamp": 1788448080232,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git log --oneline origin/main..HEAD",
+      "timestamp": 1788448093431,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git fetch upstream",
+      "timestamp": 1788448185887,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git diff upstream/main...HEAD",
+      "timestamp": 1788448470028,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push -u origin HEAD",
+      "timestamp": 1788448549992,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git remote -v",
+      "timestamp": 1788448891763,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push -u upstream HEAD",
+      "timestamp": 1788448927087,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "flake8 collect_usage_restrictions.py cdisc_rules_engine/utilities/sdtm_utilities.py tests/unit/test_operations/test_get_model_filtered_variables.py --count --statistics",
+      "timestamp": 1788450202596,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git commit -m \"Fix missing newline\"",
+      "timestamp": 1788450237966,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git push",
+      "timestamp": 1788450245490,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git checkout main",
+      "timestamp": 1788529109664,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "pull pull origin main",
+      "timestamp": 1788529114819,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git pull origin main",
+      "timestamp": 1788529122665,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "git branch 1052_operator_required_expected_variables",
+      "timestamp": 1788529169159,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "dir",
+      "timestamp": 1788533141006,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "pytest tests/unit/test_operations/test_required_expected_variables.py",
+      "timestamp": 1788533160100,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -c \"import cdisc_rules_engine; print(cdisc_rules_engine.__file__)\"",
+      "timestamp": 1788533260080,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -c \"from cdisc_rules_engine.operations.required_expected_variables import RequiredExpectedVariables; print(RequiredExpectedVariables)\"",
+      "timestamp": 1788533305822,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest -v tests/unit/test_operations/test_required_expected_variables.py",
+      "timestamp": 1788533318838,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black --check `\n  cdisc_rules_engine/operations/required_expected_variables.py `\n  tests/unit/test_operations/test_required_expected_variables.py",
+      "timestamp": 1788533906866,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "black `\n  cdisc_rules_engine/operations/required_expected_variables.py `\n  tests/unit/test_operations/test_required_expected_variables.py",
+      "timestamp": 1788533915696,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    },
+    {
+      "command": "python -m pytest -v tests/unit/test_operations/test_required_expected_variables.py",
+      "timestamp": 1788533927067,
+      "cwd": "c:\\Repos\\cdisc-rules-engine-fork"
+    }
+  ],
+  "lastUpdated": 1788533927067
+}

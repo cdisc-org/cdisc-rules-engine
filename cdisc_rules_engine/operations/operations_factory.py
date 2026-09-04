@@ -68,6 +68,9 @@ from cdisc_rules_engine.operations.variable_count import VariableCount
 from cdisc_rules_engine.operations.variable_is_null import VariableIsNull
 from cdisc_rules_engine.operations.required_variables import RequiredVariables
 from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
+from cdisc_rules_engine.operations.required_expected_variables import (
+    RequiredExpectedVariables,
+)
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
 from cdisc_rules_engine.operations.study_domains import StudyDomains
 from cdisc_rules_engine.operations.valid_codelist_dates import ValidCodelistDates
@@ -132,6 +135,7 @@ class OperationsFactory(FactoryInterface):
         "domain_label": DomainLabel,
         "standard_domains": StandardDomains,
         "required_variables": RequiredVariables,
+        "required_expected_variables": RequiredExpectedVariables,
         "split_by": SplitBy,
         "expected_variables": ExpectedVariables,
         "permissible_variables": PermissibleVariables,
