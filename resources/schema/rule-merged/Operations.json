@@ -307,7 +307,7 @@
       "properties": {
         "operator": {
           "const": "required_variables",
-          "markdownDescription": "\nReturns the required variables ( \"Core\" = Req ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_variables\n  id: $required_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\"]\n```\n"
+          "markdownDescription": "\nReturns the required variables ( \"Core\" = Req ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_variables\n  id: $required_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\", \"LBCAT\", \"LBORRES\", \"LBORRESU\", \"...\"]\n```\n"
         }
       },
       "required": ["id", "operator"],
@@ -317,7 +317,7 @@
       "properties": {
         "operator": {
           "const": "required_expected_variables",
-          "markdownDescription": "\nReturns both the required and expected variables ( \"Core\" = Req && \"Core\" = Exp ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model. The order of the variables will respect the ordinal number from the library metadata.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_expected_variables\n  id: $required_expected_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\", \"LBCAT\", \"LBORRES\", \"LBORRESU\", \"...\"]\n```\n"
+          "markdownDescription": "\nReturns both the required and expected variables ( \"Core\" = Req && \"Core\" = Exp ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.  The order of the variables will respect the ordinal number from the library metadata.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_expected_variables\n  id: $required_expected_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\"]\n```\n"
         }
       },
       "required": ["id", "operator"],
