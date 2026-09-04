@@ -5,7 +5,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.config.config import ConfigService
 
-import pandas as pd
 import pytest
 from unittest.mock import Mock
 
