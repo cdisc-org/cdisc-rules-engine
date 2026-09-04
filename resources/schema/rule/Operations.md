@@ -625,6 +625,29 @@ Version: 3-4
 Output:
 
 ```
+["STUDYID", "DOMAIN", "USUBJID", "LBSEQ", "LBTESTCD", "LBTEST", "LBCAT", "LBORRES", "LBORRESU", "..."]
+```
+
+### required_expected_variables
+
+Returns both the required and expected variables ( "Core" = Req && "Core" = Exp ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.  The order of the variables will respect the ordinal number from the library metadata.
+
+Input:
+
+Target Domain: LB
+
+Product: sdtmig
+
+Version: 3-4
+
+```yaml
+- operator: required_expected_variables
+  id: $required_expected_variables
+```
+
+Output:
+
+```
 ["STUDYID", "DOMAIN", "USUBJID", "LBSEQ", "LBTESTCD", "LBTEST"]
 ```
 
