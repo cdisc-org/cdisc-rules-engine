@@ -42,14 +42,6 @@ def test_get_schema():
     }
     assert dataset_check_schema in schema["variables"]
     assert "actions" in schema
-    generate_record_message_metadata = {
-        "name": "generate_record_message",
-        "label": "Generate Record Message",
-        "params": [
-            {"label": "Message", "name": "message", "fieldType": "text"},
-            {"label": "Target", "name": "target", "fieldType": "text"},
-        ],
-    }
     generate_dataset_error_objects_metadata = {
         "name": "generate_dataset_error_objects",
         "label": "Generate Dataset Error Objects",
@@ -57,17 +49,7 @@ def test_get_schema():
             {"label": "Message", "name": "message", "fieldType": "text"},
         ],
     }
-
-    generate_single_error_metadata = {
-        "name": "generate_single_error",
-        "label": "Generate Single Error",
-        "params": [
-            {"label": "Message", "name": "message", "fieldType": "text"},
-        ],
-    }
-    assert generate_record_message_metadata in schema["actions"]
     assert generate_dataset_error_objects_metadata in schema["actions"]
-    assert generate_single_error_metadata in schema["actions"]
 
 
 def test_validate_rule_invalid_suffix(

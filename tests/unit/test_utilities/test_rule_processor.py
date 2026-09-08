@@ -559,7 +559,7 @@ def test_perform_rule_operation_with_grouping(
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
         "actions": [
             {
-                "name": "generate_record_message",
+                "name": "Mock_action",
                 "params": {
                     "message": "Value for AESTDY less than the "
                     "maximum EC.ECDOSE value: $max_aestdy",
@@ -683,7 +683,7 @@ def test_perform_rule_operation_with_multi_key_grouping(
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
         "actions": [
             {
-                "name": "generate_record_message",
+                "name": "Mock_action",
                 "params": {
                     "message": "Value for AESTDY less than the maximum"
                     "EC.ECDOSE value: $max_aestdy",
@@ -770,7 +770,7 @@ def test_perform_rule_operation_with_null_operations(
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
         "actions": [
             {
-                "name": "generate_record_message",
+                "name": "Mock_action",
                 "params": {
                     "message": "Value for AESTDY less than the "
                     "maximum EC.ECDOSE value: $max_aestdy",

@@ -37,13 +37,6 @@ class COREActions(BaseActions):
         self.rule = rule
         self.value_level_metadata = value_level_metadata
 
-    @rule_action(params={"message": FIELD_TEXT, "target": FIELD_TEXT})
-    def generate_record_message(self, message, target=None):
-        full_message = f"Error in row {self.record.get('row')} " + message
-        if target:
-            full_message = full_message + f" Actual value: {self.record.get(target)}"
-        self.output_container.append(full_message)
-
     @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
@@ -69,10 +62,6 @@ class COREActions(BaseActions):
                 error.dataset = DomainPresenceValues.DATASET.value
                 error.row = DomainPresenceValues.RECORD.value
         self.output_container.append(error_object.to_representation())
-
-    @rule_action(params={"message": FIELD_TEXT})
-    def generate_single_error(self, message):
-        self.output_container.append(message)
 
     def _get_target_names_from_list_values(
         self, target_names: List[str], rows_with_error: pd.DataFrame
