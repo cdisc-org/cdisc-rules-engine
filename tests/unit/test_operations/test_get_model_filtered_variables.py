@@ -8,8 +8,10 @@ from typing import List
 from unittest.mock import patch
 from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
+    FINDINGS,
     FINDINGS_ABOUT,
     EVENTS,
+    INTERVENTIONS,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -21,6 +23,9 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.utilities.sdtm_utilities import (
+    get_allowed_class_variables,
+)
 
 test_set1 = (
     {
@@ -342,3 +347,81 @@ def test_get_model_filtered_variables(
         ]
     )
     assert result[operation_params.operation_id].equals(expected)
+
+
+@pytest.mark.parametrize(
+    ("class_name", "expected_timing_variables"),
+    [
+        (FINDINGS, ["--ENDTC"]),
+        (EVENTS, ["--STDTC", "--ENDTC"]),
+        (INTERVENTIONS, ["--STDTC", "--ENDTC"]),
+    ],
+)
+def test_get_allowed_class_variables_respects_class_usage_restrictions(
+    class_name,
+    expected_timing_variables,
+):
+    class_details = {
+        "name": class_name,
+        "classVariables": [],
+    }
+    model_details = {
+        "classes": [
+            class_details,
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "--STDTC",
+                        "ordinal": 1,
+                        "role": VariableRoles.TIMING.value,
+                        "usageRestrictions": "Not in Findings class domains",
+                    },
+                    {
+                        "name": "--ENDTC",
+                        "ordinal": 2,
+                        "role": VariableRoles.TIMING.value,
+                    },
+                ],
+            },
+        ]
+    }
+
+    _, _, timing_variables = get_allowed_class_variables(
+        model_details,
+        class_details,
+    )
+
+    assert [
+        variable["name"] for variable in timing_variables
+    ] == expected_timing_variables
+
+
+def test_get_allowed_class_variables_normalizes_usage_restrictions():
+    class_details = {
+        "name": FINDINGS,
+        "classVariables": [],
+    }
+    model_details = {
+        "classes": [
+            class_details,
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "--STDTC",
+                        "ordinal": 1,
+                        "role": VariableRoles.TIMING.value,
+                        "usageRestrictions": "  NOT IN FINDINGS\nCLASS DOMAINS  ",
+                    }
+                ],
+            },
+        ]
+    }
+
+    _, _, timing_variables = get_allowed_class_variables(
+        model_details,
+        class_details,
+    )
+
+    assert timing_variables == []
