@@ -283,6 +283,15 @@
     {
       "properties": {
         "operator": {
+          "const": "required_expected_variables"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "split_by"
         }
       },
