@@ -31,7 +31,6 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
-    search_in_list,
     replace_nan_values_in_df,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import (
@@ -271,24 +270,7 @@ class BaseDataService(DataServiceInterface, ABC):
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
-        """
-        Check what inherit class an AP-- belongs to.
-        Tries, in order:
-        1. The base domain (ap_suffix) as a physically submitted dataset,
-            inheriting its class via get_dataset_class.
-        2. CDISC Library metadata, using ap_suffix as the domain key
-        3. The AP dataset's own topic variable, keyed on ap_suffix (covers
-        sponsor-defined custom base domains that Library has no entry for)
-        """
         ap_suffix = dataset_metadata.ap_suffix
-        datasets = self.get_datasets()
-        new_dataset_metadata: SDTMDatasetMetadata = search_in_list(
-            datasets, lambda item: item.domain == ap_suffix
-        )
-        if new_dataset_metadata:
-            new_dataset = self.get_dataset(dataset_name=new_dataset_metadata.name)
-            return self.get_dataset_class(new_dataset, new_dataset_metadata)
-
         if self.library_metadata:
             class_data, _ = get_class_and_dataset_metadata(
                 self.library_metadata,

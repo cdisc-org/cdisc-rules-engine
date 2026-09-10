@@ -454,84 +454,7 @@ def test_cached_different_builders_have_different_cache():
     assert keys[0] != keys[1]
 
 
-def test_get_associated_persons_inherit_class_base_domain_present():
-    """Base domain (MH) is physically submitted alongside APMH: class should
-    be inherited via the real dataset, same path get_dataset_class already
-    exercises for APDM/DM in test_get_dataset_class_associated_domains."""
-    datasets = [
-        SDTMDatasetMetadata(**dataset)
-        for dataset in [
-            {
-                "name": "APMH",
-                "first_record": {"DOMAIN": "APMH", "APID": "AP001"},
-                "filename": "apmh.xpt",
-            },
-            {"name": "MH", "first_record": {"DOMAIN": "MH"}, "filename": "mh.xpt"},
-        ]
-    ]
-    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APMH"], "APID": ["test"]})
-    mh_dataset = PandasDataset.from_dict({"DOMAIN": ["MH"], "MHTERM": ["test"]})
-    path_to_dataset_map = {"APMH": ap_dataset, "MH": mh_dataset}
-
-    with (
-        patch(
-            "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-            side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
-        ),
-        patch(
-            "cdisc_rules_engine.services.data_services.LocalDataService.get_datasets",
-            return_value=datasets,
-        ),
-    ):
-        library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
-            Validation_args(
-                f"{os.path.dirname(__file__)}/../../../../resources/cache",
-                10,
-                [],
-                "",
-                "",
-                "sdtmig",
-                "3-4",
-                None,
-                None,
-                "",
-                "",
-                "",
-                False,
-                None,
-                None,
-                "",
-                "",
-                None,
-                "",
-                None,
-                False,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            )
-        )
-        data_service = LocalDataService(
-            MagicMock(),
-            MagicMock(),
-            MagicMock(),
-            standard="sdtmig",
-            standard_version="3-4",
-            library_metadata=library_metadata,
-        )
-        result = data_service._get_associated_persons_inherit_class(
-            ap_dataset, datasets[0]
-        )
-
-    assert result == EVENTS
-
-
 def test_get_associated_persons_inherit_class_fallback_to_library():
-    """Base domain (MH) is NOT submitted at all, and it's a real standard
-    domain: class should resolve from Library metadata via ap_suffix."""
     ap_metadata = SDTMDatasetMetadata(
         name="APMH",
         first_record={"DOMAIN": "APMH", "APID": "AP001"},
@@ -585,9 +508,6 @@ def test_get_associated_persons_inherit_class_fallback_to_library():
 
 
 def test_get_associated_persons_inherit_class_custom_base_domain_resolves_via_topic_variable():
-    """Base domain (ZZ) not submitted, and not a recognized Library domain
-    (sponsor-custom, e.g. APZZ on custom ZZ): resolves via the AP
-    dataset's own topic variable keyed on ap_suffix (ZZTERM)."""
     dataset_metadata = SDTMDatasetMetadata(
         name="APZZ", first_record={"DOMAIN": "APZZ", "APID": "AP001"}
     )
