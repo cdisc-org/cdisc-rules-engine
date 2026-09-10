@@ -313,6 +313,14 @@ all:
 - `define_variable_mandatory`
 - `define_variable_has_comment`
 - `define_variable_has_method`
+- `define_vlm_ccode_matches_library_all`
+- `define_vlm_ccode_matches_library_any`
+- `define_vlm_ccode_missing_any`
+- `define_vlm_ccodes`
+- `define_vlm_has_codelist_all`
+- `define_vlm_has_codelist_any`
+- `define_vlm_item_count`
+- `define_vlm_present`
 - `library_variable_name`
 - `library_variable_order_number`
 - `library_variable_label`
@@ -579,7 +587,7 @@ Combines variable-level metadata from submission dataset contents against the ma
 
 Combines variable-level metadata from submission dataset contents against the corresponding CDISC Library standard variable metadata.
 
-## Variables Metadata Check against Define XML and Library Metadata
+## Variable Metadata Check against Define XML and Library Metadata
 
 #### Columns
 
@@ -607,6 +615,14 @@ Combines variable-level metadata from submission dataset contents against the co
 - `define_variable_mandatory`
 - `define_variable_has_comment`
 - `define_variable_has_method`
+- `define_vlm_ccode_matches_library_all`
+- `define_vlm_ccode_matches_library_any`
+- `define_vlm_ccode_missing_any`
+- `define_vlm_ccodes`
+- `define_vlm_has_codelist_all`
+- `define_vlm_has_codelist_any`
+- `define_vlm_item_count`
+- `define_vlm_present`
 - `library_variable_name`
 - `library_variable_role`
 - `library_variable_label`
