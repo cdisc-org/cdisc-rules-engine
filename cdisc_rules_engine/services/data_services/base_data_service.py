@@ -31,7 +31,6 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
-    search_in_list,
     replace_nan_values_in_df,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import (
@@ -242,47 +241,46 @@ class BaseDataService(DataServiceInterface, ABC):
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
     ):
-        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TERM"):
+        class_name = self._detect_class_from_topic_variable(
+            dataset, dataset_metadata.domain
+        )
+        if class_name:
+            return class_name
+        if dataset_metadata.is_ap:
+            return self._get_associated_persons_inherit_class(dataset, dataset_metadata)
+        return None
+
+    def _detect_class_from_topic_variable(
+        self, dataset: DatasetInterface, domain_key: str
+    ) -> Optional[str]:
+        if self._contains_topic_variable(dataset, domain_key, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TRT"):
+        if self._contains_topic_variable(dataset, domain_key, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset, dataset_metadata.domain, "QNAM"):
+        if self._contains_topic_variable(dataset, domain_key, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TESTCD"):
-            if self._contains_topic_variable(dataset, dataset_metadata.domain, "OBJ"):
+        if self._contains_topic_variable(dataset, domain_key, "TESTCD"):
+            if self._contains_topic_variable(dataset, domain_key, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if dataset_metadata.is_ap:
-            return self._get_associated_persons_inherit_class(dataset_metadata)
         return None
 
     def _get_associated_persons_inherit_class(
         self,
+        dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
-    ):
-        """
-        Check with inherit class AP-- belongs to.
-        """
+    ) -> Optional[str]:
         ap_suffix = dataset_metadata.ap_suffix
-        if not ap_suffix:
-            return None
-        datasets = self.get_datasets()
-        if len(datasets) > 1:
-            new_dataset_metadata: SDTMDatasetMetadata = search_in_list(
-                datasets, lambda item: item.domain == ap_suffix
+        if self.library_metadata:
+            class_data, _ = get_class_and_dataset_metadata(
+                self.library_metadata,
+                ap_suffix,
             )
-            if new_dataset_metadata:
-                if new_dataset_metadata.is_ap:
-                    raise ValueError("Nested Associated Persons domain reference")
-                new_dataset = self.get_dataset(dataset_name=new_dataset_metadata.name)
-            else:
-                raise ValueError("Filename for domain doesn't exist")
-            return self.get_dataset_class(
-                new_dataset,
-                new_dataset_metadata,
-            )
-        else:
-            return None
+            name = (class_data or {}).get("name")
+            if name:
+                return convert_library_class_name_to_ct_class(name)
+
+        return self._detect_class_from_topic_variable(dataset, ap_suffix)
 
     def _contains_topic_variable(
         self,

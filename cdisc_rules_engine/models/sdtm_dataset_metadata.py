@@ -32,6 +32,8 @@ class SDTMDatasetMetadata(DatasetMetadata):
     | APXX     | APXX         | False   | APXX   | XX                   | None    | True  | XX        | False            | XX             | True                     |
     | SQAPXX   | SQAPXX       | True    | None   |                      | APXX    | True  |           | False            | XX             | True                     |
     | FA       | FA           | False   | FA     | FA                   | None    | False |           | False            |                |                          |
+    | APRELSUB  | APRELSUB    | False   | None   | RELSUB               | None    | True  | RELSUB    | False            |                |                          |
+    | APRELSPEC | APRELSPEC   | False   | None   | RELSPEC              | None    | True  | RELSPEC   | False            |                |                          |
     """  # noqa: E501 W291
 
     @property
@@ -90,6 +92,8 @@ class SDTMDatasetMetadata(DatasetMetadata):
     def ap_suffix(self) -> str:
         """
         Returns the 2-character suffix (characters 3-4) from AP domains.
+        Falls back to the dataset name when there's no DOMAIN variable
+        (e.g. APRELSUB, APRELSPEC)
         Returns empty string if not an AP domain or for supp datasets.
         """
         if not self.is_ap:
@@ -98,4 +102,10 @@ class SDTMDatasetMetadata(DatasetMetadata):
             return ""
         if isinstance(self.domain, str) and len(self.domain) >= 4:
             return self.domain[2::]
+        if (
+            isinstance(self.name, str)
+            and len(self.name) >= 4
+            and self.name.upper().startswith("AP")
+        ):
+            return self.name[2::]
         return ""
