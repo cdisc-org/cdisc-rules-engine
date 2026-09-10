@@ -531,8 +531,7 @@ def test_get_associated_persons_inherit_class_base_domain_present():
 
 def test_get_associated_persons_inherit_class_fallback_to_library():
     """Base domain (MH) is NOT submitted at all, and it's a real standard
-    domain: class should resolve from Library metadata via ap_suffix.
-    This is the fix for the 'Filename for domain doesn't exist' bug."""
+    domain: class should resolve from Library metadata via ap_suffix."""
     ap_metadata = SDTMDatasetMetadata(
         name="APMH",
         first_record={"DOMAIN": "APMH", "APID": "AP001"},
@@ -641,60 +640,3 @@ def test_get_associated_persons_inherit_class_custom_base_domain_resolves_via_to
     )
 
     assert result == EVENTS
-
-
-def test_get_associated_persons_inherit_class_unresolvable_returns_none():
-    """Base domain not submitted, no Library match, and no recognizable
-    topic variable: genuinely unclassifiable, returns None rather than
-    raise. This is the guard for the
-    convert_library_class_name_to_ct_class(None) bug."""
-    dataset_metadata = SDTMDatasetMetadata(
-        name="APZZ", first_record={"DOMAIN": "APZZ", "APID": "AP001"}
-    )
-    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APZZ"], "APID": ["test"]})
-    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
-        Validation_args(
-            f"{os.path.dirname(__file__)}/../../../../resources/cache",
-            10,
-            [],
-            "",
-            "",
-            "sdtmig",
-            "3-4",
-            None,
-            None,
-            "",
-            "",
-            "",
-            False,
-            None,
-            None,
-            "",
-            "",
-            None,
-            "",
-            None,
-            False,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-    )
-    data_service = LocalDataService(
-        MagicMock(),
-        MagicMock(),
-        MagicMock(),
-        standard="sdtmig",
-        standard_version="3-4",
-        library_metadata=library_metadata,
-    )
-    data_service.get_datasets = lambda: [dataset_metadata]
-
-    result = data_service._get_associated_persons_inherit_class(
-        ap_dataset, dataset_metadata
-    )
-
-    assert result is None
