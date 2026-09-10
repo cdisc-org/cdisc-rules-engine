@@ -41,9 +41,31 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_metadata: DatasetInterface = self.dataset_implementation.from_records(
             variable_metadata
         )
-        return content_metadata.merge(
+
+        final_dataframe = content_metadata.merge(
             define_metadata.data,
             left_on="variable_name",
             right_on="define_variable_name",
-            how="left",
+            how="outer",
+        ).fillna("")
+
+        dataset_contents = self.get_dataset_contents()
+        final_dataframe[["variable_has_empty_values", "variable_is_empty"]] = (
+            final_dataframe.apply(
+                lambda row: self.get_variable_null_stats(
+                    row["variable_name"], dataset_contents
+                ),
+                axis=1,
+                result_type="expand",
+            )
         )
+
+        return final_dataframe
+
+    def get_variable_null_stats(
+        self, variable: str, content: DatasetInterface
+    ) -> tuple[bool, bool]:
+        if variable not in content:
+            return True, True
+        series = content[variable].mask(content[variable] == "")
+        return series.isnull().any(), series.isnull().all()
