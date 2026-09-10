@@ -61,6 +61,25 @@ def validate_encoding(_ctx, _param, value):
         )
 
 
+def validate_standard(standard: str, custom_standard: bool, logger, ctx) -> str:
+    if custom_standard:
+        return standard
+
+    normalized_standard = standard.lower()
+    supported_standards = StandardTypes.values()
+
+    if normalized_standard not in supported_standards:
+        supported_list = ", ".join(sorted(supported_standards))
+        logger.error(
+            f"Standard '{standard}' is not a supported standard. "
+            f"Supported standards: {supported_list}. "
+            f"Use --custom-standard flag for custom standards."
+        )
+        ctx.exit(2)
+
+    return normalized_standard
+
+
 def valid_data_file(data_path: list) -> tuple[list, set]:
     allowed_formats = [
         DataFormatTypes.XPT.value,
@@ -653,17 +672,7 @@ def validate(  # noqa
             if resolved.is_file():
                 define_xml_path = str(resolved)
 
-    if not custom_standard:
-        standard = standard.lower()
-        supported_standards = StandardTypes.values()
-        if standard not in supported_standards:
-            supported_list = ", ".join(sorted(supported_standards))
-            logger.error(
-                f"Standard '{standard}' is not a supported standard. "
-                f"Supported standards: {supported_list}. "
-                f"Use --custom-standard flag for custom standards."
-            )
-            ctx.exit(2)
+    standard = validate_standard(standard, custom_standard, logger, ctx)
 
     if raw_report:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
