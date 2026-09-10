@@ -73,7 +73,12 @@
       "type": "object"
     },
     {
-      "properties": { 
+      "properties": { "operator": { "const": "does_not_end_with" } },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": { "const": "does_not_equal_string_part" },
         "type_insensitive": { "type": "boolean" }
       },
@@ -85,6 +90,11 @@
         "operator": { "const": "does_not_have_next_corresponding_record" }
       },
       "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "does_not_start_with" } },
+      "required": ["operator", "value"],
       "type": "object"
     },
     {
