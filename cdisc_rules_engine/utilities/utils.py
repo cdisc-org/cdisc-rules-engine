@@ -19,6 +19,7 @@ from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 def convert_dataclass_to_superclass[T](instance: object, superclass: type[T]) -> T:
@@ -414,3 +415,15 @@ def custom_str_conversion(x):
         elif isinstance(x, float):
             return f"{x:.0f}" if x.is_integer() else str(x).strip()
     return x
+
+
+def get_dataset_standard_check_name(
+    dataset_metadata: Optional[SDTMDatasetMetadata],
+) -> Optional[str]:
+    if dataset_metadata is None:
+        return None
+    if dataset_metadata.is_supp:
+        return "SUPPQUAL"
+    if dataset_metadata.is_ap:
+        return dataset_metadata.ap_suffix or None
+    return dataset_metadata.domain or dataset_metadata.name
