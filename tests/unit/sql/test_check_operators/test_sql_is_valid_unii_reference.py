@@ -60,3 +60,21 @@ def test_valid_unii_references(sdtm_standards_context, operator, domain, target,
     config = {"dataset_id": domain, "data_service": data_service}
     op_result = getattr(PostgresQLOperators(config), operator)({"target": target, "comparator": comparator})
     assert_series_equals(op_result, result)
+
+
+def test_valid_unii_code_reference_missing_target_column(sdtm_standards_context):
+    data_service = PostgresQLDataService.instance(
+        external_dictionaries=SqlExternalDictionariesContainer(
+            {DictionaryTypes.UNII.value: "tests/resources/dictionaries/unii"}
+        )
+    )
+    PostgresQLDataService.add_test_dataset(
+        data_service,
+        table_name="MH",
+        column_data={"MHOTHER": ["0001H6R5H1", "0009999999"]},
+        standards_context=sdtm_standards_context,
+    )
+
+    config = {"dataset_id": "MH", "data_service": data_service}
+    op_result = PostgresQLOperators(config).is_valid_unii_code_reference({"target": "MHTRTCD", "comparator": None})
+    assert_series_equals(op_result, [False, False])

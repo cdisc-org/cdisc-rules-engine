@@ -59,6 +59,7 @@ class PostgresQLDataService:
     def __init__(self, postgres_interface: PostgresQLInterface):
         self.pgi = postgres_interface
         self.datasets: List[BaseDatasetMetadata] = []
+        self.dictionary_metadata: Dict[str, Any] = {}
 
     @classmethod
     def instance(
@@ -84,7 +85,7 @@ class PostgresQLDataService:
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi)
-        populate_dictionaries(pgi, external_dictionaries)
+        instance.dictionary_metadata = populate_dictionaries(pgi, external_dictionaries)
         populate_codelists(pgi, cache_path, codelists)
         populate_standards(pgi)
         populate_helper_tables(pgi)

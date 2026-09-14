@@ -65,6 +65,26 @@ def test_valid_meddra_code_references(
     assert_series_equals(op_result, result)
 
 
+def test_valid_meddra_code_reference_missing_target_column(sdtm_standards_context):
+    data_service = PostgresQLDataService.instance(
+        external_dictionaries=SqlExternalDictionariesContainer(
+            {DictionaryTypes.MEDDRA.value: "tests/resources/dictionaries/meddra"}
+        )
+    )
+    PostgresQLDataService.add_test_dataset(
+        data_service,
+        table_name="AE",
+        column_data={"AEOTHER": ["SOC1", "SOC2"]},
+        standards_context=sdtm_standards_context,
+    )
+
+    config = {"dataset_id": "AE", "data_service": data_service}
+    op_result = PostgresQLOperators(config).is_valid_meddra_code_reference(
+        {"target": "AESOCCD", "filter_attribute": "term_type", "filter_value": "SOC"}
+    )
+    assert_series_equals(op_result, [False, False])
+
+
 @pytest.mark.parametrize(
     "domain, target, filter_attribute, filter_value, data, result",
     [

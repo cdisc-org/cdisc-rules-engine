@@ -28,7 +28,10 @@ class ValidExDictCodeTermPairsOperator(BaseSqlOperator):
         case_insensitive = other_value.get("case_insensitive", False)
 
         if filter_attribute and filter_value:
-            filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
+            if filter_attribute == "version":
+                filter_conditions.append(self._version_le_condition_sql(filter_attribute, filter_value))
+            else:
+                filter_conditions.append(f"{filter_attribute} = '{filter_value}'")
 
         if self.table_name == StaticTables.WHODRUG_TABLE_NAME.value:
             if filter_attribute == "class":
