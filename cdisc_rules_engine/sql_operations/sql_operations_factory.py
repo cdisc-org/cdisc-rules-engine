@@ -7,6 +7,9 @@ from cdisc_rules_engine.sql_operations.dataset_column_order import (
     SqlDatasetColumnOrderOperation,
 )
 from cdisc_rules_engine.sql_operations.dataset_names import SqlDatasetNamesOperation
+from cdisc_rules_engine.sql_operations.get_column_order_from_library import (
+    SqlGetColumnOrderFromLibrary,
+)
 from cdisc_rules_engine.sql_operations.date_operation import SqlDateOperation
 from cdisc_rules_engine.sql_operations.day_data_validator import (
     SqlDayDataValidatorOperation,
@@ -59,7 +62,7 @@ class SqlOperationsFactory:
         "dy": SqlDayDataValidatorOperation,
         "extract_metadata": SqlExtractMetadataOperation,
         "get_column_order_from_dataset": SqlDatasetColumnOrderOperation,
-        "get_column_order_from_library": None,
+        "get_column_order_from_library": SqlGetColumnOrderFromLibrary,
         "get_codelist_attributes": SqlGetCodelistAttributesOperation,
         "get_model_column_order": SqlGetModelColumnOrder,
         "get_model_filtered_variables": SqlGetModelFilteredVariables,
