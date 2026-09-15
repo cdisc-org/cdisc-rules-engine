@@ -895,6 +895,16 @@
     {
       "properties": {
         "operator": {
+          "const": "inconsistent_enumerated_column_labels",
+          "markdownDescription": "\nChecks that enumerated variables (VARIABLE1, VARIABLE2, ...) have labels matching an expected enumerated label prefix. Returns True if the label doesn't equal `<prefix>N` or `<prefix> N`. Runs against the Variable Metadata Check dataset (`variable_name`, `variable_label`).\n\nex: Check that COVAL1, COVAL2, etc. are labeled \"Comment1\"/\"Comment 1\", \"Comment2\"/\"Comment 2\", etc.\n\n```yaml\nRule Type: Variable Metadata Check\nCheck:\n  all:\n    - name: \"COVAL\"\n      operator: \"inconsistent_enumerated_column_labels\"\n      value: \"Comment\"\n      value_is_literal: true\n```\n"
+        }
+      },
+      "required": ["operator", "name", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "is_ordered_subset_of",
           "markdownDescription": "\nChecks if elements in the target list appear in the same relative order in the comparator list.\n\n> Check if dataset column order is a correctly ordered subset of library column order\n\n```yaml\n- name: $column_order_from_dataset\n  operator: is_ordered_subset_of\n  value: $column_order_from_library\n```\n"
         }

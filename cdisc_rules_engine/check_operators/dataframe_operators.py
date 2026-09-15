@@ -1529,6 +1529,31 @@ class DataframeType(BaseType):
 
         return df.apply(check_inconsistency, axis=1)
 
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def inconsistent_enumerated_column_labels(self, other_value: dict):
+        """
+        Checks that the labels of enumerated variables (VARIABLE1, VARIABLE2, ...)
+        match the expected enumerated label prefix (e.g. COVAL1 -> "Comment1"/"Comment 1").
+
+        Intended for use against the variable metadata dataset
+        (columns: variable_name, variable_label).
+        """
+        variable_prefix: str = other_value.get("target")
+        label_prefix: str = other_value.get("comparator")
+        df = self.value
+        pattern = re.compile(rf"^{re.escape(variable_prefix)}(\d+)$")
+
+        def check_label(row):
+            match = pattern.match(str(row.get("variable_name") or ""))
+            if not match:
+                return False
+            n = match.group(1)
+            expected_labels = {f"{label_prefix}{n}", f"{label_prefix} {n}"}
+            return row.get("variable_label") not in expected_labels
+
+        return df.apply(check_label, axis=1)
+
     def next_column_exists_and_previous_is_null(self, row) -> bool:
         row = row.reset_index(drop=True)
         for index in row[
