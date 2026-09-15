@@ -77,5 +77,5 @@ class JsonReport(BaseReport):
                     f"Cannot create output directory '{output_dir}': {e.strerror}. "
                     f"Please provide a valid, writable path for the output file."
                 ) from e
-        with open(self._output_name, "w") as f:
-            json.dump(report_data, f)
+        with open(self._output_name, "w", encoding="utf-8") as f:
+            json.dump(report_data, f, ensure_ascii=False, indent=2)

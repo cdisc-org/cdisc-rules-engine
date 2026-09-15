@@ -184,6 +184,32 @@ def test_get_csv_rows_empty_results():
     assert rows == []
 
 
+def test_get_csv_rows_preserves_blank_values_for_none_and_empty_string(
+    mock_validation_results,
+):
+    mock_validation_results[0].results[0]["errors"][0]["value"]["AESTDY"] = None
+    mock_validation_results[0].results[0]["errors"][0]["value"]["DOMAIN"] = ""
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+
+    _, rows = report.get_csv_rows()
+    assert any(row[1] == "AESTDY" and row[2] == "" for row in rows)
+    assert any(row[1] == "DOMAIN" and row[2] == "" for row in rows)
+
+    details = report.get_detailed_data()
+    detail_row = next(
+        row
+        for row in details
+        if row["core_id"] == "CORE1" and row["attributes"] == ["AESTDY", "DOMAIN"]
+    )
+    assert detail_row["values"] == ["null", "null"]
+
+
 def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results):
     # forcing None and str comparison in summary and details
     mock_validation_results[0].id = None
@@ -211,3 +237,57 @@ def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results
         assert error == summary_data[i]
     details = report.get_detailed_data()
     assert len(details) == 3
+
+
+def test_get_csv_rows_execution_error(mock_validation_results):
+    mock_validation_results[1].results[0][
+        "executionStatus"
+    ] = ExecutionStatus.EXECUTION_ERROR.value
+    mock_validation_results[1].results[0]["entity"] = "TT"
+    mock_validation_results[1].results[0]["message"] = "TTVARs are wrong"
+    mock_validation_results[1].results[0]["errors"] = [
+        {"error": "Unexpected KeyError in rule execution"}
+    ]
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    error_rows = [r for r in rows if r[1] == "EXECUTION_ERROR"]
+    assert len(error_rows) == 1
+    path, attribute, value = error_rows[0]
+    assert path == "TT"
+    assert value == "TTVARs are wrong - Unexpected KeyError in rule execution"
+    issue_rows = [r for r in rows if r[1] != "EXECUTION_ERROR"]
+    assert len(issue_rows) == 4
+
+
+def test_get_csv_rows_execution_error_detailed_message(mock_validation_results):
+    mock_validation_results[1].results[0][
+        "executionStatus"
+    ] = ExecutionStatus.EXECUTION_ERROR.value
+    mock_validation_results[1].results[0]["entity"] = "json"
+    mock_validation_results[1].results[0]["message"] = "rule execution error"
+    detailed_message = (
+        "\n  Error parsing JSONata Rule for Core Id: CORE-000998\n"
+        "  AttributeError: 'Jsonata' object has no attribute 'lower'"
+    )
+    mock_validation_results[1].results[0]["errors"] = [
+        {"error": "Rule format error", "message": detailed_message}
+    ]
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
+    )
+    _, rows = report.get_csv_rows()
+    error_rows = [r for r in rows if r[1] == "EXECUTION_ERROR"]
+    assert len(error_rows) == 1
+    path, attribute, value = error_rows[0]
+    assert path == "json"
+    assert value == detailed_message

@@ -21,7 +21,9 @@ on:
         required: false
         default: "main"
       core_ids:
-        description: "Space-separated list of rule IDs to validate (e.g. CORE-000001 CORE-000002). Leave blank to validate all."
+        description: >-
+          Space-separated list of rule IDs to validate
+          (e.g. CORE-000001 CORE-000002). Leave blank to validate all.
         required: false
         default: ""
 
@@ -80,9 +82,11 @@ jobs:
       - name: Install engine dependencies
         run: |
           python -m venv venv
-          ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install -r engine/requirements.txt
-
+          venv/bin/pip install --upgrade pip
+          cd engine
+          ../venv/bin/pip install . --group dev
+          cd ..
+          venv/bin/pip install tabulate
       # -----------------------------------------------------------------------
       # 5. Run validation for every Published rule
       # -----------------------------------------------------------------------
@@ -97,7 +101,7 @@ jobs:
             CORE_IDS_ARG="--core-ids ${{ inputs.core_ids }}"
           fi
 
-          ./venv/bin/python engine/scripts/validate_published_rules.py \
+          venv/bin/python engine/scripts/validate_published_rules.py \
             --rules-root "$(pwd)/open-rules" \
             --engine-dir "$(pwd)/engine" \
             --python-cmd "$(pwd)/venv/bin/python" \
@@ -113,7 +117,8 @@ jobs:
         with:
           name: published-rules-validation-${{ github.run_id }}
           path: |
-            open-rules/Published/**/results/results.csv
+            open-rules/Published/**/results/actual.csv
+            open-rules/Published/**/results/expected.csv
             summary_table.md
             detail_report.md
           if-no-files-found: warn

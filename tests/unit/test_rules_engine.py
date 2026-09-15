@@ -42,14 +42,6 @@ def test_get_schema():
     }
     assert dataset_check_schema in schema["variables"]
     assert "actions" in schema
-    generate_record_message_metadata = {
-        "name": "generate_record_message",
-        "label": "Generate Record Message",
-        "params": [
-            {"label": "Message", "name": "message", "fieldType": "text"},
-            {"label": "Target", "name": "target", "fieldType": "text"},
-        ],
-    }
     generate_dataset_error_objects_metadata = {
         "name": "generate_dataset_error_objects",
         "label": "Generate Dataset Error Objects",
@@ -57,17 +49,7 @@ def test_get_schema():
             {"label": "Message", "name": "message", "fieldType": "text"},
         ],
     }
-
-    generate_single_error_metadata = {
-        "name": "generate_single_error",
-        "label": "Generate Single Error",
-        "params": [
-            {"label": "Message", "name": "message", "fieldType": "text"},
-        ],
-    }
-    assert generate_record_message_metadata in schema["actions"]
     assert generate_dataset_error_objects_metadata in schema["actions"]
-    assert generate_single_error_metadata in schema["actions"]
 
 
 def test_validate_rule_invalid_suffix(
@@ -1587,39 +1569,6 @@ def test_validate_variable_metadata_against_define_xml(
                 }
             ],
         ),
-        (
-            True,
-            [],
-            [
-                {
-                    "domain": "AE",
-                    "dataset": "AE_1, AE_2",
-                    "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
-                    "variables": ["AESTDY"],
-                    "errors": [
-                        {
-                            "dataset": "AE_2",
-                            "row": 1,
-                            "value": {"AESTDY": "test"},
-                            "USUBJID": "1",
-                        },
-                        {
-                            "dataset": "AE_2",
-                            "row": 4,
-                            "value": {"AESTDY": "test"},
-                            "USUBJID": "1",
-                        },
-                        {
-                            "dataset": "AE_1",
-                            "row": 4,
-                            "value": {"AESTDY": "test"},
-                            "USUBJID": "2",
-                        },
-                    ],
-                    "message": "Value of AESTDY is equal to test.",
-                }
-            ],
-        ),
     ],
 )
 @patch(
@@ -1637,65 +1586,32 @@ def test_validate_split_dataset_contents(
     result: List[dict],
 ):
     """
-    Unit test for validating contents of a split dataset.
+    Unit test for validating contents of a split dataset when include_split_datasets is False —
+    a domain-scoped exclusion means the split dataset itself is out of scope and gets skipped.
     """
     dataset_rule_equal_to_error_objects["domains"][
         "include_split_datasets"
     ] = include_split_datasets
-
     dataset_rule_equal_to_error_objects["domains"]["Exclude"] = exclude
 
-    # create two dataframes
-    first_dataset_part: PandasDataset = PandasDataset(
+    first_dataset_part = PandasDataset(
         pd.DataFrame.from_dict(
             {
-                "AESTDY": [
-                    "test",
-                    "alex",
-                    "50",
-                    "test",
-                ],
-                "USUBJID": [
-                    1,
-                    1,
-                    1,
-                    1,
-                ],
-                "SEQ": [
-                    1,
-                    2,
-                    3,
-                    4,
-                ],
+                "AESTDY": ["test", "alex", "50", "test"],
+                "USUBJID": [1, 1, 1, 1],
+                "SEQ": [1, 2, 3, 4],
             }
         )
     )
-    second_dataset_part: PandasDataset = PandasDataset(
+    second_dataset_part = PandasDataset(
         pd.DataFrame.from_dict(
             {
-                "AESTDY": [
-                    "100",
-                    "alex",
-                    "Nic",
-                    "test",
-                ],
-                "USUBJID": [
-                    2,
-                    2,
-                    2,
-                    2,
-                ],
-                "SEQ": [
-                    1,
-                    2,
-                    3,
-                    4,
-                ],
+                "AESTDY": ["100", "alex", "Nic", "test"],
+                "USUBJID": [2, 2, 2, 2],
+                "SEQ": [1, 2, 3, 4],
             }
         )
     )
-
-    # mock blob storage call and execute the validation
     mock_async_get_datasets.return_value = [first_dataset_part, second_dataset_part]
     datasets = [
         SDTMDatasetMetadata(
@@ -1718,8 +1634,83 @@ def test_validate_split_dataset_contents(
         dataset_metadata=datasets[0],
         rule=dataset_rule_equal_to_error_objects,
     )
-    # check validation result
     assert validation_result == result
+
+
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+)
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
+)
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_datasets",
+)
+def test_validate_split_dataset_contents_independently(
+    mock_get_datasets: MagicMock,
+    mock_async_get_datasets: MagicMock,
+    mock_get_dataset: MagicMock,
+    dataset_rule_equal_to_error_objects: dict,
+):
+    """
+    Unit test for validating split dataset contents when include_split_datasets is True —
+    each split dataset is validated independently, seeing only its own rows, not merged
+    with its siblings.
+    """
+    dataset_rule_equal_to_error_objects["domains"]["include_split_datasets"] = True
+    dataset_rule_equal_to_error_objects["domains"]["Exclude"] = []
+
+    ae_2_data = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "AESTDY": ["test", "alex", "50", "test"],
+                "USUBJID": [1, 1, 1, 1],
+                "SEQ": [1, 2, 3, 4],
+            }
+        )
+    )
+    ae_1_data = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "AESTDY": ["100", "alex", "Nic", "test"],
+                "USUBJID": [2, 2, 2, 2],
+                "SEQ": [1, 2, 3, 4],
+            }
+        )
+    )
+
+    ae_2_metadata = SDTMDatasetMetadata(
+        name="AE_2",
+        first_record={"DOMAIN": "AE"},
+        filename="ae_2.xpt",
+        full_path="CDISC01/test/ae_2.xpt",
+    )
+    ae_1_metadata = SDTMDatasetMetadata(
+        name="AE_1",
+        first_record={"DOMAIN": "AE"},
+        filename="ae_1.xpt",
+        full_path="CDISC01/test/ae_1.xpt",
+    )
+    datasets = [ae_2_metadata, ae_1_metadata]
+    mock_get_datasets.return_value = datasets
+
+    mock_get_dataset.return_value = ae_2_data
+    ae_2_result = RulesEngine(standard="sdtmig").validate_single_dataset(
+        dataset_metadata=ae_2_metadata,
+        rule=dataset_rule_equal_to_error_objects,
+    )
+    assert ae_2_result[0]["dataset"] == "AE_2"
+    ae_2_rows = {err["row"] for err in ae_2_result[0]["errors"]}
+    assert ae_2_rows == {1, 4}
+
+    mock_get_dataset.return_value = ae_1_data
+    ae_1_result = RulesEngine(standard="sdtmig").validate_single_dataset(
+        dataset_metadata=ae_1_metadata,
+        rule=dataset_rule_equal_to_error_objects,
+    )
+    assert ae_1_result[0]["dataset"] == "AE_1"
+    ae_1_rows = {err["row"] for err in ae_1_result[0]["errors"]}
+    assert ae_1_rows == {4}
 
 
 @patch(

@@ -134,7 +134,17 @@ python -m venv venv
 ### 3. Install Dependencies
 
 ```bash
-python -m pip install -r requirements-dev.txt
+pip install --upgrade pip
+```
+
+```bash
+# If the above fails on Windows:
+python -m pip install --upgrade pip
+```
+
+```bash
+# requires pip 26+:
+pip install . --group dev
 ```
 
 ### 4. Populate the Cache

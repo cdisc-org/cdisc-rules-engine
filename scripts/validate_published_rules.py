@@ -104,10 +104,8 @@ def _build_failure_detail(record: dict) -> str:
         )
         diff_file = record["_diff_file"]
         if diff_file and os.path.isfile(diff_file):
-            lines.append("```diff")
             with open(diff_file) as fh:
                 lines.append(fh.read())
-            lines.append("```")
     lines.append("")
     return "\n".join(lines)
 

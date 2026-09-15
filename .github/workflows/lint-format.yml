@@ -51,7 +51,7 @@ jobs:
           python-version: "3.12"
       - name: Install linters
         run: |
-          pip install black flake8 -c requirements-dev.txt
+          pip install black flake8
       - name: Run flake8
         run: |
           flake8 ${{needs.get_changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -88,7 +88,7 @@ jobs:
           python-version: "3.12"
       - name: Install yamllint
         run: |
-          pip install yamllint -c requirements-dev.txt
+          pip install ".[dev]"
       - name: Run yamllint
         run: |
           yamllint ${{needs.get_changed_files.outputs.yaml}}

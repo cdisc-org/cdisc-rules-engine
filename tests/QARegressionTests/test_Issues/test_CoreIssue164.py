@@ -1,7 +1,6 @@
 import subprocess
 import os
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -11,10 +10,12 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_negative_dataset():
+    """Verify the "All Study Day values are integers" rule flags exactly the
+    two non-integer DSDY values ("0" and "alolo") in the negative dataset,
+    at the correct rows and variable."""
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue164", "Negative_Dataset.json")
@@ -73,10 +74,12 @@ def test_negative_dataset():
     os.remove(file_name)
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
 def test_positive_dataset():
+    """Verify the same "All Study Day values are integers" rule reports zero
+    issues against the positive dataset, confirming valid integer DSDY
+    values are not flagged (companion to test_negative_dataset)."""
     command = (
-        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core validate -s sdtmig -v 3.4 -lr "
         + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue164", "Positive_Dataset.json")

@@ -20,10 +20,9 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install --no-deps -r requirements.txt
-          pip install -r requirements.txt --no-cache-dir
+          pip install --upgrade pip
+          pip install twine
+          pip install .
 
       - name: Build Binary (Linux)
         if: runner.os == 'Linux'
@@ -32,6 +31,10 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.ico
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
+          --copy-metadata pandas
+          --recursive-copy-metadata dask
+          --copy-metadata pyarrow
           --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas
           --add-data=resources/cache:resources/cache
           --add-data=resources/templates:resources/templates
@@ -45,6 +48,10 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.icns
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
+          --copy-metadata pandas
+          --recursive-copy-metadata dask
+          --copy-metadata pyarrow
           --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas
           --add-data=resources/cache:resources/cache
           --add-data=resources/templates:resources/templates
@@ -58,6 +65,10 @@ jobs:
           --icon=resources/assets/CORE_logo_sm.ico
           --dist ./dist/output/${{ inputs.name }}
           --collect-submodules pyreadstat
+          --collect-data odmlib
+          --copy-metadata pandas
+          --recursive-copy-metadata dask
+          --copy-metadata pyarrow
           --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas"
           --hidden-import numpy
           --hidden-import numpy.core._methods

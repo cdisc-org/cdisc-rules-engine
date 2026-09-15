@@ -8,7 +8,9 @@ class DataReaderInterface:
     """
 
     def __init__(
-        self, dataset_implementation=PandasDataset, encoding: str = DEFAULT_ENCODING
+        self,
+        dataset_implementation=PandasDataset,
+        encoding: str = DEFAULT_ENCODING,
     ):
         """
         :param DatasetInterface dataset_implementation : The dataset type to return.

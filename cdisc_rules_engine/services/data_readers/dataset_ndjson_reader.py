@@ -45,7 +45,7 @@ class DatasetNDJSONReader(DataReaderInterface):
             [item for item in datandjson],
             columns=[item["name"] for item in metadatandjson.get("columns", [])],
         )
-        return df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
+        return df.map(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def from_file(self, file_path):
         try:

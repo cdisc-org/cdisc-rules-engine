@@ -1,6 +1,5 @@
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
-import dask.array as da
 import pandas as pd
 import re
 import dask
@@ -76,14 +75,10 @@ class DaskDataset(PandasDataset):
         )
 
     def __setitem__(self, key, value):
-        if isinstance(value, list):
-            chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
-            array_values = da.from_array(value, chunks=tuple(chunks))
-            self._data[key] = array_values
-        elif isinstance(value, pd.Series):
-            self._data = self._data.reset_index()
-            self._data = self._data.set_index("index")
-            self._data[key] = value
+        if isinstance(value, (list, pd.Series)):
+            pdf = self._data.compute()
+            pdf[key] = value if isinstance(value, list) else value.reindex(pdf.index)
+            self._data = dd.from_pandas(pdf, npartitions=self._data.npartitions)
         elif isinstance(value, dd.DataFrame):
             for column in value:
                 self._data[column] = value[column]
@@ -348,16 +343,14 @@ class DaskDataset(PandasDataset):
     def fillna(
         self,
         value=None,
-        method=None,
         axis=None,
         inplace=False,
         limit=None,
-        downcast=None,
     ):
         """
         Fill NA/NaN values using the specified method.
         """
-        result = self._data.fillna(value=value, method=method, axis=axis, limit=limit)
+        result = self._data.fillna(value=value, axis=axis, limit=limit)
         if inplace:
             self._data = result
             return None
@@ -367,14 +360,7 @@ class DaskDataset(PandasDataset):
     def to_dict(self, **kwargs) -> dict:
         orient = kwargs.get("orient", "dict")
         if orient == "records":
-            reset_df = self._data.reset_index(drop=True)
-            all_partitions = list(
-                reset_df.map_partitions(lambda x: x.to_dict(orient="records"))
-            )
-            flattened = []
-            for partition in all_partitions:
-                flattened.extend(partition)
-            return flattened
+            return self._data.compute().reset_index(drop=True).to_dict(orient="records")
         else:
             return self._data.compute().to_dict(**kwargs)
 

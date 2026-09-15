@@ -6,8 +6,9 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from cdisc_rules_engine.utilities.decorators import cached
-from cdisc_rules_engine.utilities.sdtm_utilities import get_corresponding_datasets
 from cdisc_rules_engine.utilities.sdtm_utilities import (
+    get_corresponding_datasets,
+    has_split_siblings,
     tag_source,
 )
 from typing import List, Optional
@@ -47,12 +48,8 @@ class BaseDatasetBuilder:
         self.library_metadata = library_metadata
         self.dataset_implementation = self.data_service.dataset_implementation
         if isinstance(dataset_metadata, SDTMDatasetMetadata):
-            self.domain = (
-                f"SUPP{dataset_metadata.rdomain}"
-                if dataset_metadata.rdomain
-                else dataset_metadata.domain
-            )
-            self.dataset_name = dataset_metadata.name
+            # This is created to support the get_dataset cached decorator
+            self.domain = dataset_metadata.unsplit_name
         self.name = self.__class__.__name__
 
     @abstractmethod
@@ -80,7 +77,13 @@ class BaseDatasetBuilder:
     @cached("get_dataset")
     def get_dataset(self):
         # If validating dataset content, ensure split datasets are handled.
-        if self.dataset_metadata.is_split:
+        include_split_datasets = bool(
+            (self.rule.get("domains") or {}).get("include_split_datasets", False)
+        )
+        if (
+            has_split_siblings(self.data_service.get_datasets(), self.dataset_metadata)
+            and not include_split_datasets
+        ):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -90,14 +93,18 @@ class BaseDatasetBuilder:
                 ),
             )
         else:
-            # single dataset. the most common case
             dataset: DatasetInterface = self.build()
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
     def get_dataset_contents(self):
-        # If validating dataset content, ensure split datasets are handled.
-        if self.dataset_metadata.is_split:
+        include_split_datasets = bool(
+            (self.rule.get("domains") or {}).get("include_split_datasets", False)
+        )
+        if (
+            has_split_siblings(self.data_service.get_datasets(), self.dataset_metadata)
+            and not include_split_datasets
+        ):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -107,7 +114,7 @@ class BaseDatasetBuilder:
                 ),
             )
         else:
-            # single dataset. the most common case
+            # single dataset, OR split dataset being processed independently
             dataset: DatasetInterface = self.data_service.get_dataset(
                 dataset_name=self.dataset_metadata.name
             )

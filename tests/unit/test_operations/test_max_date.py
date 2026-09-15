@@ -3,7 +3,7 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.models.operation_params import OperationParams
-import pandas as pd
+from cdisc_rules_engine.check_operators.helpers import format_date_preserving_precision
 import pytest
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
@@ -17,14 +17,14 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
     [
         (
             {"dates": ["2001-01-01", "", "2022-01-05"]},
-            pd.to_datetime("2022-01-05").isoformat(),
+            format_date_preserving_precision("2022-01-05"),
             PandasDataset,
             None,
         ),
         ({"dates": [None, None]}, "", PandasDataset, None),
         (
             {"dates": ["2001-01-01", "", "2022-01-05"]},
-            pd.to_datetime("2022-01-05").isoformat(),
+            format_date_preserving_precision("2022-01-05"),
             DaskDataset,
             None,
         ),
@@ -88,6 +88,88 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
                         "USUBJID": "00003",
                         "operation_id": "2025-12-11",
                     },
+                ]
+            ),
+            DaskDataset,
+            ["USUBJID"],
+        ),
+        (
+            {
+                "dates": [
+                    "2025-10-10",
+                    "2025-10-15",
+                    "2025-12-02",
+                    "2025-12-11",
+                    "",
+                    "",
+                ],
+                "USUBJID": ["00002", "00002", "00003", "00003", "00004", "00004"],
+            },
+            PandasDataset.from_records(
+                [
+                    {
+                        "dates": "2025-10-10",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-10-15",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-12-02",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {
+                        "dates": "2025-12-11",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {"dates": "", "USUBJID": "00004", "operation_id": ""},
+                    {"dates": "", "USUBJID": "00004", "operation_id": ""},
+                ]
+            ),
+            PandasDataset,
+            ["USUBJID"],
+        ),
+        (
+            {
+                "dates": [
+                    "2025-10-10",
+                    "2025-10-15",
+                    "2025-12-02",
+                    "2025-12-11",
+                    "",
+                    "",
+                ],
+                "USUBJID": ["00002", "00002", "00003", "00003", "00004", "00004"],
+            },
+            DaskDataset.from_records(
+                [
+                    {
+                        "dates": "2025-10-10",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-10-15",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-12-02",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {
+                        "dates": "2025-12-11",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {"dates": "", "USUBJID": "00004", "operation_id": ""},
+                    {"dates": "", "USUBJID": "00004", "operation_id": ""},
                 ]
             ),
             DaskDataset,

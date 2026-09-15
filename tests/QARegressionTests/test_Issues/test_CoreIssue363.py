@@ -5,9 +5,15 @@ import os
 import pytest
 
 
-@pytest.mark.skip(reason="The test is obsolete and requires modernization.")
+@pytest.mark.skip(
+    reason="Requires API key to run. Run Locally with valid API key to test."
+)
 class TestCoreIssue363(unittest.TestCase):
     def test_post_request(self):
+        """Currently skipped (requires an API key). Hits the external Azure
+        "TestRule" rule-generation API directly over HTTP; not part of the
+        local CLI-based validation regression suite covered elsewhere in
+        this directory."""
         # URL to send the POST request to
         url = (
             "https://cdisc-library-conformance-rules-generator-dev.azurewebsites.net"

@@ -169,7 +169,7 @@ class RecordCount(BaseOperation):
                 if self.params.dataframe[col].isna().all():
                     all_na_cols[col] = None
                 elif (
-                    self.params.dataframe[col].dtype == "object"
+                    pd.api.types.is_string_dtype(self.params.dataframe[col])
                     and self.params.dataframe[col].fillna("").str.strip().eq("").all()
                 ):
                     all_na_cols[col] = ""

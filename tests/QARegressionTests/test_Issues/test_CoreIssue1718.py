@@ -1,13 +1,14 @@
 import os
 import subprocess
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1718:
     def test_max_issues(self):
+        """Test that -me/--max-errors-per-rule (per_dataset_flag=true) caps
+        Issue_Details rows while Issue_Summary still reports the true total.
+        """
         # Run the command in the terminal
         max_issues = 3
         command = [
@@ -25,8 +26,8 @@ class TestCoreIssue1718:
                 "resources",
                 "CoreIssue1718",
             ),
-            "-r",
-            "CORE-000356",
+            "-lr",
+            os.path.join("tests", "resources", "library_rules", "CORE-000356.json"),
             "-ps",
             "1",
             "-of",

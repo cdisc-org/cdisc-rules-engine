@@ -28,10 +28,14 @@ class CodelistExtensible(BaseOperation):
         ct_df = self.evaluation_dataset.__class__.from_dict(ct_data)
         ct_df = ct_df.astype(
             {
-                "version": "string",
-                "codelist_code": "string",
+                "version": str,
+                "codelist_code": str,
             }
         )
+        cast_cols = {self.params.ct_version: str}
+        if self.params.codelist_code in self.evaluation_dataset.columns:
+            cast_cols[self.params.codelist_code] = str
+        self.evaluation_dataset = self.evaluation_dataset.astype(cast_cols)
         if self.params.codelist_code in self.evaluation_dataset.columns:
             is_extensible = self.evaluation_dataset.merge(
                 ct_df.data,

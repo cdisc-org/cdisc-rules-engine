@@ -111,3 +111,20 @@ def test_is_not_in(data, check_values, expected_result):
     ]
     partial_function = vlm.is_not_in()
     assert partial_function(df.iloc[0]) == expected_result
+
+
+@pytest.mark.parametrize(
+    "data, check_value, expected_result",
+    [
+        ({"TEST": [3]}, "2", True),
+        ({"TEST": [2]}, "2", False),
+        ({"TEST": [1]}, "2", False),
+    ],
+)
+def test_greater_than(data, check_value, expected_result):
+    df = pandas.DataFrame.from_dict(data)
+    vlm = ValueLevelMetadata()
+    vlm.item = Mock(Name="TEST")
+    vlm.check_values = [CheckValue(_content=check_value)]
+    partial_function = vlm.greater_than()
+    assert partial_function(df.iloc[0]) == expected_result

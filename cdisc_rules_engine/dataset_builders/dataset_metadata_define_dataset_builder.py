@@ -59,6 +59,7 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         merged._data = merged._data.astype(object).replace({np.nan: None})
 
         # 5. Return all rows (one per dataset)
+        merged._data = merged._data.sort_values("dataset_name").reset_index(drop=True)
         return merged
 
     def _get_define_xml_dataframe(self):

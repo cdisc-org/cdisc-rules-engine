@@ -1,0 +1,504 @@
+{
+  "core_id": "CORE-000237",
+  "author": "CDISC",
+  "reference": [
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "A further grouping or classification of the category for the topic of the finding, event, or intervention. The category is in --CAT.",
+            "Document": "Model v2.0",
+            "Item": "--SCAT",
+            "Section": "Interventions"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0027",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Used to define a further categorization of --CAT values.",
+            "Document": "Model v1.7",
+            "Item": "--SCAT",
+            "Section": "2.2.1"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0027",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Used to define a further categorization of --CAT values.",
+            "Document": "Model v1.4",
+            "Item": "Table 2.2.1, --SCAT",
+            "Section": "2.2.1"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0027",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.0",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.1",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.1.1",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.1.1",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.1",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+            "Document": "IG v.3.1.1",
+            "Section": "4.2.6"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND43",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "A further grouping or classification of the category for the topic of the finding, event, or intervention. The category is in --CAT.",
+            "Document": "SDTM v2.1",
+            "Item": "--SCAT",
+            "Section": "3.1.4 Identifiers for All Classes"
+          }
+        ],
+        "Origin": "TIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "TIG0309",
+          "Version": "1"
+        },
+        "Version": "1.0"
+      }
+    ]
+  ],
+  "sensitivity": "Record",
+  "executability": "fully executable",
+  "description": "Trigger error when --SCAT is not null and --SCAT is equal to --CAT",
+  "authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "A further grouping or classification of the category for the topic of the finding, event, or intervention. The category is in --CAT.",
+                  "Document": "Model v2.0",
+                  "Item": "--SCAT",
+                  "Section": "Interventions"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0027",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.4"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Used to define a further categorization of --CAT values.",
+                  "Document": "Model v1.7",
+                  "Item": "--SCAT",
+                  "Section": "2.2.1"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0027",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Used to define a further categorization of --CAT values.",
+                  "Document": "Model v1.4",
+                  "Item": "Table 2.2.1, --SCAT",
+                  "Section": "2.2.1"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0027",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.0",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.0"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.1",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.1"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.1.1",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.1.1"
+        },
+        {
+          "Name": "SENDIG-GENETOX",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.1.1",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.0"
+        },
+        {
+          "Name": "SENDIG-DART",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.1",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.1"
+        },
+        {
+          "Name": "SENDIG-DART",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Values for --CAT and --SCAT should not be redundant with the domain or dictionary classification provided by --DECOD and --BODSYS.",
+                  "Document": "IG v.3.1.1",
+                  "Section": "4.2.6"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND43",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.2"
+        },
+        {
+          "Name": "TIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "A further grouping or classification of the category for the topic of the finding, event, or intervention. The category is in --CAT.",
+                  "Document": "SDTM v2.1",
+                  "Item": "--SCAT",
+                  "Section": "3.1.4 Identifiers for All Classes"
+                }
+              ],
+              "Origin": "TIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "TIG0309",
+                "Version": "1"
+              },
+              "Version": "1.0"
+            }
+          ],
+          "Substandard": "SDTM",
+          "Version": "1.0"
+        }
+      ]
+    }
+  ],
+  "standards": [
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.3",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.2",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.0",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.1.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-GENETOX",
+      "Version": "1.0",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-DART",
+      "Version": "1.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-DART",
+      "Version": "1.2",
+      "Substandard": null
+    },
+    {
+      "Name": "TIG",
+      "Version": "1.0",
+      "Substandard": "SDTM"
+    }
+  ],
+  "classes": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "domains": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "entities": null,
+  "rule_type": "Record Data",
+  "conditions": {
+    "all": [
+      {
+        "name": "get_dataset",
+        "operator": "non_empty",
+        "value": {
+          "comparator": null,
+          "target": "--SCAT"
+        }
+      },
+      {
+        "name": "get_dataset",
+        "operator": "equal_to",
+        "value": {
+          "comparator": "--CAT",
+          "target": "--SCAT"
+        }
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_dataset_error_objects",
+      "params": {
+        "message": "--SCAT is equal to --CAT"
+      }
+    }
+  ],
+  "use_case": "INDH, PROD",
+  "data_structures": null,
+  "status": "Published",
+  "output_variables": [
+    "--CAT",
+    "--SCAT"
+  ]
+}

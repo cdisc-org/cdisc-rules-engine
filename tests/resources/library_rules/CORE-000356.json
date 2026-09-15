@@ -1,0 +1,558 @@
+{
+  "core_id": "CORE-000356",
+  "author": "CDISC",
+  "reference": [
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.2",
+            "Section": "4.1.1.5"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0014",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.3",
+            "Section": "4.1.5"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0014",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.4",
+            "Section": "4.1.5"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0014",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.0",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.1",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.1.1",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.1",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.1.1",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+            "Document": "IG v3.1.1",
+            "Section": "4.1.3"
+          }
+        ],
+        "Origin": "SEND Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "SEND12",
+          "Version": "1"
+        },
+        "Version": "5.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "All Required and Expected tabulation variables are included as columns in the dataset. Required tabulation variables are populated for all records in the dataset.",
+            "Document": "TIG 1.0",
+            "Item": "Table 2 Num 6",
+            "Section": "2.5"
+          }
+        ],
+        "Origin": "TIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "TIG0299",
+          "Version": "1"
+        },
+        "Version": "1.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Req for variables which are Required and must be included in the resulting dataset and cannot be null for any record. Such variables are basic to the identification of a data record or are necessary to make the record meaningful.",
+            "Document": "TIG 1.0",
+            "Item": "Text",
+            "Section": "2.8.1 How to Read Domain Specifications"
+          }
+        ],
+        "Origin": "TIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "TIG0057",
+          "Version": "1"
+        },
+        "Version": "1.0"
+      }
+    ]
+  ],
+  "sensitivity": "Record",
+  "executability": "fully executable",
+  "description": "Part B: Raise an error when a Required variable is null.",
+  "authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.2",
+                  "Section": "4.1.1.5"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0014",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.3",
+                  "Section": "4.1.5"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0014",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.4",
+                  "Section": "4.1.5"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0014",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.4"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.0",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.0"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.1",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.1"
+        },
+        {
+          "Name": "SENDIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.1.1",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "3.1.1"
+        },
+        {
+          "Name": "SENDIG-DART",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.1",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.1"
+        },
+        {
+          "Name": "SENDIG-DART",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.1.1",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.2"
+        },
+        {
+          "Name": "SENDIG-GENETOX",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Required variables must always be included in the dataset and cannot be null for any record.",
+                  "Document": "IG v3.1.1",
+                  "Section": "4.1.3"
+                }
+              ],
+              "Origin": "SEND Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "SEND12",
+                "Version": "1"
+              },
+              "Version": "5.0"
+            }
+          ],
+          "Version": "1.0"
+        },
+        {
+          "Name": "TIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "All Required and Expected tabulation variables are included as columns in the dataset. Required tabulation variables are populated for all records in the dataset.",
+                  "Document": "TIG 1.0",
+                  "Item": "Table 2 Num 6",
+                  "Section": "2.5"
+                }
+              ],
+              "Origin": "TIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "TIG0299",
+                "Version": "1"
+              },
+              "Version": "1.0"
+            }
+          ],
+          "Substandard": "SDTM",
+          "Version": "1.0"
+        },
+        {
+          "Name": "TIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Req for variables which are Required and must be included in the resulting dataset and cannot be null for any record. Such variables are basic to the identification of a data record or are necessary to make the record meaningful.",
+                  "Document": "TIG 1.0",
+                  "Item": "Text",
+                  "Section": "2.8.1 How to Read Domain Specifications"
+                }
+              ],
+              "Origin": "TIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "TIG0057",
+                "Version": "1"
+              },
+              "Version": "1.0"
+            }
+          ],
+          "Substandard": "SEND",
+          "Version": "1.0"
+        }
+      ]
+    }
+  ],
+  "standards": [
+    {
+      "Name": "SDTMIG",
+      "Version": "3.2",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.3",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.0",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG",
+      "Version": "3.1.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-DART",
+      "Version": "1.1",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-DART",
+      "Version": "1.2",
+      "Substandard": null
+    },
+    {
+      "Name": "SENDIG-GENETOX",
+      "Version": "1.0",
+      "Substandard": null
+    },
+    {
+      "Name": "TIG",
+      "Version": "1.0",
+      "Substandard": "SDTM"
+    },
+    {
+      "Name": "TIG",
+      "Version": "1.0",
+      "Substandard": "SEND"
+    }
+  ],
+  "classes": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "domains": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "entities": null,
+  "rule_type": "Value Check with Dataset Metadata",
+  "conditions": {
+    "all": [
+      {
+        "name": "get_dataset",
+        "operator": "exists",
+        "value": {
+          "comparator": null,
+          "target": "$required_variables"
+        }
+      },
+      {
+        "name": "get_dataset",
+        "operator": "is_contained_by",
+        "value": {
+          "comparator": "$required_variables",
+          "target": "variable_name"
+        }
+      },
+      {
+        "name": "get_dataset",
+        "operator": "empty",
+        "value": {
+          "comparator": null,
+          "target": "variable_value"
+        }
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_dataset_error_objects",
+      "params": {
+        "message": "At least one Required variable has a null value"
+      }
+    }
+  ],
+  "use_case": "INDH, PROD, NONCLIN",
+  "data_structures": null,
+  "status": "Published",
+  "operations": [
+    {
+      "id": "$required_variables",
+      "operator": "required_variables"
+    }
+  ],
+  "output_variables": [
+    "variable_name",
+    "variable_value"
+  ]
+}

@@ -36,7 +36,7 @@ class DatasetJSONReader(DataReaderInterface):
             [item for item in datasetjson.get("rows", [])],
             columns=[item["name"] for item in datasetjson.get("columns", [])],
         )
-        return df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
+        return df.map(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def from_file(self, file_path):
         try:

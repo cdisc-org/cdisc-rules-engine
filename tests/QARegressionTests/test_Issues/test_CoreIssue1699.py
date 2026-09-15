@@ -1,14 +1,16 @@
 import os
 import subprocess
 import unittest
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
-class TestCoreIssue1501(unittest.TestCase):
-    def test_raw_report(self):
+class TestCoreIssue1699(unittest.TestCase):
+    def test_cg0314_supp_rule_reports_success(self):
+        """Validates the CG0314 SUPP (Supplemental Qualifiers) rule via
+        rule.yml against the CoreIssue1699 dataset, asserting the rule
+        reports a SUCCESS status.
+        """
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",

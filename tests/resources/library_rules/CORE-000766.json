@@ -1,0 +1,116 @@
+{
+  "core_id": "CORE-000766",
+  "author": "CDISC",
+  "reference": [
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "When findings are collected about an event or intervention, and the name of the event or intervention is collected in an \"Other, specify\" CRF field, the value in --OBJ variable depends on whether the FA record has a parent record and whether the \"Other, specify\" value was coded.",
+            "Document": "IG v3.4",
+            "Section": "4.2.7.4"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0601",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ]
+  ],
+  "sensitivity": "Record",
+  "executability": "fully executable",
+  "description": "When findings are collected, and the Events parent record exists and --DECOD is null, FAOBJ should not be equal to --TERM",
+  "authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "When findings are collected about an event or intervention, and the name of the event or intervention is collected in an \"Other, specify\" CRF field, the value in --OBJ variable depends on whether the FA record has a parent record and whether the \"Other, specify\" value was coded.",
+                  "Document": "IG v3.4",
+                  "Section": "4.2.7.4"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0601",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.4"
+        }
+      ]
+    }
+  ],
+  "standards": [
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    }
+  ],
+  "classes": {
+    "Include": [
+      "EVENTS"
+    ]
+  },
+  "domains": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "entities": null,
+  "rule_type": "Record Data",
+  "conditions": {
+    "all": [
+      {
+        "name": "get_dataset",
+        "operator": "empty",
+        "value": {
+          "comparator": null,
+          "target": "--DECOD"
+        }
+      },
+      {
+        "name": "get_dataset",
+        "operator": "not_equal_to",
+        "value": {
+          "comparator": "RELREC.FAOBJ",
+          "target": "--TERM"
+        }
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_dataset_error_objects",
+      "params": {
+        "message": "Related record is present in the parent domain dataset and \"Other, specify\" value was coded."
+      }
+    }
+  ],
+  "use_case": null,
+  "data_structures": null,
+  "status": "Published",
+  "datasets": [
+    {
+      "domain_name": "RELREC",
+      "match_key": [],
+      "wildcard": "FA"
+    }
+  ],
+  "output_variables": [
+    "--DECOD",
+    "--TERM",
+    "RELREC.FAOBJ"
+  ]
+}

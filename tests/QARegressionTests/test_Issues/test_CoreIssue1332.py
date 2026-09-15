@@ -1,7 +1,6 @@
 import os
 import subprocess
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -9,8 +8,10 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 def test_ap_domain_should_be_correctly_substituted():
+    """Verify the "AP--" domain-prefix placeholder in a rule's scope is
+    correctly substituted with actual AP domains (APMH, APSQ), producing
+    4 issues each on MHTERM/SQTERM with value "POMPE DISEASE"."""
     # Run the command in the terminal
     command = [
         f"{get_python_executable()}",

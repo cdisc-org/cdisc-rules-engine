@@ -2,7 +2,6 @@ import os
 import subprocess
 import unittest
 import openpyxl
-import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
     issue_datails_sheet,
@@ -13,9 +12,11 @@ from QARegressionTests.globals import (
 )
 
 
-@pytest.mark.regression
 class TestCoreIssue715(unittest.TestCase):
     def test_positive_dataset(self):
+        """Verify the USDM DDF00081 class-relationship schema-conformance
+        rule reports SUCCESS (0 issues) against a valid CDISC Pilot Study
+        USDM JSON dataset."""
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -77,6 +78,9 @@ class TestCoreIssue715(unittest.TestCase):
             os.remove(excel_file_path)
 
     def test_negative_dataset(self):
+        """Verify the same DDF00081 rule flags exactly 15 issue rows, each
+        reporting "class relationship does not conform", against an
+        intentionally invalid USDM JSON dataset."""
         # Run validation for invalid JSON
         command = [
             f"{get_python_executable()}",

@@ -23,8 +23,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install requirements
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .
 
       - name: Run Update Cache Script
         run: python core.py update-cache

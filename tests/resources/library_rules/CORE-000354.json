@@ -1,0 +1,260 @@
+{
+  "core_id": "CORE-000354",
+  "author": "CDISC",
+  "reference": [
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain)",
+            "Document": "SDTMIG v3.4",
+            "Section": "4.4.4"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0007",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain).",
+            "Document": "SDTMIG v3.3",
+            "Section": "4.4.4"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0007",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain).",
+            "Document": "SDTMIG v3.2",
+            "Section": "4.1.4.4"
+          }
+        ],
+        "Origin": "SDTM and SDTMIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "CG0007",
+          "Version": "1"
+        },
+        "Version": "2.0"
+      }
+    ],
+    [
+      {
+        "Citations": [
+          {
+            "Cited_Guidance": "Variables --DY, --STDY, and --ENDY represent the timing of observations in days relative to the reference start date in RFSTDTC where the value of --DY is the relative day of the date populated in --DTC for the observation,--STDTC is the relative day of the date populated in --STDTC for the observation; an--ENDY is the relative day of the of the date populated in --ENDTC for the observation.",
+            "Document": "TIG 1.0",
+            "Section": "2.8.7.6"
+          }
+        ],
+        "Origin": "TIG Conformance Rules",
+        "Rule_Identifier": {
+          "Id": "TIG0292",
+          "Version": "1"
+        },
+        "Version": "1.0"
+      }
+    ]
+  ],
+  "sensitivity": "Record",
+  "executability": "fully executable",
+  "description": "Raise an error when the date portion of --DTC is an incomplete date or the date portion of DM.RFSTDTC is an incomplete date, but --DY is not empty",
+  "authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain)",
+                  "Document": "SDTMIG v3.4",
+                  "Section": "4.4.4"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0007",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.4"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain).",
+                  "Document": "SDTMIG v3.3",
+                  "Section": "4.4.4"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0007",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "The permissible Study Day variables (--DY, --STDY, and --ENDY) . . . are determined by comparing the date portion of the respective date/time variables (--DTC, --STDTC, and --ENDTC) to the date portion of the Subject Reference Start Date (RFSTDTC from the Demographics domain).",
+                  "Document": "SDTMIG v3.2",
+                  "Section": "4.1.4.4"
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "CG0007",
+                "Version": "1"
+              },
+              "Version": "2.0"
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "TIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Cited_Guidance": "Variables --DY, --STDY, and --ENDY represent the timing of observations in days relative to the reference start date in RFSTDTC where the value of --DY is the relative day of the date populated in --DTC for the observation,--STDTC is the relative day of the date populated in --STDTC for the observation; an--ENDY is the relative day of the of the date populated in --ENDTC for the observation.",
+                  "Document": "TIG 1.0",
+                  "Section": "2.8.7.6"
+                }
+              ],
+              "Origin": "TIG Conformance Rules",
+              "Rule_Identifier": {
+                "Id": "TIG0292",
+                "Version": "1"
+              },
+              "Version": "1.0"
+            }
+          ],
+          "Substandard": "SDTM",
+          "Version": "1.0"
+        }
+      ]
+    }
+  ],
+  "standards": [
+    {
+      "Name": "SDTMIG",
+      "Version": "3.4",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.3",
+      "Substandard": null
+    },
+    {
+      "Name": "SDTMIG",
+      "Version": "3.2",
+      "Substandard": null
+    },
+    {
+      "Name": "TIG",
+      "Version": "1.0",
+      "Substandard": "SDTM"
+    }
+  ],
+  "classes": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "domains": {
+    "Include": [
+      "ALL"
+    ]
+  },
+  "entities": null,
+  "rule_type": "Record Data",
+  "conditions": {
+    "all": [
+      {
+        "name": "get_dataset",
+        "operator": "non_empty",
+        "value": {
+          "comparator": null,
+          "target": "--DY"
+        }
+      },
+      {
+        "any": [
+          {
+            "name": "get_dataset",
+            "operator": "is_incomplete_date",
+            "value": {
+              "comparator": null,
+              "target": "--DTC"
+            }
+          },
+          {
+            "name": "get_dataset",
+            "operator": "is_incomplete_date",
+            "value": {
+              "comparator": null,
+              "target": "RFSTDTC"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_dataset_error_objects",
+      "params": {
+        "message": "The date portion of --DTC is not complete date or the date portion of DM.RFSTDTC is not complete date, but --DY is not empty"
+      }
+    }
+  ],
+  "use_case": "INDH",
+  "data_structures": null,
+  "status": "Published",
+  "datasets": [
+    {
+      "domain_name": "DM",
+      "match_key": [
+        "USUBJID"
+      ],
+      "wildcard": "**"
+    }
+  ],
+  "output_variables": [
+    "--DY",
+    "--DTC",
+    "RFSTDTC"
+  ]
+}

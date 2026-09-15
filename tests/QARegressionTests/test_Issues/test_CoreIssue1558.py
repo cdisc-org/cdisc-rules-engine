@@ -2,14 +2,15 @@ import os
 import subprocess
 import unittest
 
-import pytest
 import json
 from conftest import get_python_executable
 
 
-@pytest.mark.regression
 class TestCoreIssue1558(unittest.TestCase):
     def test_raw_report(self):
+        """Test that validating a -d directory with multiple dataset files
+        includes all of them (LB, DM) in Dataset_Details.
+        """
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -18,8 +19,8 @@ class TestCoreIssue1558(unittest.TestCase):
             "validate",
             "-s",
             "sdtmig",
-            "-r",
-            "CORE-000007",
+            "-lr",
+            os.path.join("tests", "resources", "library_rules", "CORE-000007.json"),
             "-v",
             "3.4",
             "-d",
@@ -58,13 +59,17 @@ class TestCoreIssue1558(unittest.TestCase):
             os.remove(json_report_path)
 
     def test_env_vars_loaded(self):
+        """Test that --dotenv-path loads PRODUCT/VERSION env vars so -s/-v
+        don't need to be passed on the CLI (Conformance_Details still reports
+        SDTMIG / V3.4).
+        """
         command = [
             f"{get_python_executable()}",
             "-m",
             "core",
             "validate",
-            "-r",
-            "CORE-000007",
+            "-lr",
+            os.path.join("tests", "resources", "library_rules", "CORE-000007.json"),
             "--dotenv-path",
             os.path.join("tests", "resources", "CoreIssue1558", "test.env"),
             "-d",

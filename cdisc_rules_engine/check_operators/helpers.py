@@ -56,7 +56,7 @@ class DatePrecision(IntEnum):
 
 
 def is_valid_date(date_string: str) -> bool:
-    if date_string is None or not isinstance(date_string, str):
+    if not isinstance(date_string, str):
         return False
     try:
         isoparse(date_string)
@@ -332,6 +332,26 @@ def _truncate_by_precision(
         truncate_datetime_to_precision(target, precision),
         truncate_datetime_to_precision(comparator, precision),
     )
+
+
+def format_date_preserving_precision(original_str: str) -> str:
+    precision = detect_datetime_precision(original_str)
+    if precision is None:
+        return ""
+    dt = truncate_datetime_to_precision(original_str, precision)
+
+    if precision >= DatePrecision.second:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S")
+    elif precision == DatePrecision.minute:
+        return dt.strftime("%Y-%m-%dT%H:%M")
+    elif precision == DatePrecision.hour:
+        return dt.strftime("%Y-%m-%dT%H")
+    elif precision == DatePrecision.day:
+        return dt.strftime("%Y-%m-%d")
+    elif precision == DatePrecision.month:
+        return dt.strftime("%Y-%m")
+    else:  # year
+        return dt.strftime("%Y")
 
 
 def _compare_with_inferred_precision(
