@@ -74,12 +74,14 @@
             "ALL",
             "AP--",
             "APRELSUB",
+            "APRELSPEC",
             "POOLDEF",
             "RELREC",
             "RELREF",
             "RELSPEC",
             "RELSUB",
             "SUPP--",
+            "SQ--",
             "TUMOR"
           ],
           "type": "string"
