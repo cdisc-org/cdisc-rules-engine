@@ -80,9 +80,10 @@
             "RELREF",
             "RELSPEC",
             "RELSUB",
-            "SUPP--",
-            "SQ--",
-            "TUMOR"
+            "SUPPQUAL",
+            "TUMOR",
+            "SPLIT DATASETS",
+            "AP SPLIT DATASETS"
           ],
           "type": "string"
         },
