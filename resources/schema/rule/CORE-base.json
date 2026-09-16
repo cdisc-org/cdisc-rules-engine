@@ -74,13 +74,16 @@
             "ALL",
             "AP--",
             "APRELSUB",
+            "APRELSPEC",
             "POOLDEF",
             "RELREC",
             "RELREF",
             "RELSPEC",
             "RELSUB",
-            "SUPP--",
-            "TUMOR"
+            "SUPPQUAL",
+            "TUMOR",
+            "SPLIT DATASETS",
+            "AP SPLIT DATASETS"
           ],
           "type": "string"
         },
