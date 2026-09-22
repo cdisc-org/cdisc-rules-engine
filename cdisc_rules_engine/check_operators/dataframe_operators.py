@@ -301,6 +301,176 @@ class DataframeType(BaseType):
             )
             return target_val != comparison_val
         return target_val != comparison_val
+        
+    # Added Jozef Aerts 2026-09-01
+    # checks whether a date/time is between a start date/time and an end date/time
+    # i.e. is within the window between start and end date/time
+    # For the start datetime, if the string does not represent a full datetime (down to the second)
+    # the value is extended "downwards" to make it a full datetime.
+    # For example:
+    # 2026-06-12 => 2026-06-12T00:00:00
+    # 2026-06-12T13 => 2026-06-12T13:00
+    # 2026-06-12T13:05 => 2026-06-12T13:05:00
+    # For the end datetime, if the string does not represent a full datetime (down to the second)
+    # the value is extended/adapted "upwards" to make it a full datetime.
+    # For example:
+    # 2026-06-15 => 2026-06-15T23:59:59
+    # 2026-06-15T15 => 2026-06-12T15:59
+    # 2026-06-12T15:05 => 2026-06-12T13:05:59
+    # 2026-06-12T23:59:59 => 2026-06-13T00:00:00
+    #
+    def _check_is_between_datetimes(
+            self,
+            row,
+            target,
+            comparator
+    ) -> bool:
+        # print("row = ", row, " - target = ", target, " - comparator = ", comparator)
+        # comparator contains the two (datetime) values used in the comparison
+        # target contains the name of the variable for which the value needs to be checked
+        target_value = row[target]
+        comparator_start = comparator[0]  # name of the variable containing the window start
+        comparator_end = comparator[1]  # name of the variable containing the window end
+        # print("comparator_start = ", comparator_start)
+        # print("comparator_end = ", comparator_end)
+        # if no value for the start of the window is provided, skip
+        if row[comparator_start] is None or row[comparator_start] is False:
+            return False
+        if row[comparator_end] is None or row[comparator_end] is False:
+            return False
+        # get it as a string (just to make reading the code easier)
+        c1 = row[comparator_start]
+        c2 = row[comparator_end]
+        # logger.debug("target value = ", target_value)
+        # logger.debug("start of window = ", c1)
+        # logger.debug("end of window = ", c2)
+        # print('c1 = ', c1, ' - c2 = ', c2, ' target_value = ', target_value)
+        # print("type c1 = ", type(c1), ' length = ', len(c1))
+        # 2026-09-07: when the value for "start of the window" is NOT a complete datetime
+        # extend it to the start of the day, or add ":00" until a complete datetime
+        if 10 <= len(c1) < 19:
+            c1 = self.date_to_datetime_start(c1)
+        # 2026-09-07: when the value for "end of the window" is NOT a complete datetime
+        # extend it to the end of the day (last second of the day), or add "23:" or ":59" until a complete datetime
+        if 10 <= len(c2) < 19:
+            c2 = self.date_to_datetime_end(c2)
+        # for the target value, when it is NOT a complete datetime
+        # extend it to the start of the day, or add ":00" until a complete datetime
+        if 10 <= len(target_value) < 19:
+            target_value = self.date_to_datetime_start(target_value)
+        # print('after adding time part, c1 = ', c1, ' - c2 = ', c2, ' target_value = ', target_value)
+        # we can now do the datetime comparison
+        try:
+            # A complete datetime must contain a time component.
+            if "T" not in target_value or "T" not in c1 or "T" not in c2:
+                return False
+            # use datetime to compare
+            dt1 = datetime.fromisoformat(c1)
+            dt2 = datetime.fromisoformat(target_value)
+            dt3 = datetime.fromisoformat(c2)
+            # print("dt1 = ", dt1)
+            # print("dt2 = ", dt2)
+            # print("dt3 = ", dt3)
+            # print("final comparison returns = ", dt1 <= dt2 <= dt3)
+            return dt1 <= dt2 <= dt3
+        except (TypeError, ValueError):
+            logger.error("ValueError = ", ValueError)
+            return False
+
+        return True
+
+    # Jozef Aerts 2026-09-07
+    def date_to_datetime_start(self, value: str) -> str:
+        """
+        Convert an ISO 8601 date or partial datetime to a complete datetime.
+
+        Examples:
+            2026-08-25             -> 2026-08-25T00:00:00
+            2026-08-25T12          -> 2026-08-25T12:00:00
+            2026-08-25T12:30       -> 2026-08-25T12:30:00
+            2026-08-25T12:30:45    -> unchanged
+            2026-08-25T12:30:45Z   -> unchanged
+
+        Partial dates such as 2026-08 are left unchanged.
+        Invalid values are left unchanged.
+        """
+        # print('entering date_to_datetime_start')
+
+        if not isinstance(value, str):
+            return value
+
+        # Complete date: YYYY-MM-DD
+        if len(value) == 10:
+            try:
+                datetime.strptime(value, "%Y-%m-%d")
+                return value + "T00:00:00"
+            except ValueError:
+                return value
+
+        # Partial datetime: YYYY-MM-DDThh
+        if len(value) == 13 and value[10] == "T":
+            try:
+                datetime.strptime(value, "%Y-%m-%dT%H")
+                return value + ":00:00"
+            except ValueError:
+                return value
+
+        # Partial datetime: YYYY-MM-DDThh:mm
+        if len(value) == 16 and value[10] == "T":
+            try:
+                datetime.strptime(value, "%Y-%m-%dT%H:%M")
+                return value + ":00"
+            except ValueError:
+                return value
+
+        # Already complete, or not a value we should modify
+        return value
+
+    # Jozef Aerts 2026-09-07
+    def date_to_datetime_end(self, value: str) -> str:
+        """
+        Convert an ISO 8601 date or partial datetime to the last second
+        of the specified date/time precision.
+
+        Examples:
+            2026-08-25          -> 2026-08-25T23:59:59
+            2026-08-25T12       -> 2026-08-25T12:59:59
+            2026-08-25T12:30    -> 2026-08-25T12:30:59
+            2026-08-25T12:30:45 -> unchanged
+
+        Partial dates such as 2026-08 are left unchanged.
+        Invalid values are left unchanged.
+        """
+
+        if not isinstance(value, str):
+            return value
+
+        # Complete date: YYYY-MM-DD
+        if len(value) == 10:
+            try:
+                datetime.strptime(value, "%Y-%m-%d")
+                return value + "T23:59:59"
+            except ValueError:
+                return value
+
+        # Partial datetime: YYYY-MM-DDThh
+        if len(value) == 13 and value[10] == "T":
+            try:
+                datetime.strptime(value, "%Y-%m-%dT%H")
+                return value + ":59:59"
+            except ValueError:
+                return value
+
+        # Partial datetime: YYYY-MM-DDThh:mm
+        if len(value) == 16 and value[10] == "T":
+            try:
+                datetime.strptime(value, "%Y-%m-%dT%H:%M")
+                return value + ":59"
+            except ValueError:
+                return value
+
+        # Already complete, or not a value we should modify
+        return value
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
