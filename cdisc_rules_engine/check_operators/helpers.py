@@ -382,7 +382,9 @@ def _compare_with_inferred_precision(
 
 def compare_dates(component, target, comparator, operator_func):
     if not _dates_are_comparable(target, comparator):
-        return False
+        if not target and not comparator:
+            return False
+        return operator_func is operator.ne
 
     if _has_explicit_component(component):
         return _compare_with_component(component, target, comparator, operator_func)
