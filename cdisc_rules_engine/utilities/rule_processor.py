@@ -18,11 +18,6 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
 )
-from cdisc_rules_engine.constants.domains import (
-    AP_DOMAIN,
-    APFA_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
-)
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
@@ -60,31 +55,34 @@ class RuleProcessor:
         self.cache = cache
         self.library_metadata = library_metadata
 
+    DATASET_PROPERTY_KEYWORDS: dict = {
+        "SUPPQUAL": lambda md: bool(md.is_supp),
+        "AP--": lambda md: bool(md.is_ap),
+        "SPLIT DATASETS": lambda md: bool(md.is_split),
+        "AP SPLIT DATASETS": lambda md: (
+            bool(md.is_ap) and bool(md.is_split) and not bool(md.is_supp)
+        ),
+    }
+
+    @classmethod
+    def _matched_property_keyword(
+        cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]
+    ) -> bool:
+        for keyword, predicate in cls.DATASET_PROPERTY_KEYWORDS.items():
+            if keyword in domains_to_check and predicate(dataset_metadata):
+                return True
+        return False
+
     @classmethod
     def rule_applies_to_domain(
         cls, dataset_metadata: SDTMDatasetMetadata, rule: dict
     ) -> bool:
-        """
-        Check that rule is applicable to dataset domain
-        """
         domains = rule.get("domains") or {}
-        include_split_datasets: bool = domains.get("include_split_datasets")
-
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
 
-        is_included = cls._is_domain_name_included(
-            dataset_metadata, included_domains, include_split_datasets
-        )
+        is_included = cls._is_domain_name_included(dataset_metadata, included_domains)
         is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
-
-        # additional check for split domains based on the flag
-        is_excluded, is_included = cls._handle_split_domains(
-            dataset_metadata.is_split,
-            include_split_datasets,
-            is_excluded,
-            is_included,
-        )
 
         return is_included and not is_excluded
 
@@ -93,22 +91,8 @@ class RuleProcessor:
         cls,
         dataset_metadata: SDTMDatasetMetadata,
         included_domains: List[str],
-        include_split_datasets: bool,
     ) -> bool:
-        """
-        If included domains aren't specified
-         and include_split_datasets is True,
-         and it is not a split dataset
-         -> domain is not included
-        If included domains are specified,
-         and the domain is not in the list of included domains,
-         and domain doesn't match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
-         -> domain is not included.
-        In other cases domain is included
-        """
         if not included_domains:
-            if include_split_datasets is True and not dataset_metadata.is_split:
-                return False
             return True
 
         if (
@@ -117,7 +101,7 @@ class RuleProcessor:
             or ALL_KEYWORD in included_domains
         ):
             return True
-        if cls._domain_matched_ap_or_supp(dataset_metadata, included_domains):
+        if cls._matched_property_keyword(dataset_metadata, included_domains):
             return True
         return False
 
@@ -128,7 +112,6 @@ class RuleProcessor:
         """
         If excluded domains are specified,
          and the domain is in the list of excluded domains,
-         or domain name match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
          domain is excluded.
 
         In other cases domain is not excluded.
@@ -143,49 +126,7 @@ class RuleProcessor:
             or ALL_KEYWORD in excluded_domains
         ):
             return True
-        if cls._domain_matched_ap_or_supp(dataset_metadata, excluded_domains):
-            return True
-        return False
-
-    @classmethod
-    def _handle_split_domains(
-        cls,
-        is_split_domain: bool,
-        include_split_datasets: bool,
-        is_excluded: bool,
-        is_included: bool,
-    ) -> Tuple[bool, bool]:
-        """
-        HANDLING SPLIT DOMAINS
-
-        If include_split_datasets is True -
-        add split domains to the list of included domains.
-        If no included domains specified, only validate split domains
-
-        If include_split_datasets is False - Exclude split domains
-        If include_split_datasets is None - Do nothing
-        """
-        if include_split_datasets is True and is_split_domain and not is_excluded:
-            is_included = True
-        if include_split_datasets is False and is_split_domain:
-            is_excluded = True
-        return is_excluded, is_included
-
-    @classmethod
-    def _domain_matched_ap_or_supp(
-        cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]
-    ) -> bool:
-        """
-        Check that domain name match with only
-        AP / APFA / APRELSUB / SUPP / SQ naming pattern
-        """
-        domains_to_check = set(domains_to_check)
-        supp_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
-        ap_domains = {f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"}
-
-        if dataset_metadata.is_supp and (domains_to_check & supp_domains):
-            return True
-        if dataset_metadata.is_ap and (domains_to_check & ap_domains):
+        if cls._matched_property_keyword(dataset_metadata, excluded_domains):
             return True
         return False
 
@@ -214,7 +155,7 @@ class RuleProcessor:
     def rule_applies_to_class(
         self,
         rule,
-        dataset_metadata: SDTMDatasetMetadata,
+        dataset_metadata: "SDTMDatasetMetadata",
     ):
         """
         If included classes are specified and the class

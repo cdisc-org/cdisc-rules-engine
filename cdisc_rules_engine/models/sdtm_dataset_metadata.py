@@ -12,26 +12,28 @@ class SDTMDatasetMetadata(DatasetMetadata):
 
     """
     Examples
-    | name     | unsplit_name | is_supp | domain | wildcard_replacement | rdomain | is_ap | ap_suffix | domain_is_custom | related_domain | related_domain_is_custom |
-    | -------- | ------------ | ------- | ------ | -------------------- | ------- | ----- | --------- | ---------------- | -------------- | ------------------------ |
-    | QS       | QS           | False   | QS     | QS                   | None    | False |           | False            |                |                          |
-    | QSX      | QS           | False   | QS     | QS                   | None    | False |           | False            |                |                          |
-    | QSXX     | QS           | False   | QS     | QS                   | None    | False |           | False            |                |                          |
-    | SUPPQS   | SUPPQS       | True    | None   |                      | QS      | False |           | False            | QS             |                          |
-    | SUPPQSX  | SUPPQS       | True    | None   |                      | QS      | False |           | False            | QS             |                          |
-    | SUPPQSXX | SUPPQS       | True    | None   |                      | QS      | False |           | False            | QS             |                          |
-    | APQS     | APQS         | False   | APQS   | QS                   | None    | True  | QS        | False            | QS             |                          |
-    | APQSX    | APQS         | False   | APQS   | QS                   | None    | True  | QS        | False            | QS             |                          |
-    | APQSXX   | APQS         | False   | APQS   | QS                   | None    | True  | QS        | False            | QS             |                          |
-    | SQAPQS   | SQAPQS       | True    | None   |                      | APQS    | True  |           | False            | QS             |                          |
-    | SQAPQSX  | SQAPQS       | True    | None   |                      | APQS    | True  |           | False            | QS             |                          |
-    | SQAPQSXX | SQAPQS       | True    | None   |                      | APQS    | True  |           | False            |                |                          |
-    | RELREC   | RELREC       | False   | None   |                      | None    | False |           | False            |                |                          |
-    | XX       | XX           | False   | XX     | XX                   | None    | False |           | True             |                |                          |
-    | SUPPXX   | SUPPXX       | True    | None   |                      | XX      | False |           | False            | XX             | True                     |
-    | APXX     | APXX         | False   | APXX   | XX                   | None    | True  | XX        | False            | XX             | True                     |
-    | SQAPXX   | SQAPXX       | True    | None   |                      | APXX    | True  |           | False            | XX             | True                     |
-    | FA       | FA           | False   | FA     | FA                   | None    | False |           | False            |                |                          |
+| name      | unsplit_name | is_supp | is_split | domain | wildcard_replacement  | rdomain | is_ap | ap_suffix | domain_is_custom | related_domain  | related_domain_is_custom  |
+| --------- | ------------ | ------- | -------- | ------ | --------------------- | ------- | ----- | --------- | ---------------- | --------------- | ------------------------- |
+| QS        | QS           | False   | False    | QS     | QS                    | None    | False |           | False            |                 |                           |
+| QSX       | QS           | False   | True     | QS     | QS                    | None    | False |           | False            |                 |                           |
+| QSXX      | QS           | False   | True     | QS     | QS                    | None    | False |           | False            |                 |                           |
+| SUPPQS    | SUPPQS       | True    | False    |        |                       | QS      | False |           | False            | QS              |                           |
+| SUPPQSX   | SUPPQS       | True    | True     |        |                       | QS      | False |           | False            | QS              |                           |
+| SUPPQSXX  | SUPPQS       | True    | True     |        |                       | QS      | False |           | False            | QS              |                           |
+| APQS      | APQS         | False   | False    | QS     | QS                    | None    | True  | QS        | False            | QS              |                           |
+| APQSX     | APQS         | False   | True     | QS     | QS                    | None    | True  | QS        | False            | QS              |                           |
+| APQSXX    | APQS         | False   | True     | QS     | QS                    | None    | True  | QS        | False            | QS              |                           |
+| SQAPQS    | SQAPQS       | True    | False    |        |                       | APQS    | False |           | False            | QS              |                           |
+| SQAPQSX   | SQAPQS       | True    | True     |        |                       | APQS    | False |           | False            | QS              |                           |
+| SQAPQSXX  | SQAPQS       | True    | True     |        |                       | APQS    | False |           | False            |                 |                           |
+| RELREC    | RELREC       | False   | False    |        |                       | None    | False |           | False            |                 |                           |
+| XX        | XX           | False   | False    | XX     | XX                    | None    | False |           | True             |                 |                           |
+| SUPPXX    | SUPPXX       | True    | False    |        |                       | XX      | False |           | False            | XX              | True                      |
+| APXX      | APXX         | False   | False    | XX     | XX                    | None    | True  | XX        | False            | XX              | True                      |
+| SQAPXX    | SQAPXX       | True    | False    |        |                       | APXX    | False |           | False            | XX              | True                      |
+| FA        | FA           | False   | False    | FA     | FA                    | None    | False |           | False            |                 |                           |
+| APRELSUB  | APRELSUB     | False   | False    |        | RELSUB                | None    | True  | RELSUB    | False            |                 |                           |
+| APRELSPEC | APRELSPEC    | False   | False    |        | RELSPEC               | None    | True  | RELSPEC   | False            |                 |                           |
     """  # noqa: E501 W291
 
     @property
@@ -72,24 +74,20 @@ class SDTMDatasetMetadata(DatasetMetadata):
         """
         Returns true if APID variable exists in first_record for non-supp datasets,
         or if the dataset name starts with AP for non-supp datasets,
-        or if rdomain starts with AP for supp datasets.
         """
         if self.is_supp:
-            return (
-                isinstance(self.rdomain, str)
-                and len(self.rdomain) == 4
-                and self.rdomain.startswith("AP")
-            )
+            return False
         first_record = self.first_record or {}
         if "APID" in first_record:
             return True
-
         return self.name.startswith("AP")
 
     @property
     def ap_suffix(self) -> str:
         """
         Returns the 2-character suffix (characters 3-4) from AP domains.
+        Falls back to the dataset name when there's no DOMAIN variable
+        (e.g. APRELSUB, APRELSPEC)
         Returns empty string if not an AP domain or for supp datasets.
         """
         if not self.is_ap:
@@ -98,4 +96,10 @@ class SDTMDatasetMetadata(DatasetMetadata):
             return ""
         if isinstance(self.domain, str) and len(self.domain) >= 4:
             return self.domain[2::]
+        if (
+            isinstance(self.name, str)
+            and len(self.name) >= 4
+            and self.name.upper().startswith("AP")
+        ):
+            return self.name[2::]
         return ""
