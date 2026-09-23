@@ -16,20 +16,20 @@ validating clinical trial data against CDISC data standards.
 ## Which Engine Should I Use?
 
 > **At present**, rule validation is split across two engines while work is underway to merge
-> the Verisian fork back into this repository. Until that merge is complete, please select the
+> the SQL fork back into this repository. Until that merge is complete, please select the
 > engine based on the rules you're running:
 
-| If you're running…                          | Use…                                                                                                        |
-|---------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| **SDTM** or **FDA Business Rules**          | The **Verisian Engine** — [verisianHQ/cdisc-rules-engine](https://github.com/verisianHQ/cdisc-rules-engine) |
-| **TIG**, **USDM**, **ADaM**, or **SEND**    | The **CDISC Engine** (this repository), as described below                                                  |
+| If you're running…                          | Use…                                                                                                             |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| **SDTM** or **FDA Business Rules**          | The **refactored SQL Engine** — [verisianHQ/cdisc-rules-engine](https://github.com/verisianHQ/cdisc-rules-engine)|
+| **TIG**, **USDM**, or **SEND**              | The **CDISC Engine** (this repository), as described below                                                       |
 
-This split is temporary and reflects differing underlying architectures — the Verisian Engine is
+This split is temporary and reflects differing underlying architectures — the refactored Engine is
 built on SQL, while the CDISC Engine (this repository) is built on pandas/dask/jsonata. These
 implementations will be harmonized over time, at which point this section will be
 updated to reflect the change.
 
-For setup and usage of the **Verisian Engine** (installation, environment configuration,
+For setup and usage of the **Refactored SQL Engine** (installation, environment configuration,
 CLI options, etc.), please follow the instructions in their
 [README](https://github.com/verisianHQ/cdisc-rules-engine/blob/main/README.md) rather than
 this one, since its setup steps (e.g. SQL/Postgres configuration) differ from those below.
@@ -46,14 +46,14 @@ standards:
 | **SDTMIG**             | Study Data Tabulation Model Implementation Guide |
 | **SENDIG**             | Standard for Exchange of Nonclinical Data        |
 | **ADaM**               | Analysis Data Model                              |
-| **TIG**                | Therapeutic Area Implementation Guide            |
+| **TIG**                | Tobacco Implementation Guide                     |
 | **FDA Business Rules** | FDA submission conformance rules                 |
 | **USDM**               | Unified Study Definitions Model                  |
 
 > **Note:** At present, SDTMIG and FDA Business Rules validation should be performed via the
-> **Verisian Engine** (see [Which Engine Should I Use?](#which-engine-should-i-use) above).
-> This repository currently handles **TIG**, **USDM**, and **SEND** validations, plus **ADaM**
-> unless/until noted otherwise.
+> **Refactored SQL Engine** (see [Which Engine Should I Use?](#which-engine-should-i-use) above).
+> This repository currently handles **TIG**, **USDM**, and **SEND** (incomplete) validations.
+> SEND validations are not still a work in progress and the standard is not fully validated and automated.
 
 CORE validates data _structure and conformance_ against published rules. It is not a
 replacement for clinical review, statistical analysis, or submission readiness assessment.
