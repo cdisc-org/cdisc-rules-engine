@@ -16,7 +16,7 @@ validating clinical trial data against CDISC data standards.
 ## Which Engine Should I Use?
 
 > **At present**, rule validation is split across two engines while work is underway to merge
-> the Verisian SQL fork back into this repository. Until that merge is complete, please select the
+> the SQL fork back into this repository. Until that merge is complete, please select the
 > engine based on the rules you're running:
 
 | If you're running…                          | Use…                                                                                                             |
