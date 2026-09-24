@@ -220,7 +220,10 @@ class BaseOperation:
                     isinstance(first_val, (list, tuple))
                     and operation_col.astype(str).nunique() == 1
                 ):
-                    expanded.extend(first_val)
+                    dataframe_columns = self.params.dataframe.columns
+                    expanded.extend(
+                        var for var in first_val if var in dataframe_columns
+                    )
                 else:
                     expanded.append(item)
             else:
