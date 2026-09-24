@@ -794,7 +794,7 @@ True if all values in `value` are contained within the variable `name`.
     - "Unplanned Treatment"
 ```
 
-The operator also supports lists:
+The operator also supports lists.  When both `name` and `value` hold lists, the check is made record by record: each record's `name` list must contain every item in that record's `value` list.
 
 ```yaml
 - name: "$spec_codelist"

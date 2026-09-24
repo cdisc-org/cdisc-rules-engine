@@ -34,6 +34,7 @@ from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
 from cdisc_rules_engine.services import logger
 from functools import wraps
+from itertools import chain
 import traceback
 
 
@@ -1067,9 +1068,13 @@ class DataframeType(BaseType):
         target = other_value.get("target")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        if self.is_column_of_iterables(
-            self.value[target]
-        ) and self.is_column_of_iterables(self.value[comparator]):
+        target_is_iterable = self.is_column_of_iterables(self.value[target])
+        comparator_is_column = isinstance(comparator, str) and comparator in self.value
+        comparator_is_iterable = comparator_is_column and self.is_column_of_iterables(
+            self.value[comparator]
+        )
+
+        if target_is_iterable and comparator_is_iterable:
             comparison_data = self.get_comparator_data(comparator, value_is_literal)
             results = []
             for i in range(len(self.value[target])):
@@ -1078,8 +1083,13 @@ class DataframeType(BaseType):
                 results.append(all(is_in(item, target_val) for item in comp_val))
         else:
             if isinstance(comparator, list):
-                # get column as array of values
                 values = flatten_list(self.value, comparator)
+            elif comparator_is_iterable:
+                values = chain.from_iterable(
+                    v
+                    for v in self.value[comparator]
+                    if isinstance(v, (list, set, tuple))
+                )
             else:
                 values = self.value[comparator].unique()
             results = set(values).issubset(set(self.value[target].unique()))
