@@ -629,7 +629,10 @@
       },
       "oneOf": [
         {
-          "required": ["Classes", "Domains"]
+          "anyOf": [
+            { "required": ["Classes"] },
+            { "required": ["Domains"] }
+          ]
         },
         {
           "required": ["Data Structures"]
