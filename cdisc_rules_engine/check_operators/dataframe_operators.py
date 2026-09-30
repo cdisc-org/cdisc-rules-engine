@@ -490,7 +490,9 @@ class DataframeType(BaseType):
         return ~self.suffix_is_contained_by(other_value)
 
     def _get_string_part_series(self, part_to_validate: str, length: int, target: str):
-        if not self.value[target].apply(type).eq(str).all():
+        target_series = self.value[target]
+        is_null = pd.isna(target_series)
+        if not (target_series.apply(lambda v: isinstance(v, str)) | is_null).all():
             raise ValueError("The operator can't be used with non-string values")
 
         if part_to_validate == "suffix":
