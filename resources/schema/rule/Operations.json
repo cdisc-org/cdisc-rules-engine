@@ -108,7 +108,7 @@
           "const": "get_codelist_attributes"
         }
       },
-      "required": ["id", "operator", "name", "ct_attribute", "version"],
+      "required": ["id", "operator", "ct_attribute"],
       "type": "object"
     },
     {
@@ -500,6 +500,39 @@
     },
     "ct_attribute": {
       "type": "string"
+    },
+    "ct_conditions": {
+      "items": {
+        "additionalProperties": {
+          "type": ["string", "boolean", "null"]
+        },
+        "minProperties": 1,
+        "propertyNames": {
+          "enum": [
+            "Codelist Code",
+            "Codelist CCODE",
+            "Codelist Value",
+            "Codelist Name",
+            "Extensible",
+            "Term CCODE",
+            "Term Value",
+            "Term Submission Value",
+            "Term Preferred Term",
+            "Definition",
+            "Synonyms",
+            "Codelist_Code",
+            "Codelist_CCODE",
+            "Codelist_Value",
+            "Codelist_Name",
+            "Term_CCODE",
+            "Term_Value",
+            "Term_Submission_Value",
+            "Term_Preferred_Term"
+          ]
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
     "ct_package_type": {
       "type": "string",
