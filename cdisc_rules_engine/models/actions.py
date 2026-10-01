@@ -183,10 +183,11 @@ class COREActions(BaseActions):
                 x.replace("--", self.dataset_metadata.wildcard_replacement or "")
                 for x in grouping_variables
             ]
+            present_grouping_vars = [v for v in grouping_variables if v in data.columns]
             missing_grouping_vars = [
                 var for var in grouping_variables if var not in data.columns
             ]
-            if missing_grouping_vars:
+            if not present_grouping_vars:
                 return self._create_configuration_error(
                     f"Grouping variables not found in dataset: {missing_grouping_vars}",
                     targets,
@@ -197,8 +198,12 @@ class COREActions(BaseActions):
                 targets_not_in_dataset,
                 all_targets_missing,
                 errors_df,
-                grouping_variables,
+                present_grouping_vars,
             )
+            if missing_grouping_vars:
+                missing = {v: "Not in dataset" for v in missing_grouping_vars}
+                for error in errors_list:
+                    error.value = {**error.value, **missing}
         elif (
             self.rule.get("sensitivity") is not None
         ):  # rule sensitivity is incorrectly defined

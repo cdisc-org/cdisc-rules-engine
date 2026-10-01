@@ -117,10 +117,10 @@
       "properties": {
         "operator": {
           "const": "get_codelist_attributes",
-          "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.\n"
+          "markdownDescription": "\nFetches controlled terminology attribute values from CT packages. Runs in one of two modes:\n\n- **Row-specific:** when `version` names a column in the dataset, each row's CT package is built from the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", the validation run's standard determines the package prefix.\n- **Static:** when `version` is omitted or is not a dataset column, the CT packages come from the validation run (`-ct`). If no packages are provided, `version` is used as a literal version (e.g., `2024-09-27`, or a full name such as `sdtmct-2024-09-27`). Every row receives the same set of values.\n\n`ct_conditions` optionally filters the codelists/terms searched, in either mode.\n\n**Parameters:**\n\n- `ct_attribute` (required): Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, `\"Term Preferred Term\"`, `\"Definition\"`, or `\"Synonyms\"`\n- `name`: Column containing the CT reference (e.g., \"TSVCDREF\"). Required for row-specific mode.\n- `version`: Column containing the CT version (e.g., \"TSVCDVER\") for row-specific mode, or a literal version/list of versions for static mode.\n- `ct_conditions`: List of `{key: value}` filters, combined with AND. Supported keys: `Codelist Code`, `Codelist Value`, `Codelist Name`, `Extensible`, `Term CCODE`, `Term Value`, `Term Preferred Term`, `Definition`. A value of `null` matches a missing/empty field.\n\nRow-specific example:\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\nStatic example (all DOMAIN codelist term codes from the run's CT packages):\n\n```yaml\n- id: $domain_lib_ccode\n  operator: get_codelist_attributes\n  name: DOMAIN\n  ct_attribute: Term CCODE\n  ct_conditions:\n    - Codelist Code: C66734\n```\n\n**Note:** if using this operator with Excel data, you must put the CT package versions contained within your data in the Library tab for it to work properly. In static mode, if no CT packages are provided and no literal `version` is given, the operation returns empty sets.\n"
         }
       },
-      "required": ["id", "operator", "name", "ct_attribute", "version"],
+      "required": ["id", "operator", "ct_attribute"],
       "type": "object"
     },
     {
@@ -553,6 +553,39 @@
     },
     "ct_attribute": {
       "type": "string"
+    },
+    "ct_conditions": {
+      "items": {
+        "additionalProperties": {
+          "type": ["string", "boolean", "null"]
+        },
+        "minProperties": 1,
+        "propertyNames": {
+          "enum": [
+            "Codelist Code",
+            "Codelist CCODE",
+            "Codelist Value",
+            "Codelist Name",
+            "Extensible",
+            "Term CCODE",
+            "Term Value",
+            "Term Submission Value",
+            "Term Preferred Term",
+            "Definition",
+            "Synonyms",
+            "Codelist_Code",
+            "Codelist_CCODE",
+            "Codelist_Value",
+            "Codelist_Name",
+            "Term_CCODE",
+            "Term_Value",
+            "Term_Submission_Value",
+            "Term_Preferred_Term"
+          ]
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
     "ct_package_type": {
       "type": "string",
