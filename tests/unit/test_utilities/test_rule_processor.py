@@ -27,20 +27,18 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 @pytest.mark.parametrize(
     "name, rule_metadata, outcome",
     [
-        ("SQAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
-        ("SQAE", {"domains": {"Exclude": ["SUPP--", "SQ--"]}}, False),
-        ("SQAE", {"domains": {"Include": ["SQ--"]}}, True),
+        ("SQAE", {"domains": {"Exclude": ["SUPPQUAL"]}}, False),
+        ("SQAE", {"domains": {"Include": ["SUPPQUAL"]}}, True),
         ("SQAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
-        ("SQAE", {"domains": {"Include": ["SUPP--"]}}, True),
         ("SQAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("AE", {"domains": {"Include": ["AE"]}}, True),
         ("AE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("AE", {"domains": {"Exclude": ["AE"]}}, False),
         ("AE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("AE", {"domains": {"Include": ["TV"]}}, False),
-        ("SUPPAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
+        ("SUPPAE", {"domains": {"Exclude": ["SUPPQUAL"]}}, False),
         ("SUPPAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
-        ("SUPPAE", {"domains": {"Include": ["SUPP--"]}}, True),
+        ("SUPPAE", {"domains": {"Include": ["SUPPQUAL"]}}, True),
         ("SUPPAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("APTE", {"domains": {"Exclude": ["AP--"]}}, False),
         ("APTE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
@@ -50,9 +48,9 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
         ("APRELSUB", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("APRELSUB", {"domains": {"Include": ["APRELSUB"]}}, True),
         ("APRELSUB", {"domains": {"Include": [ALL_KEYWORD]}}, True),
-        ("APFASU", {"domains": {"Exclude": ["APFA--"]}}, False),
+        ("APFASU", {"domains": {"Exclude": ["AP--"]}}, False),
         ("APFASU", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
-        ("APFASU", {"domains": {"Include": ["APFA--"]}}, True),
+        ("APFASU", {"domains": {"Include": ["AP--"]}}, True),
         ("APFASU", {"domains": {"Include": [ALL_KEYWORD]}}, True),
     ],
 )
@@ -73,10 +71,51 @@ def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome)
     "rule_domains, expected_results",
     [
         (
-            {
-                "Include": [ALL_KEYWORD],
-                "include_split_datasets": True,  # Includes all
-            },
+            {"Include": ["AP SPLIT DATASETS"]},
+            [True, True, False, False],
+        ),
+        (
+            {"Include": ["SPLIT DATASETS"]},
+            [True, True, True, False],
+        ),
+        (
+            {"Exclude": ["AP SPLIT DATASETS"]},
+            [False, False, True, True],
+        ),
+        (
+            {"Include": ["SPLIT DATASETS"], "Exclude": ["AP SPLIT DATASETS"]},
+            [False, False, True, False],
+        ),
+    ],
+)
+def test_rule_applies_to_domain_ap_split_datasets(
+    mock_data_service, rule_domains: dict, expected_results: List[bool]
+):
+    rule = {"domains": rule_domains}
+    datasets: List[dict] = [
+        {"name": "APFA1", "domain": "APFA"},  # AP + split
+        {"name": "APFA2", "domain": "APFA"},  # AP + split
+        {"name": "QS1", "domain": "QS"},  # split, but not AP
+        {"name": "AE", "domain": "AE"},  # neither split nor AP
+    ]
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    results = [
+        processor.rule_applies_to_domain(
+            SDTMDatasetMetadata(
+                name=dataset["name"], first_record={"DOMAIN": dataset["domain"]}
+            ),
+            rule,
+        )
+        for dataset in datasets
+    ]
+    assert results == expected_results
+
+
+@pytest.mark.parametrize(
+    "rule_domains, expected_results",
+    [
+        (
+            {"Include": [ALL_KEYWORD]},
             [True, True, True, True, True, True],
         ),
         (
@@ -84,122 +123,32 @@ def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome)
             [True, True, True, True, True, True],
         ),
         (
-            {
-                "include_split_datasets": True,  # Only include split datasets
-            },
-            [
-                False,
-                False,
-                True,
-                True,
-                True,
-                True,
-            ],
+            {"Include": ["SPLIT DATASETS"]},  # Only split datasets
+            [False, False, True, True, True, True],
         ),
         (
-            {
-                "Include": ["AE"],
-                "include_split_datasets": True,
-            },
-            [
-                True,
-                False,
-                True,
-                True,
-                True,
-                True,
-            ],
+            {"Include": ["AE", "SPLIT DATASETS"]},
+            [True, False, True, True, True, True],
         ),
         (
-            # Only run on split datasets except SUPP
-            {
-                "Exclude": ["SUPP--"],
-                "include_split_datasets": True,
-            },
-            [
-                False,
-                False,
-                True,
-                True,
-                False,
-                False,
-            ],
+            {"Include": ["SPLIT DATASETS"], "Exclude": ["SUPPQUAL"]},
+            [False, False, True, True, False, False],
         ),
         (
-            {
-                "Include": [
-                    "EC",
-                ],
-                "Exclude": ["SUPP--"],
-                "include_split_datasets": True,
-            },
-            [
-                False,
-                True,
-                True,
-                True,
-                False,
-                False,
-            ],
+            {"Include": ["EC", "SPLIT DATASETS"], "Exclude": ["SUPPQUAL"]},
+            [False, True, True, True, False, False],
         ),
         (
-            {
-                "Include": [
-                    "EC",
-                    "QS",
-                ],
-                "include_split_datasets": False,
-            },
-            [
-                False,
-                True,
-                False,
-                False,
-                False,
-                False,
-            ],
-        ),
-        (
-            {
-                "Include": [
-                    "EC",
-                    "QS",
-                ],
-                "include_split_datasets": True,
-            },
-            [
-                False,
-                True,
-                True,
-                True,
-                True,
-                True,
-            ],
+            {"Include": ["EC", "QS"]},
+            [False, True, True, True, False, False],
         ),
         (
             {"Include": ["QS"]},
-            [
-                False,
-                False,
-                True,
-                True,
-                False,
-                False,
-            ],
+            [False, False, True, True, False, False],
         ),
         (
-            {
-                "Exclude": ["QS", "SUPPQS"],
-                "include_split_datasets": True,
-            },
-            [
-                False,
-                False,
-                False,
-                False,
-                False,
-                False,
-            ],
+            {"Exclude": ["SPLIT DATASETS"]},
+            [True, True, False, False, False, False],
         ),
         (
             {"Include": ["EC"]},

@@ -84,7 +84,7 @@
         },
         "Domains": {
             "Include": [
-                "SUPP--"
+                "SUPPQUAL"
             ]
         }
     },
