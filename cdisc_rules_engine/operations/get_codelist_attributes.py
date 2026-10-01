@@ -1,141 +1,223 @@
+from typing import Optional
+
 import pandas as pd
-from cdisc_rules_engine.operations.base_operation import BaseOperation
+
 from cdisc_rules_engine.models.dataset import DaskDataset
-from jsonpath_ng.ext import parse
+from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.services import logger
+
+# this dict mirror the SQL operator's _COLUMN_MAP where they overlap.
+_CODELIST_FIELDS = {
+    "Codelist Code": "conceptId",
+    "Codelist CCODE": "conceptId",
+    "Codelist Value": "submissionValue",
+    "Codelist Name": "name",
+    "Extensible": "extensible",
+}
+_TERM_FIELDS = {
+    "Term CCODE": "conceptId",
+    "Term Value": "submissionValue",
+    "Term Submission Value": "submissionValue",
+    "Term Preferred Term": "preferredTerm",
+    "Definition": "definition",
+    "Synonyms": "synonyms",
+}
 
 
-def _get_ct_package_dask(row, ct_target, ct_version, standard, substandard):
-    if pd.isna(row[ct_version]) or str(row[ct_version]).strip() == "":
+def _ct_prefix(standard: Optional[str], substandard: Optional[str]) -> str:
+    std = (standard or "").lower()
+    if "tig" in std:
+        std = (substandard or "").lower()
+    if "adam" in std:
+        return "adamct"
+    if "send" in std:
+        return "sendct"
+    return "sdtmct"
+
+
+def _get_ct_package(row, ct_target, ct_version, standard, substandard):
+    version = row[ct_version]
+    if pd.isna(version) or str(version).strip() == "":
         return ""
     target_val = str(row[ct_target]).strip() if pd.notna(row[ct_target]) else ""
     if target_val in ("CDISC", "CDISC CT"):
-        std = standard.lower()
-        if "tig" in std:
-            std = substandard.lower()
-        if "adam" in std:
-            prefix = "adamct"
-        elif "send" in std:
-            prefix = "sendct"
-        else:
-            prefix = "sdtmct"
-        pkg = f"{prefix}-{row[ct_version]}"
-    else:
-        pkg = f"{target_val}-{row[ct_version]}"
-    return pkg
+        return f"{_ct_prefix(standard, substandard)}-{version}"
+    return f"{target_val}-{version}"
 
 
 class CodeListAttributes(BaseOperation):
     """
-    A class for fetching codelist attributes for a trial summary domain.
-    Dynamically loads CT packages based on target and version columns in the data.
+    Fetches codelist attribute values (e.g. Term CCODEs) from CT packages.
+
+    Row-specific: when `version` names a column in the dataset (and `name`
+    names the reference column), each row gets the values from its own package.
+
+    Static: otherwise, packages come from the run's CT packages (-ct) or
+    from `version` used as a literal version/list of versions and every
+    row gets the same set.
+
+    ct_conditions filters codelists/terms in both
     """
 
     def _execute_operation(self):
-        return self._get_codelist_attributes()
-
-    def _get_codelist_attributes(self):
-        ct_name = "CT_PACKAGE"
         ct_attribute = self.params.ct_attribute
-        ct_target = self.params.target
-        ct_version = self.params.ct_version
+        if ct_attribute not in _CODELIST_FIELDS and ct_attribute not in _TERM_FIELDS:
+            raise ValueError(f"Unsupported ct_attribute: {ct_attribute}")
+        codelist_conds, term_conds = self._split_conditions(
+            getattr(self.params, "ct_conditions", None)
+        )
+        if self._uses_row_versions():
+            return self._row_specific(ct_attribute, codelist_conds, term_conds)
+        return self._static(ct_attribute, codelist_conds, term_conds)
+
+    def _uses_row_versions(self) -> bool:
+        columns = self.params.dataframe.columns
+        version = self.params.ct_version
+        target = self.params.target
+        return (
+            isinstance(version, str)
+            and version in columns
+            and isinstance(target, str)
+            and target in columns
+        )
+
+    # ---- row-specific------------------------
+
+    def _row_specific(self, ct_attribute, codelist_conds, term_conds):
         df = self.params.dataframe
-
-        def get_ct_package(row):
-            if pd.isna(row[ct_version]) or str(row[ct_version]).strip() == "":
-                return ""
-            target_val = str(row[ct_target]).strip() if pd.notna(row[ct_target]) else ""
-            if target_val in ("CDISC", "CDISC CT"):
-                standard = self.params.standard.lower()
-                if "tig" in standard:
-                    standard = self.params.standard_substandard.lower()
-                if "adam" in standard:
-                    prefix = "adamct"
-                elif "send" in standard:
-                    prefix = "sendct"
-                else:
-                    prefix = "sdtmct"
-                pkg = f"{prefix}-{row[ct_version]}"
-            else:
-                pkg = f"{target_val}-{row[ct_version]}"
-            return pkg
-
-        if isinstance(df, DaskDataset):
+        args = (
+            self.params.target,
+            self.params.ct_version,
+            self.params.standard,
+            self.params.standard_substandard,
+        )
+        is_dask = isinstance(df, DaskDataset)
+        if is_dask:
             row_packages = df.data.apply(
-                _get_ct_package_dask,
-                axis=1,
-                meta=(None, "object"),
-                args=(
-                    ct_target,
-                    ct_version,
-                    self.params.standard,
-                    self.params.standard_substandard,
-                ),
+                _get_ct_package, axis=1, meta=(None, "object"), args=args
             )
-        else:
-            row_packages = df.data.apply(get_ct_package, axis=1)
-
-        if isinstance(df, DaskDataset):
             unique_packages = set(row_packages.compute().unique())
         else:
+            row_packages = df.data.apply(_get_ct_package, axis=1, args=args)
             unique_packages = set(row_packages.unique())
-
         unique_packages.discard("")
-        ct_cache = self._get_ct_from_library_metadata(
-            ct_key=ct_name, ct_val=ct_attribute, ct_packages=list(unique_packages)
-        )
-        package_to_codelist = {}
-        for _, row in ct_cache.iterrows():
-            package_to_codelist[row[ct_name]] = row[ct_attribute]
-        result = row_packages.apply(
-            lambda pkg: package_to_codelist.get(pkg, set()) if pkg else set()
-        )
-        return result
 
-    def _get_ct_from_library_metadata(
-        self, ct_key: str, ct_val: str, ct_packages: list
-    ):
-        ct_term_maps = []
-        for package in ct_packages:
-            parts = package.rsplit("-", 3)
-            if len(parts) >= 4:
-                ct_package_type = parts[0]
-                version = "-".join(parts[1:])
-                self.library_metadata._load_ct_package_data(ct_package_type, version)
-            ct_term_maps.append(
-                self.library_metadata.get_ct_package_metadata(package) or {}
+        package_to_values = {
+            pkg: self._extract(
+                self._load_package(pkg), ct_attribute, codelist_conds, term_conds
             )
-
-        # Convert codelist to dataframe
-        ct_result = {ct_key: [], ct_val: []}
-        ct_result = self._add_codelist(ct_key, ct_val, ct_term_maps, ct_result)
-        return pd.DataFrame(ct_result)
-
-    def _add_codelist(self, ct_key, ct_val, ct_term_maps, ct_result):
-        for item in ct_term_maps:
-            ct_result[ct_key].append(item.get("package"))
-            codes = self._extract_codes_by_attribute(item, ct_val)
-            ct_result[ct_val].append(codes)
-        return ct_result
-
-    def _extract_codes_by_attribute(
-        self, ct_package_data: dict, ct_attribute: str
-    ) -> set:
-        attribute_name_map = {
-            "Codelist CCODE": "$.codelists[*].conceptId",
-            "Codelist Value": "$.codelists[*].submissionValue",
-            "Term CCODE": "$.codelists[*].terms[*].conceptId",
-            "Term Value": "$.codelists[*].terms[*].submissionValue",
-            "Term Submission Value": "$.codelists[*].terms[*].submissionValue",
-            "Term Preferred Term": "$.codelists[*].terms[*].preferredTerm",
+            for pkg in unique_packages
         }
-        if ct_attribute not in attribute_name_map:
-            raise ValueError(f"Unsupported ct_attribute: {ct_attribute}")
-        attributes = set(
-            [
-                node.value
-                for node in parse(attribute_name_map[ct_attribute]).find(
-                    ct_package_data
-                )
-            ]
-        )
-        return attributes
+
+        def lookup(pkg):
+            return package_to_values.get(pkg, set()) if pkg else set()
+
+        if is_dask:
+            return row_packages.apply(lookup, meta=(None, "object"))
+        return row_packages.apply(lookup)
+
+    # ---- static ----------------------------
+
+    def _static(self, ct_attribute, codelist_conds, term_conds):
+        packages = self._static_packages()
+        if not packages:
+            logger.warning(
+                "get_codelist_attributes: no CT packages resolved (no -ct packages, "
+                "no literal version, no CT loaded in library metadata); "
+                "returning empty set."
+            )
+        values = set()
+        for pkg in packages:
+            values |= self._extract(
+                self._load_package(pkg), ct_attribute, codelist_conds, term_conds
+            )
+        return values
+
+    def _static_packages(self) -> list:
+        provided = getattr(self.params, "ct_packages", None)
+        if provided:
+            return list(provided)
+        version = self.params.ct_version
+        if not version:
+            return self._loaded_ct_packages()
+        versions = version if isinstance(version, list) else [version]
+        prefix = _ct_prefix(self.params.standard, self.params.standard_substandard)
+        packages = []
+        for v in versions:
+            if not isinstance(v, str) or not v.strip():
+                continue
+            v = v.strip()
+            packages.append(v if "ct-" in v else f"{prefix}-{v}")
+        return packages
+
+    def _loaded_ct_packages(self) -> list:
+        """Fallback: CT packages the engine already loaded into library
+        metadata (e.g. from the define.xml), narrowed to the ones matching
+        the standard being validated (SDTM/SEND/ADaM)."""
+        loaded = getattr(self.library_metadata, "_ct_package_metadata", None) or {}
+        packages = [p for p in loaded if isinstance(p, str)]
+        wanted = _ct_prefix(self.params.standard, self.params.standard_substandard)
+        matching = [p for p in packages if p.startswith(f"{wanted}-")]
+        return matching or packages
+
+    def _load_package(self, package: str) -> dict:
+        parts = package.rsplit("-", 3)
+        if len(parts) >= 4:
+            self.library_metadata._load_ct_package_data(parts[0], "-".join(parts[1:]))
+        return self.library_metadata.get_ct_package_metadata(package) or {}
+
+    @staticmethod
+    def _split_conditions(conditions) -> tuple:
+        codelist_conds, term_conds = {}, {}
+        for condition in conditions or []:
+            for raw_key, expected in condition.items():
+                key = str(raw_key).replace("_", " ").strip()
+                if key in _CODELIST_FIELDS:
+                    codelist_conds[_CODELIST_FIELDS[key]] = expected
+                elif key in _TERM_FIELDS:
+                    term_conds[_TERM_FIELDS[key]] = expected
+                else:
+                    raise ValueError(f"Unsupported ct_conditions key: {raw_key}")
+        return codelist_conds, term_conds
+
+    @staticmethod
+    def _matches(item: dict, conds: dict) -> bool:
+        for field, expected in conds.items():
+            actual = item.get(field)
+            if expected is None:
+                if actual not in (None, ""):
+                    return False
+            elif (
+                actual is None
+                or str(actual).strip().lower() != str(expected).strip().lower()
+            ):
+                return False
+        return True
+
+    @staticmethod
+    def _add(values: set, value):
+        if value is None:
+            return
+        if isinstance(value, (list, tuple, set)):
+            values.update(
+                v.strip() if isinstance(v, str) else v for v in value if v is not None
+            )
+        else:
+            values.add(value)
+
+    def _extract(self, pkg: dict, ct_attribute, codelist_conds, term_conds) -> set:
+        values = set()
+        for codelist in pkg.get("codelists", []):
+            if not self._matches(codelist, codelist_conds):
+                continue
+            terms = codelist.get("terms", [])
+            if ct_attribute in _CODELIST_FIELDS:
+                if term_conds and not any(self._matches(t, term_conds) for t in terms):
+                    continue
+                self._add(values, codelist.get(_CODELIST_FIELDS[ct_attribute]))
+            else:
+                field = _TERM_FIELDS[ct_attribute]
+                for term in terms:
+                    if self._matches(term, term_conds):
+                        self._add(values, term.get(field))
+        return values

@@ -71,6 +71,15 @@ class RecordCount(BaseOperation):
             return group_df
         return result
 
+    def _expand_list_grouping_column(self, sample_val) -> list:
+        """
+        Expands a grouping column whose value is a list of variable names
+        (e.g. the result of get_model_filtered_variables) into the variables
+        that actually exist in the dataframe being grouped to avoid a Keyerror when grouped.
+        """
+        dataframe_columns = self.params.dataframe.columns
+        return [var for var in sample_val if var in dataframe_columns]
+
     def _get_grouping_for_operations(self) -> list:
         grouping_cols = (
             self.params.grouping
@@ -81,11 +90,16 @@ class RecordCount(BaseOperation):
         for col in grouping_cols:
             col = self._replace_variable_wildcard(col, self.params.domain)
             if col in self.evaluation_dataset.data.columns:
-                sample_val = self.evaluation_dataset[col].iloc[0]
-                if isinstance(sample_val, (list, tuple)):
-                    effective_grouping.extend(sample_val)
-                else:
+                if len(self.evaluation_dataset) == 0:
                     effective_grouping.append(col)
+                else:
+                    sample_val = self.evaluation_dataset[col].iloc[0]
+                    if isinstance(sample_val, (list, tuple)):
+                        effective_grouping.extend(
+                            self._expand_list_grouping_column(sample_val)
+                        )
+                    else:
+                        effective_grouping.append(col)
             else:
                 effective_grouping.append(col)
         return list(dict.fromkeys(effective_grouping))
@@ -141,6 +155,7 @@ class RecordCount(BaseOperation):
         """
         Build effective grouping by expanding operation results used to group and track all-NA columns to revert them.
         NA columns are completely empty and pandas converts them to NaN in the grouping.
+        Variables from an expanded list that are not present in the dataframe are skipped.
         Returns: (effective_grouping, all_na_cols)
         """
         grouping_cols = (
@@ -157,7 +172,9 @@ class RecordCount(BaseOperation):
                 else:
                     sample_val = self.evaluation_dataset[col].iloc[0]
                     if isinstance(sample_val, (list, tuple)):
-                        effective_grouping.extend(sample_val)
+                        effective_grouping.extend(
+                            self._expand_list_grouping_column(sample_val)
+                        )
                     else:
                         effective_grouping.append(col)
             else:

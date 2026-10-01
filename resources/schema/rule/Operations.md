@@ -152,13 +152,21 @@ Returns a list of valid extensible codelist term's submission values. Used for e
 
 ### get_codelist_attributes
 
-Fetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG → "sdtmct-{version}"). When the `name` column contains "CDISC" or "CDISC CT", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.
+Fetches controlled terminology attribute values from CT packages. Runs in one of two modes:
 
-**Required Parameters:**
+- **Row-specific:** when `version` names a column in the dataset, each row's CT package is built from the `name` and `version` columns (e.g., SDTMIG → "sdtmct-{version}"). When the `name` column contains "CDISC" or "CDISC CT", the validation run's standard determines the package prefix.
+- **Static:** when `version` is omitted or is not a dataset column, the CT packages come from the validation run (`-ct`). If no packages are provided, `version` is used as a literal version (e.g., `2024-09-27`, or a full name such as `sdtmct-2024-09-27`). Every row receives the same set of values.
 
-- `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
-- `name`: Column containing CT reference (e.g., "TSVCDREF") - identifies which terminology system is referenced
-- `version`: Column containing CT version (e.g., "TSVCDVER")
+`ct_conditions` optionally filters the codelists/terms searched, in either mode.
+
+**Parameters:**
+
+- `ct_attribute` (required): Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, `"Term Preferred Term"`, `"Definition"`, or `"Synonyms"`
+- `name`: Column containing the CT reference (e.g., "TSVCDREF"). Required for row-specific mode.
+- `version`: Column containing the CT version (e.g., "TSVCDVER") for row-specific mode, or a literal version/list of versions for static mode.
+- `ct_conditions`: List of `{key: value}` filters, combined with AND. Supported keys: `Codelist Code`, `Codelist Value`, `Codelist Name`, `Extensible`, `Term CCODE`, `Term Value`, `Term Preferred Term`, `Definition`. A value of `null` matches a missing/empty field.
+
+Row-specific example:
 
 ```yaml
 - id: $VALID_TERM_CODES
@@ -168,7 +176,18 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
   version: TSVCDVER
 ```
 
-**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.
+Static example (all DOMAIN codelist term codes from the run's CT packages):
+
+```yaml
+- id: $domain_lib_ccode
+  operator: get_codelist_attributes
+  name: DOMAIN
+  ct_attribute: Term CCODE
+  ct_conditions:
+    - Codelist Code: C66734
+```
+
+**Note:** if using this operator with Excel data, you must put the CT package versions contained within your data in the Library tab for it to work properly. In static mode, if no CT packages are provided and no literal `version` is given, the operation returns empty sets.
 
 ### valid_codelist_dates
 
