@@ -674,6 +674,22 @@ Check:
       operator: "inconsistent_enumerated_columns"
 ```
 
+### inconsistent_enumerated_column_labels
+
+Checks that enumerated variables (VARIABLE1, VARIABLE2, ...) have labels matching an expected enumerated label prefix. Returns True if the label doesn't equal `<prefix>N` or `<prefix> N`. Runs against the Variable Metadata Check dataset (`variable_name`, `variable_label`).
+
+ex: Check that COVAL1, COVAL2, etc. are labeled "Comment1"/"Comment 1", "Comment2"/"Comment 2", etc.
+
+```yaml
+Rule Type: Variable Metadata Check
+Check:
+  all:
+    - name: "COVAL"
+      operator: "inconsistent_enumerated_column_labels"
+      value: "Comment"
+      value_is_literal: true
+```
+
 ## Set Membership
 
 Testing whether individual values or string parts belong to specific lists or sets, with support for case-sensitive and case-insensitive comparisons.
