@@ -951,3 +951,88 @@ def test_date_greater_than_same_date_different_precision(
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+# Jozef Aerts 2026-09-14
+@pytest.mark.parametrize(
+    "dataset_type",
+    [
+        PandasDataset,
+        DaskDataset,
+    ],
+)
+@pytest.mark.parametrize (
+    "test_case",
+    [
+        {
+            "description": "target equals start date",
+            "target": "2026-09-10",
+            "start": "2026-09-10",
+            "end": "2026-09-20",
+            "expected": True,
+        },
+        {
+            "description": "target is inside date range",
+            "target": "2026-09-15",
+            "start": "2026-09-10",
+            "end": "2026-09-20",
+            "expected": True,
+        },
+        {
+            "description": "target is before date range",
+            "target": "2026-09-15",
+            "start": "2026-09-20",
+            "end": "2026-09-25",
+            "expected": False,
+        },
+        {
+            "description": "target hour is extended to full datetime and between extended start and end datetime",
+            "target": "2026-09-15T13",
+            "start": "2026-09-15",
+            "end": "2026-09-15T13:01",
+            "expected": True,
+        },
+        {
+            "description": "target hour is before start time",
+            "target": "2026-09-15T13",
+            "start": "2026-09-15T13:01",
+            "end": "2026-09-15T13:01:25",
+            "expected": False,
+        },
+        {
+            "description": "target is before start date",
+            "target": "2026-09-15T23:59:59",
+            "start": "2026-09-16",
+            "end": "2026-09-17",
+            "expected": False,
+        },
+        {
+            "description": "target is after end date",
+            "target": "2026-10-12",
+            "start": "2026-09-15",
+            "end": "2026-10-11T23:59:59",
+            "expected": False,
+        },
+    ],
+)
+def test_is_between_datetimes(test_case, dataset_type):
+    data = {
+        "target": [test_case["target"]],
+        "start": [test_case["start"]],
+        "end": [test_case["end"]],
+    }
+
+    # df = DaskDataset.from_dict(data)
+    df = dataset_type.from_dict(data)
+    # dataframe_type = DataframeType({"value": df})
+    dataframe_type = DataframeType({"value": df})
+
+    result = dataframe_type.is_between_datetimes(
+        {
+            "target": "target",
+            "comparator": ["start", "end"],
+        }
+    )
+
+    assert result.equals(
+        df.convert_to_series([test_case["expected"]])
+    ), test_case["description"]
