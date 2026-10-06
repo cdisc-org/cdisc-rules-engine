@@ -7,36 +7,45 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type, expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             "VAR2",
             PandasDataset,
+            False,
             [True, False, False],
         ),
         (
             {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
             "L",
             DaskDataset,
+            True,
             [False, True, True],
         ),
     ],
 )
-def test_contains(data, comparator, dataset_type, expected_result):
+def test_contains(data, comparator, dataset_type, value_is_literal, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_operator = DataframeType({"value": df})
-    result = dataframe_operator.contains({"target": "target", "comparator": comparator})
+    result = dataframe_operator.contains(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
+            False,
             [True, True, False],
         ),
         (
@@ -49,69 +58,90 @@ def test_contains(data, comparator, dataset_type, expected_result):
             },
             "LEFT HIND LIMB",
             PandasDataset,
+            True,
             [False, True, True],
         ),
     ],
 )
-def test_contains_case_insensitive(data, comparator, dataset_type, expected_result):
+def test_contains_case_insensitive(
+    data, comparator, dataset_type, value_is_literal, expected_result
+):
     df = dataset_type.from_dict(data)
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.contains_case_insensitive(
-        {"target": "target", "comparator": comparator}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             "VAR2",
             PandasDataset,
+            False,
             [False, True, True],
         ),
         (
             {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
             "L",
             DaskDataset,
+            True,
             [True, False, False],
         ),
     ],
 )
-def test_does_not_contain(data, comparator, dataset_type, expected_result):
+def test_does_not_contain(
+    data, comparator, dataset_type, value_is_literal, expected_result
+):
     df = dataset_type.from_dict(data)
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.does_not_contain(
-        {"target": "target", "comparator": comparator}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
+            False,
             [False, False, True],
         ),
         (
             {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
             "l",
             PandasDataset,
+            True,
             [True, False, False],
         ),
     ],
 )
 def test_does_not_contain_case_insensitive(
-    data, comparator, dataset_type, expected_result
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.does_not_contain_case_insensitive(
-        {"target": "target", "comparator": comparator}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 

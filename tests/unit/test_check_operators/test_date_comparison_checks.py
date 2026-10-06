@@ -96,7 +96,7 @@ def test_detect_datetime_precision_with_uncertain_components(value, expected_pre
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {
@@ -117,6 +117,7 @@ def test_detect_datetime_precision_with_uncertain_components(value, expected_pre
             },
             "comparator",
             PandasDataset,
+            False,
             [True, False, False, False, False],
         ),
         (
@@ -131,103 +132,28 @@ def test_detect_datetime_precision_with_uncertain_components(value, expected_pre
             },
             "1997-07",
             DaskDataset,
+            True,
             [True, False, False, False, False],
         ),
     ],
 )
-def test_date_equal_to(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_equal_to(
-        {"target": "target", "comparator": comparator}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,date_component,dataset_type,expected_result",
-    [
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "hour",
-            PandasDataset,
-            [True, True, True, True, True],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "month",
-            DaskDataset,
-            [True, False, False, False, False],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:22:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:21:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "minute",
-            PandasDataset,
-            [True, True, False, False, True],
-        ),
-    ],
-)
-def test_date_equal_to_date_components(
-    data, comparator, date_component, dataset_type, expected_result
+def test_date_equal_to(
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": date_component}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {
@@ -248,6 +174,7 @@ def test_date_equal_to_date_components(
             },
             "comparator",
             PandasDataset,
+            False,
             [False, True, True, True, True],
         ),
         (
@@ -262,104 +189,29 @@ def test_date_equal_to_date_components(
             },
             "1997-07",
             DaskDataset,
+            True,
             [False, False, False, False, False],
         ),
     ],
 )
-def test_date_less_than(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
-
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_less_than(
-        {"target": "target", "comparator": comparator}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,date_component,dataset_type,expected_result",
-    [
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "hour",
-            PandasDataset,
-            [False, False, False, False, False],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "month",
-            DaskDataset,
-            [False, True, True, True, True],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:22:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:21:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "minute",
-            PandasDataset,
-            [False, False, True, False, False],
-        ),
-    ],
-)
-def test_date_less_than_date_components(
-    data, comparator, date_component, dataset_type, expected_result
+def test_date_less_than(
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
+
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_less_than(
-        {"target": "target", "comparator": comparator, "date_component": date_component}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {
@@ -380,6 +232,7 @@ def test_date_less_than_date_components(
             },
             "comparator",
             PandasDataset,
+            False,
             [True, True, True, True, True],
         ),
         (
@@ -394,103 +247,28 @@ def test_date_less_than_date_components(
             },
             "1997-07",
             DaskDataset,
+            True,
             [True, True, True, True, True],
         ),
     ],
 )
-def test_date_less_than_or_equal_to(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_less_than_or_equal_to(
-        {"target": "target", "comparator": comparator}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,date_component,dataset_type,expected_result",
-    [
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "hour",
-            PandasDataset,
-            [True, True, True, True, True],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "month",
-            DaskDataset,
-            [True, True, True, True, True],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:22:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:21:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "minute",
-            PandasDataset,
-            [True, True, True, False, True],
-        ),
-    ],
-)
-def test_date_less_than_or_equal_to_date_components(
-    data, comparator, date_component, dataset_type, expected_result
+def test_date_less_than_or_equal_to(
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_less_than_or_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": date_component}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {
@@ -511,6 +289,7 @@ def test_date_less_than_or_equal_to_date_components(
             },
             "comparator",
             DaskDataset,
+            False,
             [False, False, False, False, False],
         ),
         (
@@ -525,103 +304,28 @@ def test_date_less_than_or_equal_to_date_components(
             },
             "1997-07",
             PandasDataset,
+            True,
             [False, False, False, False, False],
         ),
     ],
 )
-def test_date_greater_than(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_greater_than(
-        {"target": "target", "comparator": comparator}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,date_component,dataset_type,expected_result",
-    [
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "hour",
-            PandasDataset,
-            [False, False, False, False, False],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "month",
-            DaskDataset,
-            [False, False, False, False, False],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:22:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:21:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "minute",
-            PandasDataset,
-            [False, False, False, True, False],
-        ),
-    ],
-)
-def test_date_greater_than_date_components(
-    data, comparator, date_component, dataset_type, expected_result
+def test_date_greater_than(
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_greater_than(
-        {"target": "target", "comparator": comparator, "date_component": date_component}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "data,comparator,dataset_type,value_is_literal,expected_result",
     [
         (
             {
@@ -642,6 +346,7 @@ def test_date_greater_than_date_components(
             },
             "comparator",
             DaskDataset,
+            False,
             [True, False, False, False, False],
         ),
         (
@@ -656,97 +361,22 @@ def test_date_greater_than_date_components(
             },
             "1997-07",
             PandasDataset,
+            True,
             [True, True, True, True, True],
         ),
     ],
 )
-def test_date_greater_than_or_equal_to(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_greater_than_or_equal_to(
-        {"target": "target", "comparator": comparator}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,date_component, dataset_type, expected_result",
-    [
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "hour",
-            PandasDataset,
-            [True, True, True, True, True],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:20:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:20:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "month",
-            DaskDataset,
-            [True, False, False, False, False],
-        ),
-        (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "1997-07-16T19:22:30+01:00",
-                    "1997-07-16T19:20+01:00",
-                ],
-                "comparator": [
-                    "1997-07",
-                    "1997-08-16",
-                    "1997-08-16T19:21:30.45+01:00",
-                    "1997-08-16T19:20:30+01:00",
-                    "1997-08-16T19:20+01:00",
-                ],
-            },
-            "comparator",
-            "minute",
-            PandasDataset,
-            [True, True, False, True, True],
-        ),
-    ],
-)
-def test_date_greater_than_or_equal_to_date_components(
-    data, comparator, date_component, dataset_type, expected_result
+def test_date_greater_than_or_equal_to(
+    data, comparator, dataset_type, value_is_literal, expected_result
 ):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_greater_than_or_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": date_component}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
@@ -888,7 +518,7 @@ def test_auto_precision_operators(
     df = dataset_type.from_dict({"target": [target]})
     dataframe_type = DataframeType({"value": df})
     operator_method = getattr(dataframe_type, operator_name)
-    params = {"target": "target", "comparator": comparator}
+    params = {"target": "target", "comparator": comparator, "value_is_literal": True}
     if date_component is not None:
         params["date_component"] = date_component
     result = operator_method(params)
@@ -948,6 +578,6 @@ def test_date_greater_than_same_date_different_precision(
     df = dataset_type.from_dict(target)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_greater_than(
-        {"target": "target", "comparator": comparator}
+        {"target": "target", "comparator": comparator, "value_is_literal": True}
     )
     assert result.equals(df.convert_to_series(expected_result))
