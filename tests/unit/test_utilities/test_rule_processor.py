@@ -27,8 +27,10 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 @pytest.mark.parametrize(
     "name, rule_metadata, outcome",
     [
-        ("SQAE", {"domains": {"Exclude": ["SUPPQUAL"]}}, False),
-        ("SQAE", {"domains": {"Include": ["SUPPQUAL"]}}, True),
+        ("SQAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
+        ("SQAE", {"domains": {"Exclude": ["SQ--"]}}, False),
+        ("SQAE", {"domains": {"Include": ["SQ--"]}}, True),
+        ("SQAE", {"domains": {"Include": ["SUPP--"]}}, True),
         ("SQAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("SQAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("AE", {"domains": {"Include": ["AE"]}}, True),
@@ -36,9 +38,11 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
         ("AE", {"domains": {"Exclude": ["AE"]}}, False),
         ("AE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("AE", {"domains": {"Include": ["TV"]}}, False),
-        ("SUPPAE", {"domains": {"Exclude": ["SUPPQUAL"]}}, False),
+        ("SUPPAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
+        ("SUPPAE", {"domains": {"Exclude": ["SQ--"]}}, False),
+        ("SUPPAE", {"domains": {"Include": ["SUPP--"]}}, True),
+        ("SUPPAE", {"domains": {"Include": ["SQ--"]}}, True),
         ("SUPPAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
-        ("SUPPAE", {"domains": {"Include": ["SUPPQUAL"]}}, True),
         ("SUPPAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("APTE", {"domains": {"Exclude": ["AP--"]}}, False),
         ("APTE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
@@ -131,11 +135,11 @@ def test_rule_applies_to_domain_ap_split_datasets(
             [True, False, True, True, True, True],
         ),
         (
-            {"Include": ["SPLIT DATASETS"], "Exclude": ["SUPPQUAL"]},
+            {"Include": ["SPLIT DATASETS"], "Exclude": ["SUPP--"]},
             [False, False, True, True, False, False],
         ),
         (
-            {"Include": ["EC", "SPLIT DATASETS"], "Exclude": ["SUPPQUAL"]},
+            {"Include": ["EC", "SPLIT DATASETS"], "Exclude": ["SUPP--"]},
             [False, True, True, True, False, False],
         ),
         (

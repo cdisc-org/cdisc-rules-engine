@@ -56,7 +56,8 @@ class RuleProcessor:
         self.library_metadata = library_metadata
 
     DATASET_PROPERTY_KEYWORDS: dict = {
-        "SUPPQUAL": lambda md: bool(md.is_supp),
+        "SUPP--": lambda md: bool(md.is_supp),
+        "SQ--": lambda md: bool(md.is_supp),
         "AP--": lambda md: bool(md.is_ap),
         "SPLIT DATASETS": lambda md: bool(md.is_split),
         "AP SPLIT DATASETS": lambda md: (

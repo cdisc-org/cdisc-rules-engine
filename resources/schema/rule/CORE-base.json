@@ -80,7 +80,8 @@
             "RELREF",
             "RELSPEC",
             "RELSUB",
-            "SUPPQUAL",
+            "SQ--",
+            "SUPP--",
             "TUMOR",
             "SPLIT DATASETS",
             "AP SPLIT DATASETS"
