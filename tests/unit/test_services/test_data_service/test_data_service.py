@@ -452,3 +452,111 @@ def test_cached_different_builders_have_different_cache():
     keys = [call[0][0] for call in cache_service.get.call_args_list]
 
     assert keys[0] != keys[1]
+
+
+def test_get_associated_persons_inherit_class_fallback_to_library():
+    ap_metadata = SDTMDatasetMetadata(
+        name="APMH",
+        first_record={"DOMAIN": "APMH", "APID": "AP001"},
+        filename="apmh.xpt",
+    )
+    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APMH"], "APID": ["test"]})
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
+        Validation_args(
+            f"{os.path.dirname(__file__)}/../../../../resources/cache",
+            10,
+            [],
+            "",
+            "",
+            "sdtmig",
+            "3-4",
+            None,
+            None,
+            "",
+            "",
+            "",
+            False,
+            None,
+            None,
+            "",
+            "",
+            None,
+            "",
+            None,
+            False,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+    )
+    data_service = LocalDataService(
+        MagicMock(),
+        MagicMock(),
+        MagicMock(),
+        standard="sdtmig",
+        standard_version="3-4",
+        library_metadata=library_metadata,
+    )
+    data_service.get_datasets = lambda: [ap_metadata]
+
+    result = data_service._get_associated_persons_inherit_class(ap_dataset, ap_metadata)
+
+    assert result == EVENTS
+
+
+def test_get_associated_persons_inherit_class_custom_base_domain_resolves_via_topic_variable():
+    dataset_metadata = SDTMDatasetMetadata(
+        name="APZZ", first_record={"DOMAIN": "APZZ", "APID": "AP001"}
+    )
+    ap_dataset = PandasDataset.from_dict(
+        {"DOMAIN": ["APZZ"], "APID": ["test"], "ZZTERM": ["test"]}
+    )
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
+        Validation_args(
+            f"{os.path.dirname(__file__)}/../../../../resources/cache",
+            10,
+            [],
+            "",
+            "",
+            "sdtmig",
+            "3-4",
+            None,
+            None,
+            "",
+            "",
+            "",
+            False,
+            None,
+            None,
+            "",
+            "",
+            None,
+            "",
+            None,
+            False,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+    )
+    data_service = LocalDataService(
+        MagicMock(),
+        MagicMock(),
+        MagicMock(),
+        standard="sdtmig",
+        standard_version="3-4",
+        library_metadata=library_metadata,
+    )
+    data_service.get_datasets = lambda: [dataset_metadata]
+
+    result = data_service._get_associated_persons_inherit_class(
+        ap_dataset, dataset_metadata
+    )
+
+    assert result == EVENTS
