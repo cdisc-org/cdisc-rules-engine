@@ -489,6 +489,13 @@
       "type": "object"
     },
     {
+      "properties": {
+        "operator": { "const": "inconsistent_enumerated_column_labels" }
+      },
+      "required": ["operator", "name", "value"],
+      "type": "object"
+    },
+    {
       "properties": { "operator": { "const": "is_ordered_subset_of" } },
       "required": ["operator", "value"],
       "type": "object"
