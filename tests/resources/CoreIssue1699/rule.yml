@@ -176,5 +176,5 @@ Scope:
       - RELATIONSHIP
   Domains:
     Include:
-      - SUPPQUAL
+      - SUPP--
 Sensitivity: Record
