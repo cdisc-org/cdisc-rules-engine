@@ -226,11 +226,28 @@ def test_build_combined_metadata(
     assert aeterm_row["variable_has_empty_values"]
     assert not aeterm_row["variable_is_empty"]
 
-    assert len(result) == 3
+    # We need to check that the rest of the variables are coming from define.xml
+    assert (
+        len(
+            result[
+                (result["variable_name"] == "") & result["define_variable_name"].notna()
+            ]
+        )
+        == 34
+    )
 
+    assert len(result) == 37
+
+    # Check that library metadata merged correctly. AESEQ is present only in define metadata.
     for _, row in result.iterrows():
-        assert row["library_variable_name"] != ""
-        assert row["library_variable_role"] in ["Identifier", "Topic"]
-        assert row["library_variable_core"] == "Req"
-        assert row["library_variable_ccode"] in ["C49487", "C69256", "C41331"]
-        assert row["library_variable_has_codelist"] in [True, True, True]
+        if row["variable_name"] != "" or row["define_variable_name"] == "AESEQ":
+            assert row["library_variable_name"] != ""
+            assert row["library_variable_role"] in ["Identifier", "Topic"]
+            assert row["library_variable_core"] == "Req"
+            assert row["library_variable_ccode"] in [
+                "C49487",
+                "C69256",
+                "C41331",
+                "C25364",
+            ]
+            assert row["library_variable_has_codelist"] in [True, True, True]
