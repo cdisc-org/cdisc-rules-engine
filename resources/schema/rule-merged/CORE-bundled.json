@@ -1,0 +1,3510 @@
+{
+  "$defs": {
+    "Boolean": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "$ref": "#/$defs/CheckItems"
+            }
+          },
+          "required": ["all"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "$ref": "#/$defs/CheckItems"
+            }
+          },
+          "required": ["any"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/CheckItem"
+            }
+          },
+          "required": ["not"],
+          "type": "object"
+        }
+      ]
+    },
+    "CheckItem": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "$ref": "#/$defs/Operator.json"
+        }
+      ]
+    },
+    "CheckItems": {
+      "items": {
+        "$ref": "#/$defs/CheckItem"
+      },
+      "type": "array"
+    },
+    "Classes": {
+      "items": {
+        "enum": [
+          "ALL",
+          "EVENTS",
+          "FINDINGS",
+          "FINDINGS ABOUT",
+          "INTERVENTIONS",
+          "RELATIONSHIP",
+          "SPECIAL PURPOSE",
+          "STUDY REFERENCE",
+          "TRIAL DESIGN"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "DataStructure": {
+      "enum": [
+        "ADAM OTHER",
+        "ALL",
+        "BASIC DATA STRUCTURE",
+        "OCCURRENCE DATA STRUCTURE",
+        "SUBJECT LEVEL ANALYSIS DATASET"
+      ],
+      "type": "string"
+    },
+    "DataStructures": {
+      "items": {
+        "$ref": "#/$defs/DataStructure"
+      },
+      "type": "array"
+    },
+    "Dataset": {
+      "anyOf": [
+        {
+          "enum": [
+            "ALL",
+            "AP--",
+            "APRELSUB",
+            "POOLDEF",
+            "RELREC",
+            "RELREF",
+            "RELSPEC",
+            "RELSUB",
+            "SUPP--",
+            "TUMOR"
+          ],
+          "type": "string"
+        },
+        {
+          "pattern": "^((?!AP)[A-Z]{2}|[A-Z]{4}|SUPP[A-Z]{2}|SUPP[A-Z]{4}|SQAP[A-Z]{4})$",
+          "type": "string"
+        }
+      ]
+    },
+    "Datasets": {
+      "items": {
+        "$ref": "#/$defs/Dataset"
+      },
+      "type": "array"
+    },
+    "DomainStructure": {
+      "additionalProperties": false,
+      "properties": {
+        "Exclude": {
+          "$ref": "#/$defs/Domains"
+        },
+        "Include": {
+          "$ref": "#/$defs/Domains"
+        },
+        "include_split_datasets": {
+          "enum": [true]
+        }
+      },
+      "type": "object"
+    },
+    "Domains": {
+      "items": {
+        "$ref": "#/$defs/Dataset"
+      },
+      "type": "array"
+    },
+    "Executability.json": {
+      "markdownDescription": "Indicates the extent to which the rule can be automatically executed and validated by the rules engine",
+      "oneOf": [
+        {
+          "const": "Fully Executable",
+          "markdownDescription": "\nThe rule can be fully executed and validated automatically by the rules engine.\n"
+        },
+        {
+          "const": "Not Executable",
+          "markdownDescription": "\nThe rule cannot be executed automatically by the rules engine.\n"
+        },
+        {
+          "const": "Partially Executable",
+          "markdownDescription": "\nThe rule can be partially executed, but may not capture all validation scenarios.\n"
+        },
+        {
+          "const": "Partially Executable - Possible Overreporting",
+          "markdownDescription": "\nThe rule can be partially executed but may report more violations than actually exist.\n"
+        },
+        {
+          "const": "Partially Executable - Possible Underreporting",
+          "markdownDescription": "\nThe rule can be partially executed but may miss some violations that should be reported.\n"
+        }
+      ]
+    },
+    "JoinType": {
+      "enum": ["inner", "left"],
+      "type": "string"
+    },
+    "LeftRightKeys": {
+      "additionalProperties": false,
+      "properties": {
+        "Left": {
+          "$ref": "#/$defs/VariableName"
+        },
+        "Right": {
+          "$ref": "#/$defs/VariableName"
+        }
+      },
+      "required": ["Left", "Right"],
+      "type": "object"
+    },
+    "MetaVariables.json": {
+      "anyOf": [
+        {
+          "const": "dataset_label",
+          "markdownDescription": "\nLabel for the dataset\n"
+        },
+        {
+          "const": "dataset_location",
+          "markdownDescription": "\nPath to file\n"
+        },
+        {
+          "const": "dataset_name",
+          "markdownDescription": "\nName of the dataset\n"
+        },
+        {
+          "const": "dataset_size",
+          "markdownDescription": "\nFile size\n"
+        },
+        {
+          "const": "define_dataset_class",
+          "markdownDescription": "\nItemGroupDef.Class.Name\n"
+        },
+        {
+          "const": "define_dataset_is_non_standard",
+          "markdownDescription": "\nItemGroupDef.IsNonStandard\n"
+        },
+        {
+          "const": "define_dataset_key_sequence",
+          "markdownDescription": "\n[ItemGroupDef/ValueListDef].ItemRef.KeySequence\n"
+        },
+        {
+          "const": "define_dataset_label",
+          "markdownDescription": "\nItemGroupDef.Description.TranslatedText\n"
+        },
+        {
+          "const": "define_dataset_location",
+          "markdownDescription": "\nItemGroupDef.leaf.href\n"
+        },
+        {
+          "const": "define_dataset_name",
+          "markdownDescription": "\nItemGroupDef.Name\n"
+        },
+        {
+          "const": "define_dataset_structure",
+          "markdownDescription": "\nItemGroupDef.Structure\n"
+        },
+        {
+          "const": "define_dataset_variables",
+          "markdownDescription": "\nList of ItemGroupDef.ItemRef.ItemDef.Name in XML document order (as they appear in ItemRef, no sorting applied)\n"
+        },
+        {
+          "const": "define_dataset_variable_order",
+          "markdownDescription": "\nList of ItemGroupDef.ItemRef.ItemDef.Name, sorted by ItemRef OrderNumber when present, otherwise by XML document order\n"
+        },
+        {
+          "const": "define_variable_allowed_terms",
+          "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText\n"
+        },
+        {
+          "const": "define_variable_ccode",
+          "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.Alias.Name\n"
+        },
+        {
+          "const": "define_variable_codelist_coded_values",
+          "markdownDescription": "\nItemGroupDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue\n"
+        },
+        {
+          "const": "define_variable_data_type",
+          "markdownDescription": "\nItemGroupDef.ItemDef.DataType\n"
+        },
+        {
+          "const": "define_variable_format",
+          "markdownDescription": "\n[Not Implemented]\n"
+        },
+        {
+          "const": "define_variable_has_codelist",
+          "markdownDescription": "\nItemGroupDef.ItemDef.CodeListRef exists\n"
+        },
+        {
+          "const": "define_variable_has_comment",
+          "markdownDescription": "\nItemGroupDef.ItemDef.CommentOID exists\n"
+        },
+        {
+          "const": "define_variable_has_method",
+          "markdownDescription": "\nItemGroupDef.ItemRef.MethodOID exists\n"
+        },
+        {
+          "const": "define_variable_has_no_data",
+          "markdownDescription": "\nItemGroupDef.ItemRef.HasNoData\n"
+        },
+        {
+          "const": "define_variable_is_collected",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Origin.Type = \\\"Collected\\\" (2.1) or \\\"CRF\\\" (2.0)\n"
+        },
+        {
+          "const": "define_variable_label",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Description.TranslatedText\n"
+        },
+        {
+          "const": "define_variable_length",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Length\n"
+        },
+        {
+          "const": "define_variable_mandatory",
+          "markdownDescription": "\nItemGroupDef.ItemRef.Mandatory\n"
+        },
+        {
+          "const": "define_variable_name",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Name\n"
+        },
+        {
+          "const": "define_variable_order_number",
+          "markdownDescription": "\nItemGroupDef.ItemRef.OrderNumber\n"
+        },
+        {
+          "const": "define_variable_origin_type",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Origin.Type\n"
+        },
+        {
+          "const": "define_variable_role",
+          "markdownDescription": "\nItemGroupDef.ItemRef.Role\n"
+        },
+        {
+          "const": "define_variable_size",
+          "markdownDescription": "\nItemGroupDef.ItemDef.Size\n"
+        },
+        {
+          "const": "define_vlm_allowed_terms",
+          "markdownDescription": "\nValueListDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText\n"
+        },
+        {
+          "const": "define_vlm_ccode",
+          "markdownDescription": "\nValueListDef.ItemDef.CodeList.Alias.Name\n"
+        },
+        {
+          "const": "define_vlm_codelist_coded_values",
+          "markdownDescription": "\nValueListDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue\n"
+        },
+        {
+          "const": "define_vlm_data_type",
+          "markdownDescription": "\nValueListDef.ItemDef.DataType\n"
+        },
+        {
+          "const": "define_vlm_format",
+          "markdownDescription": "\n[Not Implemented]\n"
+        },
+        {
+          "const": "define_vlm_has_codelist",
+          "markdownDescription": "\nValueListDef.ItemDef.CodeListRef exists\n"
+        },
+        {
+          "const": "define_vlm_has_comment",
+          "markdownDescription": "\nValueListDef.ItemDef.CommentOID exists\n"
+        },
+        {
+          "const": "define_vlm_has_no_data",
+          "markdownDescription": "\nValueListDef.ItemRef.HasNoData\n"
+        },
+        {
+          "const": "define_vlm_is_collected",
+          "markdownDescription": "\nValueListDef.ItemDef.Origin.Type = \\\"Collected\\\" (2.1) or \\\"CRF\\\" (2.0)\n"
+        },
+        {
+          "const": "define_vlm_label",
+          "markdownDescription": "\nValueListDef.ItemDef.Description.TranslatedText\n"
+        },
+        {
+          "const": "define_vlm_length",
+          "markdownDescription": "\nValueListDef.ItemDef.Length\n"
+        },
+        {
+          "const": "define_vlm_mandatory",
+          "markdownDescription": "\nValueListDef.ItemRef.Mandatory\n"
+        },
+        {
+          "const": "define_vlm_name",
+          "markdownDescription": "\nValueListDef.ItemDef.Name\n"
+        },
+        {
+          "const": "define_vlm_order_number",
+          "markdownDescription": "\nValueListDef.ItemRef.OrderNumber\n"
+        },
+        {
+          "const": "define_vlm_origin_type",
+          "markdownDescription": "\nValueListDef.ItemDef.Origin.Type\n"
+        },
+        {
+          "const": "define_vlm_role",
+          "markdownDescription": "\nValueListDef.ItemRef.Role\n"
+        },
+        {
+          "const": "define_vlm_size",
+          "markdownDescription": "\nValueListDef.ItemDef.Size\n"
+        },
+        {
+          "const": "filename",
+          "markdownDescription": "\nName of file\n"
+        },
+        {
+          "const": "library_variable_core",
+          "markdownDescription": "\ncore attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_has_codelist",
+          "markdownDescription": "\nIndicates whether a variable has an associated codelist in the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_ccode",
+          "markdownDescription": "\nccode attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_data_type",
+          "markdownDescription": "\nsimpleDatatype attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_label",
+          "markdownDescription": "\nlabel attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_name",
+          "markdownDescription": "\nname attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_order_number",
+          "markdownDescription": "\nordinal attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "library_variable_role",
+          "markdownDescription": "\nrole attribute of a variable from the CDISC Library\n"
+        },
+        {
+          "const": "row_number",
+          "markdownDescription": "\n1-based index of record number\n"
+        },
+        {
+          "const": "variable_data_type",
+          "markdownDescription": "\nVariable data type (Char or Num)\n"
+        },
+        {
+          "const": "variable_format",
+          "markdownDescription": "\nVariable format\n"
+        },
+        {
+          "const": "variable_has_empty_values",
+          "markdownDescription": "\nTrue/False value indicating whether a variable has any empty values\n"
+        },
+        {
+          "const": "variable_is_empty",
+          "markdownDescription": "\nTrue/False value indicating whether a variable is completely empty\n"
+        },
+        {
+          "const": "variable_label",
+          "markdownDescription": "\nVariable long label\n"
+        },
+        {
+          "const": "variable_max_size",
+          "markdownDescription": "\nMaximum length of actual data values in the variable\n"
+        },
+        {
+          "const": "variable_name",
+          "markdownDescription": "\nVariable short name\n"
+        },
+        {
+          "const": "variable_order_number",
+          "markdownDescription": "\nOrder of variable within dataset\n"
+        },
+        {
+          "const": "variable_size",
+          "markdownDescription": "\nVariable size\n"
+        },
+        {
+          "const": "variable_value",
+          "markdownDescription": "\nValue at `row_number` and `variable_name`\n"
+        },
+        {
+          "const": "variable_value_length",
+          "markdownDescription": "\nCalculated length of the value at `row_number` and `variable_name`\n"
+        }
+      ]
+    },
+    "OperationResultId": {
+      "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*$",
+      "type": "string"
+    },
+    "Operations.json": {
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "operator": {
+              "const": "codelist_extensible",
+              "markdownDescription": "\nReturns a Series indicating whether a specified codelist is extensible. Used in conjunction with codelist_terms to determine if values outside the codelist are acceptable. From the above example, $extensible will contain a bool if the codelist PKUDUG is extensible in all rows of the column.\n\nIf ct_package_type, version, and codelist_code parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.\n\nFor example, given the current dataset:\n\n```\nid \tcodeSystemVersion \t$codelist_code\n1 \t2024-09-27 \tC201264\n2 \t2024-09-27 \tC201265\n3 \t2023-03-29 \tC127262\n```\n\nand the following operation:\n\n```yaml\n- id: $codelist_extensible\n  operator: codelist_extensible\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n```\n\nThis will result in the following dataset:\n\n```\nid \tcodeSystemVersion \t$codelist_code \t$codelist_extensible\n1 \t2024-09-27 \tC201264 \tfalse\n2 \t2024-09-27 \tC201265 \tfalse\n3 \t2023-03-29 \tC127262 \ttrue\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "codelist_terms",
+              "markdownDescription": "\nReturns a list of valid codelist/term values. Used for evaluating whether NCI codes, submission values or NCI preferred terms are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either \"codelist\" or \"term\") at which to return data from, and `returntype` which is the type of values to return: \"code\" for NCI Code(s), \"value\" for submission value(s), or \"pref_term\" for NCI preferred term(s).\n\n```yaml\n- Check:\n    - all:\n        - name: PPSTRESU\n          operator: is_not_contained_by\n          value: $terms\n        - name: $extensible\n          operator: equal_to\n          value: true\n- Operations:\n    - id: $terms\n      operator: codelist_terms\n      codelists:\n        - PKUDUG\n      level: term\n      returntype: value\n    - id: $extensible\n      codelist: PKUDUG\n      operator: codelist_extensible\n```\n\nIf `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If a column name is provided as:\n\n- `term_code`, it will find term information using the term codes in the specified column.\n- `term_value`, it will find term information using the term submission values in the specified column.\n- `term_pref_term`, it will find term information using the term preferred terms in the specified column.\n\nOnly one of `term_code`, `term_value` or `term_pref_term` can be provided. The term information returned will depend on the value of the `returntype` parameter, as described above. If `returntype` is not specified, specifying `term_code` will return the term submission value and specifying either `term_value` or `term_pref_term` will return the term code.\n\nFor example, given the current dataset:\n\n```\nid \tcodeSystemVersion  $codelist_code  code     decode\n1 \t2024-09-27         C201264         C201356  After\n2 \t2024-09-27         C201265         C201352  End to End\n3 \t2023-03-29         C127262         C51282   CLINIC\n```\n\nand the following operations:\n\n```yaml\n- id: $found_term_value\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_code: code\n- id: $found_term_pref_term\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_code: code\n  returntype: pref_term\n```\n\nThis will result in the following dataset:\n\n```\n id   codeSystemVersion  $codelist_code  code     decode      $found_term_value  $found_term_pref_term\n 1    2024-09-27         C201264         C201356  After       After              After Timing Type\n 2    2024-09-27         C201265         C201352  End to End  End to End         End to End\n 3    2023-03-31         C127262         C51282   CLINIC      CLINIC             Clinic\n```\n\nConversely, if given the same dataset, and the following operations:\n\n```yaml\n- id: $found_term_code1\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_value: decode\n- id: $found_term_code2\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_pref_term: decode\n```\n\nThis will result in the following dataset:\n\n```\n id   codeSystemVersion  $codelist_code  code     decode      $found_term_code1  $found_term_code2\n 1    2024-09-27         C201264         C201356  After       C201356\n 2    2024-09-27         C201265         C201352  End to End  C201352            C201352\n 3    2023-03-31         C127262         C51282   CLINIC      C51282             C51282\n```\n\nNote that `$found_term_code2` is:\n\n- `null` for the first record because \"After\" does not match any NCI preferred term in the C201264 codelist.\n- populated for the third record because matching is case-insensitive (i.e., \"CLINIC\" matches \"Clinic\").\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "define_extensible_codelists",
+              "markdownDescription": "\nReturns a list of valid extensible codelist term's submission values. Used for evaluating whether submission values are valid based on controlled terminology. Expects the parameter codelists which is a list of the codelist submission value(s) to retrieve. If the codelist argument is [\"All\"] will return all extensible terms for the CT in a list.\n\n```yaml\n{\n  \"id\": \"$ext_value\",\n  \"codelist\": [\"ALL\"],\n  \"operator\": \"define_extensible_codelists\",\n}\n```\n"
+            }
+          },
+          "required": ["id", "operator", "codelists"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "define_variable_metadata",
+              "markdownDescription": "\nIf a target variable name is specified, returns the specified metadata in the define for the specified target variable.\n\nInput\n\n```yaml\n- operator: define_variable_metadata\n  attribute_name: define_variable_label\n  name: LBTESTCD\n  id: $LBTESTCD_VARIABLE_LABEL\n```\n\nOutput\n\n```\nLaboratory Test Code\n```\n\nIf no target variable name specified, returns a dictionary containing the specified metadata in the define for all variables.\n\nInput\n\n```yaml\n- operator: define_variable_metadata\n  attribute_name: define_variable_label\n  id: $VARIABLE_LABEL\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": \"Study Identifier\",\n  \"USUBJID\": \"Unique Subject Identifier\",\n  \"LBTESTCD\": \"Laboratory Test Code\",\n  \"...\": \"...\"\n}\n```\n"
+            }
+          },
+          "required": ["id", "operator", "attribute_name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "distinct",
+              "markdownDescription": "\nGet a distinct list of values for the given name.\n\nIf a group list is specified, the distinct value list will be grouped by the variables within group.\nIf a filter object is provided, only values for records that match the filter criteria are included in the distinct values.\nIf `value_is_reference` is set to true, the target column contains the names of other columns, and the operation will check the referenced columns to ensure they exist in the associated dataset before adding them to the distinct list.\n\nIf group is provided, group_aliases may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both group and group_aliases are provided, columns are renamed according to corresponding list position (i.e., the 1st column in group is renamed to the 1st column in group_aliases, etc.). If there are more columns listed in group than in group_aliases, only the group columns with corresponding group_aliases columns will be renamed. If there are more columns listed in group_aliases than in group, the extra column names in group_aliases will be ignored. See record_count for an example of the use of group_aliases.\n\n```yaml\nCheck:\n  all:\n    - name: SSSTRESC\n      operator: equal_to\n      value: DEAD\n      value_is_literal: true\n    - name: $ds_dsdecod\n      operator: does_not_contain\n      value: DEATH\n      value_is_literal: true\nOperations:\n  - operator: distinct\n    domain: DS\n    name: DSDECOD\n    id: $ds_dsdecod\n    group:\n      - USUBJID\n    filter:\n      CAT: \"CATEGORY 1\"\n      SCAT: \"SUBCATEGORY A\"\n```\n\n> below, `IDVAR` contains column names, the operation retrieves the value from each column for that row, checks the dataset associated with that column using the CO RDOMAIN. Columns that exist are added to the returns the distinct set.\n\n```yaml\nOperations:\n  - domain: CO\n    id: $rdomain_variables\n    name: IDVAR\n    operator: distinct\n    value_is_reference: true\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "domain_is_custom",
+              "markdownDescription": "\nChecks whether the domain is in the set of domains within the provided standard.\n\nInput\n\nTarget Domain: XY\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: domain_is_custom\n    id: $domain_is_custom\n```\n\nOutput\n\n```\ntrue\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "related_domain_is_custom",
+              "markdownDescription": "\nChecks whether the related domain (for example, the parent domain of a SUPP or RELREC dataset) is not present in the set of standard domains for the provided standard and version. This is useful for determining whether relationships point to non-standard or custom domains.\n\nInput\n\nTarget Domain: SUPPEX\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: related_domain_is_custom\n    id: $related_domain_is_custom\n```\n\nOutput\n\n```\ntrue\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "domain_label",
+              "markdownDescription": "\nReturns the label for the domain the operation is executing on within the provided standard.\n\nInput.\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: domain_label\n    id: $domain_label\n```\n\nOutput\n\n```\nLaboratory Test Results\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "dy",
+              "markdownDescription": "\nCalculates the number of days between the DTC and RFSTDTC. The Study Day value is incremented by 1 for each date following RFSTDTC. Dates prior to RFSTDTC are decreased by 1, with the date preceding RFSTDTC designated as Study Day -1 (there is no Study Day 0). All Study Day values are integers. Thus, to calculate Study Day:\n\n- --DY = (date portion of --DTC) - (date portion of RFSTDTC) + 1 if --DTC is on or after RFSTDTC\n- --DY = (date portion of --DTC) - (date portion of RFSTDTC) if --DTC precedes RFSTDTC\n\nThis algorithm should be used across all domains.\n\n```yaml\nCheck:\n  all:\n    - name: --DY\n      operator: non_empty\n    - name: --DTC\n      operator: is_complete_date\n    - name: RFSTDTC\n      operator: is_complete_date\n    - name: --DY\n      operator: not_equal_to\n      value: $dy\nOperations:\n  - name: --DTC\n    operator: dy\n    id: $dy\nMatch Datasets:\n  - Name: DM\n    Keys:\n      - USUBJID\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "extract_metadata",
+              "markdownDescription": "\nReturns the requested dataset level metadata value for the current dataset. Possible name values are:\n\n- dataset_size\n- dataset_location\n- dataset_name\n- dataset_label\n- domain\n- is_ap\n- ap_suffix\n\nExample\n\nInput:\n\nTarget domain: LB\n\n```yaml\n- name: dataset_label\n  operator: extract_metadata\n  id: $dataset_label\n```\n\nOutput:\n\n```\nLaboratory Test Results\n```\n\nExample: ap_suffix\n\nExtracts the domain suffix (characters 3-4) from AP-related domains. For example, \"FA\" from \"APFA\" DOMAIN value.\n\nInput:\n\nTarget domain: APFA\n\n```yaml\n- name: ap_suffix\n  operator: extract_metadata\n  id: $ap_suffix\n```\n\nOutput:\n\n```\nFA\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "expected_variables",
+              "markdownDescription": "\nReturns the expected (\"Core\" = Exp ) variables for the domain in the current standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: expected_variables\n  id: $expected_variables\n```\n\nOutput:\n\n```\n[\"LBCAT\", \"LBORRES\", \"LBORRESU\", \"...\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_codelist_attributes",
+              "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG \u2192 \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** if using this operator with excel data, you must put the ctpackage versions contained within your data in the library tab for it work properly.\n"
+            }
+          },
+          "required": ["id", "operator", "name", "ct_attribute", "version"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_column_order_from_dataset",
+              "markdownDescription": "\nReturns list of dataset columns in order\n\n```yaml\nCheck:\n  all:\n    - name: $column_order_from_dataset\n      operator: is_not_ordered_by\n      value: $column_order_from_library\nOperations:\n  - id: $column_order_from_library\n    operator: get_column_order_from_library\n  - id: $column_order_from_dataset\n    operator: get_column_order_from_dataset\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_column_order_from_library",
+              "markdownDescription": "\nFetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\nOptionally Filters variables based on specified metadata criteria.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $ig_variables\nOperations:\n  - id: $ig_variables\n    operator: get_column_order_from_library\n    key_name: \"role\" # role, core, etc\n    key_value: \"Exp\" # Timing, Req, Exp, Perm, etc\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_library_class_domains",
+              "markdownDescription": "\nReturns the list of domains for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\", \"INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:\n\n```yaml\n- operator: get_library_class_domains\n  id: $trial_design_domains\n  domain_class: \"TRIAL DESIGN\"\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_model_column_order",
+              "markdownDescription": "\nFetches column order for a given model class from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $model_variables\nOperations:\n  - id: $model_variables\n    operator: get_model_column_order\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_model_filtered_variables",
+              "markdownDescription": "\nFetches variable level library model properties filtered by the provided key_name and key_value\n\nExample\n\nInput\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: get_model_filtered_variables\n  id: $model_filtered_variables\n  key_name: \"role\"\n  key_value: \"Timing\"\n```\n\nOutput\n\n```\n[\"VISITNUM\", \"VISIT\", \"VISITDY\", \"TAETORD\", \"...\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator", "key_name", "key_value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_parent_model_column_order",
+              "markdownDescription": "\nFetches column order for a given SUPP's parent model class from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\n```yaml\nCheck:\n  all:\n    - operator: is_not_contained_by\n      value: $parent_model_variables\nOperations:\n  - id: $parent_model_variables\n    operator: get_parent_model_column_order\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_dataset_filtered_variables",
+              "markdownDescription": "\nFilters variables from the dataset based on specified metadata criteria. Returns a list of variable names that exist in the dataset and match the filter criteria.\n\n```yaml\n- operator: get_dataset_filtered_variables\n  id: $timing_variables\n  key_name: \"role\"\n  key_value: \"Timing\"\n```\n"
+            }
+          },
+          "required": ["id", "operator", "key_name", "key_value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "label_referenced_variable_metadata",
+              "markdownDescription": "\nGenerates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.\n\nInput\n\nTarget Dataset: SUPPLB\n\nProduct: sdtmig\n\nVersion: 3-4\n\nDataset:\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"]\n}\n```\n\nRule:\n\n```yaml\n- operator: label_referenced_variable_metadata\n  id: $qlabel_referenced_variable_metadata\n  name: \"QLABEL\"\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"],\n  \"$qlabel_referenced_variable_metadata_name\": [\"LBTOX\", null, \"LBANMETH\"],\n  \"$qlabel_referenced_variable_metadata_role\": [\n    \"Variable Qualifier\",\n    null,\n    \"Record Qualifier\"\n  ],\n  \"$qlabel_referenced_variable_metadata_ordinal\": [44, null, 38],\n  \"$qlabel_referenced_variable_metadata_core\": [\"Req\", \"Req\", \"Req\"],\n  \"$qlabel_referenced_variable_metadata_label\": [\"Toxicity\", null, \"Analysis Method\"]\n}\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "map",
+              "markdownDescription": "\nAllows the creation of a lookup table to take the values from multiple input columns and map them to values in an output column. The map parameter contains a list of objects. Each dictionary contains column names as properties that match the column names in the source dataset and an output property that will be returned as a result.\n\nIf map has a single object and output is the only property specified on that object, this will function as a direct assignment.\n\nFor example, given the following current dataset:\n\n```\nid \tparent_entity \tparent_rel\n1 \tTiming \trelativeToFrom\n2 \tSomething \trelativeToFrom\n3 \tTiming \ttype\n```\n\nand the following operation:\n\n```yaml\nOperations:\n  - id: $codelist_code\n    operator: map\n    map:\n      - parent_entity: Timing\n        parent_rel: type\n        output: C201264\n      - parent_entity: Timing\n        parent_rel: relativeToFrom\n        output: C201265\n```\n\nThis will result in the following dataset:\n\n```\nid \tparent_entity \tparent_rel \t$codelist_code\n1 \tTiming \trelativeToFrom \tC201265\n2 \tSomething \trelativeToFrom \tNone\n3 \tTiming \ttype \tC201264\n```\n\nThe following operation:\n\n```yaml\nOperations:\n  - id: $codelist_code\n    operator: map\n    map:\n      - output: C201264\n```\n\nWill result in the following dataset:\n\n```\nid \tparent_entity \tparent_rel \t$codelist_code\n1 \tTiming \trelativeToFrom \tC201264\n2 \tSomething \trelativeToFrom \tC201264\n3 \tTiming \ttype \tC201264\n```\n"
+            }
+          },
+          "required": ["id", "operator", "map"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "max",
+              "markdownDescription": "\nIf no group is provided, returns the max value in name. If group is provided, returns the max value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: \"$max_age\"\n      operator: \"greater_than\"\n      value: \"MAXAGE\"\nOperations:\n  - operator: \"max\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$max_age\"\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "max_date",
+              "markdownDescription": "\nIf no group is provided, returns the max date value in name. If group is provided, returns the max date value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: USUBJID\n      operator: is_contained_by\n      value: $ex_usubjid\n    - name: RFXENDTC\n      operator: not_equal_to\n      value: $max_ex_exstdtc\n    - name: RFXENDTC\n      operator: not_equal_to\n      value: $max_ex_exendtc\nOperations:\n  - operator: distinct\n    domain: EX\n    name: USUBJID\n    id: $ex_usubjid\n  - operator: max_date\n    domain: EX\n    name: EXSTDTC\n    id: $max_ex_exstdtc\n    group:\n      - USUBJID\n  - operator: max_date\n    domain: EX\n    name: EXENDTC\n    id: $max_ex_exendtc\n    group:\n      - USUBJID\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "mean",
+              "markdownDescription": "\nExample: AAGE > mean(DM.AGE), where AAGE is a fictitious NSV\n\n```yaml\nCheck:\n  all:\n    - name: \"AAGE\"\n      operator: \"greater_than\"\n      value: \"$average_age\"\nOperations:\n  - operator: \"mean\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$average_age\"\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "min",
+              "markdownDescription": "\nIf no group is provided, returns the min value in name. If group is provided, returns the min value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: \"$min_age\"\n      operator: \"less_than\"\n      value: \"MINAGE\"\nOperations:\n  - operator: \"min\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$min_age\"\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "min_date",
+              "markdownDescription": "\nIf no group is provided, returns the min date value in name. If group is provided, returns the min date value in name, within each unique set of the grouping variables.\n\nExample: RFSTDTC is greater than min AE.AESTDTC for the current USUBJID\n\n```yaml\nCheck:\n  all:\n    - name: \"RFSTDTC\"\n      operator: \"date_greater_than\"\n      value: \"$ae_aestdtc\"\nOperations:\n  - operator: \"min_date\"\n    domain: \"AE\"\n    name: \"AESTDTC\"\n    id: \"$ae_aestdtc\"\n    group:\n      - USUBJID\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "minus",
+              "markdownDescription": "\nComputes set difference: elements in `name` that are not in `subtract`. By default a standard [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A \u2216 B) is applied. Optional `order_insensitive` property allows to have the element order to be taken into consideration and only those `name` elements are removed which follow the same order as in `subtract` . Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.\n\n```yaml\nOperations:\n  - id: $expected_variables\n    operator: expected_variables\n  - id: $dataset_variables\n    operator: get_column_order_from_dataset\n  - id: $expected_minus_dataset\n    name: $expected_variables\n    operator: minus\n    subtract: $dataset_variables\n    order_insensitive: false\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name", "subtract"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "name_referenced_variable_metadata",
+              "markdownDescription": "\nGenerates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable name found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.\n\nInput\n\nTarget Dataset: SUPPLB\n\nProduct: sdtmig\n\nVersion: 3-4\n\nDataset:\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QNAM\": [\"Toxicity\", \"LBVISCOS\", \"Analysis Method\"]\n}\n```\n\nRule:\n\n```yaml\n- operator: name_referenced_variable_metadata\n  id: $qnam_referenced_variable_metadata\n  name: \"QNAM\"\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QNAM\": [\"LBTOX\", \"LBVISCOS\", \"LBANMETH\"],\n  \"$qnam_referenced_variable_metadata_name\": [\"LBTOX\", null, \"LBANMETH\"],\n  \"$qnam_referenced_variable_metadata_role\": [\n    \"Variable Qualifier\",\n    null,\n    \"Record Qualifier\"\n  ],\n  \"$qnam_referenced_variable_metadata_ordinal\": [44, null, 38],\n  \"$qnam_referenced_variable_metadata_core\": [\"Req\", \"Req\", \"Req\"],\n  \"$qnam_referenced_variable_metadata_label\": [\"Toxicity\", null, \"Analysis Method\"]\n}\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "permissible_variables",
+              "markdownDescription": "\nReturns the permissible variables (\"Core\" = Perm ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: permissible_variables\n  id: $permissible_variables\n```\n\nOutput:\n\n```\n[\"LBGRPID\", \"LBREFID\", \"LBSPID\", \"...\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "record_count",
+              "markdownDescription": "\nIf no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. Filter can have a wildcard `&` that when added to the end of the filter value will look for all instances of that prefix (see 4th example below). If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.\n\nIf both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.\n\n**Wildcard Filtering:** Filter values ending with % will match any records where the column value starts with the specified prefix. For example, RACE% will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.\n\n**Regex Transformation:** If regex is provided along with group, the regex pattern will be applied to transform grouping column values before grouping. The regex is only applied to columns where the pattern matches the data type. For example, using regex `^\\d{4}-\\d{2}-\\d{2}` on a column containing `2022-01-14T08:00` will extract `2022-01-14` for grouping purposes.\n\nIf group is provided, group_aliases may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both group and group_aliases are provided, columns are renamed according to corresponding list position (i.e., the 1st column in group is renamed to the 1st column in group_aliases, etc.). If there are more columns listed in group than in group_aliases, only the group columns with corresponding group_aliases columns will be renamed. If there are more columns listed in group_aliases than in group, the extra column names in group_aliases will be ignored.\n\nExample: return the number of records in a dataset.\n\n```yaml\n- operator: record_count\n  id: $records_in_dataset\n```\n\nExample: return the number of records where STUDYID = \"CDISC01\" and FLAGVAR = \"Y\".\n\n```yaml\n- operator: record_count\n  id: $flagged_cdisc01_records_in_dataset\n  filter:\n    STUDYID: \"CDISC01\"\n    FLAGVAR: \"Y\"\n```\n\nExample: return the number of records grouped by USUBJID and timing variables, extracting only the date portion from datetime values.\n\n```yaml\n- operator: record_count\n  id: $records_per_usubjid_date\n  group:\n    - USUBJID\n    - --TESTCD\n    - $TIMING_VARIABLES\n  regex: \"^\\d{4}-\\d{2}-\\d{2}\"\n```\n\nExample: return the number of records where QNAM starts with \"RACE\" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.\n\n```yaml\n- operator: record_count\n  id: $race_records_in_dataset\n  filter:\n    QNAM: \"RACE&\"\n  group:\n    - \"USUBJID\"\n```\n\nExample: return the number of records grouped by USUBJID.\n\n```yaml\n- operator: record_count\n  id: $records_per_usubjid\n  group:\n    - USUBJID\n```\n\nExample: return the number of records grouped by USUBJID where FLAGVAR = \"Y\".\n\n```yaml\n- operator: record_count\n  id: $flagged_records_per_usubjid\n  group:\n    - USUBJID\n  filter:\n    FLAGVAR: \"Y\"\n```\n\nExample: return the number of records grouped by USUBJID and IDVARVAL where QNAM = \"TEST1\" and IDVAR = \"GROUPID\", renaming the IDVARVAL column to GROUPID for subsequent merging.\n\n```yaml\n- operator: record_count\n  id: $test1_records_per_usubjid_groupid\n  group:\n    - USUBJID\n    - IDVARVAL\n  filter:\n    QNAM: \"TEST1\"\n    IDVAR: \"GROUPID\"\n  group_aliases:\n    - USUBJID\n    - GROUPID\n```\n\nExample: Group the StudyIdentifier dataset by parent_id and merge the result back to the context dataset StudyVersion using StudyVersion.id == StudyIdentifier.parent_id\n\n```yaml\nScope:\n  Entities:\n    Include:\n      - StudyVersion\nOperations:\n  - domain: StudyIdentifier\n    filter:\n      parent_entity: \"StudyVersion\"\n      parent_rel: \"studyIdentifiers\"\n      rel_type: \"definition\"\n      studyIdentifierScope.organizationType.code: \"C70793\"\n      studyIdentifierScope.organizationType.codeSystem: \"http://www.cdisc.org\"\n    group:\n      - parent_id\n    group_aliases:\n      - id\n    id: $num_sponsor_ids\n    operator: record_count\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "required_variables",
+              "markdownDescription": "\nReturns the required variables ( \"Core\" = Req ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_variables\n  id: $required_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "split_by",
+              "markdownDescription": "\nSplits a dataset column by a given delimiter\n\n```yaml\nOperations:\n  - name: PPSPEC\n    delimiter: ;\n    id: $ppspec_value\n    operator: split_by\n```\n"
+            }
+          },
+          "required": ["id", "operator", "delimiter", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "study_domains",
+              "markdownDescription": "\nReturns a list of the domains in the study\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "dataset_names",
+              "markdownDescription": "\nReturns a list of the submitted dataset filenames in all uppercase\n\nex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPPEC] will be returned\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "standard_domains",
+              "markdownDescription": "\nReturns a list of valid SDTM domain names from the standard metadata. This can be used to compare extracted suffixes from DOMAIN values or dataset names.\n\nInput\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: standard_domains\n    id: $valid_domain_names\n```\n\nOutput\n\n```\n[\"AE\", \"CM\", \"DM\", \"FA\", \"LB\", \"QS\", ...]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_codelist_dates",
+              "markdownDescription": "\nReturns the valid terminology package dates for a given standard.\n\nGiven a list of terminology packages:\n\n```\n[\n  \"sdtmct-2023-10-26\",\n  \"sdtmct-2023-12-13\",\n  \"adamct-2023-12-13\",\n  \"cdashct-2023-05-19\"\n]\n```\n\nand standard: sdtmig\n\nthe operation will return:\n\n```\n[\"2023-10-26\", \"2023-12-13\"]\n```\n\nBy default, the standard is as specified when running validation - as the validation runtime parameter and/or as specified in the rule header - and the list of terminology packages is obtained from the current cache. If required, the default standard may be overridden using the optional ct_package_types parameter. For example, given the same list of terminology packages, the following operation:\n\n```yaml\nOperations:\n  - operator: valid_codelist_dates\n    id: $valid_dates\n    ct_package_types:\n      - SDTM\n      - CDASH\n```\n\nwill return:\n\n```\n[\"2023-05-19\", \"2023-10-26\", \"2023-12-13\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_define_external_dictionary_version",
+              "markdownDescription": "\nReturns true if the version of an external dictionary provided in the define.xml file matches the version parsed from the dictionary files.\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_define_external_dictionary_version\n    id: $is_valid_loinc_version\n    external_dictionary_type: loinc\n```\n\nOutput:\n\n```\n[true, true, true, true]\n```\n"
+            }
+          },
+          "required": ["id", "operator", "external_dictionary_type"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_external_dictionary_value",
+              "markdownDescription": "\nReturns true if the target variable contains a valid external dictionary value, otherwise false\n\nCan be case insensitive by setting case_sensitive attribute to false. It is true by default.\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_value\n    name: --DECOD\n    id: $is_valid_decod_value\n    external_dictionary_type: meddra\n    dictionary_term_type: PT\n    case_sensitive: false\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
+            }
+          },
+          "required": [
+            "id",
+            "operator",
+            "name",
+            "external_dictionary_type",
+            "dictionary_term_type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_external_dictionary_code",
+              "markdownDescription": "\nReturns true if the target variable contains a valid external dictionary code, otherwise false\n\nInput:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_code\n    name: --COD\n    id: $is_valid_cod_code\n    external_dictionary_type: meddra\n    dictionary_term_type: PT\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
+            }
+          },
+          "required": [
+            "id",
+            "operator",
+            "name",
+            "external_dictionary_type",
+            "dictionary_term_type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_external_dictionary_code_term_pair",
+              "markdownDescription": "\nReturns true if the row in the dataset contains a matching pair of code and term, otherwise false\n\nFor this operator, the name parameter should contain the name of the variable containing the code, and the external_dictionary_term_variable parameter should contain the name of the variable containing the term Input:\n\n```yaml\nOperations:\n  - operator: valid_external_dictionary_code_term_pair\n    name: --COD\n    id: $is_valid_loinc_code_term_pair\n    external_dictionary_type: loinc\n    external_dictionary_term_variable: --DECOD\n```\n\nOutput:\n\n```\n[true, false, false, true]\n```\n"
+            }
+          },
+          "required": [
+            "id",
+            "operator",
+            "name",
+            "external_dictionary_type",
+            "external_dictionary_term_variable"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_meddra_code_references",
+              "markdownDescription": "\nDetermines whether the values are valid in the following variables:\n\n- --SOCCD (System Organ Class Code)\n- --HLGTCD (High Level Group Term Code)\n- --HLTCD (High Level Term Code)\n- --PTCD (Preferred Term Code)\n- --LLTCD (Lowest Level Term Code)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_codes\n    operator: valid_meddra_code_references\n```\n\nOutput:\n\n```\n[true, false, true, true]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_meddra_code_term_pairs",
+              "markdownDescription": "\nDetermines whether the values are valid in the following variable pairs:\n\n- --SOCCD, --SOC (System Organ Class Code and Term)\n- --HLGTCD, --HLGT (High Level Group Term Code and Term)\n- --HLTCD, --HLT (High Level Term Code and Term)\n- --PTCD, --DECOD (Preferred Term Code and Dictionary-Derived Term)\n- --LLTCD, --LLT (Lowest Level Term Code and Term)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_pairs\n    operator: valid_meddra_code_term_pairs\n```\n\nOutput:\n\n```\n[true, true, false, true, true]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_meddra_term_references",
+              "markdownDescription": "\nDetermines whether the values are valid in the following variables:\n\n- --SOC (System Organ Class)\n- --HLGT (High Level Group Term)\n- --HLT (High Level Term)\n- --DECOD (Dictionary-Derived Term)\n- --LLT (Lowest Level Term)\n\nInput:\n\n```yaml\nOperations:\n  - id: $is_valid_meddra_terms\n    operator: valid_meddra_term_references\n```\n\nOutput:\n\n```\n[true, true, false, true, true]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "valid_whodrug_references",
+              "markdownDescription": "\nChecks if a reference to whodrug term in name points to the existing code in Atc Text (INA) file.\n\nInput:\n\n```yaml\nOperations:\n  - id: $whodrug_refs_valid\n    operator: valid_whodrug_references\n```\n\nOutput:\n\n```\n[true, false, true, true]\n```\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "variable_count",
+              "markdownDescription": "\nReturns a mapping of variable names to the number of times that variable appears in a domain within the study.\n\nInput\n\n```\n{\n  \"AE\": [\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"AETERM\", \"AEENDTC\"],\n  \"LB\": [\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBTESTCD\", \"LBENDTC\"]\n}\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": 2,\n  \"DOMAIN\": 2,\n  \"USUBJID\": 2,\n  \"--TERM\": 1,\n  \"--TESTCD\": 1,\n  \"--ENDTC\": 2\n}\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "variable_exists",
+              "markdownDescription": "\nOperation operates only on original submission datasets regardless of rule type. Flags an error if a column exists is in the submission dataset currently being evaluated.\n\nRule Type: Domain Presence Check\n\n```yaml\nCheck:\n  all:\n    - name: $MIDS_EXISTS\n      operator: equal_to\n      value: true\n    - name: TM\n      operator: not_exists\nOperations:\n  - id: $MIDS_EXISTS\n    name: MIDS\n    operator: variable_exists\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "variable_is_null",
+              "markdownDescription": "\nReturns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.\nThe operation supports two sources via the `source` parameter:\n\n- **`submission`** : checks against the raw submission dataset\n- **`evaluation`** (default): checks against the evaluation dataset built based on the rule type\n\n```yaml"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "variable_names",
+              "markdownDescription": "\nReturns the set of variable names from the library for the given standard. This operation extracts all variable names across all domains in the specified standard's library metadata.\n\nInput:\n\nValidation Standard: sdtmig\nValidation Version: 3-4\n\n```yaml\n- operator: variable_names\n  id: $all_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"SUBJID\", \"RFSTDTC\", \"RFENDTC\", \"SITEID\", \"AGE\", \"AGEU\", \"SEX\", \"RACE\", \"ETHNIC\", \"ARMCD\", \"ARM\", \"ACTARMCD\", \"ACTARM\", \"COUNTRY\", \"DMDTC\", \"DMDY\", \"AETERM\", \"AEDECOD\", \"AECAT\", \"AESCAT\", \"AEPRESP\", \"AEBODSYS\", \"AEBDSYCD\", \"AESOC\", \"AESOCCD\", \"AELLT\", \"AELLTCD\", \"AEHLT\", \"AEHLTCD\", \"AEHLGT\", \"AEHLGTCD\", \"AEPTCD\", \"AESTDTC\", \"AEENDTC\", \"AESTDY\", \"AEENDY\", \"AEDUR\", \"AESER\", \"AESEV\", \"AEACN\", \"AEREL\", \"AEOUT\", \"AESCAN\", \"AESCONG\", \"AESDISAB\", \"AESDTH\", \"AESHOSP\", \"AESLIFE\", \"AESOD\", \"AECONTRT\", \"AETOXGR\", \"LBTESTCD\", \"LBTEST\", \"LBCAT\", \"LBSCAT\", \"LBSPEC\", \"LBMETHOD\", \"LBORRES\", \"LBORRESU\", \"LBORNRLO\", \"LBORNRHI\", \"LBSTRESC\", \"LBSTRESN\", \"LBSTRESU\", \"LBSTNRLO\", \"LBSTNRHI\", \"LBNRIND\", \"LBNAM\", \"LBSPEC\", \"LBANTREG\", \"LBFAST\", \"LBDRVFL\", \"LBTOX\", \"LBTOXGR\", \"LBSTDTC\", \"LBENDTC\", \"LBSTDY\", \"LBENDY\", \"LBTPT\", \"LBTPTNUM\", \"LBELTM\", \"LBTPTREF\", \"LBRFTDTC\", \"...\"]\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "variable_value_count",
+              "markdownDescription": "\nGiven a variable name, returns a mapping of variable values to the number of times that value appears in the variable within all datasets in the study.\n"
+            }
+          },
+          "required": ["id", "operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "whodrug_code_hierarchy",
+              "markdownDescription": "\nDetermines whether the values are valid and in the correct hierarchical structure in the following variables:\n\n- --DECOD\n- --CLAS\n- --CLASCD\n\nInput:\n\n```yaml\nOperations:\n  - id: $valid_whodrug_codes\n    operator: whodrug_code_hierarchy\n```\n"
+            }
+          },
+          "required": ["id", "operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "get_xhtml_errors",
+              "markdownDescription": "\nValidates XHTML fragments in the target column against the specified namespace.\n\n```yaml\nOperations:\n  - id: $xhtml_errors\n    name: text\n    operator: get_xhtml_errors\n    namespace: http://www.cdisc.org/ns/usdm/xhtml/v1.0\n```\n\nNote that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.\n"
+            }
+          },
+          "required": ["id", "operator", "name", "namespace"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "flags": {
+              "pattern": "^[ims]*$",
+              "type": "string"
+            },
+            "on_no_match": {
+              "enum": ["keep_original", "set_null", "set_empty", "error"],
+              "type": "string"
+            },
+            "operator": {
+              "const": "regex_find_replace"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": ["id", "operator", "name", "find", "replace"],
+          "type": "object"
+        }
+      ],
+      "properties": {
+        "attribute_name": {
+          "$ref": "#/$defs/MetaVariables.json"
+        },
+        "case_sensitive": {
+          "type": "boolean"
+        },
+        "codelist": {
+          "type": "string"
+        },
+        "codelist_code": {
+          "type": "string"
+        },
+        "codelists": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ct_attribute": {
+          "type": "string"
+        },
+        "ct_package_type": {
+          "enum": [
+            "ADAM",
+            "CDASH",
+            "COA",
+            "DDF",
+            "DEFINE-XML",
+            "GLOSSARY",
+            "MRCT",
+            "PROTOCOL",
+            "QRS",
+            "QS-FT",
+            "SDTM",
+            "SEND",
+            "TMF"
+          ],
+          "type": "string"
+        },
+        "ct_package_types": {
+          "items": {
+            "$ref": "#/$defs/Operations.json/properties/ct_package_type"
+          },
+          "type": "array"
+        },
+        "ct_packages": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ct_version": {
+          "type": "string"
+        },
+        "delimiter": {
+          "type": "string"
+        },
+        "dictionary_term_type": {
+          "enum": ["LLT", "PT", "HLT", "HLGT", "SOC"]
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dataset"
+            },
+            {
+              "$ref": "#/$defs/DataStructure"
+            }
+          ]
+        },
+        "external_dictionary_type": {
+          "enum": ["meddra"]
+        },
+        "filter": {
+          "type": "object"
+        },
+        "filter_key": {
+          "type": "string"
+        },
+        "filter_value": {
+          "type": "string"
+        },
+        "find": {
+          "type": "string"
+        },
+        "flags": {
+          "pattern": "^[ims]*$",
+          "type": "string"
+        },
+        "group": {
+          "items": {
+            "$ref": "#/$defs/VariableReference"
+          },
+          "type": "array"
+        },
+        "group_aliases": {
+          "items": {
+            "$ref": "#/$defs/VariableReference"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "key_name": {
+          "enum": [
+            "definition",
+            "examples",
+            "label",
+            "name",
+            "notes",
+            "ordinal",
+            "role",
+            "simpleDatatype",
+            "variableCcode"
+          ],
+          "type": "string"
+        },
+        "key_value": {
+          "type": "string"
+        },
+        "level": {
+          "enum": ["codelist", "term"],
+          "type": "string"
+        },
+        "map": {
+          "items": {
+            "properties": {
+              "output": {
+                "type": "string"
+              }
+            },
+            "required": ["output"],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "on_no_match": {
+          "enum": ["keep_original", "set_null", "set_empty", "error"],
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "order_insensitive": {
+          "type": "boolean"
+        },
+        "regex": {
+          "type": "string"
+        },
+        "replace": {
+          "type": "string"
+        },
+        "returntype": {
+          "enum": ["code", "value", "pref_term"],
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "subtract": {
+          "type": "string"
+        },
+        "term_code": {
+          "type": "string"
+        },
+        "term_pref_term": {
+          "type": "string"
+        },
+        "term_value": {
+          "type": "string"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    "Operator.json": {
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "operator": {
+              "const": "additional_columns_empty"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "additional_columns_not_empty"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "contains",
+              "markdownDescription": "\nWill return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.\n\nThe operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']\n  operator: \"contains\"\n  value: \"GRADE\" # True if 'GRADE' is an element in the list\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "contains_all",
+              "markdownDescription": "\nTrue if all values in `value` are contained within the variable `name`.\n\n> All of ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment') in ACTARM\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"contains_all\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n\nThe operator also supports lists:\n\n```yaml\n- name: \"$spec_codelist\"\n  operator: \"contains_all\"\n  value: \"$ppspec_value\"\n```\n\nWhere:\n\n| $spec_codelist              |   $ppspec_value    |\n| :-------------------------- | :----------------: |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE1\", \"CODE2\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE2\", \"CODE3\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] |     [\"CODE1\"]      |\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "contains_case_insensitive",
+              "markdownDescription": "\nTrue if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.\n\nExample:\n\n```yaml\n- name: \"--TOXGR\" # Column containing lists like ['Grade', 'Severity', 'Onset']\n  operator: \"contains_case_insensitive\"\n  value: \"grade\" # True if 'Grade'/'GRADE'/'grade' exists in the list\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_equal_to",
+              "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.\n\nThe `date_component` parameter accepts: `\"year\"`, `\"month\"`, `\"day\"`, `\"hour\"`, `\"minute\"`, `\"second\"`, `\"microsecond\"`, or `\"auto\"`.\n\nWhen `date_component: \"auto\"` is used, the operator automatically detects the precision of both dates and compares at the common (less precise) level.\n\n```yaml\n- name: \"AESTDTC\"\n  operator: \"date_equal_to\"\n  value: \"RFSTDTC\"\n  date_component: \"auto\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_greater_than",
+              "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> Year part of BRTHDTC > 2021\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"date_greater_than\"\n  date_component: \"year\"\n  value: \"2021\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_greater_than_or_equal_to",
+              "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> Year part of BRTHDTC >= 2021\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"date_greater_than_or_equal_to\"\n  date_component: \"year\"\n  value: \"2021\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_less_than",
+              "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> AEENDTC < AESTDTC\n\n```yaml\n- name: \"AEENDTC\"\n  operator: \"date_less_than\"\n  value: \"AESTDTC\"\n```\n\n> SSDTC < all DS.DSSTDTC when SSSTRESC = \"DEAD\"\n\n```yaml\nCheck:\n  all:\n    - name: \"SSSTRESC\"\n      operator: \"equal_to\"\n      value: \"DEAD\"\n    - name: \"SSDTC\"\n      operator: \"date_less_than\"\n      value: \"$max_ds_dsstdtc\"\nOperations:\n  - operator: \"max_date\"\n    domain: \"DS\"\n    name: \"DSSTDTC\"\n    id: \"$max_ds_dsstdtc\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_less_than_or_equal_to",
+              "markdownDescription": "\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n\n> AEENDTC <= AESTDTC\n\n```yaml\n- name: \"AEENDTC\"\n  operator: \"date_less_than_or_equal_to\"\n  value: \"AESTDTC\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "date_not_equal_to",
+              "markdownDescription": "\nComplement of `date_equal_to`\n\nDate comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: \"auto\"`.\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "does_not_contain",
+              "markdownDescription": "\nComplement of `contains`. Returns True when the value is NOT contained within the target collection.\n\n```yaml\n- name: \"--TOXGR\"\n  operator: \"does_not_contain\"\n  value: \"GRADE\" # True if 'GRADE' is NOT an element in the list\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "does_not_contain_case_insensitive",
+              "markdownDescription": "\nComplement of `contains_case_insensitive`. Returns True when the value is NOT contained within the target collection (case-insensitive).\n\nExample:\n\n```yaml\n- name: \"--TOXGR\"\n  operator: \"does_not_contain_case_insensitive\"\n  value: \"grade\" # True if no case variation of 'grade' exists in the list\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "does_not_equal_string_part",
+              "markdownDescription": "\nComplement of `equals_string_part`. Also has the optional parameter 'type_insensitive'.\n"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value", "regex"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "does_not_have_next_corresponding_record",
+              "markdownDescription": "\nComplement of `has_next_corresponding_record`\n"
+            }
+          },
+          "required": ["operator", "ordering", "value", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "empty",
+              "markdownDescription": "\nValue presence\n\n> --OCCUR = null\n\n```yaml\n- name: --OCCUR\n  operator: empty\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "empty_within_except_last_row",
+              "markdownDescription": "\n> SEENDTC is not empty when it is not the last record, grouped by USUBJID, sorted by SESTDTC\n\n```yaml\n- name: SEENDTC\n  operator: empty_within_except_last_row\n  ordering: SESTDTC\n  value: USUBJID\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "ends_with",
+              "markdownDescription": "\nSubstring matching\n\n> DOMAIN ending with 'FOOBAR'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"ends_with\"\n  value: \"FOOBAR\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "equal_to",
+              "markdownDescription": "\nValue comparison. Works for both string and number.\nHas optional parameter:\n\n- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.\n- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.\n- 'round_values' when true, both the target and value will be rounded to the nearest integer\n\n> --OCCUR = N\n\n```yaml\n- name: --OCCUR\n  operator: equal_to\n  value: \"N\"\n```\n\n> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).\n\n```yaml\n- name: IDVARVAL\n  operator: equal_to\n  value: \"IDVAR\"\n  value_is_reference: true\n  type_insensitive: true\n```\n\n> --STRESC = --STRESN with rounded values and ignoring the char/num type differences\n> between the two columns\n\n```yaml\n- name: --STRESC\n  operator: equal_to\n  type_insensitive: true\n  value: --STRESN\n  round_values: true\n```\n\n> EXDOSE EQ 0\n\n```yaml\n- name: EXDOSE\n  operator: equal_to\n  value: 0\n```\n"
+            },
+            "round_values": {
+              "type": "boolean"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            },
+            "value_is_reference": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "equal_to_case_insensitive",
+              "markdownDescription": "\nCase insensitive `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n\n> DSTERM is \"Informed consent obtained\"\n\n```yaml\n- name: DSTERM\n  operator: equal_to_case_insensitive\n  value: Informed consent obtained\n```\n"
+            },
+            "round_values": {
+              "type": "boolean"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            },
+            "value_is_reference": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "equals_string_part",
+              "markdownDescription": "\nChecks that the values in the target column equal the result of parsing the value in the comparison column with a regex\nHas optional parameter:\n\n- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all leading and trailing zeroes will be removed in both strings and floats.\n\n> RDOMAIN equals characters 5 and 6 of SUPP dataset name\n\n```yaml\n- name: RDOMAIN\n  operator: equals_string_part\n  type_insensitive: true\n  value: dataset_name\n  regex: \".{4}(..).*\"\n```\n"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value", "regex"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "exists",
+              "markdownDescription": "\nTrue if the column exists in the current dataframe. (Works for datasets and variables)\n\n> --OCCUR is present in dataset\n\n```yaml\n- name: \"--OCCUR\"\n  operator: \"exists\"\n```\n\n> Domain SJ exists\n\n```yaml\nRule Type: Domain Presence Check\nCheck:\n  all:\n    - name: \"SJ\"\n      operator: \"exists\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "greater_than",
+              "markdownDescription": "\nValue comparison\n\n> TSVAL > 0\n\n```yaml\n- name: TSVAL\n  operator: greater_than\n  value: 0\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "greater_than_or_equal_to",
+              "markdownDescription": "\nValue comparison\n\n> TSVAL >= 0\n\n```yaml\n- name: TSVAL\n  operator: greater_than_or_equal_to\n  value: 1\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "has_different_values",
+              "markdownDescription": "\nComplement of `has_same_values`\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "has_equal_length",
+              "markdownDescription": "\nLength comparison\n\n> Check whether variable values has equal length of another variable.\n\n```yaml\n- name: SEENDTC\n  operator: has_equal_length\n  value: SESTDTC\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "has_next_corresponding_record",
+              "markdownDescription": "\nEnsures that a value of a variable `name` in one record is equal to the value of another variable `value` in the next corresponding record. The rows are grouped by `within` and ordered by `ordering`.\n\n> SEENDTC is equal to the SESTDTC of the next record within a USUBJID. Ordered by SESEQ\n\n```yaml\n- name: SEENDTC\n  operator: has_next_corresponding_record\n  value: SESTDTC\n  within: USUBJID\n  ordering: SESEQ\n```\n"
+            }
+          },
+          "required": ["operator", "ordering", "value", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "has_not_equal_length",
+              "markdownDescription": "\nComplement of `has_equal_length`\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "has_same_values",
+              "markdownDescription": "\nTrue if all values in `name` are the same\n\n> Condition: MHCAT ^= null\n> Rule: MHCAT ^= the same value for all records\n\n```yaml\nCheck:\n  all:\n    - name: MHCAT\n      operator: non_empty\n    - name: MHCAT\n      operator: has_same_values\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "invalid_duration",
+              "markdownDescription": "\nDuration ISO-8601 check, returns True if a duration is not in ISO-8601 format. The negative parameter must be specified to indicate if negative durations are either allowed (True) or disallowed (False)\n\n> DURVAR is invalid (negative durations disallowed)\n\n```yaml\n- name: \"DURVAR\"\n  operator: \"invalid_duration\"\n  negative: False\n```\n"
+            }
+          },
+          "required": ["operator", "negative"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "invalid_date",
+              "markdownDescription": "\nThe operator performs date validation against complete and partial dates with uncertainty in the following order:\n\n1. Attempts to parse using [dateutil.parser.isoparse()](https://dateutil.readthedocs.io/en/stable/parser.html)\n2. If parsing fails and the string contains uncertainty indicators (`/`, `--`, `-:`), validates against an extended ISO 8601 dates regex pattern\n3. If parsing succeeds, dates are still validated against the regex pattern.\n\n```yaml\n- name: \"BRTHDTC\"\n  operator: \"invalid_date\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_complete_date",
+              "markdownDescription": "\nDate check\n\n> DM.RFSTDTC = complete date\n\n```yaml\n- name: \"RFSTDTC\"\n  operator: \"is_complete_date\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_contained_by",
+              "markdownDescription": "\nValue in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.\n\nThis operator behaves similarly to `contains`. The key distinction: `contains` checks if comparator \u2208 target, while `is_contained_by` checks if target \u2208 comparator.\n\n> ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"is_contained_by\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_contained_by_case_insensitive",
+              "markdownDescription": "\nValue in `name` case insensitive compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.\n\n> ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"is_contained_by_case_insensitive\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_incomplete_date",
+              "markdownDescription": "\nComplement of `is_complete_date`\n\nDate check\n\n> DM.RFSTDTC ^= complete date\n\n```yaml\n- name: \"RFSTDTC\"\n  operator: \"is_incomplete_date\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_contained_by",
+              "markdownDescription": "\nComplement of `is_contained_by`\n\n> ARM not in ('Screen Failure', 'Not Assigned')\n\n```yaml\n- name: \"ARM\"\n  operator: \"is_not_contained_by\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_contained_by_case_insensitive",
+              "markdownDescription": "\nComplement of `is_contained_by_case_insensitive`\n\n> ARM not in ('Screen Failure', 'Not Assigned')\n\n```yaml\n- name: \"ARM\"\n  operator: \"is_not_contained_by_case_insensitive\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_ordered_by",
+              "markdownDescription": "\nComplement of `is_ordered_by`\n"
+            }
+          },
+          "required": ["operator", "order"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_ordered_set"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_unique_relationship",
+              "markdownDescription": "\nComplement of `is_unique_relationship`\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_unique_set",
+              "markdownDescription": "\nComplement of `is_unique_set`.\n\n> --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD\n\n```yaml\n- name: \"--SEQ\"\n  operator: is_not_unique_set\n  value:\n    - \"DOMAIN\"\n    - \"USUBJID\"\n    - \"--TESTCD\"\n```\n\n> `name` can be a variable containing a list of columns and `value` does not need to be present\n\n```yaml\nRule Type: Dataset Contents Check against Define XML\nCheck:\n  all:\n    - name: define_dataset_key_sequence # contains list of dataset key columns\n      operator: is_not_unique_set\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_ordered_by",
+              "markdownDescription": "\nTrue if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_by\n      order: asc\n```\n"
+            }
+          },
+          "required": ["operator", "order"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_ordered_set",
+              "markdownDescription": "\nTrue if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`. Value can either be a single column or multiple.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value: USUBJID\n```\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: is_ordered_set\n      value:\n        - USUBJID\n        - \"--TESTCD\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_unique_relationship",
+              "markdownDescription": "\nRelationship Integrity Check looking for a 1-1 relationship between name and value. Ensures uniqueness of both name and value.\n\n> AETERM and AEDECOD has a 1-to-1 relationship\n\n```yaml\n- name: AETERM\n  operator: is_unique_relationship\n  value: AEDECOD\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_inconsistent_across_dataset",
+              "markdownDescription": "\nChecks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists \u2014 i.e., two or more values are tied for the highest frequency \u2014 all records in that group are flagged.\n\nSingle grouping variable - true if the values of BGSTRESU differ within USUBJID:\n\nIf a regex parameter is provided, it is applied to the values of the target variable before the consistency check. The first capture group of the regex is used as the normalized value for comparison. This can be useful when only part of the value should be considered during comparison (for example, comparing only the date portion of a datetime value).\n\n- regex is optional.\n- The pattern must include at least one capture group(or whole regex will be wrapped to capture group).\n- Only the first capture group is used for comparison.\n- If the pattern does not match a value, the original value is used.\n\n```yaml\n- name: \"BGSTRESU\"\n  operator: is_inconsistent_across_dataset\n  value: \"USUBJID\"\n```\n\nMultiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:\n\n```yaml\n- name: \"--STRESU\"\n  operator: is_inconsistent_across_dataset\n  value:\n    - \"--TESTCD\"\n    - \"--CAT\"\n    - \"--SCAT\"\n    - \"--SPEC\"\n    - \"--METHOD\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_unique_set",
+              "markdownDescription": "\nRelationship Integrity Check\n\n> --SEQ is unique within DOMAIN, USUBJID, and --TESTCD\n\n```yaml\n- name: \"--SEQ\"\n  operator: is_unique_set\n  value:\n    - \"DOMAIN\"\n    - \"USUBJID\"\n    - \"--TESTCD\"\n```\n\n> `name` can be a variable containing a list of columns and `value` does not need to be present\n\n> The `regex` parameter allows you to extract portions of values using a regex pattern before checking uniqueness.\n\n> Compare date only (YYYY-MM-DD) for uniqueness\n\n```yaml\n- name: \"--REPNUM\"\n  operator: is_not_unique_set\n  value:\n    - \"USUBJID\"\n    - \"--TESTCD\"\n    - \"$TIMING_VARIABLES\"\n  regex: '^\\d{4}-\\d{2}-\\d{2}'\n```\n\n> Compare by first N characters of a string\n\n```yaml\n- name: \"ITEM_ID\"\n  operator: is_not_unique_set\n  value:\n    - \"USUBJID\"\n    - \"CATEGORY\"\n  regex: \"^.{2}\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "less_than",
+              "markdownDescription": "\nValue comparison\n\n> TSVAL < 1\n\n```yaml\n- name: TSVAL\n  operator: less_than\n  value: 1\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "less_than_or_equal_to",
+              "markdownDescription": "\nValue comparison\n\n> TSVAL <= 1\n\n```yaml\n- name: TSVAL\n  operator: less_than_or_equal_to\n  value: 1\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "longer_than",
+              "markdownDescription": "\nLength comparison\n\n> SETCD value length > 8\n\n```yaml\n- name: \"SETCD\"\n  operator: \"longer_than\"\n  value: 8\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "longer_than_or_equal_to",
+              "markdownDescription": "\nLength comparison\n\n> TSVAL value length >= 201\n\n```yaml\n- name: \"TSVAL\"\n  operator: \"longer_than_or_equal_to\"\n  value: 201\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "matches_regex",
+              "markdownDescription": "\nRegular Expression value matching\n\n- Determine if each string starts with a match of a regular expression. Refer to this pandas documentation: https://pandas.pydata.org/docs/reference/api/pandas.Series.str.match.html\n- To \"search\" for a regex within the entire text, prefix the regex with `.*` and do not use anchors `^` , `$`\n- To do a \"fullmatch\" of a regex with the entire text, suffix the regex with an anchor `$` and do not prefix the regex with `.*`\n- For syntax guide, refer to this Python documentation: [Regular Expression HOWTO](https://docs.python.org/3/howto/regex.html).\n- Suggestion for an on-line regular expression logic. tester: https://regex101.com, choose the Python dialect.\n- For regex token visualization, try https://www.debuggex.com.\n\n> --DOSTXT value is non-numeric\n\n```yaml\n- name: --DOSTXT\n  operator: matches_regex\n  value: ^\\d*\\.?\\d*$\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "non_empty",
+              "markdownDescription": "\nComplement of `empty`\n\n> --OCCUR ^= null\n\n```yaml\n- name: --OCCUR\n  operator: non_empty\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "non_empty_within_except_last_row",
+              "markdownDescription": "\nComplement of `empty_within_except_last_row`\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_contains_all",
+              "markdownDescription": "\nComplement of `contains_all`\n\n> All of ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment') not in ACTARM\n\n```yaml\n- name: \"ACTARM\"\n  operator: \"not_contains_all\"\n  value:\n    - \"Screen Failure\"\n    - \"Not Assigned\"\n    - \"Not Treated\"\n    - \"Unplanned Treatment\"\n```\n\nThe operator also supports lists:\n\n```yaml\n- name: \"$spec_codelist\"\n  operator: \"not_contains_all\"\n  value: \"$ppspec_value\"\n```\n\nWhere:\n\n| $spec_codelist              |   $ppspec_value    |\n| :-------------------------- | :----------------: |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE1\", \"CODE2\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] | [\"CODE2\", \"CODE3\"] |\n| [\"CODE1\", \"CODE2\", \"CODE3\"] |     [\"CODE1\"]      |\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_equal_to",
+              "markdownDescription": "\nComplement of `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n\n> --OCCUR ^= Y\n\n```yaml\n- name: --OCCUR\n  operator: not_equal_to\n  value: \"Y\"\n```\n"
+            },
+            "round_values": {
+              "type": "boolean"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            },
+            "value_is_reference": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_equal_to_case_insensitive",
+              "markdownDescription": "\nComplement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.\n"
+            },
+            "round_values": {
+              "type": "boolean"
+            },
+            "type_insensitive": {
+              "type": "boolean"
+            },
+            "value_is_reference": {
+              "type": "boolean"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_exists",
+              "markdownDescription": "\nComplement of `exists`\n\n> AEOCCUR not present in dataset\n\n```yaml\n- name: \"AEOCCUR\"\n  operator: \"not_exists\"\n```\n\n> Domain SJ does not exist\n\n```yaml\nRule Type: Domain Presence Check\nCheck:\n  all:\n    - name: \"SJ\"\n      operator: \"not_exists\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_matches_regex",
+              "markdownDescription": "\nComplement of `matches_regex`\n\n> --TESTCD <= 8 chars and contains only letters, numbers, and underscores and can not start with a number\n\n```yaml\n- name: --TESTCD\n  operator: not_matches_regex\n  value: ^[A-Z_][A-Z0-9_]{0,7}$\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_prefix_matches_regex",
+              "markdownDescription": "\nComplement of `prefix_matches_regex`\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_present_on_multiple_rows_within",
+              "markdownDescription": "\nComplement of `present_on_multiple_rows_within`\n\n```yaml\n- operator: \"not_present_on_multiple_rows_within\"\n  name: \"RELID\"\n  value: 4 (optional)\n  within: \"USUBJID\"\n```\n"
+            }
+          },
+          "required": ["operator", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "not_suffix_matches_regex",
+              "markdownDescription": "\nComplement of `suffix_matches_regex`\n\n> QNAM does not end with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"not_suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "prefix_is_contained_by",
+              "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match one of the strings in the list in `value`\n\n> Check if a variable's domain identifier exists in the study\n\n```yaml\n- name: variable_name\n  operator: prefix_is_contained_by\n  prefix: 2\n  value: $study_domains\n```\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "prefix_equal_to",
+              "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match the string in `value`\n\n```yaml\n- name: dataset_name\n  operator: prefix_equal_to\n  prefix: 2\n  value: DOMAIN\n```\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "prefix_is_not_contained_by",
+              "markdownDescription": "\nComplement of `prefix_is_contained_by`\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "prefix_matches_regex",
+              "markdownDescription": "\nTrue if the `prefix` number of characters beginning a string in `name` match a regular expression in `value`\n\n```yaml\n- name: DOMAIN\n  operator: prefix_matches_regex\n  prefix: 2\n  value: (AP|ap)\n```\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "prefix_not_equal_to",
+              "markdownDescription": "\nComplement of `prefix_equal_to`\n"
+            }
+          },
+          "required": ["operator", "prefix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "present_on_multiple_rows_within",
+              "markdownDescription": "\nTrue if the same value of `name` is present on multiple rows, grouped by `within`. A maximum allowed number of occurrences can be specified in the value attribute. In this instance the value: 4 means that an error will be flagged if the same value appears more than 4 times within a USUBJID. By default the operator will flag any time a value appears more than once.\n\n```yaml\n- operator: \"present_on_multiple_rows_within\"\n  name: \"RELID\"\n  value: 4 (optional)\n  within: \"USUBJID\"\n```\n"
+            }
+          },
+          "required": ["operator", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "shares_at_least_one_element_with",
+              "markdownDescription": "\nWill raise an issue if at least one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "shares_exactly_one_element_with",
+              "markdownDescription": "\nWill raise an issue if exactly one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "shares_no_elements_with",
+              "markdownDescription": "\nWill raise an issue if the values in `name` do not share any of the values in `value`\n\n> Check if $dataset_variables shares no elements with $timing_variables\n\n```yaml\nRule Type: Dataset Metadata Check # One record per dataset\nCheck:\n  - all:\n      name: $dataset_variables\n      operator: shares_no_elements_with\n      value: $timing_variables\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "shorter_than",
+              "markdownDescription": "\nLength comparison\n\n> SETCD value length < 9\n\n```yaml\n- name: \"SETCD\"\n  operator: \"shorter_than\"\n  value: 9\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "shorter_than_or_equal_to",
+              "markdownDescription": "\nLength comparison\n\n> TSVAL value length <= 200\n\n```yaml\n- name: \"TSVAL\"\n  operator: \"shorter_than_or_equal_to\"\n  value: 201\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "split_parts_have_equal_length",
+              "markdownDescription": "\nSplits a string by a separator and checks if both parts have equal length. Generic operator for validating paired data formats where both parts must have the same level of detail or precision.\n\nParameters:\n\n- `separator`: The delimiter to split on (default: \"/\")\n\n> Check that string parts separated by a delimiter have equal length\n\n```yaml\n- name: --DTC\n  operator: split_parts_have_equal_length\n  separator: \"/\"\n```\n\nUse cases:\n\n- **Date/time intervals**: `2003-12-15T10:00/2003-12-15T10:30` \u2192 True (both 16 characters)\n- **Date ranges**: `2003-12-01/2003-12-10` \u2192 True (both 10 characters)\n- **Version ranges**: `1.2.3/2.0.0` \u2192 True (both 5 characters)\n- **Product codes**: `ABC-123/XYZ-789` \u2192 True (both 7 characters)\n\nInvalid example:\n\n- `2003-12-15T10:00/2003-12-15T10:30:15` \u2192 False (16 vs 19 characters - different precision)\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "split_parts_have_unequal_length",
+              "markdownDescription": "\nComplement of `split_parts_have_equal_length`. Returns True when parts have unequal lengths (indicates a violation).\n\n```yaml\n- name: --DTC\n  operator: split_parts_have_unequal_length\n  separator: \"/\"\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "starts_with",
+              "markdownDescription": "\nSubstring matching\n\n> DOMAIN beginning with 'AP'\n\n```yaml\n- name: \"DOMAIN\"\n  operator: \"starts_with\"\n  value: \"AP\"\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "suffix_equal_to",
+              "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match the string in `value`\n\n```yaml\n- name: dataset_name\n  operator: suffix_equal_to\n  prefix: 2\n  value: DOMAIN\n```\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "suffix_is_contained_by",
+              "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match one of the strings in the list in `value`\n\n> Check if a supp's parent domain exists in the study\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_contained_by\n  prefix: 2\n  value: $study_domains\n```\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "suffix_is_not_contained_by",
+              "markdownDescription": "\nComplement of `suffix_is_contained_by`\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "suffix_matches_regex",
+              "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match a regular expression in `value`\n\n> QNAM ends with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "suffix_not_equal_to",
+              "markdownDescription": "\nComplement of `suffix_equal_to`\n"
+            }
+          },
+          "required": ["operator", "suffix", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "target_is_not_sorted_by",
+              "markdownDescription": "\nComplement of `target_is_sorted_by`\n"
+            }
+          },
+          "required": ["operator", "value", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "target_is_sorted_by",
+              "markdownDescription": "\nTrue if the values in name are ordered according to the values specified by value\nin ascending/descending order, grouped by the values in within. Each value entry\nrequires a variable name, a sort_order of asc or desc, and an optional\nnull_position of first or last (defaults to last) which controls where null/empty\ncomparator values are placed in the expected ordering. Within accepts either a\nsingle column or an ordered list of columns. Columns can be either number or Char\nDates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that\noverlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as\ntheir order cannot be inferred.\n\nOptionally supports a `regex` parameter that extracts a portion of the target\nvalue for sorting. The regex must contain at least one capturing group. The first\ncaptured group is extracted and converted to numeric if possible, allowing proper\nsorting of sequence numbers (e.g., \"MIDS1\", \"MIDS2\", ..., \"MIDS10\" with regex\n`.*?(\\\\d+)$`). This is particularly useful for variables that end with sequence\nnumbers that may or may not be zero-padded.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n\nExample with regex for extracting sequence numbers:\n\n```yaml\nCheck:\n  all:\n    - name: MIDS\n      operator: target_is_sorted_by\n      regex: \".*?(\\\\d+)$\" # Extract trailing digits, convert to numeric\n      value:\n        - name: SMSTDTC\n          sort_order: asc\n      within:\n        - USUBJID\n        - MIDSTYPE\n```\n"
+            }
+          },
+          "required": ["operator", "value", "within"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "value_does_not_have_multiple_references",
+              "markdownDescription": "\nComplement of `value_has_multiple_references`\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "value_has_multiple_references",
+              "markdownDescription": "\nTrue if the value in `name` has more than one count in the dictionary defined in `value`\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "inconsistent_enumerated_columns",
+              "markdownDescription": "\nChecks for inconsistencies in enumerated columns of a DataFrame. Starting with the smallest/largest enumeration of the given variable, returns True if VARIABLE(N+1) is populated but VARIABLE(N) is not populated. Repeats for all variables belonging to the enumeration. Note that the initial variable will not have an index (VARIABLE) and the next enumerated variable has index 1 (VARIABLE1).\n\nex: Check if there are inconsistencies in the TSVAL columns (TSVAL, TSVAL1, TSVAL2, etc.)\n\n```yaml\nCheck:\n  all:\n    - name: \"TSVAL\"\n      operator: \"inconsistent_enumerated_columns\"\n```\n"
+            }
+          },
+          "required": ["operator", "name"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_ordered_subset_of",
+              "markdownDescription": "\nChecks if elements in the target list appear in the same relative order in the comparator list.\n\n> Check if dataset column order is a correctly ordered subset of library column order\n\n```yaml\n- name: $column_order_from_dataset\n  operator: is_ordered_subset_of\n  value: $column_order_from_library\n```\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_ordered_subset_of",
+              "markdownDescription": "\nComplement of `is_ordered_subset_of`\n"
+            }
+          },
+          "required": ["operator", "value"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_title_case",
+              "markdownDescription": "\nValidates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.  \nNOTE: The titlecase library may produce false positives or false negatives in syntactic edge cases (e.g. hyphenated words, slash-separated terms, uncommon prepositions).\n\n> Check that AELABEL values are in proper title case\n\n```yaml\n- name: AELABEL\n  operator: is_title_case\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "operator": {
+              "const": "is_not_title_case",
+              "markdownDescription": "\nComplement of `is_title_case`. Returns True when values are NOT in proper title case.\n\n> Flag AELABEL values that violate title case rules\n\n```yaml\n- name: AELABEL\n  operator: is_not_title_case\n```\n"
+            }
+          },
+          "required": ["operator"],
+          "type": "object"
+        }
+      ],
+      "properties": {
+        "codelistcheck": {
+          "enum": ["code", "value"],
+          "type": "string"
+        },
+        "codelistlevel": {
+          "enum": ["term", "codelist"],
+          "type": "string"
+        },
+        "comparator": {
+          "type": ["number", "string"]
+        },
+        "context": {
+          "type": "string"
+        },
+        "date_component": {
+          "enum": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "microsecond",
+            "auto"
+          ],
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Operations.json/properties/id"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operations.json/properties/id"
+            },
+            {
+              "$ref": "#/$defs/MetaVariables.json"
+            },
+            {
+              "$ref": "#/$defs/VariableName"
+            }
+          ]
+        },
+        "negative": {
+          "type": "boolean"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "order": {
+          "enum": ["asc", "dsc"],
+          "type": "string"
+        },
+        "ordering": {
+          "$ref": "#/$defs/VariableName"
+        },
+        "prefix": {
+          "type": "integer"
+        },
+        "regex": {
+          "type": "string"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "separator": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "integer"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": ["boolean", "number", "string"]
+            },
+            {
+              "items": {
+                "type": ["number"]
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "type": ["string"]
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "properties": {
+                  "name": {
+                    "$ref": "#/$defs/Operator.json/properties/name"
+                  },
+                  "null_position": {
+                    "enum": ["first", "last"],
+                    "type": "string"
+                  },
+                  "order": {
+                    "$ref": "#/$defs/Operator.json/properties/order"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "value_is_literal": {
+          "const": true
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "within": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/VariableName"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/VariableName"
+              },
+              "minItems": 1,
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    "Organization_CDISC.json": {
+      "properties": {
+        "Organization": {
+          "const": "CDISC"
+        },
+        "Standards": {
+          "items": {
+            "oneOf": [
+              {
+                "properties": {
+                  "Name": {
+                    "const": "ADaMIG"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Failure"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "ADaM Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^\\d{1,3}(\\.\\d{1,2})?$",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["5.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["1.0", "1.1", "1.2", "1.3"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SDTMIG"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Success"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "SDTM and SDTMIG Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^CG\\d{4}$",
+                              "type": "string"
+                            },
+                            "Version": {
+                              "enum": ["1", "2", "3"]
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["2.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["3.2", "3.3", "3.4"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Success"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "SEND Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["5.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["3.0", "3.1", "3.1.1"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG-DART"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Success"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "SEND Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["5.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["1.1", "1.2"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG-GENETOX"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Success"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "SEND Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["5.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["1.0"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "TIG"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Criteria": {
+                          "properties": {
+                            "Type": {
+                              "const": "Success"
+                            }
+                          },
+                          "required": ["Type"],
+                          "type": "object"
+                        },
+                        "Origin": {
+                          "const": "TIG Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^TIG\\d{4}[a-z]?$",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["1.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Substandard": {
+                    "enum": ["SDTM", "SEND", "ADaM", "CDASH"]
+                  },
+                  "Version": {
+                    "enum": ["1.0"]
+                  }
+                },
+                "required": ["Name", "Version", "Substandard"],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "USDM"
+                  },
+                  "References": {
+                    "items": {
+                      "properties": {
+                        "Origin": {
+                          "const": "USDM Conformance Rules"
+                        },
+                        "Rule Identifier": {
+                          "properties": {
+                            "Id": {
+                              "pattern": "^DDF\\d{5}$",
+                              "type": "string"
+                            },
+                            "Version": {
+                              "enum": ["1"]
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Version": {
+                          "enum": ["1.0"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "Version": {
+                    "enum": ["3.0", "4.0"]
+                  }
+                },
+                "type": "object"
+              }
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Organization_Custom.json": {
+      "$comment": "Version: 1.0.0, Last Updated: 2025-03-09",
+      "description": "Schema for defining custom organizations and their rule categorization structure",
+      "properties": {
+        "Category": {
+          "additionalProperties": true,
+          "description": "Custom categorization for rule governance",
+          "properties": {
+            "CompanyRuleLibrary": {
+              "description": "Whether the rule is part of a company rule library",
+              "type": "boolean"
+            },
+            "Keywords": {
+              "description": "Custom keywords for further categorization",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "OutputType": {
+              "description": "Output type of the rule validation result",
+              "enum": ["Check", "Listing"],
+              "type": "string"
+            },
+            "Purpose": {
+              "description": "Specific purpose of the rule, e.g., 'RAW data validation', 'External data validation'",
+              "type": "string"
+            },
+            "Sponsors": {
+              "description": "List of sponsors the rule applies to",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "TherapeuticAreas": {
+              "description": "List of therapeutic areas the rule applies to",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "Trials": {
+              "description": "List of trials the rule applies to",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "Vendors": {
+              "description": "List of vendors the rule applies to",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "Organization": {
+          "description": "Name of your custom organization",
+          "not": {
+            "enum": ["CDISC", "FDA"]
+          },
+          "type": "string"
+        },
+        "Standards": {
+          "items": {
+            "properties": {
+              "Name": {
+                "description": "Name of the standard",
+                "type": "string"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "anyOf": [
+                        {
+                          "required": ["Logical Expression"]
+                        },
+                        {
+                          "required": ["Plain Language Expression"]
+                        }
+                      ],
+                      "properties": {
+                        "Logical Expression": {
+                          "properties": {
+                            "Condition": {
+                              "type": "string"
+                            },
+                            "Rule": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["Rule"],
+                          "type": "object"
+                        },
+                        "Plain Language Expression": {
+                          "type": "string"
+                        },
+                        "Type": {
+                          "enum": ["Failure", "Success"],
+                          "type": "string"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "description": "Origin of the rule (e.g., 'Custom Conformance Rules')",
+                      "type": "string"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "description": "Custom rule identifier pattern",
+                          "type": "string"
+                        },
+                        "Version": {
+                          "description": "Version of the rule",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["Id"],
+                      "type": "object"
+                    },
+                    "Version": {
+                      "description": "Version of the references",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["Origin", "Rule Identifier", "Version"],
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Substandard": {
+                "description": "Optional substandard name",
+                "type": "string"
+              },
+              "Version": {
+                "description": "Version of the standard",
+                "type": "string"
+              }
+            },
+            "required": ["Name", "References", "Version"],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": ["Organization", "Standards", "Category"],
+      "title": "Custom Organization Schema",
+      "type": "object"
+    },
+    "Organization_FDA.json": {
+      "properties": {
+        "Organization": {
+          "const": "FDA"
+        },
+        "Standards": {
+          "items": {
+            "oneOf": [
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SDTMIG"
+                  },
+                  "Version": {
+                    "enum": ["3.2", "3.3", "3.4"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG"
+                  },
+                  "Version": {
+                    "enum": ["3.0", "3.1", "3.1.1"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG-AR"
+                  },
+                  "Version": {
+                    "enum": ["1.0"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG-DART"
+                  },
+                  "Version": {
+                    "enum": ["1.1", "1.2"]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "Name": {
+                    "const": "SENDIG-GENETOX"
+                  },
+                  "Version": {
+                    "enum": ["1.0"]
+                  }
+                },
+                "type": "object"
+              }
+            ],
+            "properties": {
+              "References": {
+                "items": {
+                  "properties": {
+                    "Citations": {
+                      "items": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Cited Guidance": {
+                                "type": "string"
+                              },
+                              "Document": {
+                                "const": "CDISC"
+                              }
+                            }
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Cited Guidance": {
+                                "type": "string"
+                              },
+                              "Document": {
+                                "const": "FDA"
+                              },
+                              "Section": {
+                                "pattern": "^(FDAB\\d{3}|TRC\\d{4}[A-Z]?|\\d{4}[A-Z])$",
+                                "type": "string"
+                              }
+                            }
+                          }
+                        ],
+                        "required": ["Document", "Cited Guidance"],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "FDA Business Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$|^TRC.*$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.5"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "PascalCases": {
+      "items": {
+        "pattern": "^[A-Z](([a-z]+[A-Z]?)*)$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "Rule_Type.json": {
+      "anyOf": [
+        {
+          "const": "Dataset Contents Check against Define XML",
+          "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset along with the following columns:\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n- `dataset_domain`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_has_no_data`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n",
+          "title": "Content data at record level, dataset metadata at dataset level, and define xml metadata at dataset level"
+        },
+        {
+          "const": "Dataset Metadata Check",
+          "markdownDescription": "\n#### Columns\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n\n#### Rule Macro\n\nPairs dataset metadata sourced from the submission contents.\n\n#### Example\n\n```yaml\n- name: dataset_name\n  operator: longer_than\n  value: 6\n```\n",
+          "title": "Content metadata at dataset level"
+        },
+        {
+          "const": "Dataset Metadata Check against Define XML",
+          "markdownDescription": "\nReturns a dataset where each dataset is a row in the new dataset. The define xml dataset metadata is attached to each row.\n\n#### Columns\n\n- `dataset_size`\n- `dataset_location`\n- `dataset_name`\n- `dataset_label`\n- `dataset_domain`\n- `dataset_columns`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_has_no_data`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n- `define_dataset_variable_order`\n\n#### Rule Macro\n\nAllows comparing dataset metadata against define xml dataset metadata.\n\n#### Example\n\n```yaml\nall:\n  - name: dataset_name\n    operator: not_equal_to\n    value: define_dataset_name\n```\n\nOr\n\n```yaml\nany:\n  - name: dataset_name\n    operator: empty\n  - name: define_dataset_name\n    operator: empty\n```\n",
+          "title": "Content metadata at dataset level and define xml metadata at dataset level"
+        },
+        {
+          "const": "Define Item Metadata Check against Library Metadata",
+          "markdownDescription": "\n#### Columns\n\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_role`\n- `define_variable_size`\n- `define_variable_ccode`\n- `define_variable_format`\n- `define_variable_allowed_terms`\n- `define_variable_origin_type`\n- `define_variable_is_collected`\n- `define_variable_has_no_data`\n- `define_variable_order_number`\n- `define_variable_has_codelist`\n- `define_variable_codelist_coded_values`\n- `define_variable_codelist_coded_codes`\n- `define_variable_mandatory`\n- `define_variable_has_comment`\n- `define_variable_has_method`\n- `library_variable_name`\n- `library_variable_order_number`\n- `library_variable_label`\n- `library_variable_data_type`\n- `library_variable_role`\n- `library_variable_core`\n- `library_variable_has_codelist`\n- `library_variable_ccode`\n\n#### Rule Macro\n\nChecks variable-level metadata, codelists, and codelist terms from Define-XML against the corresponding standard variable definitions from the CDISC Library.\n",
+          "title": "Define xml metadata at variable level and corresponding library variable metadata"
+        },
+        {
+          "const": "Domain Presence Check",
+          "markdownDescription": "\n#### Columns\n\nSingle row contains a column for each domain and the value of that column is the domain's file name\n\n| AE     | EC     |\n| ------ | ------ |\n| ae.xpt | ec.xpt |\n\n#### Rule Macro\n\nChecks which dataset files are physically present in the submission contents. Each column represents one domain that exists in the submission, holding the filename as its value.\n\n#### Example\n\n```yaml\nall:\n  - name: PP\n    operator: exists\n  - name: PC\n    operator: not_exists\n```\n",
+          "title": "Content domain presence at study level"
+        },
+        {
+          "const": "Domain Presence Check against Define XML",
+          "markdownDescription": "\n#### Columns\n\nOne row per dataset defined in Define-XML:\n\n- `domain` - The domain if the dataset exists, null otherwise\n- `filename` - The file name if dataset exists, null otherwise\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_domain`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_has_no_data`\n- `define_dataset_key_sequence`\n- `define_dataset_variables`\n\n#### Rule Macro\n\nReconciles dataset file presence in the submission against Define-XML dataset declarations. Each row represents one dataset defined in Define-XML, with the corresponding submission filename joined if the file exists.\n\n#### Example\n\nCheck if SE domain is defined in Define-XML without HasNoData=\"Yes\" but the dataset file doesn't exist:\n\n```yaml\nall:\n  - name: define_dataset_name\n    operator: equal_to\n    value: \"SE\"\n  - name: define_dataset_has_no_data\n    operator: equal_to\n    value: False\n  - name: filename\n    operator: not_exists\n```\n",
+          "title": "Content domain presence at study level with define xml metadata at dataset level"
+        },
+        {
+          "const": "JSON Schema Check",
+          "markdownDescription": "\n#### Columns\n\n- `json_path`\n- `error_attribute`\n- `error_value`\n- `validator`\n- `validator_value`\n- `message`\n- `dataset`\n- `id`\n- `_path`\n",
+          "title": "Apply JSON schema validation to a JSON file"
+        },
+        {
+          "const": "JSONata",
+          "markdownDescription": "\nApply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsonata.org)\n\n### Example\n\n#### Rule\n\n```yaml\nCheck: |\n  **.$filter($, $myutils.equals).{\"row\":_path, \"A\":A, \"B\":B}\nCore:\n  Id: JSONATA Test\n  Status: Draft\nOutcome:\n  Message: \"A equals B\"\n  Output Variables:\n    - row\n    - A\n    - B\nRule Type: JSONata\nScope:\n  Entities:\n    Include:\n      - ALL\nSensitivity: Record\n```\n\n#### Custom user function contained in external file \"equals.jsonata\"\n\n\\* Note that in the CLI, you can pass a variable name and directory of such files using `-jcf` or `--jsonata-custom-functions`. The engine's built-in JSONata functions are accessible from the `$utils` variable (see [JSONata Functions](JSONata_Functions.md)). For example to load two more directories containing functions into `$myutils` and `$yourutils`, add the options:\n`-jcf myutils path/to/myutils -jcf yourutils path/to/yourutils`\n\n```yaml\n{\n  \"equals\": function($v){ $v.A=$v.B }\n}\n```\n\n#### JSON Data\n\n```json\n{\n  \"A\": \"same value 1\",\n  \"B\": \"same value 1\",\n  \"C\": {\n    \"A\": \"different value 1\",\n    \"B\": \"different value 2\",\n    \"C\": { \"A\": \"same value 2\", \"B\": \"same value 2\" }\n  }\n}\n```\n\n#### Result\n\n```json\n[\n  {\n    \"executionStatus\": \"success\",\n    \"dataset\": \"\",\n    \"domain\": \"\",\n    \"variables\": [\"A\", \"B\", \"row\"],\n    \"message\": \"A equals B\",\n    \"errors\": [\n      {\n        \"value\": { \"row\": \"\", \"A\": \"same value 1\", \"B\": \"same value 1\" },\n        \"dataset\": \"\",\n        \"row\": \"\"\n      },\n      {\n        \"value\": {\n          \"row\": \"/C/C\",\n          \"A\": \"same value 2\",\n          \"B\": \"same value 2\"\n        },\n        \"dataset\": \"\",\n        \"row\": \"/C/C\"\n      }\n    ]\n  }\n]\n```\n\n### Preprocessing\n\nWhen the JSONata Rule Type is used, the input JSON file will be preprocessed to assign a `_path` attribute to each node in the JSON tree. The syntax for this path value will use the [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) syntax. This `_path` attribute can be referenced throughout the JSONata query.\n\n### Output Variables and Report column mapping\n\nYou can use `Outcome.Output Variables` to specify which properties to display from the result JSON. The following result property names will map to the column names in the Excel output report.\n\nMapping of Result property names to Report Issue Details Column Names:\n\n| JSONata Result Name | JSON report property | Excel Column |\n| ------------------- | -------------------- | ------------ |\n| dataset             | dataset              | Dataset      |\n| row                 | row                  | Record       |\n| SEQ                 | SEQ                  | Sequence     |\n| USUBJID             | USUBJID              | USUBJID      |\n| entity              | entity               | Entity       |\n| instance_id         | instance_id          | Instance ID  |\n| path                | path                 | Path         |\n\n### Scope\n\nA JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Entity` determination must come from the rule's JSONata result property.\n",
+          "title": "Apply a JSONata query to a JSON file"
+        },
+        {
+          "const": "Record Data",
+          "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset\n\n#### Rule Macro\n\nChecks record-level data values sourced directly from submission dataset contents.\n\n#### Example\n\n```yaml\nall:\n  - name: --SCAT\n    operator: non_empty\n  - name: --SCAT\n    operator: equal_to\n    value: --CAT\n```\n",
+          "title": "Content data at record level. Most common Rule Type"
+        },
+        {
+          "const": "Value Check against Define XML Variable",
+          "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_`...\n\n#### Rule Macro\n\nChecks individual cell values from submission dataset contents pivoted to a long format, with the matching Define-XML variable-level metadata joined to each row.\n\n#### Example\n\n```yaml\nall:\n  - name: define_variable_ccode\n    operator: empty\n  - name: variable_value\n    operator: non_empty\n  - name: define_variable_has_codelist\n    operator: equal_to\n    value: true\n  - name: variable_value\n    operator: is_not_contained_by\n    value: define_variable_codelist_coded_values\n```\n",
+          "title": "Content data at value level and define xml metadata at variable level"
+        },
+        {
+          "const": "Value Check against Define XML VLM",
+          "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `define_vlm_name`\n- `define_vlm_label`\n- `define_vlm_data_type`\n- `define_vlm_is_collected`\n- `define_vlm_role`\n- `define_vlm_size`\n- `define_vlm_ccode`\n- `define_vlm_format`\n- `define_vlm_allowed_terms`\n- `define_vlm_origin_type`\n- `define_vlm_has_no_data`\n- `define_vlm_order_number`\n- `define_vlm_length`\n- `define_vlm_has_codelist`\n- `define_vlm_codelist_coded_values`\n- `define_vlm_mandatory`\n- `define_variable_name`\n- `type_check`\n- `length_check`\n- `variable_value_length`\n\n#### Rule Macro\n\nChecks individual cell values from submission dataset contents pivoted to a long format, with the matching Define-XML Value Level Metadata (VLM) joined to each row. Only rows where VLM exists for that variable are produced \u2014 records without matching VLM are excluded.\n\n#### Example\n\n```yaml\nall:\n  - name: define_vlm_ccode\n    operator: empty\n  - name: variable_value\n    operator: non_empty\n  - name: define_vlm_has_codelist\n    operator: equal_to\n    value: true\n  - name: variable_value\n    operator: is_not_contained_by\n    value: define_vlm_codelist_coded_values\n```\n\n```yaml\nall:\n  - name: variable_value\n    operator: empty\n  - name: define_vlm_mandatory\n    operator: equal_to\n    value: Yes\n```\n",
+          "title": "Content data at value level and define xml metadata at value level"
+        },
+        {
+          "const": "Value Check against Library Metadata",
+          "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `library_variable__links`\n- `library_variable_core`\n- `library_variable_description`\n- `library_variable_label`\n- `library_variable_name`\n- `library_variable_ordinal`\n- `library_variable_role`\n- `library_variable_simpleDatatype`\n- `library_variable_ccode`\n- `library_variable_has_codelist`\n- `library_variable_valueList`\n- `library_variable_definition`\n- `library_variable_notes`\n- `library_variable_variableCcode`\n- `library_variable_examples`\n- `library_variable_usageRestrictions`\n- `library_variable_describedValueDomain`\n\n#### Rule Macro\n\nChecks individual cell values from submission dataset contents pivoted to a long format, with the matching Library Metadata joined to each row.\n\n#### Example\n\n```yaml\nall:\n  - name: variable_value\n    operator: non_empty\n  - name: library_variable_has_codelist\n    operator: equal_to\n    value: true\n```\n",
+          "title": "Content data at value level and Library Metadata at value level"
+        },
+        {
+          "const": "Variable Metadata Check",
+          "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n- `variable_max_size` (if needed by the rule)\n\n#### Rule Macro\n\nChecks variable-level metadata sourced from the submission dataset contents.\n\n#### Example\n\n```yaml\n- name: variable_label\n  operator: longer_than\n  value: 40\n```\n",
+          "title": "Content metadata at variable level"
+        },
+        {
+          "const": "Variable Metadata Check against Define XML",
+          "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_is_collected`\n- `define_variable_role`\n- `define_variable_size`\n- `define_variable_ccode`\n- `define_variable_format`\n- `define_variable_allowed_terms`\n- `define_variable_origin_type`\n- `define_variable_has_no_data`\n- `define_variable_order_number`\n- `define_variable_length`\n- `define_variable_has_codelist`\n- `define_variable_codelist_coded_values`\n- `define_variable_codelist_coded_codes`\n- `define_variable_mandatory`\n- `define_variable_has_comment`\n- `define_variable_has_method`\n\n#### Rule Macro\n\nCombines variable-level metadata from submission dataset contents against the matching variable definitions in Define-XML.\n\n#### Example\n\n```yaml\n- name: variable_name\n  operator: not_equal_to\n  value: define_variable_name\n```\n",
+          "title": "Content metadata at variable level and define xml metadata at variable level"
+        },
+        {
+          "const": "Variable Metadata Check against Library Metadata",
+          "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n- `variable_has_empty_values`\n- `library_variable_name`\n- `library_variable_role`\n- `library_variable_label`\n- `library_variable_core`\n- `library_variable_order_number`\n- `library_variable_data_type`\n- `library_variable_ccode`\n\n#### Rule Macro\n\nCombines variable-level metadata from submission dataset contents against the corresponding CDISC Library standard variable metadata.\n",
+          "title": "Content metadata at the variable level and the corresponding library metadata"
+        },
+        {
+          "const": "Variable Metadata Check against Define XML and Library Metadata",
+          "title": "Combines metadata at the variable level with corresponding define-xml metadata at variable level and corresponding library variable metadata"
+        },
+        {
+          "const": "Value Check with Dataset Metadata",
+          "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n\n#### Rule Macro\n\nChecks individual cell values from submission dataset contents pivoted to a long format, with dataset-level metadata attached to each row.\n\n#### Example\n\n```yaml\nall:\n  - name: variable_name\n    operator: starts_with\n    value: \"DM\"\n  - name: dataset_name\n    operator: not_equal_to\n    value: \"DM\"\n```\n",
+          "title": "Content data at value level and dataset metadata at dataset level"
+        },
+        {
+          "const": "Value Check with Variable Metadata",
+          "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n- `variable_value_length`\n\n#### Rule Macro\n\nChecks individual cell values from submission dataset contents pivoted to a long format, with variable-level metadata from the submission dataset attached to each row.\n\n#### Example\n\n```yaml\nall:\n  - name: variable_data_type\n    operator: equal_to\n    value: char\n  - name: variable_value\n    operator: longer_than\n    value: 200\n```\n",
+          "title": "Content data at value level and variable metadata at variable level"
+        }
+      ],
+      "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"
+    },
+    "Sensitivity.json": {
+      "anyOf": [
+        {
+          "const": "Dataset",
+          "markdownDescription": "\nReport one result per dataset generated by the `Rule Type`, where a dataset or record within the dataset matches the rule failure criteria\n"
+        },
+        {
+          "const": "Record",
+          "markdownDescription": "\nReport one result per record within the dataset generated by the `Rule Type`, where the record matches the rule failure criteria\n"
+        },
+        {
+          "const": "Group",
+          "markdownDescription": "\nReports one issue per each logical group of records within the dataset generated by the `Rule Type`, where the group matches the rule failure criteria. Records are organized into logical groups based on matching values for the `Grouping_Variables` specified in the rule (e.g., records with the same `SETCD` value form one group). For each group that violates the rule, the engine reports a single error using the first record from that group that matches the failure criteria. Groups are defined by the required variable `Grouping_Variables` specified in the rule.\n\n### Example\n\n```yaml\nSensitivity: Group\nGrouping Variables:\n  - SETCD\n```\n"
+        },
+        {
+          "const": "Study",
+          "markdownDescription": "\nWill report once per submitted data study. Lends itself to Domain Presence Check rule types as these are cross-study checks that do not involve within-dataset checks. Reports one result per failing row in the dataset generated by the rule type, collapsed to a single study-level result.\n"
+        }
+      ],
+      "markdownDescription": "Determines what level of granularity issues should be generated within the report"
+    },
+    "Subclasses": {
+      "items": {
+        "enum": [
+          "ADVERSE EVENT",
+          "ALL",
+          "MEDICAL DEVICE TIME-TO-EVENT",
+          "NON-COMPARTMENTAL ANALYSIS",
+          "POPULATION PHARMACOKINETIC ANALYSIS",
+          "TIME-TO-EVENT"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "VariableName": {
+      "pattern": "^(--[A-Z0-9]{1,6}|[A-Z][A-Z0-9]{0,7})$",
+      "type": "string"
+    },
+    "VariableReference": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VariableName"
+        },
+        {
+          "$ref": "#/$defs/OperationResultId"
+        }
+      ],
+      "description": "Can reference either a dataset variable name or an operation result"
+    },
+    "metadata": {
+      "changelog": [
+        {
+          "changes": [
+            "Added Category object structure with standard properties",
+            "Implemented support for Sponsors, Vendors, TherapeuticAreas arrays",
+            "Added support for X, Y  and Z enum",
+            "Enabled extensibility with additionalProperties: true"
+          ],
+          "date": "2025-03-09",
+          "description": "Initial release of Custom Organization Schema",
+          "version": "1.0.0"
+        }
+      ],
+      "maintainer": {
+        "email": "standards@yourorganization.com",
+        "name": "Your Organization Name"
+      },
+      "releaseDate": "2025-03-09",
+      "schemaVersion": "1.0.0"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/cdisc-org/cdisc-rules-engine/refs/heads/main/resources/schema/rule-merged/CORE-base.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "Sensitivity": {
+        "const": "Group"
+      }
+    }
+  },
+  "markdownDescription": "Validation schema CDISC Rules 1.0",
+  "properties": {
+    "Authorities": {
+      "items": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Organization_CDISC.json"
+          },
+          {
+            "$ref": "#/$defs/Organization_FDA.json"
+          },
+          {
+            "$ref": "#/$defs/Organization_Custom.json"
+          }
+        ],
+        "properties": {
+          "Category": {
+            "additionalProperties": true,
+            "description": "Custom categorization for rule governance defined in Organization_Custom.json",
+            "type": "object"
+          },
+          "Organization": {
+            "type": "string"
+          },
+          "Standards": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "References": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "Citations": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "Cited Guidance": {
+                              "type": "string"
+                            },
+                            "Document": {
+                              "type": "string"
+                            },
+                            "Item": {
+                              "type": "string"
+                            },
+                            "Section": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["Document", "Cited Guidance"],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "Criteria": {
+                        "additionalProperties": false,
+                        "anyOf": [
+                          {
+                            "required": ["Logical Expression"]
+                          },
+                          {
+                            "required": ["Plain Language Expression"]
+                          }
+                        ],
+                        "properties": {
+                          "Logical Expression": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Condition": {
+                                "type": "string"
+                              },
+                              "Rule": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["Rule"],
+                            "type": "object"
+                          },
+                          "Plain Language Expression": {
+                            "type": "string"
+                          },
+                          "Type": {
+                            "enum": ["Failure", "Success"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["Type"],
+                        "type": "object"
+                      },
+                      "Origin": {
+                        "type": "string"
+                      },
+                      "Related Rules": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "Id": {
+                              "type": "string"
+                            },
+                            "Relationship": {
+                              "enum": ["Predecessor", "Related", "Successor"],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["Id", "Relationship"],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "Release Notes": {
+                        "type": "string"
+                      },
+                      "Rule Identifier": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Version": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["Id"],
+                        "type": "object"
+                      },
+                      "Validator Rule Message": {
+                        "type": "string"
+                      },
+                      "Version": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["Origin", "Rule Identifier", "Version"],
+                    "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "Substandard": {
+                  "type": "string"
+                },
+                "Version": {
+                  "type": "string"
+                }
+              },
+              "required": ["Name", "References", "Version"],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": ["Organization", "Standards"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "Check": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "Core": {
+      "oneOf": [
+        {
+          "properties": {
+            "Status": {
+              "const": "Draft"
+            }
+          }
+        },
+        {
+          "properties": {
+            "Id": {
+              "pattern": "^CORE-\\d{6}$",
+              "type": "string"
+            },
+            "Status": {
+              "const": "Published"
+            }
+          },
+          "required": ["Id"]
+        }
+      ],
+      "properties": {
+        "Version": {
+          "const": "1"
+        }
+      },
+      "required": ["Status", "Version"],
+      "type": "object"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "Executability": {
+      "$ref": "#/$defs/Executability.json"
+    },
+    "Grouping_Variables": {
+      "items": {
+        "$ref": "#/$defs/VariableReference"
+      },
+      "markdownDescription": "Variables to group by when using Group sensitivity. Required when Sensitivity is set to Group.",
+      "type": "array"
+    },
+    "Match Datasets": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "Child": {
+            "const": true
+          },
+          "Join Type": {
+            "$ref": "#/$defs/JoinType"
+          },
+          "Keys": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/VariableName"
+                },
+                {
+                  "$ref": "#/$defs/LeftRightKeys"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "Name": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Dataset"
+              },
+              {
+                "$ref": "#/$defs/DataStructure"
+              }
+            ]
+          },
+          "Wildcard": {
+            "type": "string"
+          }
+        },
+        "required": ["Name"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "Operations": {
+      "items": {
+        "$ref": "#/$defs/Operations.json"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "Outcome": {
+      "additionalProperties": false,
+      "properties": {
+        "Message": {
+          "type": "string"
+        },
+        "Output Variables": {
+          "items": {
+            "$ref": "#/$defs/Operator.json/properties/name"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["Message"],
+      "type": "object"
+    },
+    "Rule Type": {
+      "$ref": "#/$defs/Rule_Type.json"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["Classes", "Domains"]
+        },
+        {
+          "required": ["Data Structures"]
+        },
+        {
+          "required": ["Entities"]
+        }
+      ],
+      "properties": {
+        "Classes": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Include": {
+                  "$ref": "#/$defs/Classes"
+                }
+              },
+              "required": ["Include"],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Exclude": {
+                  "$ref": "#/$defs/Classes"
+                }
+              },
+              "required": ["Exclude"],
+              "type": "object"
+            }
+          ]
+        },
+        "Data Structures": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Include": {
+                  "$ref": "#/$defs/DataStructures"
+                }
+              },
+              "required": ["Include"],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Exclude": {
+                  "$ref": "#/$defs/DataStructures"
+                }
+              },
+              "required": ["Exclude"],
+              "type": "object"
+            }
+          ]
+        },
+        "Dataset or Domain or Item Group": {
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Datasets": {
+          "additionalProperties": false,
+          "properties": {
+            "Exclude": {
+              "$ref": "#/$defs/Datasets"
+            },
+            "Include": {
+              "$ref": "#/$defs/Datasets"
+            }
+          },
+          "type": "object"
+        },
+        "Domains": {
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Entities": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "anyOf": [
+                {
+                  "required": ["Exclude"]
+                },
+                {
+                  "required": ["Include"]
+                }
+              ],
+              "properties": {
+                "Exclude": {
+                  "$ref": "#/$defs/PascalCases"
+                },
+                "Include": {
+                  "$ref": "#/$defs/PascalCases"
+                }
+              },
+              "type": "object"
+            }
+          ]
+        },
+        "Subclasses": {
+          "additionalProperties": false,
+          "properties": {
+            "Exclude": {
+              "$ref": "#/$defs/Subclasses"
+            },
+            "Include": {
+              "$ref": "#/$defs/Subclasses"
+            }
+          },
+          "type": "object"
+        },
+        "Use Case": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Sensitivity": {
+      "$ref": "#/$defs/Sensitivity.json"
+    }
+  },
+  "required": [
+    "Authorities",
+    "Check",
+    "Core",
+    "Description",
+    "Outcome",
+    "Executability",
+    "Rule Type",
+    "Scope",
+    "Sensitivity"
+  ],
+  "then": {
+    "required": ["Grouping_Variables"]
+  },
+  "type": "object"
+}

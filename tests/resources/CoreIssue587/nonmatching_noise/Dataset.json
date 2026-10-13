@@ -1,0 +1,48 @@
+{
+  "datasets": [
+    {
+      "filename": "adsl.xpt",
+      "label": "Subject-Level Analysis Dataset",
+      "domain": "ADSL",
+      "variables": [
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "char",
+          "length": 12
+        },
+        {
+          "name": "TRTA",
+          "label": "Actual Treatment",
+          "type": "char",
+          "length": 20
+        },
+        {
+          "name": "TRTAA",
+          "label": "Nonmatching Treatment Variable",
+          "type": "char",
+          "length": 20
+        },
+        {
+          "name": "TRTXXAN",
+          "label": "Alphabetic Placeholder Treatment Variable",
+          "type": "char",
+          "length": 20
+        },
+        {
+          "name": "ARMCD",
+          "label": "Planned Arm Code",
+          "type": "char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "USUBJID": ["SUBJ001"],
+        "TRTA": ["Placebo"],
+        "TRTAA": ["Placebo"],
+        "TRTXXAN": ["Placebo"],
+        "ARMCD": ["PBO"]
+      }
+    }
+  ]
+}
