@@ -14,7 +14,10 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "contains" } },
+      "properties": {
+        "operator": { "const": "contains" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
@@ -24,50 +27,73 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "contains_case_insensitive" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "date_equal_to" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "date_greater_than" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
       "properties": {
-        "operator": { "const": "date_greater_than_or_equal_to" }
+        "operator": { "const": "contains_case_insensitive" },
+        "value_is_literal": { "const": true }
       },
       "required": ["operator", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "date_less_than" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "date_less_than_or_equal_to" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "date_not_equal_to" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": { "operator": { "const": "does_not_contain" } },
+      "properties": {
+        "operator": { "const": "date_equal_to" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "does_not_contain_case_insensitive" }
+        "operator": { "const": "date_greater_than" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "date_greater_than_or_equal_to" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "date_less_than" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "date_less_than_or_equal_to" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "date_not_equal_to" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "does_not_contain" },
+        "value_is_literal": { "const": true }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "does_not_contain_case_insensitive" },
+        "value_is_literal": { "const": true }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -75,7 +101,8 @@
     {
       "properties": { 
         "operator": { "const": "does_not_equal_string_part" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "type": "boolean" },
+        "value_is_literal": { "const": true }
       },
       "required": ["operator", "value", "regex"],
       "type": "object"
@@ -98,7 +125,10 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "ends_with" } },
+      "properties": {
+        "operator": { "const": "ends_with" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
@@ -107,6 +137,7 @@
         "operator": { "const": "equal_to" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
+        "value_is_literal": { "const": true },
         "type_insensitive": { "type": "boolean" }
       },
       "required": ["operator", "value"],
@@ -117,6 +148,7 @@
         "operator": { "const": "equal_to_case_insensitive" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
+        "value_is_literal": { "const": true },
         "type_insensitive": { "type": "boolean" }
       },
       "required": ["operator", "value"],
@@ -125,7 +157,8 @@
     {
       "properties": { 
         "operator": { "const": "equals_string_part" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "type": "boolean" },
+        "value_is_literal": { "const": true }
       },
       "required": ["operator", "value", "regex"],
       "type": "object"
@@ -188,7 +221,9 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "is_contained_by" } },
+      "properties": {
+        "operator": { "const": "is_contained_by" }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
@@ -205,7 +240,9 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "is_not_contained_by" } },
+      "properties": {
+        "operator": { "const": "is_not_contained_by" }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
@@ -310,6 +347,7 @@
         "operator": { "const": "not_equal_to" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
+        "value_is_literal": { "const": true },
         "type_insensitive": { "type": "boolean" }
       },
       "required": ["operator", "value"],
@@ -320,6 +358,7 @@
         "operator": { "const": "not_equal_to_case_insensitive" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
+        "value_is_literal": { "const": true },
         "type_insensitive": { "type": "boolean" }
       },
       "required": ["operator", "value"],
@@ -353,17 +392,24 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "prefix_is_contained_by" } },
+      "properties": {
+        "operator": { "const": "prefix_is_contained_by" }
+      },
       "required": ["operator", "prefix", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "prefix_equal_to" } },
+      "properties": {
+        "operator": { "const": "prefix_equal_to" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "prefix", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "prefix_is_not_contained_by" } },
+      "properties": {
+        "operator": { "const": "prefix_is_not_contained_by" }
+      },
       "required": ["operator", "prefix", "value"],
       "type": "object"
     },
@@ -373,7 +419,10 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "prefix_not_equal_to" } },
+      "properties": {
+        "operator": { "const": "prefix_not_equal_to" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "prefix", "value"],
       "type": "object"
     },
@@ -428,22 +477,32 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "starts_with" } },
+      "properties": {
+        "operator": { "const": "starts_with" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "suffix_equal_to" } },
+      "properties": {
+        "operator": { "const": "suffix_equal_to" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "suffix", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "suffix_is_contained_by" } },
+      "properties": {
+        "operator": { "const": "suffix_is_contained_by" }
+      },
       "required": ["operator", "suffix", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "suffix_is_not_contained_by" } },
+      "properties": {
+        "operator": { "const": "suffix_is_not_contained_by" }
+      },
       "required": ["operator", "suffix", "value"],
       "type": "object"
     },
@@ -453,7 +512,10 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "suffix_not_equal_to" } },
+      "properties": {
+        "operator": { "const": "suffix_not_equal_to" },
+        "value_is_literal": { "const": true }
+      },
       "required": ["operator", "suffix", "value"],
       "type": "object"
     },
