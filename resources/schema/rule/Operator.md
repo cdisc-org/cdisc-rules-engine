@@ -259,6 +259,18 @@ Substring matching
   value: "AP"
 ```
 
+### does_not_start_with
+
+Substring matching
+
+> DOMAIN not beginning with 'AP'
+
+```yaml
+- name: "DOMAIN"
+  operator: "does_not_start_with"
+  value: "AP"
+```
+
 ### ends_with
 
 Substring matching
@@ -268,6 +280,18 @@ Substring matching
 ```yaml
 - name: "DOMAIN"
   operator: "ends_with"
+  value: "FOOBAR"
+```
+
+### does_not_end_with
+
+Substring matching
+
+> DOMAIN not ending with 'FOOBAR'
+
+```yaml
+- name: "DOMAIN"
+  operator: "does_not_end_with"
   value: "FOOBAR"
 ```
 
