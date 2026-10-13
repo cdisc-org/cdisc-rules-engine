@@ -138,6 +138,38 @@ ValueListDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText
 
 ValueListDef.ItemDef.CodeList.Alias.Name
 
+## define_vlm_ccode_matches_library_all
+
+Boolean indicating whether all VLM items' codelist codes match the library standard codelist code for this variable (all non-empty define_vlm_ccodes equal library_variable_ccode)
+
+## define_vlm_ccode_matches_library_any
+
+Boolean indicating whether at least one VLM item's codelist code matches the library standard codelist code for this variable (any define_vlm_ccode equals library_variable_ccode)
+
+## define_vlm_ccode_missing_any
+
+Boolean indicating whether at least one VLM item has an empty or missing codelist code (ValueListDef.ItemDef.CodeList.Alias.Name is empty)
+
+## define_vlm_ccodes
+
+List of distinct non-empty codelist codes from all VLM items for this variable. Derived from ValueListDef.ItemDef.CodeList.Alias.Name entries
+
+## define_vlm_has_codelist_all
+
+Boolean indicating whether all VLM items have a CodeListRef (all ValueListDef.ItemDef.CodeListRef exist)
+
+## define_vlm_has_codelist_any
+
+Boolean indicating whether at least one VLM item has a CodeListRef (ValueListDef.ItemDef.CodeListRef exists)
+
+## define_vlm_item_count
+
+Count of VLM items (ValueListDef.ItemDef entries) for this variable
+
+## define_vlm_present
+
+Boolean indicating whether this variable has one or more VLM (Value Level Metadata) items defined in Define-XML ValueListDef.ItemDef
+
 ## define_vlm_codelist_coded_values
 
 ValueListDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue
