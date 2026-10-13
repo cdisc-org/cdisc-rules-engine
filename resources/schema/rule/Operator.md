@@ -1113,6 +1113,38 @@ Check:
         - "--TESTCD"
 ```
 
+### is_consecutive_ordered_set
+
+True if the dataset rows are in ascending order of values within `name`, grouped by `value`, and there are no skips between successive sequence values.
+
+This extends `is_ordered_set` with continuity checking.
+
+Rules:
+- Duplicates are allowed (e.g., 1, 1, 2, 3).
+- The sequence may start at any integer.
+- Null/empty/non-numeric values in `name` evaluate to false (strict behavior).
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_consecutive_ordered_set
+      value: USUBJID
+```
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_consecutive_ordered_set
+      value:
+        - USUBJID
+        - "--TESTCD"
+```
+
+### is_not_consecutive_ordered_set
+
+Complement of `is_consecutive_ordered_set`
+
 ### is_ordered_by
 
 True if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`

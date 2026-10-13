@@ -218,6 +218,97 @@ def test_is_ordered_set_multiple_comparators():
     )
 
 
+def test_is_consecutive_ordered_set():
+    data = {
+        "GROUP": ["A", "A", "A", "B", "B", "B", "C", "C"],
+        "VALUE": [1, 2, 3, 1, 2, 4, 1, 1],
+    }
+    df = PandasDataset.from_dict(data)
+    result = DataframeType({"value": df}).is_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result,
+        pd.Series([True, True, True, True, True, False, True, True]),
+        check_names=False,
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_is_consecutive_ordered_set_strict_invalid_values(dataset_type):
+    data = {
+        "GROUP": ["A", "A", "A", "A", "A"],
+        "VALUE": [1, None, 2, "X", 3],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result, pd.Series([True, False, True, False, True]), check_names=False
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_is_not_consecutive_ordered_set(dataset_type):
+    data = {
+        "GROUP": ["A", "A", "A"],
+        "VALUE": [1, 2, 4],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_not_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result, pd.Series([False, False, True]), check_names=False
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_is_consecutive_ordered_set_unordered_fails(dataset_type):
+    data = {
+        "GROUP": ["A", "A", "A"],
+        "VALUE": [1, 3, 2],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result, pd.Series([True, False, False]), check_names=False
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_is_consecutive_ordered_set_accepts_numeric_strings(dataset_type):
+    data = {
+        "GROUP": ["A", "A", "A"],
+        "VALUE": [1, "2", 3],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result, pd.Series([True, True, True]), check_names=False
+    )
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_is_not_consecutive_ordered_set_accepts_numeric_strings(dataset_type):
+    data = {
+        "GROUP": ["A", "A", "A"],
+        "VALUE": [1, "2", 3],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_not_consecutive_ordered_set(
+        {"target": "VALUE", "comparator": "GROUP"}
+    )
+    pd.testing.assert_series_equal(
+        result, pd.Series([False, False, False]), check_names=False
+    )
+
+
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
