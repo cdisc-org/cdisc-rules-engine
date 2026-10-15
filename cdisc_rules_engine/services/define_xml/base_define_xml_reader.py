@@ -159,7 +159,7 @@ class BaseDefineXMLReader(ABC):
         logger.info(f"Extracted variables metadata = {variables_metadata}")
         return variables_metadata
 
-    def extract_value_level_metadata(self, domain_name: str = None) -> List[dict]:
+    def extract_value_level_metadata(self, domain_name: str = None, name: str = None) -> List[dict]:
         """
         Extracts all value level metadata for each variable in a given domain.
         Returns: A list of dictionaries containing value level metadata corresponding
@@ -173,6 +173,8 @@ class BaseDefineXMLReader(ABC):
                  matches the type of the value level metadata
                 length_check: <function to check whether the length of the target
                  variables value matches the length specified in the vlm
+                where_clause: <range checks of the where clause, see
+                 ValueLevelMetadata.get_where_clause>
             }...
         ]
         """
@@ -181,7 +183,7 @@ class BaseDefineXMLReader(ABC):
             metadata = self._odm_loader.MetaDataVersion()
             item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
             codelist_map = self._get_codelist_def_map(metadata.CodeList)
-            domain_metadata = self._get_domain_metadata(metadata, domain_name)
+            domain_metadata = self._get_domain_metadata(metadata, domain_name, name)
             value_level_metadata_map = {}
             value_level_metadata = []
 
@@ -211,6 +213,7 @@ class BaseDefineXMLReader(ABC):
                         item_data["filter"] = vlm.get_filter_function()
                         item_data["type_check"] = vlm.get_type_check_function()
                         item_data["length_check"] = vlm.get_length_check_function()
+                        item_data["where_clause"] = vlm.get_where_clause()
                         value_level_metadata.append(item_data)
         except ValueError as e:
             raise FailedSchemaValidation(str(e))
@@ -228,7 +231,10 @@ class BaseDefineXMLReader(ABC):
         try:
             if name and domain_name:
                 domain_metadata = next(
-                    item for item in metadata.ItemGroupDef if item.Domain == domain_name and item.Name == name
+                    item
+                    for item in metadata.ItemGroupDef
+                    if str(item.Name).upper() == name.upper()
+                    and (not item.Domain or item.Domain.upper() == domain_name.upper())
                 )
             else:
                 domain_metadata = next(

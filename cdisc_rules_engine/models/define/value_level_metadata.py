@@ -10,6 +10,7 @@ class ValueLevelMetadata:
         self.itemid = None
         self.softhard = None
         self.item = None
+        self.range_checks = []
 
     @classmethod
     def from_where_clause_def(cls, where_clause, items):
@@ -21,7 +22,24 @@ class ValueLevelMetadata:
         value_level_metadata.itemid = range_check.ItemOID
         value_level_metadata.item = items.get(range_check.ItemOID)
         value_level_metadata.softhard = range_check.SoftHard
+        value_level_metadata.range_checks = [
+            (items.get(check.ItemOID), check.Comparator, check.CheckValue) for check in where_clause.RangeCheck
+        ]
         return value_level_metadata
+
+    def get_where_clause(self) -> list:
+        """
+        Returns every range check of the where clause (they are combined with AND) as
+        [{"variable": <name>, "comparator": <EQ|NE|...>, "values": [<str>, ...]}, ...].
+        Returns an empty list if a range check references an item that is not in the define.
+        """
+        where_clause = []
+        for item, comparator, check_values in self.range_checks:
+            if item is None:
+                return []
+            values = [getattr(value, "_content", value) or "" for value in check_values]
+            where_clause.append({"variable": item.Name, "comparator": comparator, "values": values})
+        return where_clause
 
     def get_filter_function(self):
         operator_map = {
@@ -164,12 +182,10 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 try:
-                    datetime.fromisoformat(
-                        dataframe[self.item.Name].replace("Z", "+00:00")
-                    )
-                except:
+                    datetime.fromisoformat(dataframe[self.item.Name].replace("Z", "+00:00"))
+                except Exception:
                     return False
                 return True
             return True
@@ -182,7 +198,7 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.date.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 return False
             return True
 
@@ -194,7 +210,7 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.time.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 return False
             return True
 
@@ -206,12 +222,10 @@ class ValueLevelMetadata:
                 return True
             try:
                 datetime.fromisoformat(dataframe[self.item.Name])
-            except:
+            except Exception:
                 try:
-                    datetime.fromisoformat(
-                        dataframe[self.item.Name].replace("Z", "+00:00")
-                    )
-                except:
+                    datetime.fromisoformat(dataframe[self.item.Name].replace("Z", "+00:00"))
+                except Exception:
                     return True
                 return False
             return False
@@ -222,9 +236,7 @@ class ValueLevelMetadata:
         def ispartialdate(dataframe):
             if dataframe[self.item.Name] == "":
                 return True
-            return bool(
-                re.match(r"^\d\d\d\d[-\d\d]?[-\d\d]?", dataframe[self.item.Name])
-            )
+            return bool(re.match(r"^\d\d\d\d[-\d\d]?[-\d\d]?", dataframe[self.item.Name]))
 
         return ispartialdate
 
@@ -259,7 +271,7 @@ class ValueLevelMetadata:
 
     def is_interval_datetime(self):
         # sorry - regex from define schema
-        regex = r"((((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))/((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?)))|(((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))/(((\+|-)?P(((([0-9]([0-9]+)?)Y)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)D)?)(T((([0-9]([0-9]+)?)H)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)((\.[0-9]+)?)S)?)?)?|((([0-9]([0-9]+)?)W))))))|((((\+|-)?P(((([0-9]([0-9]+)?)Y)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)D)?)(T((([0-9]([0-9]+)?)H)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)((\.[0-9]+)?)S)?)?)?|((([0-9]([0-9]+)?)W)))))/((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))))"
+        regex = r"((((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))/((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?)))|(((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))/(((\+|-)?P(((([0-9]([0-9]+)?)Y)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)D)?)(T((([0-9]([0-9]+)?)H)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)((\.[0-9]+)?)S)?)?)?|((([0-9]([0-9]+)?)W))))))|((((\+|-)?P(((([0-9]([0-9]+)?)Y)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)D)?)(T((([0-9]([0-9]+)?)H)?(([0-9]([0-9]+)?)M)?(([0-9]([0-9]+)?)((\.[0-9]+)?)S)?)?)?|((([0-9]([0-9]+)?)W)))))/((([0-9][0-9][0-9][0-9])((-(([0][1-9])|([1][0-2])))((-(([0][1-9])|([1-2][0-9])|([3][0-1])))(T((([0-1][0-9])|([2][0-3]))((:([0-5][0-9]))(((:([0-5][0-9]))((\.[0-9]+)?))?)?)?((((\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?))?)?)?))))"  # noqa: E501
 
         def isinterval(dataframe):
             if dataframe[self.item.Name] == "":
