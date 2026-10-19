@@ -8,6 +8,10 @@ from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.utilities.ingestion_progress import (
+    DisabledIngestionProgressReporter,
+    IngestionProgressReporter,
+)
 
 ROOT_PATH = Path(__file__).parents[3]
 
@@ -34,6 +38,7 @@ def populate_codelists(
     pgi: PostgresQLInterface,
     cache_path: str,
     codelists: Optional[List[str]],
+    progress_reporter: Optional[IngestionProgressReporter] = None,
 ):
     """Populate the codelists table in the database."""
     valid_ct_paths = []
@@ -57,20 +62,37 @@ def populate_codelists(
     schema = _schema()
     pgi.create_table(schema)
 
-    for file_path in valid_ct_paths:
-        try:
-            reader = CodelistReader(str(file_path))
-            codelist_data = reader.read()
+    reporter = progress_reporter or DisabledIngestionProgressReporter()
+    reporter.start(total_files=len(valid_ct_paths), total_bytes=sum(path.stat().st_size for path in valid_ct_paths))
 
-            if codelist_data:
-                pgi.insert_data(schema.hash, codelist_data)
-                logger.info(f"Loaded codelist from {file_path.name}")
-            else:
-                logger.warning(f"No data found in codelist file: {file_path.name}")
+    try:
+        for file_index, file_path in enumerate(valid_ct_paths):
+            try:
+                reader = CodelistReader(str(file_path))
+                codelist_data = reader.read() or []
 
-        except Exception as e:
-            logger.error(f"Failed to load codelist {file_path.name}: {e}")
-            continue
+                reporter.start_file(
+                    file_index=file_index,
+                    total_files=len(valid_ct_paths),
+                    file_name=file_path.name,
+                    file_bytes=file_path.stat().st_size,
+                    total_rows=len(codelist_data),
+                )
+
+                if codelist_data:
+                    pgi.insert_data(schema.hash, codelist_data)
+                    reporter.report_chunk(len(codelist_data))
+                    logger.info(f"Loaded codelist from {file_path.name}")
+                else:
+                    logger.warning(f"No data found in codelist file: {file_path.name}")
+
+                reporter.end_file(len(codelist_data))
+
+            except Exception as e:
+                logger.error(f"Failed to load codelist {file_path.name}: {e}")
+                continue
+    finally:
+        reporter.finish()
 
 
 def populate_referenced_codelists(

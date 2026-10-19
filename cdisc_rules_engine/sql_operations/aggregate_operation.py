@@ -54,6 +54,14 @@ class SqlAggregateOperation(SqlBaseOperation):
         """The aggregate expression selected as each group's value in group_by_query."""
         return self._aggregate_sql(value_sql, aggregate_filter)
 
+    def _group_value_sql(self) -> str:
+        """
+        How a group's value from group_by_query reads as the answer `query` gives for a row of that group,
+        with {value} standing for the group's value. Differs from the value itself where the aggregate answers
+        something other than NULL when there is nothing to aggregate.
+        """
+        return "{value}"
+
     def _result_subtype(self, source: AggregateSource) -> Optional[str]:
         return source.subtype
 
@@ -84,6 +92,7 @@ class SqlAggregateOperation(SqlBaseOperation):
             params=params,
             group_by_query=group_by_query,
             group_by_columns=group_by_columns,
+            group_value_sql=self._group_value_sql(),
         )
 
     def _source(self) -> AggregateSource:
@@ -107,7 +116,16 @@ class SqlAggregateOperation(SqlBaseOperation):
         )
 
     def _table(self) -> str:
-        return self.params.table if self.params.use_rule_type_table else self.params.domain
+        if self.params.use_rule_type_table:
+            return self.params.table
+        dataset_metadata = self.params.dataset_metadata
+        if (
+            dataset_metadata is not None
+            and self.params.domain == dataset_metadata.domain
+            and self.data_service.pgi.schema.get_table(self.params.domain) is None
+        ):
+            return dataset_metadata.name
+        return self.params.domain
 
     def _dataset_column(self, table: str) -> SqlColumnSchema:
         column = self.data_service.pgi.schema.get_column(table, self.params.target)

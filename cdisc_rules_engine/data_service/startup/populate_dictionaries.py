@@ -1,3 +1,6 @@
+import os
+from typing import Optional
+
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.enums.static_tables import StaticTables
 from cdisc_rules_engine.enums.whodrug_files import WhoDrugFormats
@@ -5,6 +8,10 @@ from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTy
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.sql_external_dictionaries_container import SqlExternalDictionariesContainer
+from cdisc_rules_engine.utilities.ingestion_progress import (
+    DisabledIngestionProgressReporter,
+    IngestionProgressReporter,
+)
 
 
 def _add_char_columns(table: SqlTableSchema, *column_names: str):
@@ -68,26 +75,53 @@ _SCHEMA_MAP = {
 }
 
 
-def populate_dictionaries(pgi: PostgresQLInterface, external_dictionaries: SqlExternalDictionariesContainer):
+def _path_size(path) -> int:
+    return os.path.getsize(path) if path and os.path.isfile(path) else 0
+
+
+def populate_dictionaries(
+    pgi: PostgresQLInterface,
+    external_dictionaries: SqlExternalDictionariesContainer,
+    progress_reporter: Optional[IngestionProgressReporter] = None,
+):
     """Populates the dictionary tables with the provided external dictionaries."""
     if not external_dictionaries:
         return {}
 
     dictionary_metadata = {}
 
-    for dictionary_type, reader in external_dictionaries.get_all_implemented_reader_classes().items():
-        path = external_dictionaries.get_dictionary_path(dictionary_type)
-        reader_instance = reader(pgi, path)
+    reporter = progress_reporter or DisabledIngestionProgressReporter()
+    implemented = external_dictionaries.get_all_implemented_reader_classes()
+    total_bytes = sum(_path_size(external_dictionaries.get_dictionary_path(dt)) for dt in implemented)
+    reporter.start(total_files=len(implemented), total_bytes=total_bytes)
 
-        metadata = reader_instance._extract_version_metadata()
-        schema: SqlTableSchema = _SCHEMA_MAP[dictionary_type](metadata)
-        pgi.create_table(schema)
+    try:
+        for file_index, (dictionary_type, reader) in enumerate(implemented.items()):
+            path = external_dictionaries.get_dictionary_path(dictionary_type)
+            reader_instance = reader(pgi, path)
 
-        df = reader_instance.process_data(metadata)
-        columns_to_insert = [col_name for col_name, _ in schema.get_columns() if col_name != "id"]
-        records = df[columns_to_insert].to_dict(orient="records")
+            metadata = reader_instance._extract_version_metadata()
+            schema: SqlTableSchema = _SCHEMA_MAP[dictionary_type](metadata)
+            pgi.create_table(schema)
 
-        pgi.insert_data(schema.name, records)
-        dictionary_metadata[dictionary_type] = metadata
+            df = reader_instance.process_data(metadata)
+            columns_to_insert = [col_name for col_name, _ in schema.get_columns() if col_name != "id"]
+            records = df[columns_to_insert].to_dict(orient="records")
+
+            reporter.start_file(
+                file_index=file_index,
+                total_files=len(implemented),
+                file_name=f"{dictionary_type}",
+                file_bytes=_path_size(path),
+                total_rows=len(records),
+            )
+
+            pgi.insert_data(schema.name, records)
+            dictionary_metadata[dictionary_type] = metadata
+
+            reporter.report_chunk(len(records))
+            reporter.end_file(len(records))
+    finally:
+        reporter.finish()
 
     return dictionary_metadata

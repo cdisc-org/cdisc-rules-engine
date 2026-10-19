@@ -1,6 +1,10 @@
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.sql_dataset_builders.sql_base_dataset_builder import SqlBaseDatasetBuilder
+from cdisc_rules_engine.sql_dataset_builders.variable_length_summary import (
+    build_variable_length_summary,
+    wants_variable_length_summary,
+)
 
 
 class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilder):
@@ -10,6 +14,9 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
     """
 
     def build(self) -> str:
+        if wants_variable_length_summary(self.rule):
+            return self._build_variable_length_summary()
+
         table_name = "global_value_check"
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
@@ -120,3 +127,19 @@ class SqlGlobalValueCheckwithVariableMetadataDatasetBuilder(SqlBaseDatasetBuilde
                 self.data_service.pgi.execute_sql(insert_query)
 
         return table_name
+
+    def _build_variable_length_summary(self) -> str:
+        table_name = "global_variable_length_summary"
+        if self.data_service.pgi.schema.get_table(table_name) is not None:
+            return table_name
+
+        all_ds_metadata = [
+            self.data_service.get_dataset_metadata(ds_id) for ds_id in self.data_service.get_uploaded_dataset_ids()
+        ]
+        datasets = [(ds_metadata, ds_metadata.name) for ds_metadata in all_ds_metadata]
+        return build_variable_length_summary(self.data_service, table_name, datasets, with_dataset_name=True)
+
+
+class SqlGlobalVariableMetadataDatasetBuilder(SqlGlobalValueCheckwithVariableMetadataDatasetBuilder):
+    def build(self) -> str:
+        return self._build_variable_length_summary()

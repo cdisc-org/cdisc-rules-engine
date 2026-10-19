@@ -1,8 +1,9 @@
 import hashlib
+import re
 import traceback
 from abc import abstractmethod
 from functools import wraps
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -21,6 +22,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
+from .sql_truth import GroupJoin, SqlTruth
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 
 CHECK_OPERATOR_TABLE_ALIAS = "co"
@@ -82,6 +84,7 @@ class BaseSqlOperator:
         self.codelist_term_maps = data.get("codelist_term_maps", [])
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
         self.dataset_metadata: BaseDatasetMetadata = data.get("dataset_metadata", None)
+        self.compile_only: bool = data.get("compile_only", False)
 
     @abstractmethod
     def execute_operator(self, other_value: Dict[str, Any]):
@@ -153,8 +156,10 @@ class BaseSqlOperator:
         """
         Fetches data from a SQL table and returns it as a pandas Series,
         so we can pass it to Venmo.
-
         """
+        if self.compile_only:
+            return SqlTruth.of(self._column_sql(column))
+
         # Fetch all of the rows
         self.sql_data_service.pgi.execute_sql(
             f"SELECT id, {self._column_sql(column, alias=False)} as data FROM {self._table_sql()} ORDER BY id ASC;"
@@ -168,6 +173,9 @@ class BaseSqlOperator:
 
     def _do_check_operator(self, sql_subquery_fn):
         subquery = sql_subquery_fn()
+        if self.compile_only:
+            return SqlTruth.of(subquery)
+
         full_query = (
             f"SELECT id, ({subquery}) as data FROM "
             f"{self._table_sql()} AS {CHECK_OPERATOR_TABLE_ALIAS} ORDER BY id ASC;"
@@ -187,7 +195,12 @@ class BaseSqlOperator:
         exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
         if not exists:
             self.sql_data_service.pgi.add_column(table=self.table_id, schema=SqlColumnSchema.check_operator(new_column))
-            query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
+            join_scope = self.original_data.pop("join_scope", None)
+            try:
+                query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
+            finally:
+                if join_scope is not None:
+                    self.original_data["join_scope"] = join_scope
             self.sql_data_service.pgi.execute_sql(query)
         return self._fetch_for_venmo(new_column)
 
@@ -301,8 +314,49 @@ class BaseSqlOperator:
 
         query = variable.query
         if variable.params:
+            joined_value = self._join_group_values(variable)
+            if joined_value is not None:
+                return joined_value
             query = self._substitute_operation_parameters(query, variable.params)
         return f"({query})"
+
+    @property
+    def _join_scope(self) -> Optional[Dict[str, GroupJoin]]:
+        return self.original_data.get("join_scope")
+
+    def _join_derived(self, query: str, on: Callable[[str], str]) -> Optional[str]:
+        if self._join_scope is None:
+            return None
+        alias = "drv_" + hashlib.md5(f"{query}{on('_')}".encode()).hexdigest()[:10]
+        self._join_scope[alias] = GroupJoin(alias, query, on(alias))
+        return alias
+
+    def _join_group_values(self, variable: SqlOperationResult) -> Optional[str]:
+        """
+        For a grouped operation, join its value for every group to the rows being checked, and use the joined
+        value, instead of asking each row for its group's value with a subquery that scans the whole table again.
+        Returns None where the operation can't be joined, so it is asked for row by row.
+        """
+        grouping = variable.group_by_columns
+        if self._join_scope is None or variable.group_by_query is None:
+            return None
+        if not grouping or len(variable.params) != len(grouping):
+            return None
+        if not all(re.fullmatch(r"\$\d+", placeholder) for placeholder in variable.params):
+            return None
+
+        identity = f"{variable.group_by_query}{sorted(variable.params.items())}"
+        alias = "grp_" + hashlib.md5(identity.encode()).hexdigest()[:10]
+        conditions = []
+        for placeholder, column_name in variable.params.items():
+            group_column = f"{alias}.group_{int(placeholder[1:])}"
+            row_value = self._column_sql(column_name, null_return=True)
+            conditions.append(
+                f"({group_column} IS NULL) = ({row_value} IS NULL) "
+                f"AND COALESCE(CAST({group_column} AS TEXT), '') = COALESCE(CAST({row_value} AS TEXT), '')"
+            )
+        self._join_scope[alias] = GroupJoin(alias, variable.group_by_query, " AND ".join(conditions))
+        return variable.group_value_sql.format(value=f"{alias}.value")
 
     def _substitute_operation_parameters(self, query: str, params: dict) -> str:
         """
@@ -501,22 +555,18 @@ class BaseSqlOperator:
                 query = self._substitute_operation_parameters(query, variable.params)
             return f"(NOT EXISTS (SELECT 1 FROM ({query}) AS op))"
 
-        # Handle parameterized constants
-        query = variable.query
-        if variable.params:
-            # Substitute parameters with actual column values from current row context
-            query = self._substitute_operation_parameters(query, variable.params)
+        value = self._process_constant_operation_variable(target)
 
         # Check if the resolved query result is empty based on variable subtype
         match variable.subtype:
             case "Char":
-                return f"(({query}) IS NULL OR ({query}) = '')"
+                return f"({value} IS NULL OR {value} = '')"
             case "Bool":
-                return f"(({query}) IS NULL)"
+                return f"({value} IS NULL)"
             case "Num":
-                return f"(({query}) IS NULL)"
+                return f"({value} IS NULL)"
             case "Date":
-                return f"(({query}) IS NULL)"
+                return f"({value} IS NULL)"
             case _:
                 raise ValueError(f"Unsupported variable type: {variable.subtype} for variable {target}.")
 

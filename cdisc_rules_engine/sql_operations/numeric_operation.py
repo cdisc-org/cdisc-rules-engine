@@ -22,5 +22,8 @@ class SqlNumericOperation(SqlAggregateOperation):
     def _aggregate_sql(self, value_sql: str, aggregate_filter: str = "") -> str:
         return f"{self.function}({value_sql}){aggregate_filter}"
 
+    def _group_value_sql(self) -> str:
+        return "COALESCE({value}, 0)" if self.function == "COUNT" else "{value}"
+
     def _result_subtype(self, source: AggregateSource) -> str:
         return "Num"

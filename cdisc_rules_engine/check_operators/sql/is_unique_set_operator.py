@@ -32,6 +32,18 @@ class IsUniqueSetOperator(BaseSqlOperator):
 
         op_name = f"{'_'.join(unique_columns)}_is_unique_set"
 
+        def key_of(alias: bool) -> str:
+            parts = [
+                f"COALESCE(NULLIF(CAST({self._column_sql(col, alias=alias)} AS TEXT), ''), '_NULL_')"
+                for col in unique_columns
+            ]
+            return " || '|' || ".join(parts)
+
+        repeated_keys = f"SELECT {key_of(alias=False)} AS key FROM {self._table_sql()} GROUP BY 1 HAVING COUNT(*) > 1"
+        repeated = self._join_derived(repeated_keys, lambda joined: f"{joined}.key = {key_of(alias=True)}")
+        if repeated:
+            return self._do_check_operator(lambda: f"{repeated}.key IS NULL")
+
         def generate_update_query(db_table: str, db_column: str) -> str:
             concat_parts = [
                 f"COALESCE(NULLIF(CAST({self._column_sql(col, alias=False)} AS TEXT), ''), '_NULL_')"

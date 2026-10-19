@@ -4,9 +4,11 @@ from copy import deepcopy
 from typing import Callable, List, Union
 
 from business_rules import export_rule_data
-from business_rules.engine import run
+from business_rules.engine import check_conditions_recursively, run
+from psycopg2 import Error as PostgresError
 from psycopg2.errors import ProgrammingError
 
+from cdisc_rules_engine.check_operators.sql.sql_truth import CompileUnsupported, SqlTruth
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -40,6 +42,11 @@ from cdisc_rules_engine.sql_dataset_builders import sql_builder_factory
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
+from cdisc_rules_engine.utilities.rule_progress import (
+    DisabledRuleProgressReporter,
+    RuleProgressPhase,
+    RuleProgressReporter,
+)
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
@@ -62,15 +69,20 @@ class SQLRulesEngine:
         self,
         data_service: PostgresQLDataService,
         standards_context: BaseStandardsContext,
+        progress_reporter: RuleProgressReporter = None,
+        compile_rules: bool = True,
     ):
         self.data_service = data_service
         self.standards_context = standards_context
+        self.compile_rules = compile_rules
+        self.progress_reporter = progress_reporter or DisabledRuleProgressReporter()
 
     def get_schema(self):
         return export_rule_data(SqlVenmoObject, SqlVenmoResultHandler)
 
     def sql_validate_single_rule(self, rule: dict):
         results = {}
+        self.progress_reporter.set_phase(RuleProgressPhase.PARSING)
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
         is_study_sensitivity = rule.get("sensitivity") == Sensitivity.STUDY.value
         study_error_already_reported = False
@@ -196,6 +208,7 @@ class SQLRulesEngine:
         It uses the sql_builder_factory to get the correct data source
         and then executes the rule against it.
         """
+        self.progress_reporter.set_phase(RuleProgressPhase.EXECUTING)
         builder = sql_builder_factory.get_service(
             rule_type=rule.get("rule_type"),
             rule=rule,
@@ -247,29 +260,77 @@ class SQLRulesEngine:
             standards_context=self.standards_context,
         )
 
+        results = []
+        result_handler = SqlVenmoResultHandler(
+            results,
+            dataset_metadata=dataset_metadata,
+            rule=rule,
+            data_service=self.data_service,
+            dataset_id=dataset_id,
+            operation_variables=operation_variables,
+        )
+
+        if self.compile_rules and self._run_compiled(
+            rule_copy, dataset_metadata, dataset_id, operation_variables, result_handler
+        ):
+            return results
+
         # Translator between venmo and the check operators
-        venmo_object = SqlVenmoObject(
+        venmo_object = self._venmo_object(dataset_metadata, dataset_id, operation_variables)
+        run(
+            serialize_rule(rule_copy),
+            defined_variables=venmo_object,
+            defined_actions=result_handler,
+        )
+        return results
+
+    def _venmo_object(
+        self, dataset_metadata: BaseDatasetMetadata, dataset_id: str, operation_variables: dict, **params
+    ) -> SqlVenmoObject:
+        return SqlVenmoObject(
             dataset_id=dataset_id,
             data_service=self.data_service,
             column_prefix_map={"--": dataset_metadata.domain},
             operation_variables=operation_variables,
             dataset_metadata=dataset_metadata,
+            **params,
         )
 
-        results = []
-        run(
-            serialize_rule(rule_copy),
-            defined_variables=venmo_object,
-            defined_actions=SqlVenmoResultHandler(
-                results,
-                dataset_metadata=dataset_metadata,
-                rule=rule,
-                data_service=self.data_service,
-                dataset_id=dataset_id,
-                operation_variables=operation_variables,
-            ),
-        )
-        return results
+    def _run_compiled(
+        self,
+        rule: dict,
+        dataset_metadata: BaseDatasetMetadata,
+        dataset_id: str,
+        operation_variables: dict,
+        result_handler: SqlVenmoResultHandler,
+    ) -> bool:
+        actions = rule.get("actions") or []
+        if len(actions) != 1 or actions[0].get("name") != "generate_dataset_error_objects":
+            return False
+
+        rule_label = f"Rule {rule.get('core_id')} on {dataset_metadata.name}"
+        venmo_object = self._venmo_object(dataset_metadata, dataset_id, operation_variables, compile_only=True)
+        try:
+            truth = check_conditions_recursively(rule["conditions"].to_dict(), venmo_object)
+        except CompileUnsupported as error:
+            logger.debug(f"{rule_label} not compiled, running operator by operator: {error}")
+            return False
+        if isinstance(truth, bool):
+            truth = SqlTruth("TRUE" if truth else "FALSE")
+        if not isinstance(truth, SqlTruth):
+            logger.debug(
+                f"{rule_label} not compiled, running operator by operator: conditions gave {type(truth).__name__}"
+            )
+            return False
+
+        try:
+            failing_rows = result_handler.get_failing_rows(truth)
+        except PostgresError as error:
+            logger.warning(f"{rule_label} compiled query failed, rerunning operator by operator: {str(error).strip()}")
+            return False
+        if failing_rows:
+            result_handler.report_failing_rows(**(actions[0].get("params") or {}), rows_with_error=failing_rows)
+        return True
 
     # def get_define_xml_value_level_metadata(self, dataset_path: str, domain_name: str) -> List[dict]:
     #     """

@@ -33,10 +33,8 @@ class ReportFactory:
         data_service: DataServiceInterface,
     ):
         self._datasets = datasets
-        # our metadata doesn't contain full_path
-        try:
-            self._dataset_paths = [dataset.full_path for dataset in datasets]
-        except Exception:
+        self._dataset_paths = [dataset.full_path for dataset in datasets if getattr(dataset, "full_path", "")]
+        if not self._dataset_paths:
             self._dataset_paths = args.dataset_paths
         self._results = results
         self._elapsed_time = elapsed_time

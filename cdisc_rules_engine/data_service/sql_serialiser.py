@@ -1,6 +1,9 @@
-from typing import Any, Callable, Dict, List, Tuple
+import io
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import pandas as pd
+import pyarrow as pa
+from pyarrow import csv as pyarrow_csv
 
 from cdisc_rules_engine.data_service.reserved_keywords import SQL_RESERVED_KEYWORDS
 from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
@@ -111,6 +114,28 @@ class SQLSerialiser:
             return ", ".join(values)
 
         return ", ".join(column_hashes), map_row_to_sql
+
+    @staticmethod
+    def dataframe_to_csv_buffer(frame: Union[pd.DataFrame, pa.Table]) -> io.BytesIO:
+        table = frame if isinstance(frame, pa.Table) else pa.Table.from_pandas(frame, preserve_index=False)
+        buffer = io.BytesIO()
+        pyarrow_csv.write_csv(
+            table,
+            buffer,
+            pyarrow_csv.WriteOptions(include_header=False, quoting_style="all_valid"),
+        )
+        buffer.seek(0)
+        return buffer
+
+    @staticmethod
+    def copy_statement(schema: SqlTableSchema, columns: List[str]) -> str:
+        hashes = []
+        for column in columns:
+            column_schema = schema.get_column(column)
+            if column_schema is None:
+                raise ValueError(f"Column '{column}' is not part of table '{schema.name}'")
+            hashes.append(column_schema.hash)
+        return f"COPY {schema.hash} ({', '.join(hashes)}) FROM STDIN WITH (FORMAT csv)"
 
     @classmethod
     def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:

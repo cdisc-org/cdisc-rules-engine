@@ -107,7 +107,35 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
 
         return populated_columns
 
+    def _compiled_inconsistent(self, target_column, comparator_columns, populated_columns):
+        target = self._column_sql(target_column, alias=False)
+        group_columns = [self._column_sql(column, alias=False) for column in comparator_columns]
+        select_groups = ", ".join(f"{column} AS g{index}" for index, column in enumerate(group_columns))
+        populated = self._populated_filter_sql(None, populated_columns).removeprefix(" AND ")
+        where = f"WHERE {populated}" if populated else ""
+        inconsistent_groups = (
+            f"SELECT {select_groups}, TRUE AS found FROM {self._table_sql()} {where} "
+            f"GROUP BY {', '.join(group_columns)} "
+            f"HAVING COUNT(DISTINCT CASE WHEN {target} IS NULL THEN 'NULL_VALUE' ELSE CAST({target} AS TEXT) END) > 1"
+        )
+
+        def row_in_group(alias: str) -> str:
+            return " AND ".join(
+                f"({alias}.g{index} IS NULL) = ({self._column_sql(column)} IS NULL) AND "
+                f"COALESCE(CAST({alias}.g{index} AS TEXT), '') = COALESCE(CAST({self._column_sql(column)} AS TEXT), '')"
+                for index, column in enumerate(comparator_columns)
+            )
+
+        alias = self._join_derived(inconsistent_groups, row_in_group)
+        if alias is None:
+            return None
+        return f"{alias}.found IS NOT NULL{self._populated_filter_sql('co', populated_columns)}"
+
     def _handle_single_comparator(self, target_column, comparator_column, populated_columns=()):
+        compiled = self._compiled_inconsistent(target_column, [comparator_column], populated_columns)
+        if compiled:
+            return self._do_check_operator(lambda: compiled)
+
         cache_key = f"{target_column}_inconsistent_across_{comparator_column}"
         if populated_columns:
             cache_key += f"_where_populated_{'_'.join(populated_columns)}"
@@ -147,6 +175,10 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
         return self._do_complex_check_operator(cache_key, generate_update_query)
 
     def _handle_multiple_comparators(self, target_column, comparator_columns, populated_columns=()):
+        compiled = self._compiled_inconsistent(target_column, comparator_columns, populated_columns)
+        if compiled:
+            return self._do_check_operator(lambda: compiled)
+
         cache_key = f"{target_column}_inconsistent_across_{'_'.join(comparator_columns)}"
         if populated_columns:
             cache_key += f"_where_populated_{'_'.join(populated_columns)}"
@@ -191,7 +223,8 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
     def _populated_filter_sql(self, table_alias, populated_columns):
         if not populated_columns:
             return ""
+        prefix = f"{table_alias}." if table_alias else ""
         return "".join(
-            f" AND NULLIF(CAST({table_alias}.{self._column_sql(column, alias=False)} AS TEXT), '') IS NOT NULL"
+            f" AND NULLIF(CAST({prefix}{self._column_sql(column, alias=False)} AS TEXT), '') IS NOT NULL"
             for column in populated_columns
         )

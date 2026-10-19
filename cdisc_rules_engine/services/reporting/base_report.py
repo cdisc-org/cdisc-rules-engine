@@ -1,5 +1,7 @@
+import re
 from abc import ABC, abstractmethod
 from io import IOBase
+from pathlib import Path
 from typing import List, Optional, Union, Iterable
 
 from openpyxl import Workbook
@@ -8,6 +10,9 @@ from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+
+
+_PER_DATASET_SKIP_REASON = re.compile(r"^(?P<reason>.+?) for rule id=[^,]*, dataset=(?P<dataset>\S+)$")
 
 
 class BaseReport(ABC):
@@ -51,10 +56,7 @@ class BaseReport(ABC):
             if validation_result.execution_status == "success":
                 for result in validation_result.results or []:
                     dataset = result.get("dataset")
-                    if (
-                        result.get("errors")
-                        and result.get("executionStatus") == "success"
-                    ):
+                    if result.get("errors") and result.get("executionStatus") == "success":
                         summary_item = {
                             "dataset": dataset,
                             "core_id": validation_result.id,
@@ -69,31 +71,19 @@ class BaseReport(ABC):
 
         return sorted(
             summary_data,
-            key=lambda x: (
-                (x[0], x[1])
-                if (self._item_type == "list")
-                else (x["dataset"], x["core_id"])
-            ),
+            key=lambda x: ((x[0], x[1]) if (self._item_type == "list") else (x["dataset"], x["core_id"])),
         )
 
     def get_detailed_data(self, excel=False) -> List[List]:
         detailed_data = []
         for validation_result in self._results:
-            detailed_data = detailed_data + self._generate_error_details(
-                validation_result, excel
-            )
+            detailed_data = detailed_data + self._generate_error_details(validation_result, excel)
         return sorted(
             detailed_data,
-            key=lambda x: (
-                (x[0], x[3])
-                if (self._item_type == "list")
-                else (x["core_id"], x["dataset"])
-            ),
+            key=lambda x: ((x[0], x[3]) if (self._item_type == "list") else (x["core_id"], x["dataset"])),
         )
 
-    def _generate_error_details(
-        self, validation_result: RuleValidationResult, excel
-    ) -> List[List]:
+    def _generate_error_details(self, validation_result: RuleValidationResult, excel) -> List[List]:
         """
         Generates the Issue details data that goes into the excel export.
         Each row is represented by a list or a dict containing the following
@@ -124,10 +114,7 @@ class BaseReport(ABC):
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
                     }
-                    values = [
-                        str(error.get("value", {}).get(variable))
-                        for variable in variables
-                    ]
+                    values = [str(error.get("value", {}).get(variable)) for variable in variables]
                     processed_values = self.process_values(values, excel)
                     if self._item_type == "list":
                         error_item["variables"] = ", ".join(variables)
@@ -162,23 +149,21 @@ class BaseReport(ABC):
             "CDISC RuleID",
             "FDA RuleID",
             "Message",
-            "Status"
+            "Status",
+            "Reason for Skip"
         ]
         """
         rules_report = []
         for validation_result in self._results:
+            skipped = validation_result.execution_status != ExecutionStatus.SUCCESS.value
             rules_item = {
                 "core_id": validation_result.id,
                 "version": "1",
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
                 "message": validation_result.message,
-                "status": (
-                    ExecutionStatus.SUCCESS.value.upper()
-                    if validation_result.execution_status
-                    == ExecutionStatus.SUCCESS.value
-                    else ExecutionStatus.SKIPPED.value.upper()
-                ),
+                "status": (ExecutionStatus.SKIPPED.value.upper() if skipped else ExecutionStatus.SUCCESS.value.upper()),
+                "skip_reason": (self._get_skip_reason(validation_result) if skipped else ""),
             }
             if self._item_type == "list":
                 rules_report.append([*rules_item.values()])
@@ -188,6 +173,35 @@ class BaseReport(ABC):
         return sorted(
             rules_report,
             key=lambda x: x[0] if (self._item_type == "list") else x["core_id"],
+        )
+
+    @staticmethod
+    def _display_dataset_name(filename: Optional[str]) -> Optional[str]:
+        if not filename:
+            return filename
+        return Path(filename).stem.upper()
+
+    @staticmethod
+    def _get_skip_reason(validation_result) -> str:
+        datasets_by_reason = {}
+        for result in validation_result.results or []:
+            if not isinstance(result, dict):
+                continue
+            if result.get("executionStatus") == ExecutionStatus.SUCCESS.value:
+                continue
+            reason = result.get("message")
+            if not reason:
+                continue
+            dataset = None
+            match = _PER_DATASET_SKIP_REASON.match(reason)
+            if match:
+                reason, dataset = match["reason"], match["dataset"].upper()
+            datasets = datasets_by_reason.setdefault(reason, [])
+            if dataset and dataset not in datasets:
+                datasets.append(dataset)
+        return "; ".join(
+            f"{reason} ({', '.join(datasets)})" if datasets else reason
+            for reason, datasets in datasets_by_reason.items()
         )
 
     @property

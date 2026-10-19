@@ -21,3 +21,6 @@ class DatasetMetadata2:
     label: str
     variables: List[VariableMetadata]
     file_size: Optional[int] = field(default=None, kw_only=True)
+    full_path: str = field(default="", kw_only=True)
+    modification_date: str = field(default="", kw_only=True)
+    record_count: Optional[int] = field(default=None, kw_only=True)

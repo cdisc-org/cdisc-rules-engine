@@ -32,6 +32,7 @@ from cdisc_rules_engine.models.dataset_metadata2 import (
 )
 from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
+from cdisc_rules_engine.utilities.ingestion_progress import IngestionProgressReporter
 from cdisc_rules_engine.data_service.database import (
     DatabaseConfigPostgres,
     DatabaseConfigPGServer,
@@ -85,6 +86,7 @@ class PostgresQLDataService:
         cache_path: Optional[str] = None,
         define_xml_path: Optional[str] = None,
         stf_file_path: Optional[str] = None,
+        progress_reporter: Optional[IngestionProgressReporter] = None,
     ) -> "PostgresQLDataService":
         """
         Create a PostgresQLDataService instance with an initialized database.
@@ -97,9 +99,11 @@ class PostgresQLDataService:
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi)
-        instance.dictionary_metadata = populate_dictionaries(pgi, external_dictionaries)
+        instance.dictionary_metadata = populate_dictionaries(
+            pgi, external_dictionaries, progress_reporter=progress_reporter
+        )
         instance.cache_path = cache_path
-        populate_codelists(pgi, cache_path, codelists)
+        populate_codelists(pgi, cache_path, codelists, progress_reporter=progress_reporter)
         populate_standards(pgi)
         populate_helper_tables(pgi)
 
@@ -152,6 +156,7 @@ class PostgresQLDataService:
         stf_file_path: Optional[str] = None,
         sql_namespace: Optional[str] = None,
         use_pgserver: bool = False,
+        progress_reporter: Optional[IngestionProgressReporter] = None,
     ) -> "PostgresQLDataService":
         instance = cls.instance(
             sql_namespace=sql_namespace,
@@ -163,11 +168,12 @@ class PostgresQLDataService:
             external_dictionaries=external_dictionaries,
             define_xml_path=define_xml_path,
             stf_file_path=stf_file_path,
+            progress_reporter=progress_reporter,
         )
 
         instance.datasets.extend(
             standards_context.transform_dataset_metadata(ds)
-            for ds in SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths)
+            for ds in SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths, progress_reporter=progress_reporter)
         )
         instance._populate_data_referenced_codelists(standards_context)
         SqlDataPreprocessor.run(instance, standards_context)

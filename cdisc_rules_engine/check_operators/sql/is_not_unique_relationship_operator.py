@@ -55,6 +55,12 @@ class IsNotUniqueRelationshipOperator(BaseSqlOperator):
 
         target_sql = f"COALESCE({target}::text, '')"
 
+        violations = self._violations_join(
+            target_column, other_value.get("comparator"), target, target_sql, comparator_list, concat_expr
+        )
+        if violations:
+            return self._do_check_operator(lambda: violations)
+
         def generate_update_query(db_table: str, db_column: str) -> str:
             return f"""
                 UPDATE {db_table} AS t
@@ -89,6 +95,35 @@ class IsNotUniqueRelationshipOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(op_name, generate_update_query)
+
+    def _violations_join(self, target_column, comparator, target, target_sql, comparator_list, concat_expr):
+        """Condition for a row violating the relationship with its violations joined in."""
+        pairs = (
+            f"WITH distinct_pairs AS (SELECT DISTINCT {target_sql} AS {target}, {comparator_list} "
+            f"FROM {self._table_sql()})"
+        )
+        violating_targets = (
+            f"{pairs} SELECT {target} AS key FROM distinct_pairs "
+            f"GROUP BY {target} HAVING COUNT(DISTINCT {concat_expr}) > 1"
+        )
+        violating_comparators = (
+            f"{pairs} SELECT {concat_expr} AS key FROM distinct_pairs "
+            f"GROUP BY {concat_expr} HAVING COUNT(DISTINCT {target}) > 1"
+        )
+
+        row_target = f"COALESCE({self._column_sql(target_column)}::text, '')"
+        comparator_columns = comparator if isinstance(comparator, list) else [comparator]
+        row_comparator = " || '|' || ".join(
+            f"COALESCE({self._column_sql(self.replace_prefix(column))}::text, '')"
+            for column in comparator_columns
+            if self._exists(self.replace_prefix(column))
+        )
+
+        by_target = self._join_derived(violating_targets, lambda alias: f"{alias}.key = {row_target}")
+        if by_target is None:
+            return None
+        by_comparator = self._join_derived(violating_comparators, lambda alias: f"{alias}.key = {row_comparator}")
+        return f"{by_target}.key IS NOT NULL OR {by_comparator}.key IS NOT NULL"
 
     def has_missing_required_columns(self, other_value) -> bool:
         """Whether execute_operator would fall back to its default FALSE result."""

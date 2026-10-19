@@ -324,11 +324,20 @@ def load_rules_from_cache(args) -> List[dict]:
 
 def load_rules_from_local(args) -> List[dict]:
     rules = []
-    rule_files = (
-        [os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)]
-        if os.path.isdir(args.local_rules)
-        else [args.local_rules]
-    )
+    rule_files = []
+    if os.path.isdir(args.local_rules):
+        for root, dirs, files in os.walk(args.local_rules):
+            dirs[:] = [folder for folder in dirs if not folder.startswith(".")]
+            rule_files.extend(
+                os.path.join(root, file)
+                for file in files
+                if not file.startswith(".")
+                and file.lower() != "results.json"
+                and os.path.splitext(file)[1].lower() in (".yml", ".yaml", ".json")
+            )
+        rule_files = sorted(rule_files)
+    else:
+        rule_files = [args.local_rules]
     rule_data = {}
 
     if args.rules:
@@ -353,6 +362,7 @@ def load_rules_from_local(args) -> List[dict]:
 
 def load_and_parse_rule(rule_file):
     _, file_extension = os.path.splitext(rule_file)
+    file_extension = file_extension.lower()
     try:
         with open(rule_file, "r", encoding="utf-8") as file:
             if file_extension in [".yml", ".yaml"]:

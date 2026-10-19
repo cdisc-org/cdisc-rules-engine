@@ -16,3 +16,4 @@ class SqlOperationResult:
     params: Optional[Dict[str, str]] = None
     group_by_query: Optional[str] = None
     group_by_columns: Optional[Dict[str, str]] = None
+    group_value_sql: str = "{value}"

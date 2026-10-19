@@ -19,6 +19,9 @@ class SqlDateOperation(SqlAggregateOperation):
     def _aggregate_sql(self, value_sql: str, aggregate_filter: str = "") -> str:
         return f"COALESCE({self._group_aggregate_sql(value_sql, aggregate_filter)}, '')"
 
+    def _group_value_sql(self) -> str:
+        return "COALESCE({value}, '')"
+
     def _group_aggregate_sql(self, value_sql: str, aggregate_filter: str) -> str:
         as_date = f"CASE WHEN {value_sql} IS NULL OR {value_sql} = '' THEN NULL ELSE {value_sql}::date END"
         return f"TO_CHAR({self.function}({as_date}){aggregate_filter}, 'YYYY-MM-DD')"

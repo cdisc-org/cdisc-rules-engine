@@ -1,4 +1,5 @@
 import re
+from functools import wraps
 
 from business_rules.fields import FIELD_DATAFRAME
 from business_rules.operators import BaseType, type_operator
@@ -12,6 +13,7 @@ from cdisc_rules_engine.check_operators.sql.not_operator import NotOperator
 from cdisc_rules_engine.enums.static_tables import StaticTables
 
 from .base_sql_operator import log_operator_execution
+from .sql_truth import CompileUnsupported, SqlTruth
 from .conformant_value_data_type_operator import ConformantValueDataTypeOperator
 from .conformant_value_length_operator import ConformantValueLengthOperator
 from .contains_all_operator import ContainsAllOperator
@@ -483,6 +485,27 @@ class PostgresQLOperators(BaseType):
 
         return missing_columns
 
+    def _require_compiled(self, method, operator_name):
+        """
+        Returns what a compiled rule needs of an operator.
+        An expression to filter on + whatever has to be joined for it.
+        An operator that didn't produce an expression can't be part of a compiled rule.
+        """
+
+        @wraps(method)
+        def compiled_method(*args, **kwargs):
+            joins = self.data["join_scope"] = {}
+            try:
+                result = method(*args, **kwargs)
+            finally:
+                del self.data["join_scope"]
+            if not isinstance(result, SqlTruth):
+                raise CompileUnsupported(f"Operator '{operator_name}' does not return a query expression")
+            needed = tuple(join for join in joins.values() if join not in result.joins)
+            return SqlTruth(result.sql, result.joins + needed)
+
+        return compiled_method
+
     @staticmethod
     def _false_result(operator_instance):
         return operator_instance._do_check_operator(lambda: "FALSE")
@@ -510,6 +533,8 @@ class PostgresQLOperators(BaseType):
 
             # Cache the new method on the instance
             bound_method = operator_method.__get__(self, type(self))
+            if self.data.get("compile_only"):
+                bound_method = self._require_compiled(bound_method, name)
             setattr(self, name, bound_method)
             return bound_method
 

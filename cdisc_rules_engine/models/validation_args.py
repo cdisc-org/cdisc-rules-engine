@@ -25,5 +25,7 @@ Validation_args = namedtuple(
         "stf_file_path",
         "validate_xml",
         "sql_namespace",
+        "collapse_duplicate_issues",
     ],
+    defaults=[False],
 )

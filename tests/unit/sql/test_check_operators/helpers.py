@@ -1,8 +1,10 @@
 """Helper functions for SQL operator tests."""
 
 import pandas as pd
+import pytest
 
 from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from cdisc_rules_engine.check_operators.sql.sql_truth import CompileUnsupported, SqlTruth
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -12,6 +14,46 @@ from cdisc_rules_engine.standards.default_standards_context import (
 )
 
 TEST_TABLE_NAME = "test_table"
+COMPILE_MODE = False
+
+
+class CompiledOperators:
+    """Runs operators in compile mode."""
+
+    def __init__(self, operators: PostgresQLOperators):
+        self._operators = operators
+
+    def __getattr__(self, name):
+        attribute = getattr(self._operators, name)
+        if not callable(attribute):
+            return attribute
+
+        def run(*args, **kwargs):
+            try:
+                result = attribute(*args, **kwargs)
+            except CompileUnsupported as error:
+                pytest.skip(f"not compilable: {error}")
+            if not isinstance(result, SqlTruth):
+                return result
+            return self._evaluate(result)
+
+        return run
+
+    def _evaluate(self, truth: SqlTruth) -> pd.Series:
+        data = self._operators.data
+        pgi = data["data_service"].pgi
+        table = pgi.schema.get_table_hash(data["dataset_id"])
+
+        source = truth.from_clause(table, "co")
+
+        pgi.execute_sql(f"SELECT co.id AS id, ({truth.sql}) AS data FROM {source} ORDER BY co.id")
+        rows = pgi.fetch_all()
+
+        pgi.execute_sql(f"SELECT co.id AS id FROM {source} WHERE {truth.sql} ORDER BY co.id")
+        selected = [row["id"] for row in pgi.fetch_all()]
+        assert selected == [row["id"] for row in rows if row["data"] is True]
+
+        return pd.Series(data={row["id"] - 1: row["data"] for row in rows})
 
 
 def create_sql_operators(
@@ -56,6 +98,8 @@ def create_sql_operators(
         table_name,
     )
 
+    if COMPILE_MODE:
+        return CompiledOperators(PostgresQLOperators({**config, "compile_only": True}))
     return PostgresQLOperators(config)
 
 

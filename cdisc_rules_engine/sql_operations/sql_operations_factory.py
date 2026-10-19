@@ -56,6 +56,11 @@ from cdisc_rules_engine.sql_operations.split import SqlSplitOperation
 from cdisc_rules_engine.sql_operations.referenced_domain_variable_names import (
     SqlReferencedDomainVariableNamesOperation,
 )
+from cdisc_rules_engine.sql_operations.variable_length_operations import (
+    SqlVariableLengthOperation,
+    VARIABLE_LENGTH,
+    VARIABLE_MAX_VALUE_LENGTH,
+)
 
 
 class SqlOperationsFactory:
@@ -79,6 +84,11 @@ class SqlOperationsFactory:
         "map": None,
         "max": lambda params, ds: SqlNumericOperation(params, ds, "MAX"),
         "max_date": lambda params, ds: SqlDateOperation(params, ds, "MAX"),
+        "max_variable_value_length": lambda params, ds: SqlVariableLengthOperation(
+            params, ds, "MAX", VARIABLE_MAX_VALUE_LENGTH
+        ),
+        "global_max_variable_length": lambda params, ds: SqlVariableLengthOperation(params, ds, "MAX", VARIABLE_LENGTH),
+        "global_min_variable_length": lambda params, ds: SqlVariableLengthOperation(params, ds, "MIN", VARIABLE_LENGTH),
         "mean": lambda params, ds: SqlNumericOperation(params, ds, "AVG"),
         "min": lambda params, ds: SqlNumericOperation(params, ds, "MIN"),
         "min_date": lambda params, ds: SqlDateOperation(params, ds, "MIN"),

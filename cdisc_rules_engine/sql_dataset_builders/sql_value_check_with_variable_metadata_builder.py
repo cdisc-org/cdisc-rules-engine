@@ -3,6 +3,10 @@ from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.sql_dataset_builders.sql_base_dataset_builder import (
     SqlBaseDatasetBuilder,
 )
+from cdisc_rules_engine.sql_dataset_builders.variable_length_summary import (
+    build_variable_length_summary,
+    wants_variable_length_summary,
+)
 
 
 class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
@@ -19,6 +23,9 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
     """
 
     def build(self) -> str:
+        if wants_variable_length_summary(self.rule):
+            return self._build_variable_length_summary()
+
         table_name = f"{self.dataset_metadata.name}_values_with_variable_metadata"
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
@@ -123,3 +130,15 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
             self.data_service.pgi.execute_sql(insert_query)
 
         return table_name
+
+    def _build_variable_length_summary(self) -> str:
+        table_name = f"{self.dataset_metadata.name}_variables_with_value_lengths"
+        if self.data_service.pgi.schema.get_table(table_name) is not None:
+            return table_name
+
+        source_table_id = self.data_service.get_dataset_for_rule(
+            self.dataset_metadata, self.rule, self.standards_context
+        )
+        return build_variable_length_summary(
+            self.data_service, table_name, [(self.dataset_metadata, source_table_id)], with_dataset_name=False
+        )

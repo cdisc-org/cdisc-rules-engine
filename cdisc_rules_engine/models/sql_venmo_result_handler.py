@@ -5,6 +5,8 @@ import pandas as pd
 from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
 
+from cdisc_rules_engine.check_operators.sql.base_sql_operator import CHECK_OPERATOR_TABLE_ALIAS
+from cdisc_rules_engine.check_operators.sql.sql_truth import SqlTruth
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.constants.metadata_columns import SOURCE_DS, SOURCE_ROW_NUMBER
 from cdisc_rules_engine.data_service.postgresql_data_service import (
@@ -93,8 +95,15 @@ class SqlVenmoResultHandler(BaseActions):
             single_value = results.iloc[0]
             results = pd.Series([single_value] * original_row_count, index=range(original_row_count))
 
-        rows_with_error = self._get_error_rows(results)
+        self._report_errors(message, self._get_error_rows(results))
 
+    def get_failing_rows(self, truth: SqlTruth) -> List[dict]:
+        return self._get_error_rows_for_condition(truth, log_errors=False)
+
+    def report_failing_rows(self, message: str, rows_with_error: List[dict]):
+        self._report_errors(message, rows_with_error)
+
+    def _report_errors(self, message: str, rows_with_error: List[dict]):
         validation_schema = self.data_service.pgi.schema.get_table(self.dataset_id)
         target_columns = SqlVenmoResultHandler._get_target_columns(self.rule, self.dataset_metadata, validation_schema)
 
@@ -136,6 +145,20 @@ class SqlVenmoResultHandler(BaseActions):
 
         results = self.data_service.pgi.fetch_all()
         return list(results)
+
+    def _get_error_rows_for_condition(self, truth: SqlTruth, log_errors: bool = True) -> List[dict]:
+        table_hash = self.data_service.pgi.schema.get_table_hash(self.dataset_id)
+        limit = " LIMIT 1" if self._reports_only_first_error() else ""
+        self.data_service.pgi.execute_sql(
+            f"SELECT {CHECK_OPERATOR_TABLE_ALIAS}.* FROM {truth.from_clause(table_hash, CHECK_OPERATOR_TABLE_ALIAS)} "
+            f"WHERE {truth.sql} ORDER BY {CHECK_OPERATOR_TABLE_ALIAS}.id ASC{limit}",
+            log_errors=log_errors,
+        )
+        return list(self.data_service.pgi.fetch_all())
+
+    def _reports_only_first_error(self) -> bool:
+        is_summary = self.rule.get("sensitivity") in (Sensitivity.DATASET.value, Sensitivity.STUDY.value)
+        return is_summary and not getattr(self.dataset_metadata, "split_part_filenames", None)
 
     def _bundle_error_object(
         self,

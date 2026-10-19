@@ -181,7 +181,7 @@ def cli():
     "-lr",
     required=False,
     type=click.Path(exists=True, readable=True, resolve_path=True),
-    help="path to directory containing local rules.",
+    help=("path to a local rule file or to a directory of local rules."),
 )
 @click.option(
     "--custom_standard",
@@ -230,6 +230,15 @@ def cli():
     default=False,
     help="Run validation using an in-memory Postgres instance",
 )
+@click.option(
+    "--collapse-duplicate-issues",
+    is_flag=True,
+    default=False,
+    help=(
+        "When a rule's message applies to every record in a dataset, collapse those rows in the Excel report "
+        "into a single row with the record numbers shown as a range (e.g. '1-500'), instead of one row per record."
+    ),
+)
 @click.pass_context
 def validate(  # noqa: C901
     ctx,
@@ -266,6 +275,7 @@ def validate(  # noqa: C901
     sql_engine: bool,
     sql_namespace: str,
     in_memory_postgres: bool,
+    collapse_duplicate_issues: bool,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -360,6 +370,7 @@ def validate(  # noqa: C901
         stf_file_path,
         validate_xml_bool,
         sql_namespace,
+        collapse_duplicate_issues,
     )
     if sql_engine:
         run_sql_validation(args, in_memory_postgres=in_memory_postgres)

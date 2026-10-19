@@ -249,6 +249,8 @@ class SqlDataPreprocessor:
         metadata.split_part_sizes = {part.filename.lower(): part.file_size for part in part_metadata}
         part_sizes = metadata.split_part_sizes.values()
         metadata.file_size = None if None in part_sizes else sum(part_sizes)
+        part_counts = [part.record_count for part in part_metadata]
+        metadata.record_count = None if None in part_counts else sum(part_counts)
 
         return metadata
 

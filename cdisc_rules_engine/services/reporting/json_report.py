@@ -60,7 +60,7 @@ class JsonReport(BaseReport):
         conformance_details["Meddra_Version"] = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         conformance_details["WHODRUG_Version"] = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         conformance_details["LOINC_Version"] = dictionary_versions.get(DictionaryTypes.LOINC.value)
-        conformance_details["SNOMED_Version"] = None
+        conformance_details["SNOMED_Version"] = dictionary_versions.get(DictionaryTypes.SNOMED.value)
 
         json_export = {
             "Conformance_Details": conformance_details,
