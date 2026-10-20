@@ -241,9 +241,9 @@ def load_specified_rules(rules_data, rule_ids, standard, version, standard_dict,
     for rule_id in valid_rule_ids:
         rule_data = rules_data.get(rule_id)
         rules.append(rule_data)
-    # If no valid rules were found, raise an error
+    # No valid rules is handled by the caller, which asks the user whether to continue
     if not rules:
-        raise ValueError(
+        engine_logger.error(
             f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
         )
     return rules

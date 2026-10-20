@@ -188,7 +188,7 @@ class TestValidate(unittest.TestCase):
             "-s",
             "sdtmig",
             "-v",
-            "3.4",
+            "3.3",
             "-dp",
             os.path.join("tests", "resources", "datasets", "ae.xpt"),
             "-lr",
