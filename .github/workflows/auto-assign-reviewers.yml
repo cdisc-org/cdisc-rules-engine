@@ -1,0 +1,36 @@
+name: Auto-assign reviewers
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  request-reviewers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request reviewers
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          for reviewer in YetiGonk rich-verisian enrymather-Verisian; do
+            if [ "${reviewer,,}" = "${PR_AUTHOR,,}" ]; then
+              continue
+            fi
+            gh pr edit "$PR_NUMBER" --add-reviewer "$reviewer"
+          done
+
+      - name: Assign PR author
+        if: github.event.pull_request.user.type != 'Bot'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: gh pr edit "$PR_NUMBER" --add-assignee "$PR_AUTHOR"
