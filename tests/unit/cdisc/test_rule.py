@@ -52,6 +52,11 @@ def test_parse_conditions_without_check_data_provided():
         assert err.args[0] == "No check data provided"
 
 
+def test_parse_conditions_keeps_jsonata_check_as_is():
+    jsonata_check = "$.study.versions.studyDesigns[$not(name)]"
+    assert Rule.parse_conditions(jsonata_check) == jsonata_check
+
+
 def test_valid_parse_conditions():
     conditions = {"all": [{"name": "IDVAR", "operator": "not_equal_to", "value": 10}]}
     parsed_conditions = Rule.parse_conditions(conditions)

@@ -99,9 +99,12 @@ class Rule:
         return "Core" in rule_metadata
 
     @classmethod
-    def parse_conditions(cls, conditions: dict) -> dict:
+    def parse_conditions(cls, conditions: dict | str) -> dict | str:
         if not conditions:
             raise ValueError("No check data provided")
+        if isinstance(conditions, str):
+            # JSONata check (e.g. USDM rules): kept as is, as in the upstream engine
+            return conditions
         all_conditions = conditions.get("all")
         any_conditions = conditions.get("any")
         not_condition = conditions.get("not")

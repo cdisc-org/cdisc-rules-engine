@@ -465,7 +465,11 @@ def update_cache(
     elif remove_custom_standard:
         cache_populator.remove_custom_standards_from_cache()
     else:
-        asyncio.run(cache_populator.update_cache())
+        report = asyncio.run(cache_populator.update_cache())
+        print(report.summary())
+        if not report.succeeded:
+            ctx.exit(1)
+        return
 
     print("Cache updated successfully")
 
