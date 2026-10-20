@@ -222,7 +222,9 @@ class BaseDefineXMLReader(ABC):
 
     def _get_dataset_metadata(self, metadata, dataset_name):
         try:
-            dataset_metadata = next(item for item in metadata.ItemGroupDef if item.Name == dataset_name)
+            dataset_metadata = next(
+                item for item in metadata.ItemGroupDef if str(item.Name).upper() == str(dataset_name).upper()
+            )
             return dataset_metadata
         except StopIteration:
             raise DomainNotFoundInDefineXMLError(f"Dataset {dataset_name} is not found in Define XML")
@@ -230,11 +232,12 @@ class BaseDefineXMLReader(ABC):
     def _get_domain_metadata(self, metadata, domain_name: str = None, name: str = None):
         try:
             if name and domain_name:
+                # A SUPP-- ItemGroupDef's Domain may be its parent domain (AE) or its own name (SUPPAE)
                 domain_metadata = next(
                     item
                     for item in metadata.ItemGroupDef
                     if str(item.Name).upper() == name.upper()
-                    and (not item.Domain or item.Domain.upper() == domain_name.upper())
+                    and (not item.Domain or item.Domain.upper() in (domain_name.upper(), name.upper()))
                 )
             else:
                 domain_metadata = next(

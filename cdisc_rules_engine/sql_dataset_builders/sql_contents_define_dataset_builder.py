@@ -11,7 +11,7 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
     Adds dataset metadata from Define XML to the dataset for use in rules.
     """
 
-    def build(self) -> str:
+    def build(self) -> str:  # noqa
         table_id = self.data_service.get_dataset_for_rule(self.dataset_metadata, self.rule, self.standards_context)
 
         schema = self.data_service.pgi.schema.get_table(table_id)
@@ -48,7 +48,8 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
             if value is None:
                 set_values.append(f"{col_hash} = NULL")
             elif isinstance(value, str):
-                set_values.append(f"{col_hash} = '{value}'")
+                escaped = value.replace("'", "''")
+                set_values.append(f"{col_hash} = '{escaped}'")
             else:
                 set_values.append(f"{col_hash} = {value}")
         set_query = ", ".join(set_values)
@@ -56,7 +57,9 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
         update_query = f"UPDATE {table_hash} SET {set_query};"
         self.data_service.pgi.execute_sql(update_query)
 
-        self.data_service.pgi.add_column(table_id, SqlColumnSchema.define("define_key_sequence_is_unique", "Bool"))
+        if not self.data_service.pgi.schema.get_column(table_id, "define_key_sequence_is_unique"):
+            self.data_service.pgi.add_column(table_id, SqlColumnSchema.define("define_key_sequence_is_unique", "Bool"))
+        key_sequence = [col for col in (define_ds_metadata.get("define_dataset_key_sequence") or "").split(",") if col]
 
         # handle SUPP datasets - if SUPP exists then it may contribute key variables, and so join is necessary.
         supp_table_id = f"SUPP{table_id}".lower()
@@ -65,14 +68,11 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
             idvar_cols_query = f"""SELECT STRING_AGG(DISTINCT IDVAR, ', ') as idvars, STRING_AGG(DISTINCT QNAM, ', ') as qnams from {supp_table_hash};"""  # noqa
             self.data_service.pgi.execute_sql(idvar_cols_query)
             all_cols = self.data_service.pgi.fetch_one()
-            idvar_cols = all_cols["idvars"].split(", ")
-            qnam_cols = all_cols["qnams"].split(", ")
-            non_supp_key_cols = [
-                col
-                for col in define_ds_metadata.get("define_dataset_key_sequence", "").split(",")
-                if col not in qnam_cols
-            ]
-            key_vars = ", ".join([col for col in non_supp_key_cols + ["final_supp"]])
+            # a blank IDVAR (e.g. in SUPPDM) links the SUPP record to the subject rather than to a record
+            idvar_cols = (all_cols["idvars"] or "").split(", ")
+            qnam_cols = (all_cols["qnams"] or "").split(", ")
+            non_supp_key_cols = [col for col in key_sequence if col not in qnam_cols]
+            key_vars = ", ".join(non_supp_key_cols + ["final_supp"]) if key_sequence else ""
 
             pivoted_supp_query = f"""
                 WITH pivoted_supp as (
@@ -85,18 +85,13 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
 
             from_query = f"""
                 (SELECT
-                    a.id, {', '.join([f'a.{col}' for col in non_supp_key_cols])}
-                    ,COALESCE({', '.join([f'ps_{col}.all_supp_vars' for col in idvar_cols])}) as final_supp
+                    {', '.join(['a.id'] + [f'a.{col}' for col in non_supp_key_cols])}
+                    ,COALESCE({', '.join([f'ps_{i}.all_supp_vars' for i in range(len(idvar_cols))])}) as final_supp
                 FROM {table_hash} a
-                {' \n'.join([f"""LEFT JOIN pivoted_supp ps_{col}
-            ON a.STUDYID = ps_{col}.STUDYID
-            AND a.DOMAIN = ps_{col}.RDOMAIN
-            AND a.USUBJID = ps_{col}.USUBJID
-            AND ps_{col}.IDVAR = '{col}'
-            AND a.{col}::text = ps_{col}.IDVARVAL::text""" for col in idvar_cols])}
+                {' \n'.join([self._supp_join(i, col) for i, col in enumerate(idvar_cols)])}
                 ) sub_inner"""
         else:
-            key_vars = define_ds_metadata.get("define_dataset_key_sequence", "")
+            key_vars = ", ".join(key_sequence)
             from_query = table_hash
             pivoted_supp_query = ""
 
@@ -116,3 +111,15 @@ class SqlContentsDefineDatasetBuilder(SqlBaseDatasetBuilder):
         self.data_service.pgi.execute_sql(uniqueness_query)
 
         return table_id
+
+    @staticmethod
+    def _supp_join(index: int, idvar: str) -> str:
+        join = f"""LEFT JOIN pivoted_supp ps_{index}
+            ON a.STUDYID = ps_{index}.STUDYID
+            AND a.DOMAIN = ps_{index}.RDOMAIN
+            AND a.USUBJID = ps_{index}.USUBJID"""
+        if not idvar:
+            return f"{join}\n            AND COALESCE(ps_{index}.IDVAR, '') = ''"
+        return f"""{join}
+            AND ps_{index}.IDVAR = '{idvar}'
+            AND a.{idvar}::text = ps_{index}.IDVARVAL::text"""

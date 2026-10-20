@@ -1,5 +1,6 @@
+import os
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     BaseDatasetMetadata,
@@ -115,37 +116,53 @@ class SqlBaseDatasetBuilder(ABC):
         """
         return self.build()
 
+    def _get_define_names(self) -> List[str]:
+        """
+        Names the dataset may have in Define-XML. A split dataset (e.g. QS) is defined under the names of its
+        parts (QSCG, QSMM...), so each part is tried in turn.
+        """
+        split_parts = getattr(self.dataset_metadata, "split_part_filenames", None) or []
+        names = [os.path.splitext(os.path.basename(part))[0].upper() for part in split_parts]
+        return names or [self.dataset_metadata.name.upper()]
+
+    def _extract_from_define(self, extract: Callable[[str], Any]) -> Tuple[str, Any]:
+        """
+        Calls extract with each of the dataset's Define-XML names and returns the first name found with its result.
+        Raises DomainNotFoundInDefineXMLError if the dataset is not in the define.
+        """
+        error = None
+        for name in self._get_define_names():
+            try:
+                return name, extract(name)
+            except DomainNotFoundInDefineXMLError as e:
+                error = e
+        raise error
+
     def get_define_vars(self) -> List[dict]:
         define_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
         )
-        domain = self.dataset_metadata.domain
-        rdomain = getattr(self.dataset_metadata, "rdomain", None)
-        name = self.dataset_metadata.name
-        if rdomain:
-            metadata = define_reader.extract_variables_metadata(domain_name=rdomain, name=domain)
-        else:
-            metadata = define_reader.extract_variables_metadata(domain_name=domain, name=name)
-        for i, var in enumerate(metadata):
-            metadata[i] = self._format_metadata_dict(var)
-        return metadata
+        domain = getattr(self.dataset_metadata, "rdomain", None) or self.dataset_metadata.domain
+        _, metadata = self._extract_from_define(
+            lambda name: define_reader.extract_variables_metadata(domain_name=domain, name=name)
+        )
+        return [self._format_metadata_dict(dict(var)) for var in metadata]
 
     def get_define_dataset(self) -> dict:
         define_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
         )
         try:
-            metadata = define_reader.extract_dataset_metadata(self.dataset_metadata.domain)
-            metadata = self._format_metadata_dict(metadata)
-            domain = self.standards_context.derive_rdomain(self.dataset_metadata.name)
-            if "define_dataset_variable_order" not in metadata.keys():
-                metadata["define_dataset_variable_order"] = self._get_define_dataset_variable_order(
-                    reader=define_reader,
-                    domain=domain,
-                    name=self.dataset_metadata.name,
-                )
+            define_name, metadata = self._extract_from_define(define_reader.extract_dataset_metadata)
         except DomainNotFoundInDefineXMLError:
-            metadata = {}
+            return {}
+        metadata = self._format_metadata_dict(dict(metadata))
+        if "define_dataset_variable_order" not in metadata.keys():
+            metadata["define_dataset_variable_order"] = self._get_define_dataset_variable_order(
+                reader=define_reader,
+                domain=getattr(self.dataset_metadata, "rdomain", None) or self.dataset_metadata.domain,
+                name=define_name,
+            )
         return metadata
 
     def get_define_all_datasets(self) -> Dict[str, dict]:
@@ -182,16 +199,13 @@ class SqlBaseDatasetBuilder(ABC):
         define_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.data_service.define_xml_path, self.data_service.define_xml_path, self.data_service, None
         )
-        domain = self.dataset_metadata.domain
-        rdomain = getattr(self.dataset_metadata, "rdomain", None)
-        name = self.dataset_metadata.name
+        domain = getattr(self.dataset_metadata, "rdomain", None) or self.dataset_metadata.domain
         try:
-            if rdomain:
-                metadata = define_reader.extract_value_level_metadata(domain_name=rdomain, name=domain)
-            else:
-                metadata = define_reader.extract_value_level_metadata(domain_name=domain, name=name)
+            _, metadata = self._extract_from_define(
+                lambda name: define_reader.extract_value_level_metadata(domain_name=domain, name=name)
+            )
         except DomainNotFoundInDefineXMLError as e:
-            logger.warning(f"No value level metadata for dataset '{name}': {e}")
+            logger.warning(f"No value level metadata for dataset '{self.dataset_metadata.name}': {e}")
             return []
         for i, vlm in enumerate(metadata):
             where_clause = vlm.pop("where_clause", [])

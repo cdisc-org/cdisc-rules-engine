@@ -222,7 +222,8 @@ class SdtmStandardsContext(BaseStandardsContext):
         return variables_metadata
 
     def get_library_variables_metadata(self, dataset_metadata: SdtmDatasetMetadata2) -> list:
-        if not dataset_metadata.domain and dataset_metadata.is_supp and dataset_metadata.rdomain:
+        # SUPP-- datasets (domain SUPPAE, SUPPDM...) are all described by the library's SUPPQUAL
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
             domain = "SUPPQUAL"
         elif not dataset_metadata.domain and not dataset_metadata.rdomain and "rel" in dataset_metadata.name.lower():
             if dataset_metadata.name.lower().startswith("ap") and dataset_metadata.name.lower()[2:].startswith("rel"):
