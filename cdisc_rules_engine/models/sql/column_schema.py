@@ -1,5 +1,6 @@
 from typing import Any
 
+from cdisc_rules_engine.data_service.reserved_keywords import SQL_RESERVED_KEYWORDS
 from cdisc_rules_engine.data_service.util import generate_hash
 from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES, ORIGIN_COLUMN_TYPES
@@ -35,12 +36,18 @@ class SqlColumnSchema:
     @classmethod
     def from_data(cls, column: str, data: Any) -> "SqlColumnSchema":
         sql_type = cls.python_to_sql_type(data)
-        return cls(name=column.lower(), hash=column.lower(), type=sql_type)
+        return cls(name=column.lower(), hash=cls._data_column_hash(column), type=sql_type)
 
     @classmethod
     def from_metadata(cls, metadata: VariableMetadata) -> "SqlColumnSchema":
         name = metadata.name.lower()
-        return cls(name=name, hash=name, type=metadata.type)
+        return cls(name=name, hash=cls._data_column_hash(name), type=metadata.type)
+
+    @staticmethod
+    def _data_column_hash(column: str) -> str:
+        """Create hash for reserved name columns, else return the column name as is."""
+        name = column.lower()
+        return generate_hash(name) if name.upper() in SQL_RESERVED_KEYWORDS else name
 
     @classmethod
     def generated(cls, column: str, type: DATASET_COLUMN_TYPES) -> "SqlColumnSchema":
