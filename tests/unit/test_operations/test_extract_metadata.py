@@ -66,22 +66,20 @@ def _create_mock_service(dataset_name, first_record=None):
 @pytest.mark.parametrize(
     "dataset_name, first_record, expected_suffix",
     [
-        ("APFA", None, ""),
-        ("APXX", None, ""),
-        ("APLB", None, ""),
-        ("", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
-        ("AE", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
-        ("AP", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
-        ("APF", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
-        ("AE", None, ""),
-        ("LB", None, ""),
-        ("AP", None, ""),
-        ("APF", None, ""),
         ("AE", {"DOMAIN": "AE"}, ""),
-        ("AE", {"DOMAIN": "LB"}, ""),
-        ("AE", {"DOMAIN": "AP"}, ""),
+        ("LB", {"DOMAIN": "LB"}, ""),
+        ("AE1", {"DOMAIN": "AE"}, ""),
+        ("APFA", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
+        ("APLB", {"DOMAIN": "APLB", "APID": "AP001"}, "LB"),
+        ("APFA1", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
+        ("APXX", None, "XX"),
+        ("APFA", {"APID": "AP001"}, "FA"),
         ("AE", {"DOMAIN": ""}, ""),
         ("AE", {"DOMAIN": None}, ""),
+        ("APRELSUB", {"APID": "AP001"}, "RELSUB"),
+        ("APRELSPEC", {"APID": "AP001"}, "RELSPEC"),
+        ("APRELSUB", None, "RELSUB"),
+        ("APRELSPEC", None, "RELSPEC"),
     ],
 )
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -111,9 +109,12 @@ def test_extract_metadata_domain_suffix(
     )
     result = operation.execute()
     assert operation_params.operation_id in result
-    assert all(
-        item == expected_suffix for item in result[operation_params.operation_id]
-    )
+    actual_values = result[operation_params.operation_id]
+    for i, item in enumerate(actual_values):
+        assert item == expected_suffix, (
+            f"row {i}: dataset_name={dataset_name!r} first_record={first_record!r} "
+            f"expected={expected_suffix!r} got={item!r}"
+        )
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -135,22 +136,3 @@ def test_extract_metadata_domain_suffix_uses_domain(
     result = operation.execute()
     assert operation_params.operation_id in result
     assert all(item == "XX" for item in result[operation_params.operation_id])
-
-
-@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_extract_metadata_domain_suffix_empty_metadata(
-    operation_params: OperationParams, dataset_type
-):
-    mock_data_service = _create_mock_service("APFA", None)
-    operation_params.dataframe = dataset_type.from_dict(
-        {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APFA"]}
-    )
-    operation_params.dataframe_metadata = SDTMDatasetMetadata(name="APFA")
-    operation_params.target = "ap_suffix"
-    cache = InMemoryCacheService.get_instance()
-    operation = ExtractMetadata(
-        operation_params, operation_params.dataframe, cache, mock_data_service
-    )
-    result = operation.execute()
-    assert operation_params.operation_id in result
-    assert all(item == "" for item in result[operation_params.operation_id])
