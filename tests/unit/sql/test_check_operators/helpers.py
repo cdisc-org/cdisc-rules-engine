@@ -1,65 +1,69 @@
 """Helper functions for SQL operator tests."""
 
 import pandas as pd
-import pytest
+from psycopg2 import Error as PostgresError
 
 from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.check_operators.sql.sql_truth import CompileUnsupported, SqlTruth
+from cdisc_rules_engine.compiler.conditions import CO, ConditionCompiler
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import SqlOperatorError
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.standards.default_standards_context import (
     DefaultStandardsContext,
 )
 
 TEST_TABLE_NAME = "test_table"
-COMPILE_MODE = False
+
+#: The keys of an operator's config the compiler supplies itself
+COMPILER_KEYS = {"dataset_id", "data_service", "dataset_metadata", "operation_variables"}
 
 
 class CompiledOperators:
-    """Runs operators in compile mode."""
+    """
+    Runs one check operator as a compiled rule would: the condition is compiled to SQL and
+    evaluated for every row of the table, giving the truth value of each row.
+    """
 
-    def __init__(self, operators: PostgresQLOperators):
-        self._operators = operators
+    def __init__(self, config: dict):
+        self.data = config
 
     def __getattr__(self, name):
-        attribute = getattr(self._operators, name)
-        if not callable(attribute):
-            return attribute
+        if name not in PostgresQLOperators._operator_map:
+            return getattr(PostgresQLOperators(self.data), name)
+        return lambda other_value: run_operator(self.data, name, other_value)
 
-        def run(*args, **kwargs):
-            try:
-                result = attribute(*args, **kwargs)
-            except CompileUnsupported as error:
-                pytest.skip(f"not compilable: {error}")
-            if not isinstance(result, SqlTruth):
-                return result
-            return self._evaluate(result)
 
-        return run
+def run_operator(config: dict, operator: str, other_value: dict) -> pd.Series:
+    """The truth value of one check for each row of config's dataset, ordered by row."""
+    data_service = config["data_service"]
+    dataset_id = config["dataset_id"]
+    dataset_metadata = config.get("dataset_metadata") or data_service.get_dataset_metadata(dataset_id)
+    extra = {key: value for key, value in config.items() if key not in COMPILER_KEYS}
+    compiler = ConditionCompiler(
+        data_service, dataset_id, dataset_metadata, config.get("operation_variables") or {}, extra_operator_data=extra
+    )
+    compiled = compiler.compile_condition(operator, other_value)
 
-    def _evaluate(self, truth: SqlTruth) -> pd.Series:
-        data = self._operators.data
-        pgi = data["data_service"].pgi
-        table = pgi.schema.get_table_hash(data["dataset_id"])
-
-        source = truth.from_clause(table, "co")
-
-        pgi.execute_sql(f"SELECT co.id AS id, ({truth.sql}) AS data FROM {source} ORDER BY co.id")
+    pgi = data_service.pgi
+    source = compiled.from_clause(pgi.schema.get_table_hash(dataset_id))
+    try:
+        pgi.execute_sql(f"SELECT {CO}.id AS id, ({compiled.where}) AS data FROM {source} ORDER BY {CO}.id")
         rows = pgi.fetch_all()
-
-        pgi.execute_sql(f"SELECT co.id AS id FROM {source} WHERE {truth.sql} ORDER BY co.id")
+        pgi.execute_sql(f"SELECT {CO}.id AS id FROM {source} WHERE {compiled.where} ORDER BY {CO}.id")
         selected = [row["id"] for row in pgi.fetch_all()]
-        assert selected == [row["id"] for row in rows if row["data"] is True]
+    except PostgresError as error:
+        raise SqlOperatorError(original_exception=error, operator_name=operator) from error
 
-        return pd.Series(data={row["id"] - 1: row["data"] for row in rows})
+    assert selected == [row["id"] for row in rows if row["data"] is True], "WHERE and SELECT disagree"
+    return pd.Series(data={row["id"] - 1: row["data"] for row in rows})
 
 
 def create_sql_operators(
     column_data: dict, extra_operation_variables: dict = {}, extra_config: dict = {}, dataset_name: str = None
-) -> PostgresQLOperators:
-    """Create PostgresQLOperators instance with test data.
+) -> CompiledOperators:
+    """Create a test dataset and an operators instance that evaluates checks against it.
     It will preload some operation variables which can be used in tests.
 
     Args:
@@ -69,7 +73,7 @@ def create_sql_operators(
         dataset_name: Optional dataset name for testing dataset_name column operations
 
     Returns:
-        PostgresQLOperators instance configured for testing
+        An object whose attributes are the check operators, each returning one truth value per row
     """
     standards_context = DefaultStandardsContext()
     data_service = PostgresQLDataService.instance()
@@ -98,9 +102,7 @@ def create_sql_operators(
         table_name,
     )
 
-    if COMPILE_MODE:
-        return CompiledOperators(PostgresQLOperators({**config, "compile_only": True}))
-    return PostgresQLOperators(config)
+    return CompiledOperators(config)
 
 
 def assert_series_equals(actual: pd.Series, expected):

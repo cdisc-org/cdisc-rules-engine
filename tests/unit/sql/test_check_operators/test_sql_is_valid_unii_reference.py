@@ -1,6 +1,5 @@
 import pytest
-from .helpers import assert_series_equals
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from .helpers import assert_series_equals, run_operator
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.models.sql_external_dictionaries_container import (
@@ -58,7 +57,7 @@ def test_valid_unii_references(sdtm_standards_context, operator, domain, target,
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = getattr(PostgresQLOperators(config), operator)({"target": target, "comparator": comparator})
+    op_result = run_operator(config, operator, {"target": target, "comparator": comparator})
     assert_series_equals(op_result, result)
 
 
@@ -76,5 +75,5 @@ def test_valid_unii_code_reference_missing_target_column(sdtm_standards_context)
     )
 
     config = {"dataset_id": "MH", "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_unii_code_reference({"target": "MHTRTCD", "comparator": None})
+    op_result = run_operator(config, "is_valid_unii_code_reference", {"target": "MHTRTCD", "comparator": None})
     assert_series_equals(op_result, [False, False])

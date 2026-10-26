@@ -648,3 +648,17 @@ def test_target_is_not_sorted_by(data, params, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.target_is_not_sorted_by(params)
     assert_series_equals(result, ~pd.Series(expected_result))
+
+
+def test_target_is_sorted_by_rows_that_tie_on_the_comparator_are_in_order():
+    data = {
+        "USUBJID": ["S1"] * 4,
+        "SEQ": [1, 2, 3, 4],
+        "DTC": ["2020-01-01", "2020-01-01", "2020-01-02", "2020-01-02"],
+    }
+    params = {
+        "target": "SEQ",
+        "within": "USUBJID",
+        "comparator": [{"name": "DTC", "sort_order": "ASC", "null_position": "last"}],
+    }
+    assert_series_equals(create_sql_operators(data).target_is_sorted_by(params), [True, True, True, True])

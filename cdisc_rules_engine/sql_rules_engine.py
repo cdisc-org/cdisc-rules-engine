@@ -1,14 +1,15 @@
 import re
 import traceback
 from copy import deepcopy
-from typing import Callable, List, Union
+from typing import Callable, List, Tuple, Union
 
-from business_rules import export_rule_data
-from business_rules.engine import check_conditions_recursively, run
 from psycopg2 import Error as PostgresError
 from psycopg2.errors import ProgrammingError
 
-from cdisc_rules_engine.check_operators.sql.sql_truth import CompileUnsupported, SqlTruth
+from cdisc_rules_engine.compiler.compiler import CompiledQuery, RuleQueryCompiler
+from cdisc_rules_engine.compiler.conditions import ConditionCompiler
+from cdisc_rules_engine.compiler.sources import rule_source
+from cdisc_rules_engine.constants.rule_constants import MAX_ERRORS_PER_DATASET
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -30,15 +31,11 @@ from cdisc_rules_engine.models.failed_validation_entity import FailedValidationE
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
     ConditionCompositeFactory,
 )
-from cdisc_rules_engine.models.sql_venmo_object import SqlVenmoObject
-from cdisc_rules_engine.models.sql_venmo_result_handler import (
-    SqlVenmoResultHandler,
-)
+from cdisc_rules_engine.models.sql_result_handler import SqlResultHandler
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.sql_dataset_builders import sql_builder_factory
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
@@ -48,9 +45,6 @@ from cdisc_rules_engine.utilities.rule_progress import (
     RuleProgressReporter,
 )
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
-from cdisc_rules_engine.utilities.utils import (
-    serialize_rule,
-)
 
 
 def clean_postgres_message(message: str) -> str:
@@ -70,15 +64,12 @@ class SQLRulesEngine:
         data_service: PostgresQLDataService,
         standards_context: BaseStandardsContext,
         progress_reporter: RuleProgressReporter = None,
-        compile_rules: bool = True,
+        max_errors_per_dataset: int = MAX_ERRORS_PER_DATASET,
     ):
         self.data_service = data_service
         self.standards_context = standards_context
-        self.compile_rules = compile_rules
         self.progress_reporter = progress_reporter or DisabledRuleProgressReporter()
-
-    def get_schema(self):
-        return export_rule_data(SqlVenmoObject, SqlVenmoResultHandler)
+        self.max_errors_per_dataset = max_errors_per_dataset
 
     def sql_validate_single_rule(self, rule: dict):
         results = {}
@@ -87,7 +78,7 @@ class SQLRulesEngine:
         is_study_sensitivity = rule.get("sensitivity") == Sensitivity.STUDY.value
         study_error_already_reported = False
 
-        # Collect all dataset metadata for builders that need it (e.g., DomainListDatasetBuilder)
+        # Collect all dataset metadata for rule types that read every dataset (e.g. Domain Presence Check)
         all_datasets = [
             self.data_service.get_dataset_metadata(ds_id) for ds_id in self.data_service.get_uploaded_dataset_ids()
         ]
@@ -205,20 +196,10 @@ class SQLRulesEngine:
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint for rule validation.
-        It uses the sql_builder_factory to get the correct data source
-        and then executes the rule against it.
+        It gets the rows the rule's type checks and then executes the rule against them.
         """
         self.progress_reporter.set_phase(RuleProgressPhase.EXECUTING)
-        builder = sql_builder_factory.get_service(
-            rule_type=rule.get("rule_type"),
-            rule=rule,
-            data_service=self.data_service,
-            dataset_metadata=dataset_metadata,
-            datasets=datasets,
-            standards_context=self.standards_context,
-        )
-
-        dataset_id = builder.get_dataset_id()
+        dataset_id = rule_source(rule, self.data_service, dataset_metadata, self.standards_context, datasets)
 
         return self.execute_rule(rule, dataset_metadata, dataset_id)
 
@@ -260,77 +241,86 @@ class SQLRulesEngine:
             standards_context=self.standards_context,
         )
 
+        compiler = RuleQueryCompiler(
+            rule_copy,
+            self.data_service,
+            dataset_metadata,
+            dataset_id,
+            operation_variables,
+            target_rule=rule,
+            max_errors=self.max_errors_per_dataset,
+        )
+        compiled, rows = self._failing_rows(compiler)
+
         results = []
-        result_handler = SqlVenmoResultHandler(
+        SqlResultHandler(
             results,
             dataset_metadata=dataset_metadata,
             rule=rule,
             data_service=self.data_service,
             dataset_id=dataset_id,
             operation_variables=operation_variables,
-        )
-
-        if self.compile_rules and self._run_compiled(
-            rule_copy, dataset_metadata, dataset_id, operation_variables, result_handler
-        ):
-            return results
-
-        # Translator between venmo and the check operators
-        venmo_object = self._venmo_object(dataset_metadata, dataset_id, operation_variables)
-        run(
-            serialize_rule(rule_copy),
-            defined_variables=venmo_object,
-            defined_actions=result_handler,
-        )
+        ).report(compiled, rows)
         return results
 
-    def _venmo_object(
-        self, dataset_metadata: BaseDatasetMetadata, dataset_id: str, operation_variables: dict, **params
-    ) -> SqlVenmoObject:
-        return SqlVenmoObject(
-            dataset_id=dataset_id,
-            data_service=self.data_service,
-            column_prefix_map={"--": dataset_metadata.domain},
-            operation_variables=operation_variables,
-            dataset_metadata=dataset_metadata,
-            **params,
-        )
-
-    def _run_compiled(
-        self,
-        rule: dict,
-        dataset_metadata: BaseDatasetMetadata,
-        dataset_id: str,
-        operation_variables: dict,
-        result_handler: SqlVenmoResultHandler,
-    ) -> bool:
-        actions = rule.get("actions") or []
-        if len(actions) != 1 or actions[0].get("name") != "generate_dataset_error_objects":
-            return False
-
-        rule_label = f"Rule {rule.get('core_id')} on {dataset_metadata.name}"
-        venmo_object = self._venmo_object(dataset_metadata, dataset_id, operation_variables, compile_only=True)
+    def _failing_rows(self, compiler: RuleQueryCompiler) -> Tuple[CompiledQuery, List[dict]]:
+        """
+        Run the compiled rule and return a tuple of the query that actually ran and its rows.
+        First try selects operation outputs inside the query. If the cursor rejects that then we
+        recompile without them and let the result handler evaluate them per row. This is ARGUABLY
+        slower, but it's what the old engine did anyway. A failure with nothing inlined is a
+        real error in one of the checks.
+        """
+        compiled = compiler.compile()
         try:
-            truth = check_conditions_recursively(rule["conditions"].to_dict(), venmo_object)
-        except CompileUnsupported as error:
-            logger.debug(f"{rule_label} not compiled, running operator by operator: {error}")
-            return False
-        if isinstance(truth, bool):
-            truth = SqlTruth("TRUE" if truth else "FALSE")
-        if not isinstance(truth, SqlTruth):
-            logger.debug(
-                f"{rule_label} not compiled, running operator by operator: conditions gave {type(truth).__name__}"
-            )
-            return False
-
-        try:
-            failing_rows = result_handler.get_failing_rows(truth)
+            return compiled, self._fetch(compiled.sql)
         except PostgresError as error:
-            logger.warning(f"{rule_label} compiled query failed, rerunning operator by operator: {str(error).strip()}")
-            return False
-        if failing_rows:
-            result_handler.report_failing_rows(**(actions[0].get("params") or {}), rows_with_error=failing_rows)
-        return True
+            if not compiled.inline_outputs:
+                self._raise_for_failing_check(error, compiler)
+                raise
+            logger.warning(
+                f"Rule {compiler.rule.get('core_id')} on {compiler.dataset_metadata.name}: operation outputs "
+                f"could not be selected in the query, evaluating them per row: {str(error).strip()}"
+            )
+
+        compiled = compiler.compile(inline_outputs=False)
+        try:
+            return compiled, self._fetch(compiled.sql)
+        except PostgresError as error:
+            self._raise_for_failing_check(error, compiler)
+            raise
+
+    def _fetch(self, sql: str) -> List[dict]:
+        self.progress_reporter.set_phase(RuleProgressPhase.EXECUTING)
+        self.data_service.pgi.execute_sql(sql, log_errors=False)
+        rows = self.data_service.pgi.fetch_all()
+        self.progress_reporter.set_phase(RuleProgressPhase.EVALUATING)
+        return rows
+
+    def _raise_for_failing_check(self, error: PostgresError, compiler: RuleQueryCompiler) -> None:
+        """
+        The whole rule is one statement so a pg query error doesn't say which check broke it annoyingly.
+        Sooooo... we re-run the checks one at a time and blame the first one that fails.
+        This way the user sees "error in operator A" rather than a wall of generated sql.
+        If every check runs fine alone (e.g. it's the combination, or the reporting part of the
+        query), this just logs and returns, and the caller re-raises the original error.
+        """
+        rule, dataset_metadata, dataset_id = compiler.rule, compiler.dataset_metadata, compiler.dataset_id
+        operation_variables = compiler.operation_variables
+        table_hash = self.data_service.pgi.schema.get_table_hash(dataset_id)
+        for condition in rule["conditions"].values():
+            operator = condition.get("operator")
+            compiled = ConditionCompiler(
+                self.data_service, dataset_id, dataset_metadata, operation_variables
+            ).compile_condition(operator, condition.get("value", {}))
+            try:
+                self.data_service.pgi.execute_sql(
+                    f"SELECT COUNT(*) AS count FROM {compiled.from_clause(table_hash)} WHERE {compiled.where}",
+                    log_errors=False,
+                )
+            except PostgresError as e:
+                raise SqlOperatorError(original_exception=e, operator_name=operator) from error
+        logger.error(f"Compiled query for rule {rule.get('core_id')} on {dataset_metadata.name} failed: {error}")
 
     # def get_define_xml_value_level_metadata(self, dataset_path: str, domain_name: str) -> List[dict]:
     #     """

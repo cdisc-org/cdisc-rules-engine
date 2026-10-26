@@ -149,6 +149,7 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
         data_service=data_service,
         standards_context=standards_context,
         progress_reporter=rule_progress_reporter,
+        max_errors_per_dataset=args.max_errors_per_dataset,
     )
 
     engine_logger.info(f"Running {len(rules)} rules against {len(data_service.datasets)} datasets")

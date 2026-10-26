@@ -21,6 +21,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
 from cdisc_rules_engine.models.sql_external_dictionaries_container import SqlExternalDictionariesContainer
+from cdisc_rules_engine.constants.rule_constants import MAX_ERRORS_PER_DATASET
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
@@ -239,6 +240,16 @@ def cli():
         "into a single row with the record numbers shown as a range (e.g. '1-500'), instead of one row per record."
     ),
 )
+@click.option(
+    "--max-errors-per-dataset",
+    type=click.IntRange(min=1),
+    default=MAX_ERRORS_PER_DATASET,
+    show_default=True,
+    help=(
+        "The most issues a rule reports per dataset (per source file of a split dataset), with the message "
+        "saying how many there were in total. SQL engine only."
+    ),
+)
 @click.pass_context
 def validate(  # noqa: C901
     ctx,
@@ -276,6 +287,7 @@ def validate(  # noqa: C901
     sql_namespace: str,
     in_memory_postgres: bool,
     collapse_duplicate_issues: bool,
+    max_errors_per_dataset: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -371,6 +383,7 @@ def validate(  # noqa: C901
         validate_xml_bool,
         sql_namespace,
         collapse_duplicate_issues,
+        max_errors_per_dataset,
     )
     if sql_engine:
         run_sql_validation(args, in_memory_postgres=in_memory_postgres)

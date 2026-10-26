@@ -29,34 +29,14 @@ class EmptyWithinExceptLastRowOperator(BaseSqlOperator):
         if order_by:
             cache_key += f"_ordered_by_{order_by}"
 
-        def sql(table_name, column_name):
-            return f"""
-            WITH ranked AS (
-                SELECT
-                    id,
-                    {self._column_sql(target, alias=False)} AS target_val,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(comparator, alias=False)}
-                        ORDER BY {self._column_sql(order_by, alias=False) if order_by else 'id'}
-                    ) AS rn,
-                    COUNT(*) OVER (
-                        PARTITION BY {self._column_sql(comparator, alias=False)}
-                    ) AS cnt
-                FROM {table_name}
-            )
-            UPDATE {table_name} t
-            SET {column_name} = (
-                SELECT
-                    CASE
-                        -- Last row in group is always false
-                        WHEN r.rn = r.cnt THEN false
-                        -- Note: We don't use _is_empty_sql here because we're working with a column alias (target_val)
-                        WHEN r.target_val IS NULL OR r.target_val = '' THEN true
-                        ELSE false
-                    END
-                FROM ranked r
-                WHERE r.id = t.id
-            )
-            """
+        ordering = self._source_column_sql(order_by) if order_by else "t.id"
+        partition = self._source_column_sql(comparator)
+        target_sql = self._source_column_sql(target)
 
-        return self._do_complex_check_operator(cache_key, sql)
+        expression = f"""CASE
+            WHEN ROW_NUMBER() OVER (PARTITION BY {partition} ORDER BY {ordering})
+                 = COUNT(*) OVER (PARTITION BY {partition}) THEN FALSE
+            WHEN {target_sql} IS NULL OR CAST({target_sql} AS TEXT) = '' THEN TRUE
+            ELSE FALSE
+        END"""
+        return self._window_column(cache_key, f"({expression})", column_type="Bool")

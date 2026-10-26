@@ -1,6 +1,5 @@
 import pytest
-from .helpers import assert_series_equals
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from .helpers import assert_series_equals, run_operator
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.models.sql_external_dictionaries_container import (
@@ -59,8 +58,10 @@ def test_valid_meddra_code_references(
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_code_reference(
-        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    op_result = run_operator(
+        config,
+        "is_valid_meddra_code_reference",
+        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value},
     )
     assert_series_equals(op_result, result)
 
@@ -79,8 +80,10 @@ def test_valid_meddra_code_reference_missing_target_column(sdtm_standards_contex
     )
 
     config = {"dataset_id": "AE", "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_code_reference(
-        {"target": "AESOCCD", "filter_attribute": "term_type", "filter_value": "SOC"}
+    op_result = run_operator(
+        config,
+        "is_valid_meddra_code_reference",
+        {"target": "AESOCCD", "filter_attribute": "term_type", "filter_value": "SOC"},
     )
     assert_series_equals(op_result, [False, False])
 
@@ -136,8 +139,10 @@ def test_valid_meddra_term_references(
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_term_reference(
-        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    op_result = run_operator(
+        config,
+        "is_valid_meddra_term_reference",
+        {"target": target, "filter_attribute": filter_attribute, "filter_value": filter_value},
     )
     assert_series_equals(op_result, result)
 
@@ -199,7 +204,14 @@ def test_valid_meddra_code_term_pairs(
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_meddra_code_term_pair(
-        {"target": target, "comparator": comparator, "filter_attribute": filter_attribute, "filter_value": filter_value}
+    op_result = run_operator(
+        config,
+        "is_valid_meddra_code_term_pair",
+        {
+            "target": target,
+            "comparator": comparator,
+            "filter_attribute": filter_attribute,
+            "filter_value": filter_value,
+        },
     )
     assert_series_equals(op_result, result)

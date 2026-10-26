@@ -1,73 +1,23 @@
 import hashlib
 import re
-import traceback
 from abc import abstractmethod
-from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import numpy as np
 import pandas as pd
 
+from cdisc_rules_engine.compiler.derived import SOURCE_ALIAS, GroupJoin
 from cdisc_rules_engine.constants.metadata_columns import DATASET_NAME, SOURCE_DS
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.data_service.util import safe_numeric_cast_sql
-from cdisc_rules_engine.exceptions.custom_exceptions import (
-    ColumnNotFoundError,
-    SqlOperatorError,
-)
+from cdisc_rules_engine.exceptions.custom_exceptions import ColumnNotFoundError
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
-from cdisc_rules_engine.services import logger
-from .sql_truth import GroupJoin, SqlTruth
 from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 
 CHECK_OPERATOR_TABLE_ALIAS = "co"
-
-
-def log_operator_execution(operator_name):
-    """Decorator that takes an operator name parameter."""
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(self, other_value, *args, **kwargs):
-            try:
-                logger.info(f"Starting check operator: {operator_name}")
-                result = func(self, other_value)
-                logger.info(f"Completed check operator: {operator_name}")
-                return result
-            except Exception as e:
-                logger.error(f"Error in {operator_name}: {str(e)}, " f"traceback: {traceback.format_exc()}")
-
-                # Handle None-type errors by returning None instead of raising
-                error_message = str(e)
-                if isinstance(e, TypeError) and (
-                    "NoneType" in error_message
-                    or "None" in error_message
-                    or any(
-                        phrase in error_message
-                        for phrase in [
-                            "NoneType",
-                            "object is None",
-                            "'NoneType'",
-                            "None has no attribute",
-                            "unsupported operand type",
-                            "bad operand type",
-                            "object is not",
-                            "cannot be None",
-                        ]
-                    )
-                ):
-                    return None
-                else:
-                    raise SqlOperatorError(original_exception=e, operator_name=operator_name) from e
-
-        return wrapper
-
-    return decorator
 
 
 class BaseSqlOperator:
@@ -84,7 +34,7 @@ class BaseSqlOperator:
         self.codelist_term_maps = data.get("codelist_term_maps", [])
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
         self.dataset_metadata: BaseDatasetMetadata = data.get("dataset_metadata", None)
-        self.compile_only: bool = data.get("compile_only", False)
+        self.derived_columns = data.get("derived_columns")
 
     @abstractmethod
     def execute_operator(self, other_value: Dict[str, Any]):
@@ -142,7 +92,6 @@ class BaseSqlOperator:
         else:
             return self.validation_df.get(comparator, comparator)
 
-    @log_operator_execution
     def is_column_of_iterables(self, column):
         """return self.validation_df.is_series(column) and (
             isinstance(column.iloc[0], list) or isinstance(column.iloc[0], set)
@@ -152,57 +101,23 @@ class BaseSqlOperator:
     def _exists(self, column: str) -> bool:
         return self.sql_data_service.pgi.schema.column_exists(self.table_id, column)
 
-    def _fetch_for_venmo(self, column: str):
+    def _do_check_operator(self, sql_subquery_fn) -> str:
+        """Operator condition expressed as a sql bool over the rule's source rows (aliased co)."""
+        return sql_subquery_fn()
+
+    def _source_column_sql(self, column: str) -> str:
+        """Column as addressed inside the source subquery (aliased t), where window expressions are computed."""
+        return f"{SOURCE_ALIAS}.{self._column_sql(column, alias=False)}"
+
+    def _window_column(self, name: str, expression: str, column_type: str = "Bool") -> str:
         """
-        Fetches data from a SQL table and returns it as a pandas Series,
-        so we can pass it to Venmo.
+        Register an expression that has to see across rows (a window function) on the source
+        subquery, and return the condition reading it. No column is ever added to the table.
         """
-        if self.compile_only:
-            return SqlTruth.of(self._column_sql(column))
-
-        # Fetch all of the rows
-        self.sql_data_service.pgi.execute_sql(
-            f"SELECT id, {self._column_sql(column, alias=False)} as data FROM {self._table_sql()} ORDER BY id ASC;"
-        )
-        sql_results = self.sql_data_service.pgi.fetch_all()
-
-        # Fix off-by-one
-        return_series = pd.Series(data={item["id"] - 1: item["data"] for item in sql_results})
-
-        return return_series
-
-    def _do_check_operator(self, sql_subquery_fn):
-        subquery = sql_subquery_fn()
-        if self.compile_only:
-            return SqlTruth.of(subquery)
-
-        full_query = (
-            f"SELECT id, ({subquery}) as data FROM "
-            f"{self._table_sql()} AS {CHECK_OPERATOR_TABLE_ALIAS} ORDER BY id ASC;"
-        )
-
-        self.sql_data_service.pgi.execute_sql(full_query)
-        sql_results = self.sql_data_service.pgi.fetch_all()
-
-        return_series = pd.Series(data={item["id"] - 1: item["data"] for item in sql_results})
-
-        return return_series
-
-    def _do_complex_check_operator(self, new_column: str, sql_full_query_fn):
-        # Handles complex checks by creating a column and populating it with a full custom query.
-        new_column = self._resolve_operation_variables_in_cache_key(new_column)
-
-        exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
-        if not exists:
-            self.sql_data_service.pgi.add_column(table=self.table_id, schema=SqlColumnSchema.check_operator(new_column))
-            join_scope = self.original_data.pop("join_scope", None)
-            try:
-                query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
-            finally:
-                if join_scope is not None:
-                    self.original_data["join_scope"] = join_scope
-            self.sql_data_service.pgi.execute_sql(query)
-        return self._fetch_for_venmo(new_column)
+        if self.derived_columns is None:
+            raise ValueError(f"'{name}' needs the rule's source subquery to compute across rows, but none was given")
+        name = self._resolve_operation_variables_in_cache_key(name)
+        return self.derived_columns.add(name, expression, column_type)
 
     def _get_cache_key_component(self, value) -> str:
         """
@@ -324,9 +239,12 @@ class BaseSqlOperator:
     def _join_scope(self) -> Optional[Dict[str, GroupJoin]]:
         return self.original_data.get("join_scope")
 
-    def _join_derived(self, query: str, on: Callable[[str], str]) -> Optional[str]:
+    def _join_derived(self, query: str, on: Callable[[str], str]) -> str:
+        """Join a pre-aggregated relation to the rows being checked, and return its alias."""
         if self._join_scope is None:
-            return None
+            raise ValueError("A cross-row check needs the compiled rule's join scope, but none was given")
+        # Alias is derived from the SQL, so the same join requested twice (e.g. the check appears
+        # in two branches of an any) collapses into one entry in the join scope
         alias = "drv_" + hashlib.md5(f"{query}{on('_')}".encode()).hexdigest()[:10]
         self._join_scope[alias] = GroupJoin(alias, query, on(alias))
         return alias
@@ -495,9 +413,6 @@ class BaseSqlOperator:
         """series_to_validate = self._get_string_part_series(part_to_validate, length, target)
         return series_to_validate.eq(comparison_data).astype(bool)"""
         raise NotImplementedError("_check_equality_of_string_part check_operator not implemented")
-
-    def _series_is_in(self, target, comparison_data):
-        return np.where(comparison_data.isin(target), True, False)
 
     def _is_empty_sql(self, target: str, alias: bool = True) -> str:
         """

@@ -1,6 +1,5 @@
 import pytest
-from .helpers import assert_series_equals
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from .helpers import assert_series_equals, run_operator
 from cdisc_rules_engine.check_operators.sql.base_sql_operator import BaseSqlOperator
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.exceptions.custom_exceptions import SqlOperatorError
@@ -68,7 +67,7 @@ def test_valid_loinc_references(sdtm_standards_context, operator, domain, target
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = getattr(PostgresQLOperators(config), operator)({"target": target, "comparator": comparator})
+    op_result = run_operator(config, operator, {"target": target, "comparator": comparator})
     assert_series_equals(op_result, result)
 
 
@@ -103,7 +102,7 @@ def test_valid_loinc_code_reference_missing_target_column(sdtm_standards_context
     )
 
     config = {"dataset_id": "LB", "data_service": data_service}
-    op_result = PostgresQLOperators(config).is_valid_loinc_code_reference({"target": "LBTESTCD", "comparator": None})
+    op_result = run_operator(config, "is_valid_loinc_code_reference", {"target": "LBTESTCD", "comparator": None})
     assert_series_equals(op_result, [False, False])
 
 
@@ -185,8 +184,10 @@ def test_valid_loinc_references_status_filter(
     )
 
     config = {"dataset_id": "LB", "data_service": data_service}
-    op_result = getattr(PostgresQLOperators(config), operator)(
-        {"target": target, "comparator": comparator, "filter_attribute": "status", "filter_value": "DEPRECATED"}
+    op_result = run_operator(
+        config,
+        operator,
+        {"target": target, "comparator": comparator, "filter_attribute": "status", "filter_value": "DEPRECATED"},
     )
     assert_series_equals(op_result, result)
 
@@ -213,6 +214,8 @@ def test_valid_loinc_references_unknown_filter_attribute(sdtm_standards_context,
 
     config = {"dataset_id": "LB", "data_service": data_service}
     with pytest.raises(SqlOperatorError, match="Filter attribute 'nonexistent' is not a column in ex_loinc"):
-        getattr(PostgresQLOperators(config), operator)(
-            {"target": "LBLOINC", "comparator": "LBTEST", "filter_attribute": "nonexistent", "filter_value": "X"}
+        run_operator(
+            config,
+            operator,
+            {"target": "LBLOINC", "comparator": "LBTEST", "filter_attribute": "nonexistent", "filter_value": "X"},
         )

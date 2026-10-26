@@ -4,7 +4,7 @@ import pytest
 from cdisc_rules_engine.standards.sdtm_standards_context import SdtmStandardsContext
 from cdisc_rules_engine.check_operators.sql.string_length_comparison_operator import StringLengthComparisonOperator
 from cdisc_rules_engine.constants.metadata_columns import SOURCE_DS
-from cdisc_rules_engine.sql_dataset_builders.sql_dataset_metadata_builder import SqlDatasetMetadataBuilder
+from cdisc_rules_engine.compiler.sources import datasets as dataset_sources
 
 
 def make_operator(dataset_metadata, columns):
@@ -204,16 +204,10 @@ class FakePgi:
 
     def __init__(self, fetch_results):
         self.fetch_results = fetch_results
-        self.inserted = None
-        self.created_columns = None
         self.schema = SimpleNamespace(
-            get_table=lambda _name: None,
             get_table_hash=lambda name: f"{name.lower()}_hash",
             get_column_hash=lambda _table, column: f"{column}_hash",
         )
-
-    def create_table(self, schema):
-        self.created_columns = [name for name, _column in schema.get_columns()]
 
     def execute_sql(self, _query):
         pass
@@ -221,11 +215,26 @@ class FakePgi:
     def fetch_all(self):
         return self.fetch_results
 
-    def insert_data(self, _table_name, rows):
-        self.inserted = rows
+
+def dataset_metadata_rows(monkeypatch, dataset_metadata, pgi, record_count=None):
+    """The columns and rows of a Dataset Metadata Check's view of a dataset."""
+    written = {}
+
+    def rows_view(_context, column_types, rows, name=None):
+        written.update(columns=list(column_types), rows=rows)
+        return "view"
+
+    monkeypatch.setattr(dataset_sources, "rows_view", rows_view)
+    context = SimpleNamespace(
+        dataset_metadata=dataset_metadata,
+        pgi=pgi,
+        store=SimpleNamespace(record_count=lambda _table: record_count),
+    )
+    dataset_sources.metadata(context)
+    return written["columns"], written["rows"]
 
 
-def test_split_dataset_metadata_has_a_row_per_part():
+def test_split_dataset_metadata_has_a_row_per_part(monkeypatch):
     pgi = FakePgi([{"source_ds": "SUPPQSCQI", "count": 2}, {"source_ds": "SUPPQSSWLS", "count": 3}])
     dataset_metadata = SimpleNamespace(
         name="SUPPQS",
@@ -238,14 +247,11 @@ def test_split_dataset_metadata_has_a_row_per_part():
         },
         split_part_sizes={"suppqscqi.xpt": 1024, "suppqsswls.xpt": 2048},
     )
-    builder = SqlDatasetMetadataBuilder.__new__(SqlDatasetMetadataBuilder)
-    builder.data_service = SimpleNamespace(pgi=pgi)
-    builder.dataset_metadata = dataset_metadata
 
-    builder.build()
+    columns, rows = dataset_metadata_rows(monkeypatch, dataset_metadata, pgi)
 
-    assert SOURCE_DS in pgi.created_columns
-    assert pgi.inserted == [
+    assert SOURCE_DS in columns
+    assert rows == [
         {
             "dataset_location": "suppqscqi.xpt",
             "dataset_name": "SUPPQSCQI",
@@ -265,16 +271,13 @@ def test_split_dataset_metadata_has_a_row_per_part():
     ]
 
 
-def test_unsplit_dataset_metadata_has_a_single_row():
-    pgi = FakePgi([{"count": 4}])
-    builder = SqlDatasetMetadataBuilder.__new__(SqlDatasetMetadataBuilder)
-    builder.data_service = SimpleNamespace(pgi=pgi)
-    builder.dataset_metadata = SimpleNamespace(name="AE", filename="ae.xpt", label="Adverse Events", file_size=4096)
+def test_unsplit_dataset_metadata_has_a_single_row(monkeypatch):
+    dataset_metadata = SimpleNamespace(name="AE", filename="ae.xpt", label="Adverse Events", file_size=4096)
 
-    builder.build()
+    columns, rows = dataset_metadata_rows(monkeypatch, dataset_metadata, FakePgi([]), record_count=4)
 
-    assert SOURCE_DS not in pgi.created_columns
-    assert pgi.inserted == [
+    assert SOURCE_DS not in columns
+    assert rows == [
         {
             "dataset_location": "ae.xpt",
             "dataset_name": "AE",

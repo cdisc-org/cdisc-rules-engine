@@ -159,7 +159,7 @@ AS_GLOBAL_VARIABLE_METADATA_CHECK = {
 }
 
 
-def findings(rule, compile_rules):
+def findings(rule):
     data_service = PostgresQLDataService.from_list_of_testdatasets(list(datasets()), StandardsContext())
     data_service.datasets = [
         BaseDatasetMetadata(**{k: v for k, v in dataset.__dict__.items()}, domain=dataset.name.upper())
@@ -173,7 +173,7 @@ def findings(rule, compile_rules):
         return execute_sql(query, *args, **kwargs)
 
     data_service.pgi.execute_sql = record
-    engine = SQLRulesEngine(data_service, StandardsContext(), compile_rules=compile_rules)
+    engine = SQLRulesEngine(data_service, StandardsContext())
     try:
         results = engine.sql_validate_single_rule(copy.deepcopy(rule))
     finally:
@@ -189,17 +189,16 @@ def findings(rule, compile_rules):
     return reported, statements
 
 
-@pytest.mark.parametrize("compile_rules", [False, True], ids=["rows", "compiled"])
 @pytest.mark.parametrize(
     "written_with_grouped_operations, written_with_variable_length_operations",
     [DECLARED_LONGER_THAN_DATA, DIFFERENT_LENGTHS_ACROSS_DATASETS],
     ids=["declared_longer_than_data", "different_lengths_across_datasets"],
 )
 def test_the_operations_find_what_the_grouped_operations_do(
-    written_with_grouped_operations, written_with_variable_length_operations, compile_rules
+    written_with_grouped_operations, written_with_variable_length_operations
 ):
-    before, _ = findings(written_with_grouped_operations, compile_rules)
-    after, _ = findings(written_with_variable_length_operations, compile_rules)
+    before, _ = findings(written_with_grouped_operations)
+    after, _ = findings(written_with_variable_length_operations)
 
     assert any(before.values()), "the rule finds nothing, so this proves nothing"
     assert after == before
@@ -209,15 +208,14 @@ def test_the_operations_find_what_the_grouped_operations_do(
     "rule", [DECLARED_LONGER_THAN_DATA[1], DIFFERENT_LENGTHS_ACROSS_DATASETS[1]], ids=["per_dataset", "global"]
 )
 def test_the_values_of_every_row_are_never_unpivoted(rule):
-    _, statements = findings(rule, compile_rules=True)
+    _, statements = findings(rule)
 
     assert not any("ROW_NUMBER() OVER" in statement for statement in statements)
 
 
-@pytest.mark.parametrize("compile_rules", [False, True], ids=["rows", "compiled"])
-def test_a_global_variable_metadata_check_finds_what_the_global_value_check_does(compile_rules):
-    before, _ = findings(DIFFERENT_LENGTHS_ACROSS_DATASETS[0], compile_rules)
-    after, statements = findings(AS_GLOBAL_VARIABLE_METADATA_CHECK, compile_rules)
+def test_a_global_variable_metadata_check_finds_what_the_global_value_check_does():
+    before, _ = findings(DIFFERENT_LENGTHS_ACROSS_DATASETS[0])
+    after, statements = findings(AS_GLOBAL_VARIABLE_METADATA_CHECK)
 
     assert any(before.values())
     assert after == before

@@ -32,37 +32,14 @@ class HasNextCorrespondingRecordOperator(BaseSqlOperator):
 
         cache_key = f"{target}_has_next_corresponding_record_{comparator}_within_" f"{group_by}_ordered_by_{order_by}"
 
-        def sql(table_name, column_name):
-            return f"""
-            -- For each row, compare current target to next row's comparator; last row in group is always True
-            WITH ranked AS (
-                SELECT
-                    id,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(group_by, alias=False)}
-                        ORDER BY {self._column_sql(order_by, alias=False)}
-                    ) AS rn,
-                    COUNT(*) OVER (
-                        PARTITION BY {self._column_sql(group_by, alias=False)}
-                    ) AS cnt,
-                    {self._column_sql(target, alias=False)} AS target_val,
-                    LEAD({self._column_sql(comparator, alias=False)}) OVER (
-                        PARTITION BY {self._column_sql(group_by, alias=False)}
-                        ORDER BY {self._column_sql(order_by, alias=False)}
-                    ) AS next_comp
-                FROM {table_name}
-            )
-            UPDATE {table_name} t
-            SET {column_name} = (
-                SELECT CASE
-                    WHEN r.rn = r.cnt THEN true
-                    WHEN r.next_comp IS NULL THEN false
-                    WHEN r.target_val = r.next_comp THEN true
-                    ELSE false
-                END
-                FROM ranked r
-                WHERE r.id = t.id
-            )
-            """
+        window = f"PARTITION BY {self._source_column_sql(group_by)} ORDER BY {self._source_column_sql(order_by)}"
+        partition = f"PARTITION BY {self._source_column_sql(group_by)}"
+        next_comparator = f"LEAD({self._source_column_sql(comparator)}) OVER ({window})"
 
-        return self._do_complex_check_operator(cache_key, sql)
+        expression = f"""CASE
+            WHEN ROW_NUMBER() OVER ({window}) = COUNT(*) OVER ({partition}) THEN TRUE
+            WHEN {next_comparator} IS NULL THEN FALSE
+            WHEN {self._source_column_sql(target)} = {next_comparator} THEN TRUE
+            ELSE FALSE
+        END"""
+        return self._window_column(cache_key, f"({expression})", column_type="Bool")

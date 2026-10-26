@@ -22,12 +22,26 @@ class InconsistentEnumeratedColumnsOperator(BaseSqlOperator):
         if not matching_columns:
             return self._do_check_operator(lambda: "FALSE")
 
-        cache_key = f"{target_variable}_inconsistent_enumerated_columns"
+        return self._do_check_operator(lambda: f"({self._inconsistency_condition(matching_columns)})")
 
-        def generate_update_query(db_table: str, db_column: str) -> str:
-            return self._generate_inconsistency_check_query(db_table, db_column, matching_columns)
+    def _inconsistency_condition(self, columns: list, alias: bool = True) -> str:
+        """
+        An enumeration is inconsistent when VARIABLE(N+1) is populated while
+        VARIABLE(N) is not, for any adjacent pair.
+        """
+        if len(columns) <= 1:
+            return "FALSE"
 
-        return self._do_complex_check_operator(cache_key, generate_update_query)
+        conditions = []
+        for previous, current in zip(columns, columns[1:]):
+            current_populated = self._build_populated_condition(
+                current, self.sql_data_service.pgi.schema.get_column(self.table_id, current), alias=alias
+            )
+            previous_populated = self._build_populated_condition(
+                previous, self.sql_data_service.pgi.schema.get_column(self.table_id, previous), alias=alias
+            )
+            conditions.append(f"({current_populated} AND NOT ({previous_populated}))")
+        return " OR ".join(conditions)
 
     def _find_enumerated_columns(self, target_variable: str) -> list:
         """
@@ -60,61 +74,9 @@ class InconsistentEnumeratedColumnsOperator(BaseSqlOperator):
 
         return sorted(matching_columns, key=sort_key)
 
-    def _generate_inconsistency_check_query(self, db_table: str, db_column: str, columns: list) -> str:
-        """
-        Generate SQL query to check for enumeration inconsistencies.
-
-        The original dataframe logic:
-        1. Start with first column's populated state
-        2. For each subsequent column:
-           - If current column is populated AND previous column was NOT populated -> inconsistency
-           - Update previous state to current column's state
-
-        We can implement this by checking each column against its immediate predecessor.
-        """
-        if len(columns) <= 1:
-            # No inconsistencies possible with only one column
-            return f"""
-                UPDATE {db_table} AS t
-                SET {db_column} = FALSE;
-            """
-
-        inconsistency_conditions = []
-
-        for i in range(1, len(columns)):
-            current_col = columns[i]
-            prev_col = columns[i - 1]
-
-            current_col_schema = self.sql_data_service.pgi.schema.get_column(self.table_id, current_col)
-            prev_col_schema = self.sql_data_service.pgi.schema.get_column(self.table_id, prev_col)
-
-            current_populated = self._build_populated_condition(current_col, current_col_schema)
-            prev_populated = self._build_populated_condition(prev_col, prev_col_schema)
-
-            condition = f"({current_populated} AND NOT ({prev_populated}))"
-            inconsistency_conditions.append(condition)
-
-        main_condition = " OR ".join(inconsistency_conditions) if inconsistency_conditions else "FALSE"
-
-        return f"""
-            UPDATE {db_table} AS t
-            SET {db_column} = sub.is_inconsistent
-            FROM (
-                SELECT
-                    id,
-                    CASE
-                        WHEN {main_condition} THEN TRUE
-                        ELSE FALSE
-                    END AS is_inconsistent
-                FROM {db_table} AS t1
-                ORDER BY id
-            ) AS sub
-            WHERE t.id = sub.id;
-        """
-
-    def _build_populated_condition(self, column: str, column_schema) -> str:
+    def _build_populated_condition(self, column: str, column_schema, alias: bool = False) -> str:
         """Build SQL condition to check if a column is populated."""
-        col_sql = self._column_sql(column, alias=False)
+        col_sql = self._column_sql(column, alias=alias)
 
         if column_schema and column_schema.type == "Num":
             return f"({col_sql} IS NOT NULL)"

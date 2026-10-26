@@ -1,6 +1,7 @@
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from test_check_operators.helpers import CompiledOperators
+
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -57,7 +58,7 @@ def _make_operators(data_service, calc_result):
         "operation_variables": {"$calc": calc_result},
         "dataset_metadata": data_service.get_dataset_metadata(TEST_TABLE_NAME),
     }
-    return PostgresQLOperators(config)
+    return CompiledOperators(config)
 
 
 def _approx(values):

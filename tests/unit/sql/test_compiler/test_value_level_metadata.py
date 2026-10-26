@@ -1,22 +1,21 @@
 from types import SimpleNamespace
-from unittest.mock import MagicMock
 
 import pytest
 
+from cdisc_rules_engine.compiler.sources import RULE_TYPE_SOURCES, stf_metadata
+from cdisc_rules_engine.compiler.sources.value_level import _vlm_literal
+from cdisc_rules_engine.enums.rule_types import RuleTypes
+from cdisc_rules_engine.metadata.vlm import UntranslatableWhereClause, range_check_to_sql, where_clause_to_sql
 from cdisc_rules_engine.models.define.value_level_metadata import ValueLevelMetadata
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
-from cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_define_vlm_dataset_builder import (
-    SOURCE_CTE,
-    SqlValueCheckAgainstDefineVLMDatasetBuilder as Builder,
-    UntranslatableWhereClause,
-)
 
 COL = "c"
+SOURCE_CTE = "vlm_source"
 
 
 def range_check(comparator, values, column_type="Char"):
-    return Builder._range_check_to_sql(COL, column_type, comparator, values)
+    return range_check_to_sql(COL, column_type, comparator, values)
 
 
 def source_schema():
@@ -80,12 +79,13 @@ def test_unsupported_comparator_and_missing_values_are_untranslatable():
 
 
 def test_where_clause_ands_every_range_check():
-    sql = Builder._where_clause_to_sql(
+    sql = where_clause_to_sql(
         [
             {"variable": "LBTESTCD", "comparator": "EQ", "values": ["GLUC"]},
             {"variable": "LBSTRESN", "comparator": "GT", "values": ["5"]},
         ],
         source_schema(),
+        SOURCE_CTE,
     )
     assert sql == (
         f"(COALESCE(COALESCE(CAST({SOURCE_CTE}.lbtestcd AS TEXT), '') IN ('GLUC'), FALSE))"
@@ -99,91 +99,15 @@ def test_where_clause_ands_every_range_check():
 )
 def test_where_clause_that_cannot_be_translated_raises(where_clause):
     with pytest.raises(UntranslatableWhereClause):
-        Builder._where_clause_to_sql(where_clause, source_schema())
+        where_clause_to_sql(where_clause, source_schema(), SOURCE_CTE)
 
 
 def test_literal_maps_only_none_and_empty_to_null():
-    assert Builder._literal(None, "Char") == "CAST(NULL AS TEXT)"
-    assert Builder._literal("", "Num") == "CAST(NULL AS NUMERIC)"
-    assert Builder._literal("None", "Char") == "CAST('None' AS TEXT)"
-    assert Builder._literal("it's", "Char") == "CAST('it''s' AS TEXT)"
-    assert Builder._literal("true", "Bool") == "CAST('true' AS BOOLEAN)"
-
-
-def vlm(variable="LBORRES", where=None):
-    if where is None:
-        where = [{"variable": "LBTESTCD", "comparator": "EQ", "values": ["GLUC"]}]
-    return {"define_variable_name": variable, "define_vlm_name": "n", "where_clause": where}
-
-
-def test_vlm_select_filters_the_shared_cte():
-    sql = Builder._vlm_select(vlm(), source_schema(), [])
-    assert sql.startswith("SELECT vlm_source_row_number, CAST('LBORRES' AS TEXT)")
-    assert f"CAST({SOURCE_CTE}.lborres AS TEXT)" in sql
-    assert f"FROM {SOURCE_CTE} WHERE " in sql
-
-
-def test_vlm_select_skips_and_warns_for_unknown_variable_or_untranslatable_where(monkeypatch):
-    warnings = []
-    monkeypatch.setattr(
-        "cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_define_vlm_dataset_builder.logger.warning",
-        warnings.append,
-    )
-    assert Builder._vlm_select(vlm(variable="NOPE"), source_schema(), []) is None
-    assert Builder._vlm_select(vlm(where=[]), source_schema(), []) is None
-    assert len(warnings) == 2
-
-
-def test_source_columns_skip_id_derived_and_clashing_columns(monkeypatch):
-    warnings = []
-    monkeypatch.setattr(
-        "cdisc_rules_engine.sql_dataset_builders.sql_value_check_against_define_vlm_dataset_builder.logger.warning",
-        warnings.append,
-    )
-    schema = source_schema()
-    schema.add_column(SqlColumnSchema(name="variable_name", hash="vn", type="Char"))
-    schema.add_column(SqlColumnSchema(name="flag", hash="flag", type="Bool", origin="co"))
-
-    columns = Builder._get_source_columns(schema, {"variable_name": "Char"})
-
-    assert [name for name, _ in columns] == ["lbtestcd", "lbstresn", "lborres"]
-    assert len(warnings) == 1
-
-
-def test_build_computes_the_numbered_source_once_for_all_vlms():
-    builder = Builder.__new__(Builder)
-    builder.dataset_metadata = SimpleNamespace(name="LB")
-    builder.rule = {}
-    builder.standards_context = None
-    pgi = MagicMock()
-    pgi.schema.get_table.side_effect = lambda name: source_schema() if name == "src" else None
-    pgi.schema.get_table_hash.return_value = "src_hash"
-    builder.data_service = MagicMock(pgi=pgi)
-    builder.data_service.get_dataset_for_rule.return_value = "src"
-    builder.get_define_vlms = lambda: [vlm("LBORRES"), vlm("LBSTRESN"), vlm("MISSING")]
-
-    assert builder.build() == "LB_value_check_define_vlm"
-
-    (query,) = pgi.execute_sql.call_args.args
-    assert query.count("ROW_NUMBER() OVER") == 1
-    assert query.count("UNION ALL") == 1
-
-
-def test_build_without_translatable_vlms_creates_an_empty_table():
-    builder = Builder.__new__(Builder)
-    builder.dataset_metadata = SimpleNamespace(name="LB")
-    builder.rule = {}
-    builder.standards_context = None
-    pgi = MagicMock()
-    pgi.schema.get_table.side_effect = lambda name: source_schema() if name == "src" else None
-    builder.data_service = MagicMock(pgi=pgi)
-    builder.data_service.get_dataset_for_rule.return_value = "src"
-    builder.get_define_vlms = lambda: [vlm(where=[])]
-
-    builder.build()
-
-    pgi.create_table.assert_called_once()
-    pgi.execute_sql.assert_not_called()
+    assert _vlm_literal(None, "Char") == "CAST(NULL AS TEXT)"
+    assert _vlm_literal("", "Num") == "CAST(NULL AS DOUBLE PRECISION)"
+    assert _vlm_literal("None", "Char") == "CAST('None' AS TEXT)"
+    assert _vlm_literal("it's", "Char") == "CAST('it''s' AS TEXT)"
+    assert _vlm_literal("true", "Bool") == "CAST('true' AS BOOLEAN)"
 
 
 def make_where_clause(*range_checks):
@@ -218,3 +142,7 @@ def test_value_level_metadata_get_where_clause_is_empty_when_an_item_is_not_in_t
     where = make_where_clause(("IT.A", "EQ", ["GLUC"]), ("IT.MISSING", "EQ", ["x"]))
 
     assert ValueLevelMetadata.from_where_clause_def(where, items).get_where_clause() == []
+
+
+def test_stf_metadata_checks_read_the_stf_rows():
+    assert RULE_TYPE_SOURCES[RuleTypes.STF_METADATA_CHECK.value] is stf_metadata

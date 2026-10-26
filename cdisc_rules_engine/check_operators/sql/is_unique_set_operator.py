@@ -30,8 +30,6 @@ class IsUniqueSetOperator(BaseSqlOperator):
         if not unique_columns:
             raise ValueError("No valid columns found for uniqueness check.")
 
-        op_name = f"{'_'.join(unique_columns)}_is_unique_set"
-
         def key_of(alias: bool) -> str:
             parts = [
                 f"COALESCE(NULLIF(CAST({self._column_sql(col, alias=alias)} AS TEXT), ''), '_NULL_')"
@@ -39,35 +37,9 @@ class IsUniqueSetOperator(BaseSqlOperator):
             ]
             return " || '|' || ".join(parts)
 
+        # we're grouping once here then joining the duplicated keys back on rather than COUNT(*) OVER per row, which
+        # needed a full sort of the dataset inside the source subquery.
+        # crazy run-time jump if we go the other way.
         repeated_keys = f"SELECT {key_of(alias=False)} AS key FROM {self._table_sql()} GROUP BY 1 HAVING COUNT(*) > 1"
         repeated = self._join_derived(repeated_keys, lambda joined: f"{joined}.key = {key_of(alias=True)}")
-        if repeated:
-            return self._do_check_operator(lambda: f"{repeated}.key IS NULL")
-
-        def generate_update_query(db_table: str, db_column: str) -> str:
-            concat_parts = [
-                f"COALESCE(NULLIF(CAST({self._column_sql(col, alias=False)} AS TEXT), ''), '_NULL_')"
-                for col in unique_columns
-            ]
-            concat_expr = " || '|' || ".join(concat_parts)
-
-            return f"""
-                UPDATE {db_table} AS t
-                SET {db_column} = sub.is_unique
-                FROM (
-                    SELECT
-                        id,
-                        CASE
-                            WHEN COUNT(*) OVER (
-                                PARTITION BY {concat_expr}
-                            ) <= 1
-                            THEN TRUE
-                            ELSE FALSE
-                        END AS is_unique
-                    FROM {db_table}
-                    ORDER BY id
-                ) AS sub
-                WHERE t.id = sub.id;
-            """
-
-        return self._do_complex_check_operator(op_name, generate_update_query)
+        return self._do_check_operator(lambda: f"{repeated}.key IS NULL")

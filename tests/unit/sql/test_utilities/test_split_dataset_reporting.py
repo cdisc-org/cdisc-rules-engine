@@ -2,14 +2,15 @@ import pytest
 from types import SimpleNamespace
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
-from cdisc_rules_engine.models.sql_venmo_result_handler import SqlVenmoResultHandler
+from cdisc_rules_engine.models import sql_result_handler
+from cdisc_rules_engine.models.sql_result_handler import SqlResultHandler
 from cdisc_rules_engine.models.validation_error_container import ValidationErrorContainer
 from cdisc_rules_engine.models.validation_error_entity import ValidationErrorEntity
 from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
 
 
 def make_handler(split_part_filenames):
-    handler = SqlVenmoResultHandler.__new__(SqlVenmoResultHandler)
+    handler = SqlResultHandler.__new__(SqlResultHandler)
     handler.rule = {}
     handler.dataset_metadata = SimpleNamespace(
         name="MH",
@@ -28,11 +29,7 @@ def error_in(filename, row):
 
 @pytest.fixture(autouse=True)
 def _stub_target_columns(monkeypatch):
-    monkeypatch.setattr(
-        SqlVenmoResultHandler,
-        "_get_target_columns",
-        staticmethod(lambda *_args: ["MHSEQ"]),
-    )
+    monkeypatch.setattr(sql_result_handler, "get_target_columns", lambda *_args: ["MHSEQ"])
 
 
 def test_clean_split_part_is_still_reported():
@@ -174,14 +171,15 @@ def make_dataset_sensitivity_handler(monkeypatch, split_part_filenames):
     handler = make_handler(split_part_filenames)
     handler.rule = {"sensitivity": "Dataset"}
     monkeypatch.setattr(
-        SqlVenmoResultHandler,
+        SqlResultHandler,
         "_create_error_for_row",
-        lambda _self, row, _schema, _targets: ValidationErrorEntity(value={"MHCAT": row["mhcat"]}),
+        lambda _self, row, _compiled: ValidationErrorEntity(value={"MHCAT": row["mhcat"]}),
     )
     return handler
 
 
 source_ds_schema = SimpleNamespace(get_column_hash=lambda column: column.lower())
+compiled_query = SimpleNamespace(schema=source_ds_schema, target_columns={"MHCAT": True}, inline_outputs=[])
 
 
 def test_dataset_error_is_reported_on_each_split_part_with_error_rows(monkeypatch):
@@ -193,7 +191,7 @@ def test_dataset_error_is_reported_on_each_split_part_with_error_rows(monkeypatc
         {"source_ds": "MH2", "mhcat": "GENERAL"},
     ]
 
-    errors = handler._generate_errors_list(rows, {"MHCAT": True}, source_ds_schema)
+    errors = handler._generate_errors_list(rows, compiled_query)
     containers = handler._bundle_error_objects_per_source("MHCAT has the same value", errors)
 
     assert {c.dataset: [e.value for e in c.errors] for c in containers} == {
@@ -210,6 +208,6 @@ def test_dataset_error_on_unsplit_dataset_is_reported_once(monkeypatch):
         {"source_ds": "MH", "mhcat": "GENERAL"},
     ]
 
-    errors = handler._generate_errors_list(rows, {"MHCAT": True}, source_ds_schema)
+    errors = handler._generate_errors_list(rows, compiled_query)
 
     assert [(e._dataset, e.value) for e in errors] == [("mh.xpt", {"MHCAT": "GENERAL"})]

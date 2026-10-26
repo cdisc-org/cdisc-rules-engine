@@ -80,7 +80,8 @@ class PostgresQLInterface:
                 cursor.execute(query, params)
                 affected_rows = cursor.rowcount
 
-                if query.strip().upper().startswith("SELECT"):
+                # a statement returns rows when it has a result description - a SELECT, but also a WITH ... SELECT
+                if cursor.description is not None:
                     self._last_results = self._fetch_all_rows(cursor)
 
                 if commit:
@@ -296,8 +297,32 @@ class PostgresQLInterface:
             logger.error(f"Failed to execute schema file: {e}")
             raise
 
+    def _drop_views(self, view_filter: str):
+        """
+        Drop the views matching view_filter.
+        A view over a table goes when its table is dropped, but one written as literal rows depends on no table at all.
+        """
+        self.execute_sql(
+            f"""
+            DO $$
+            DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN
+                    SELECT viewname
+                    FROM pg_views
+                    WHERE schemaname = 'public'
+                    AND {view_filter}
+                LOOP
+                    EXECUTE format('DROP VIEW IF EXISTS %I CASCADE;', r.viewname);
+                END LOOP;
+            END $$;
+        """
+        )
+
     def _drop_prefixed_tables(self):
         """Drop all tables that start with the configured sql_namespace"""
+        self._drop_views(f"viewname LIKE '{self.sql_namespace}%'")
         drop_query = f"""
             DO $$
             DECLARE
@@ -325,6 +350,7 @@ class PostgresQLInterface:
 
     def _drop_non_static_tables(self):
         """Drop all non-static tables"""
+        self._drop_views("TRUE")
         exclusion_list = ", ".join([f"'{table}'" for table in StaticTables.values()])
 
         drop_query = f"""

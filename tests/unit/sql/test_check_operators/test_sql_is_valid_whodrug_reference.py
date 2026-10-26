@@ -1,6 +1,5 @@
 import pytest
-from .helpers import assert_series_equals
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
+from .helpers import assert_series_equals, run_operator
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.models.sql_external_dictionaries_container import (
@@ -81,5 +80,5 @@ def test_is_valid_whodrug_reference(sdtm_standards_context, domain, target, oper
     )
 
     config = {"dataset_id": domain, "data_service": data_service}
-    op_result = getattr(PostgresQLOperators(config), operator)({"target": target})
+    op_result = run_operator(config, operator, {"target": target})
     assert_series_equals(op_result, result)

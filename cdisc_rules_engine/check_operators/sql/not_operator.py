@@ -10,8 +10,8 @@ class NotOperator(BaseSqlOperator):
 
     def execute_operator(self, other_value):
         wrapped_result = self.wrapped_operator.execute_operator(other_value)
-        if wrapped_result is not None:
-            if self.wrapped_operator.has_missing_required_columns(other_value):
-                return wrapped_result
-            return ~wrapped_result
-        return None
+        if wrapped_result is None:
+            return None
+        if self.wrapped_operator.has_missing_required_columns(other_value):
+            return wrapped_result
+        return f"NOT COALESCE(({wrapped_result}), FALSE)"

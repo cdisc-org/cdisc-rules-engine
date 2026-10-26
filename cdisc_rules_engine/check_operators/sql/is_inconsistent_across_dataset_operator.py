@@ -127,98 +127,15 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
             )
 
         alias = self._join_derived(inconsistent_groups, row_in_group)
-        if alias is None:
-            return None
         return f"{alias}.found IS NOT NULL{self._populated_filter_sql('co', populated_columns)}"
 
     def _handle_single_comparator(self, target_column, comparator_column, populated_columns=()):
         compiled = self._compiled_inconsistent(target_column, [comparator_column], populated_columns)
-        if compiled:
-            return self._do_check_operator(lambda: compiled)
-
-        cache_key = f"{target_column}_inconsistent_across_{comparator_column}"
-        if populated_columns:
-            cache_key += f"_where_populated_{'_'.join(populated_columns)}"
-
-        def generate_update_query(db_table: str, db_column: str) -> str:
-            populated_filter = self._populated_filter_sql("t2", populated_columns)
-            current_row_filter = self._populated_filter_sql("t1", populated_columns)
-            return f"""
-                UPDATE {db_table} AS t
-                SET {db_column} = sub.is_inconsistent
-                FROM (
-                    SELECT
-                        id,
-                        (
-                            SELECT COUNT(DISTINCT
-                                CASE
-                                    WHEN t2.{self._column_sql(target_column, alias=False)} IS NULL THEN 'NULL_VALUE'
-                                    ELSE CAST(t2.{self._column_sql(target_column, alias=False)} AS TEXT)
-                                END
-                            )
-                            FROM {db_table} AS t2
-                            WHERE (
-                                (t2.{self._column_sql(comparator_column, alias=False)}
-                                    = t1.{self._column_sql(comparator_column, alias=False)})
-                                OR
-                                (t2.{self._column_sql(comparator_column, alias=False)} IS NULL
-                                AND
-                                t1.{self._column_sql(comparator_column, alias=False)} IS NULL)
-                            ){populated_filter}
-                        ) > 1{current_row_filter} AS is_inconsistent
-                    FROM {db_table} AS t1
-                    ORDER BY id
-                ) AS sub
-                WHERE t.id = sub.id;
-            """
-
-        return self._do_complex_check_operator(cache_key, generate_update_query)
+        return self._do_check_operator(lambda: compiled)
 
     def _handle_multiple_comparators(self, target_column, comparator_columns, populated_columns=()):
         compiled = self._compiled_inconsistent(target_column, comparator_columns, populated_columns)
-        if compiled:
-            return self._do_check_operator(lambda: compiled)
-
-        cache_key = f"{target_column}_inconsistent_across_{'_'.join(comparator_columns)}"
-        if populated_columns:
-            cache_key += f"_where_populated_{'_'.join(populated_columns)}"
-
-        def generate_update_query(db_table: str, db_column: str) -> str:
-            where_conditions = []
-            for comp_col in comparator_columns:
-                condition = (
-                    f"(t2.{self._column_sql(comp_col, alias=False)} = t1.{self._column_sql(comp_col, alias=False)}) "
-                    f"OR (t2.{self._column_sql(comp_col, alias=False)} IS NULL "
-                    f"  AND t1.{self._column_sql(comp_col, alias=False)} IS NULL)"
-                )
-                where_conditions.append(f"({condition})")
-            where_clause = " AND ".join(where_conditions)
-            where_clause += self._populated_filter_sql("t2", populated_columns)
-            current_row_filter = self._populated_filter_sql("t1", populated_columns)
-
-            return f"""
-                UPDATE {db_table} AS t
-                SET {db_column} = sub.is_inconsistent
-                FROM (
-                    SELECT
-                        id,
-                        (
-                            SELECT COUNT(DISTINCT
-                                CASE
-                                    WHEN t2.{self._column_sql(target_column, alias=False)} IS NULL THEN 'NULL_VALUE'
-                                    ELSE CAST(t2.{self._column_sql(target_column, alias=False)} AS TEXT)
-                                END
-                            )
-                            FROM {db_table} AS t2
-                            WHERE {where_clause}
-                        ) > 1 {current_row_filter} AS is_inconsistent
-                    FROM {db_table} AS t1
-                    ORDER BY id
-                ) AS sub
-                WHERE t.id = sub.id;
-            """
-
-        return self._do_complex_check_operator(cache_key, generate_update_query)
+        return self._do_check_operator(lambda: compiled)
 
     def _populated_filter_sql(self, table_alias, populated_columns):
         if not populated_columns:
