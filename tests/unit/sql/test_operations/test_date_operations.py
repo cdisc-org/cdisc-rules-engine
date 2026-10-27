@@ -124,6 +124,37 @@ def test_min_date_grouping(data, expected):
 
 
 @pytest.mark.parametrize(
+    "op, dates, expected",
+    [
+        ("max_date", ["2010-12-12", "2018-06", "2018"], "2010-12-12"),
+        ("min_date", ["2010-12-12", "2001-12-32", "2001-04-31", "2003-02-29", "2001-13-01"], "2010-12-12"),
+        ("max_date", ["2010-12-12", "2024-02-29"], "2024-02-29"),
+        ("min_date", ["2010-12-12", "0000-01-01", "UNK", "20010101", "2001-1-1", " 2001-01-01"], "2010-12-12"),
+        ("max_date", ["2010-12-12", "2018-04-17T09:30", "2018-04-16T-:30"], "2018-04-17"),
+        ("min_date", ["2018-04-17T09:30:00+01:00", "2018-04-16T-:30"], "2018-04-16"),
+        ("max_date", ["2018-06", "2012-12-32"], ""),
+    ],
+)
+def test_date_skips_values_that_are_not_full_dates(op, dates, expected):
+    operation = setup_sql_operations(op, "dates", {"dates": dates})
+    assert_operation_constant(operation, operation.execute(), expected)
+
+
+@pytest.mark.parametrize("op", ["max_date", "min_date"])
+def test_date_grouping_skips_values_that_are_not_full_dates(op):
+    data = {"grp": [1, 1, 2, 2], "dates": ["2018-06", "2012-12-32", "2010-12-12", "2010-12"]}
+    operation = setup_sql_operations(op, "dates", data, extra_config={"grouping": ["grp"]})
+    assert_operation_parameterized_constant(
+        operation,
+        operation.execute(),
+        [
+            {"params": {"$1": 1}, "value": [""]},
+            {"params": {"$1": 2}, "value": ["2010-12-12"]},
+        ],
+    )
+
+
+@pytest.mark.parametrize(
     "inner_op, outer_op, expected",
     [
         ("max_date", "min_date", "2022-01-05"),
