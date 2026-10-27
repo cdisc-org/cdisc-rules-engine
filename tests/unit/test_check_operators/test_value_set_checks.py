@@ -222,7 +222,7 @@ def test_is_ordered_set_multiple_comparators():
     "target, comparator, dataset_type, expected_result",
     [
         ("BGSTRESU", "USUBJID", PandasDataset, [False, False, True, True]),
-        ("STRESU", "TESTCD", PandasDataset, [False, False, True, False]),
+        ("STRESU", "TESTCD", PandasDataset, [True, True, True, False]),
         ("STRESU", ["TESTCD", "METHOD"], PandasDataset, [False, False, False, False]),
     ],
 )
@@ -358,7 +358,7 @@ def test_is_inconsistent_across_dataset_regex_ignores_bad_regex(
     "target, comparator, dataset_type, expected_result",
     [
         ("BGSTRESU", "USUBJID", DaskDataset, [False, False, True, True]),
-        ("STRESU", "TESTCD", DaskDataset, [False, False, True, False]),
+        ("STRESU", "TESTCD", DaskDataset, [True, True, True, False]),
         ("STRESU", ["TESTCD", "METHOD"], DaskDataset, [False, False, False, False]),
     ],
 )
@@ -412,10 +412,10 @@ def test_is_inconsistent_across_dataset_empty_dataset():
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
-        ("VALUE", "GROUP", PandasDataset, [False, False, False, True]),
+        ("VALUE", "GROUP", PandasDataset, [True, True, True, True]),
     ],
 )
-def test_is_inconsistent_clear_majority(
+def test_is_inconsistent_flags_all_rows_in_group(
     target, comparator, dataset_type, expected_result
 ):
     data = {
@@ -465,3 +465,98 @@ def test_is_inconsistent_three_way_tie(
         {"value": df, "column_prefix_map": {"--": ""}}
     ).is_inconsistent_across_dataset({"target": target, "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
+
+
+TIMEPOINT_DATA = {
+    "DOMAIN": ["FT"] * 7,
+    "VISITNUM": [1, 1, 1, 2, 2, 3, 3],
+    "TPTREF": ["DOSE"] * 7,
+    "TPTNUM": [1] * 7,
+    "TPT": ["30 MIN", "30 MIN", "30 MIN", "30 MIN", "", "30 MIN", "30 MIN"],
+    "ELTM": ["PT30M", "PT30M", None, "PT30M", "PT1H", "PT30M", "PT1H"],
+}
+TIMEPOINT_COMPARATOR = ["DOMAIN", "VISITNUM", "TPTREF", "TPTNUM"]
+
+
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+@pytest.mark.parametrize(
+    "extra_params, expected_result",
+    [
+        ({}, [True, True, True, True, True, True, True]),
+        (
+            {"where_populated": True},
+            [False, False, False, True, True, True, True],
+        ),
+        (
+            {"where_populated_columns": ["TPT", "TPTNUM", "ELTM"]},
+            [False, False, False, False, False, True, True],
+        ),
+        (
+            {"where_populated": True, "where_populated_columns": ["TPT"]},
+            [False, False, False, False, False, True, True],
+        ),
+        (
+            {"where_populated_columns": ["TPT", "TPTNUM", "ELTM", "NOTHERE"]},
+            [False, False, False, False, False, True, True],
+        ),
+    ],
+)
+def test_is_inconsistent_where_populated(dataset_type, extra_params, expected_result):
+    df = dataset_type.from_dict(TIMEPOINT_DATA)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset(
+        {"target": "ELTM", "comparator": list(TIMEPOINT_COMPARATOR), **extra_params}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+def test_is_inconsistent_where_populated_columns_none_exist_raises():
+    df = PandasDataset.from_dict(TIMEPOINT_DATA)
+    with pytest.raises(ValueError, match="None of the where_populated_columns exist"):
+        DataframeType(
+            {"value": df, "column_prefix_map": {"--": ""}}
+        ).is_inconsistent_across_dataset(
+            {
+                "target": "ELTM",
+                "comparator": list(TIMEPOINT_COMPARATOR),
+                "where_populated_columns": ["NOTHERE"],
+            }
+        )
+
+
+def test_is_inconsistent_where_populated_columns_none_exist_with_where_populated():
+    df = PandasDataset.from_dict(TIMEPOINT_DATA)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset(
+        {
+            "target": "ELTM",
+            "comparator": list(TIMEPOINT_COMPARATOR),
+            "where_populated": True,
+            "where_populated_columns": ["NOTHERE"],
+        }
+    )
+    assert result.equals(
+        df.convert_to_series([False, False, False, True, True, True, True])
+    )
+
+
+@pytest.mark.parametrize(
+    "target, comparator",
+    [
+        ("NOTHERE", "USUBJID"),  # target missing
+        ("BGSTRESU", "NOTHERE"),  # no comparator columns exist
+        ("BGSTRESU", ["NOTHERE", "ALSONOTHERE"]),
+    ],
+)
+def test_is_inconsistent_missing_columns_returns_false(target, comparator):
+    data = {
+        "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ2", "SUBJ2"],
+        "BGSTRESU": ["kg", "g", "g", "mg"],
+    }
+    df = PandasDataset.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset({"target": target, "comparator": comparator})
+    assert result.equals(df.convert_to_series([False, False, False, False]))

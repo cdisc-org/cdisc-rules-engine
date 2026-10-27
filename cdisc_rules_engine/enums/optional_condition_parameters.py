@@ -14,3 +14,5 @@ class OptionalConditionParameters(BaseEnum):
     VALUE_IS_REFERENCE = "value_is_reference"
     TYPE_INSENSITIVE = "type_insensitive"
     ROUND_VALUES = "round_values"
+    WHERE_POPULATED = "where_populated"
+    WHERE_POPULATED_COLUMNS = "where_populated_columns"

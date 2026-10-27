@@ -253,7 +253,14 @@
     },
     {
       "properties": {
-        "operator": { "const": "is_inconsistent_across_dataset" }
+        "operator": { "const": "is_inconsistent_across_dataset" },
+        "regex": { "type": "string" },
+        "where_populated": { "type": "boolean" },
+        "where_populated_columns": {
+          "items": { "$ref": "CORE-base.json#/$defs/VariableName" },
+          "minItems": 1,
+          "type": "array"
+        }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -577,7 +584,13 @@
         }
       ]
     },
-    "regex": { "type": "string" }
+    "regex": { "type": "string" },
+    "where_populated": { "type": "boolean" },
+    "where_populated_columns": {
+      "items": { "$ref": "CORE-base.json#/$defs/VariableName" },
+      "minItems": 1,
+      "type": "array"
+    }
   },
   "required": ["operator"],
   "type": "object"
