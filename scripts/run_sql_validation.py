@@ -33,6 +33,13 @@ from cdisc_rules_engine.standards.standards_factory import StandardsFactory
 from cdisc_rules_engine.utilities.ingestion_progress import get_ingestion_progress_reporter
 from cdisc_rules_engine.utilities.report_progress import get_report_progress_reporter
 from cdisc_rules_engine.utilities.rule_progress import get_rule_progress_reporter
+from cdisc_rules_engine.utilities.rule_required_inputs import (
+    get_missing_inputs,
+    get_missing_inputs_summary,
+    get_not_applicable_reason,
+    get_supplied_inputs,
+    is_not_applicable,
+)
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from scripts.script_utils import (
     get_library_metadata_from_cache,
@@ -69,14 +76,16 @@ def sql_validate_single_rule(
     engine: SQLRulesEngine,
     args: Validation_args,
     rule: dict = None,
+    missing_inputs: List[str] = None,
 ):
     if not SQLRuleProcessor.valid_rule_structure(rule):
         engine_logger.error(f"Invalid rule structure: {rule}")
         return RuleValidationResult(rule, [])
 
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
-    # call rule engine
-    results = engine.sql_validate_single_rule(rule)
+    # call rule engine; a rule that needs an input the user didn't supply is reported as not applicable
+    not_applicable_reason = get_not_applicable_reason(missing_inputs) if missing_inputs else None
+    results = engine.sql_validate_single_rule(rule, not_applicable_reason=not_applicable_reason)
     results = list(itertools.chain(*results.values()))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
@@ -155,6 +164,10 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     engine_logger.info(f"Running {len(rules)} rules against {len(data_service.datasets)} datasets")
     start = time.time()
     results = []
+    supplied_inputs = get_supplied_inputs(
+        data_service.define_xml_path, data_service.stf_file_path, data_service.dictionary_metadata.keys()
+    )
+    missing_inputs_by_rule = {}
 
     # instantiate logger in each child process to maintain log level
     # initializer = partial(initialize_logger, engine_logger.disabled, engine_logger._logger.level)
@@ -170,7 +183,12 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     try:
         for rule_index, rule in enumerate(rules):
             rule_progress_reporter.start_rule(rule.get("core_id"), rule_index, len(rules))
-            results.append(sql_validate_single_rule(engine, args, rule))
+            missing_inputs = get_missing_inputs(rule, supplied_inputs)
+            result = sql_validate_single_rule(engine, args, rule, missing_inputs)
+            # count the rule only if a dataset in its scope was reported as not applicable
+            if missing_inputs and any(is_not_applicable(entry) for entry in result.results):
+                missing_inputs_by_rule[rule.get("core_id")] = missing_inputs
+            results.append(result)
             rule_progress_reporter.end_rule()
     finally:
         rule_progress_reporter.finish()
@@ -191,6 +209,9 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
         )
     report_elapsed = time.time() - report_start
     print(f"Validation took {elapsed_time:.1f}s, report generation took {report_elapsed:.1f}s")
+    missing_inputs_summary = get_missing_inputs_summary(missing_inputs_by_rule)
+    if missing_inputs_summary:
+        print(missing_inputs_summary)
     print(f"Output: {args.output}")
 
 

@@ -48,9 +48,12 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
         if conditions:
             for condition in conditions:
                 for k, v in condition.items():
-                    where_clauses.append(
-                        f"{_COLUMN_MAP.get(k)} = '{v}'" if v is not None else f"{_COLUMN_MAP.get(k)} IS NULL"
-                    )
+                    column_sql = self.data_service.pgi.schema.get_column_hash(ct_table, self._condition_column(k))
+                    if v is None:
+                        where_clauses.append(f"{column_sql} IS NULL")
+                    else:
+                        escaped_value = str(v).replace("'", "''")
+                        where_clauses.append(f"{column_sql} = '{escaped_value}'")
 
         base_query = f"""
             SELECT DISTINCT {select_col_sql} AS value
@@ -63,6 +66,19 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
             query = base_query
 
         return SqlOperationResult(query=query, type="collection", subtype="Char", params=params or None)
+
+    @staticmethod
+    def _condition_column(attribute: str) -> str:
+        """
+        Maps a ct_conditions attribute (e.g. "Codelist Code") to its column. The CLI's rule loader
+        replaces spaces in rule keys with underscores, so "Codelist_Code" is accepted too.
+        """
+        column = _COLUMN_MAP.get(attribute) or _COLUMN_MAP.get(str(attribute).replace("_", " "))
+        if not column:
+            raise ValueError(
+                f"Unknown ct_conditions attribute '{attribute}'. Expected one of: {', '.join(_COLUMN_MAP)}"
+            )
+        return column
 
     def _ct_version_filter(self, std_type_col: str, version_date_col: str) -> Tuple[Optional[str], dict]:
         """

@@ -245,3 +245,47 @@ def test_get_codelist_attributes_numeric_column_version_matches_no_ct_package(
     assert_operation_collection(
         operation, SqlOperationResult(query=query, type=result.type, subtype=result.subtype), expected, unsorted=True
     )
+
+
+@pytest.mark.parametrize(
+    "ct_conditions, expected",
+    [
+        ([{"Codelist Code": "CL2"}], ["C999"]),
+        # the CLI's rule loader replaces spaces in rule keys with underscores
+        ([{"Codelist_Code": "CL2"}], ["C999"]),
+        ([{"Standard_Type": "sdtm"}, {"Codelist_Name": "Codelist One"}], ["C1234", "C5678"]),
+        ([{"Codelist Name": "Codelist O'Brien"}], []),
+    ],
+)
+def test_get_codelist_attributes_ct_conditions(sdtm_standards_context, ct_conditions, expected):
+    data_service = PostgresQLDataService.instance()
+    setup_codelist_table(data_service)
+
+    params = SqlOperationParams(
+        domain="dataset",
+        target="column",
+        standards_context=sdtm_standards_context,
+        ct_attribute="Term CCODE",
+        ct_conditions=ct_conditions,
+    )
+
+    operation = SqlGetCodelistAttributesOperation(params, data_service)
+    result = operation.execute()
+
+    assert_operation_collection(operation, result, expected, unsorted=True)
+
+
+def test_get_codelist_attributes_unknown_ct_condition_raises_clear_error(sdtm_standards_context):
+    data_service = PostgresQLDataService.instance()
+    setup_codelist_table(data_service)
+
+    params = SqlOperationParams(
+        domain="dataset",
+        target="column",
+        standards_context=sdtm_standards_context,
+        ct_attribute="Term CCODE",
+        ct_conditions=[{"Not An Attribute": "x"}],
+    )
+
+    with pytest.raises(Exception, match="Unknown ct_conditions attribute 'Not An Attribute'"):
+        SqlGetCodelistAttributesOperation(params, data_service).execute()

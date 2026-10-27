@@ -71,7 +71,12 @@ class SQLRulesEngine:
         self.progress_reporter = progress_reporter or DisabledRuleProgressReporter()
         self.max_errors_per_dataset = max_errors_per_dataset
 
-    def sql_validate_single_rule(self, rule: dict):
+    def sql_validate_single_rule(self, rule: dict, not_applicable_reason: str = None):
+        """
+        Runs the rule against every uploaded dataset in its scope. If not_applicable_reason is given
+        (e.g. the rule needs a define.xml that wasn't supplied), the rule isn't run and each dataset
+        in scope is reported as skipped with that reason.
+        """
         results = {}
         self.progress_reporter.set_phase(RuleProgressPhase.PARSING)
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
@@ -94,7 +99,17 @@ class SQLRulesEngine:
                     None,
                 ),
             )
-            if is_suitable:
+            if is_suitable and not_applicable_reason:
+                results[dataset_metadata.name] = self._containers_per_reported_file(
+                    dataset_metadata,
+                    lambda filename: ValidationErrorContainer(
+                        status=ExecutionStatus.SKIPPED.value,
+                        message=not_applicable_reason,
+                        dataset=filename,
+                        domain=dataset_metadata.domain,
+                    ),
+                )
+            elif is_suitable:
                 if is_study_sensitivity and study_error_already_reported:
                     results[dataset_metadata.name] = self._containers_per_reported_file(
                         dataset_metadata,
