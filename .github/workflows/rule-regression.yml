@@ -1,0 +1,272 @@
+name: Rule Regression
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review]
+    paths:
+      - "cdisc_rules_engine/**"
+      - "resources/**"
+      - "scripts/**"
+      - "requirements.txt"
+      - "core.py"
+      - "requirements-dev.txt"
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  CONTRIBUTOR_REPO: verisianHQ/core-contributor
+  CONTRIBUTOR_REF: main
+  RESULT_MARKER: "<!-- rule-regression-result -->"
+
+jobs:
+  prompt:
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask which suite to run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body "Run rule regression (engine \`$BASE_REF\` vs this PR) against core-contributor?
+
+          Once you've reviewed the PR's code, reply with one of:
+          - \`/regression sdtm <commit sha>\`
+          - \`/regression adam <commit sha>\`
+
+          where \`<commit sha>\` is the head commit you reviewed.
+          Only run it on code you've read since the run executes the PR's code.
+          Only people with write access can trigger it."
+
+  parse:
+    if: >-
+      github.event_name == 'issue_comment'
+      && github.event.issue.pull_request
+      && startsWith(github.event.comment.body, '/regression')
+    runs-on: ubuntu-latest
+    outputs:
+      standard: ${{ steps.parse.outputs.standard }}
+      base_repo: ${{ steps.parse.outputs.base_repo }}
+      base_ref: ${{ steps.parse.outputs.base_ref }}
+      base_sha: ${{ steps.parse.outputs.base_sha }}
+      head_repo: ${{ steps.parse.outputs.head_repo }}
+      head_sha: ${{ steps.parse.outputs.head_sha }}
+      contributor_sha: ${{ steps.parse.outputs.contributor_sha }}
+    steps:
+      - name: Parse command and resolve PR
+        id: parse
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          perm=$(gh api "repos/$GH_REPO/collaborators/$COMMENTER/permission" --jq .permission || echo none)
+          if [[ "$perm" != "admin" && "$perm" != "write" ]]; then
+            gh pr comment "$PR_NUMBER" --body "@$COMMENTER only people with write access can run \`/regression\`."
+            exit 1
+          fi
+
+          first_line=$(printf '%s' "$COMMENT_BODY" | head -n1 | tr -d '\r')
+          if [[ ! "$first_line" =~ ^/regression[[:space:]]+(sdtm|adam)[[:space:]]+([0-9a-f]{7,40})[[:space:]]*$ ]]; then
+            gh pr comment "$PR_NUMBER" --body "Use \`/regression sdtm <commit sha>\` or \`/regression adam <commit sha>\`."
+            exit 1
+          fi
+          standard="${BASH_REMATCH[1]}"
+          requested_sha="${BASH_REMATCH[2]}"
+
+          pr=$(gh api "repos/$GH_REPO/pulls/$PR_NUMBER")
+          head_sha=$(jq -r .head.sha <<<"$pr")
+          if [[ "$head_sha" != "$requested_sha"* ]]; then
+            gh pr comment "$PR_NUMBER" --body "The PR is now at \`${head_sha:0:8}\`, not \`$requested_sha\`. Check the new commits, then re-run with the new SHA."
+            exit 1
+          fi
+          merge_base=$(gh api "repos/$GH_REPO/compare/$(jq -r .base.sha <<<"$pr")...$head_sha" --jq .merge_base_commit.sha)
+          contributor_sha=$(gh api "repos/$CONTRIBUTOR_REPO/commits/$CONTRIBUTOR_REF" --jq .sha)
+          {
+            echo "standard=$standard"
+            echo "base_repo=$(jq -r .base.repo.full_name <<<"$pr")"
+            echo "base_ref=$(jq -r .base.ref <<<"$pr")"
+            echo "base_sha=$merge_base"
+            echo "head_repo=$(jq -r .head.repo.full_name <<<"$pr")"
+            echo "head_sha=$head_sha"
+            echo "contributor_sha=$contributor_sha"
+          } >> "$GITHUB_OUTPUT"
+
+          gh api "repos/$GH_REPO/issues/comments/$COMMENT_ID/reactions" -f content=rocket >/dev/null
+          gh pr comment "$PR_NUMBER" --body "Started **${standard^^}** regression on \`${head_sha:0:8}\` (baseline: \`$(jq -r .base.ref <<<"$pr")\` merge base \`${merge_base:0:8}\`): [view run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+
+  run:
+    needs: parse
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        side: [base, head]
+    concurrency:
+      group: rule-regression-${{ github.event.issue.number }}-${{ needs.parse.outputs.standard }}-${{ matrix.side }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout core-contributor
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CONTRIBUTOR_REPO }}
+          ref: ${{ needs.parse.outputs.contributor_sha }}
+          path: contributor
+          persist-credentials: false
+
+      - name: Checkout engine (${{ matrix.side }})
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.side == 'base' && needs.parse.outputs.base_repo || needs.parse.outputs.head_repo }}
+          ref: ${{ matrix.side == 'base' && needs.parse.outputs.base_sha || needs.parse.outputs.head_sha }}
+          path: contributor/engine
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install engine dependencies
+        working-directory: contributor
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r engine/requirements.txt -r engine/requirements-dev.txt
+
+      - name: Run ${{ needs.parse.outputs.standard }} suite
+        working-directory: contributor
+        env:
+          STANDARD: ${{ needs.parse.outputs.standard }}
+        run: |
+          printf '%s\n' unii=dummy_ex_dicts/unii medrt=dummy_ex_dicts/medrt loinc=dummy_ex_dicts/loinc snomed=dummy_ex_dicts/snomed \
+            > "$RUNNER_TEMP/dictionary_paths"
+          python regression_results.py snapshot \
+            --standard "$STANDARD" \
+            --dictionary-paths-file "$RUNNER_TEMP/dictionary_paths" \
+            --baseline-dir "$RUNNER_TEMP/results" \
+            --clean
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.side }}
+          path: ${{ runner.temp }}/results
+          retention-days: 7
+
+  compare:
+    needs: [parse, run]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout core-contributor
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CONTRIBUTOR_REPO }}
+          ref: ${{ needs.parse.outputs.contributor_sha }}
+          path: contributor
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: results-base
+          path: ${{ runner.temp }}/base
+      - uses: actions/download-artifact@v4
+        with:
+          name: results-head
+          path: ${{ runner.temp }}/head
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install compare dependencies
+        run: pip install pandas==2.1.4 openpyxl==3.1.5
+
+      - name: Compare
+        working-directory: contributor
+        env:
+          STANDARD: ${{ needs.parse.outputs.standard }}
+        run: |
+          python regression_results.py compare \
+            --standard "$STANDARD" \
+            --baseline-dir "$RUNNER_TEMP/base" \
+            --current-source folder \
+            --current-dir "$RUNNER_TEMP/head" \
+            --comparison-dir "$RUNNER_TEMP/comparison" \
+            --clean \
+            || [ $? -eq 2 ]
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regression-summary
+          path: ${{ runner.temp }}/comparison
+          retention-days: 30
+
+      - name: Post result on PR
+        uses: actions/github-script@v7
+        env:
+          STANDARD: ${{ needs.parse.outputs.standard }}
+          BASE_REF: ${{ needs.parse.outputs.base_ref }}
+          BASE_SHA: ${{ needs.parse.outputs.base_sha }}
+          HEAD_SHA: ${{ needs.parse.outputs.head_sha }}
+          SUMMARY_DIR: ${{ runner.temp }}/comparison
+        with:
+          script: |
+            const fs = require('fs');
+            const file = `${process.env.SUMMARY_DIR}/regression_diff_summary.md`;
+            let summary = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '_No summary generated._';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const footer = `\n\n---\n[Full summary artifact](${runUrl}#artifacts) · run on \`${process.env.HEAD_SHA.slice(0, 8)}\``;
+            const header = `${process.env.RESULT_MARKER}\n## ${process.env.STANDARD.toUpperCase()} regression: engine \`${process.env.BASE_REF}\` (merge base \`${process.env.BASE_SHA.slice(0, 8)}\`) vs this PR\n\n`;
+            const budget = 65000 - header.length - footer.length - 200;
+            if (summary.length > budget) {
+              summary = summary.slice(0, budget) + '\n\n_...truncated, see the full summary artifact._';
+            }
+            const body = header + summary + footer;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number, per_page: 100,
+            });
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.startsWith(process.env.RESULT_MARKER) &&
+              c.body.includes(`## ${process.env.STANDARD.toUpperCase()} regression`));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
+
+  report-failure:
+    needs: [parse, run, compare]
+    if: needs.parse.result == 'success' && (failure() || cancelled())
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Comment failure
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          STANDARD: ${{ needs.parse.outputs.standard }}
+        run: |
+          failed=$(gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs" --paginate --jq '
+            .jobs[]
+            | select(.conclusion == "failure" or .conclusion == "cancelled")
+            | "- [`\(.name)`](\(.html_url)) \(.conclusion)"
+              + ((first(.steps[] | select(.conclusion == "failure" or .conclusion == "cancelled")) | " at step **\(.name)**") // "")')
+          gh pr comment "$PR_NUMBER" --body "**${STANDARD^^}** regression run did not complete. See the [run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) for details.
+
+          ${failed}"
