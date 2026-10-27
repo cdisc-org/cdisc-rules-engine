@@ -87,14 +87,13 @@ class DefineXMLReader21(BaseDefineXMLReader):
         else:
             return standards, {}, {}, False
 
-    def get_multiple_standards_ct_mappings(self, metadata, standards):
+    def get_multiple_standards_ct_mappings(self, metadata, standards):  # noqa
         combined_CT_package = {}
         standard_oids = {standard.oid: standard for standard in standards}
         extensible = {}
         for codelist in metadata.CodeList:
             standard_oid = codelist.StandardOID
-            standard = standard_oids[standard_oid]
-            standard_key = f"{standard.publishing_set.lower()}ct-{standard.version}"
+            standard = standard_oids.get(standard_oid)
             codelist_code = codelist.Alias[0].Name if codelist.Alias else None
             codelist_value = codelist.Name if hasattr(codelist, "Name") else None
 
@@ -108,6 +107,10 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     "codelist": codelist_code,
                     "extended_values": extended_values,
                 }
+
+            if standard is None:
+                continue
+            standard_key = f"{standard.publishing_set.lower()}ct-{standard.version}"
 
             for item in codelist.CodeListItem:
                 nci_code = None
