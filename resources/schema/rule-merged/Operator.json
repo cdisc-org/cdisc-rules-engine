@@ -635,6 +635,26 @@
     {
       "properties": {
         "operator": {
+          "const": "prefix_matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `prefix_matches_regex`, but the regular expression in `value` is matched without regard to case\n\n```yaml\n- name: dataset_name\n  operator: prefix_matches_regex_case_insensitive\n  prefix: 2\n  value: (AP|FA)\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_prefix_matches_regex_case_insensitive",
+          "markdownDescription": "\nComplement of `prefix_matches_regex_case_insensitive`\n\n> Dataset name does not begin with 'AP' or 'FA' (any case)\n\n```yaml\n- name: dataset_name\n  operator: not_prefix_matches_regex_case_insensitive\n  prefix: 2\n  value: (AP|FA)\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "not_present_on_multiple_rows_within",
           "markdownDescription": "\nComplement of `present_on_multiple_rows_within`\n\n```yaml\n- operator: \"not_present_on_multiple_rows_within\"\n  name: \"RELID\"\n  value: 4 (optional)\n  within: \"USUBJID\"\n```\n"
         }
@@ -677,6 +697,26 @@
         "operator": {
           "const": "prefix_is_not_contained_by",
           "markdownDescription": "\nComplement of `prefix_is_contained_by`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_contained_by_case_insensitive",
+          "markdownDescription": "\nSame as `prefix_is_contained_by`, but the comparison ignores case\n\n```yaml\n- name: dataset_name\n  operator: prefix_is_contained_by_case_insensitive\n  prefix: 2\n  value: $list_dataset_names\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_not_contained_by_case_insensitive",
+          "markdownDescription": "\nComplement of `prefix_is_contained_by_case_insensitive`\n\n> First 2 characters of a split dataset name are not a domain present in the study\n\n```yaml\n- name: dataset_name\n  operator: prefix_is_not_contained_by_case_insensitive\n  prefix: 2\n  value: $list_dataset_names\n```\n"
         }
       },
       "required": ["operator", "prefix", "value"],

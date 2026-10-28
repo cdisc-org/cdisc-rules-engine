@@ -462,6 +462,41 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def prefix_is_contained_by_case_insensitive(self, other_value: dict):
+        """
+        Checks if target prefix is contained by the comparator, ignoring case.
+        """
+        target: str = other_value.get("target")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = other_value.get("comparator")
+        if isinstance(comparator, list):
+            comparator = [
+                val.lower() if isinstance(val, str) else val for val in comparator
+            ]
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        prefix_length: int = other_value.get("prefix")
+        series_to_validate = self._get_string_part_series(
+            "prefix", prefix_length, target
+        ).str.lower()
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_case_insensitive_is_in(
+                series_to_validate, comparison_data
+            )
+        elif self.value.is_series(comparison_data):
+            results = series_to_validate.isin(comparison_data.str.lower())
+        elif isinstance(comparison_data, str):
+            results = series_to_validate.isin([comparison_data.lower()])
+        else:
+            results = series_to_validate.isin(comparison_data)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_not_contained_by_case_insensitive(self, other_value: dict):
+        return ~self.prefix_is_contained_by_case_insensitive(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def suffix_is_contained_by(self, other_value: dict):
         """
         Checks if target prefix is equal to comparator.
@@ -744,6 +779,34 @@ class DataframeType(BaseType):
         return converted_strings.notna() & ~self._map_regex(
             converted_strings.astype(str),
             lambda x: re.search(comparator, x[:prefix]) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        prefix = other_value.get("prefix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_prefix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        prefix = other_value.get("prefix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix], re.IGNORECASE) is not None,
         )
 
     @log_operator_execution

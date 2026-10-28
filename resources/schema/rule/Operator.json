@@ -341,6 +341,16 @@
       "type": "object"
     },
     {
+      "properties": { "operator": { "const": "prefix_matches_regex_case_insensitive" } },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "not_prefix_matches_regex_case_insensitive" } },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
       "properties": {
         "operator": { "const": "not_present_on_multiple_rows_within" }
       },
@@ -364,6 +374,16 @@
     },
     {
       "properties": { "operator": { "const": "prefix_is_not_contained_by" } },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "prefix_is_contained_by_case_insensitive" } },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "prefix_is_not_contained_by_case_insensitive" } },
       "required": ["operator", "prefix", "value"],
       "type": "object"
     },

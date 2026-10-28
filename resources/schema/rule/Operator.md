@@ -221,6 +221,30 @@ True if the `prefix` number of characters beginning a string in `name` match a r
 
 Complement of `prefix_matches_regex`
 
+### prefix_matches_regex_case_insensitive
+
+Same as `prefix_matches_regex`, but the regular expression in `value` is matched without regard to case
+
+```yaml
+- name: dataset_name
+  operator: prefix_matches_regex_case_insensitive
+  prefix: 2
+  value: (AP|FA)
+```
+
+### not_prefix_matches_regex_case_insensitive
+
+Complement of `prefix_matches_regex_case_insensitive`
+
+> Dataset name does not begin with 'AP' or 'FA' (any case)
+
+```yaml
+- name: dataset_name
+  operator: not_prefix_matches_regex_case_insensitive
+  prefix: 2
+  value: (AP|FA)
+```
+
 ### suffix_matches_regex
 
 True if the `suffix` number of characters ending a string in `name` match a regular expression in `value`
@@ -768,6 +792,30 @@ True if the `suffix` number of characters ending a string in `name` match one of
   operator: suffix_is_contained_by
   prefix: 2
   value: $study_domains
+```
+
+### prefix_is_contained_by_case_insensitive
+
+Same as `prefix_is_contained_by`, but the comparison ignores case
+
+```yaml
+- name: dataset_name
+  operator: prefix_is_contained_by_case_insensitive
+  prefix: 2
+  value: $list_dataset_names
+```
+
+### prefix_is_not_contained_by_case_insensitive
+
+Complement of `prefix_is_contained_by_case_insensitive`
+
+> First 2 characters of a split dataset name are not a domain present in the study
+
+```yaml
+- name: dataset_name
+  operator: prefix_is_not_contained_by_case_insensitive
+  prefix: 2
+  value: $list_dataset_names
 ```
 
 ### suffix_is_not_contained_by
