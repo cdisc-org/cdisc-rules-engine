@@ -9,6 +9,7 @@ import locale
 import os
 import re
 import ast
+import math
 import pandas as pd
 from dataclasses import fields
 from datetime import datetime
@@ -427,3 +428,14 @@ def get_dataset_standard_check_name(
     if dataset_metadata.is_ap:
         return dataset_metadata.ap_suffix or None
     return dataset_metadata.domain or dataset_metadata.name
+
+
+def safe_numeric_conversion(value):
+    """Numeric value, or None if it can't be cast. Must stay in step with _safe_numeric_cast_sql."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        result = float(value.strip()) if isinstance(value, str) else float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(result) or math.isinf(result) else result

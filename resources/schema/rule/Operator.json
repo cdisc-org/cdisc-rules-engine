@@ -107,7 +107,7 @@
         "operator": { "const": "equal_to" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "$ref": "Operator.json#/properties/type_insensitive" }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -117,7 +117,7 @@
         "operator": { "const": "equal_to_case_insensitive" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "$ref": "Operator.json#/properties/type_insensitive" }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -310,7 +310,7 @@
         "operator": { "const": "not_equal_to" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "$ref": "Operator.json#/properties/type_insensitive" }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -320,7 +320,7 @@
         "operator": { "const": "not_equal_to_case_insensitive" },
         "round_values": { "type": "boolean" },
         "value_is_reference": { "type": "boolean" },
-        "type_insensitive": { "type": "boolean" }
+        "type_insensitive": { "$ref": "Operator.json#/properties/type_insensitive" }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -571,7 +571,12 @@
     },
     "value_is_literal": { "const": true },
     "value_is_reference": { "type": "boolean" },
-    "type_insensitive": { "type": "boolean" },
+    "type_insensitive": {
+      "anyOf": [
+        { "type": "boolean" },
+        { "const": "numeric" }
+      ]
+    },
     "round_values": { "type": "boolean" },
     "within": {
       "oneOf": [
