@@ -813,6 +813,28 @@ Operations:
     order_insensitive: false
 ```
 
+### intersect
+
+Computes set intersection: elements in `name` that are also in `subtract` (A ∩ B). The result keeps the order in which elements first appear in `name`, and duplicates are removed. Null values never match. Both `name` and `subtract` must reference other operation results (e.g., `$column_order_from_library`, `$column_order_from_dataset`). If either `name` or `subtract` is empty or missing, the result is an empty list. Optional `case_sensitive` (default `true`): when set to `false`, values are compared case-insensitively and returned in uppercase. Can be used to compare only the variables that the library and the dataset have in common, for example to check their relative order.
+
+```yaml
+Operations:
+  - id: $column_order_from_library
+    operator: get_column_order_from_library
+  - id: $column_order_from_dataset
+    operator: get_column_order_from_dataset
+  - id: $library_with_dataset_only
+    name: $column_order_from_library
+    operator: intersect
+    subtract: $column_order_from_dataset
+```
+
+Given `$column_order_from_library` = `["STUDYID", "DOMAIN", "USUBJID", "AESEQ", "AETERM"]` and `$column_order_from_dataset` = `["STUDYID", "AETERM", "DOMAIN", "AESEQ", "AEXTRA"]`, `$library_with_dataset_only` will be:
+
+```
+["STUDYID", "DOMAIN", "AESEQ", "AETERM"]
+```
+
 ### label_referenced_variable_metadata
 
 Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.
