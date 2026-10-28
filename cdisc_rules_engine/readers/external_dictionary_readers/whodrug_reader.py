@@ -1,5 +1,5 @@
-import os
 import csv
+import os
 import re
 import pandas as pd
 from datetime import datetime
@@ -23,6 +23,34 @@ class WhoDrugVersionMetadata:
     version_date: str
 
 
+FILE_EXTENSIONS = (".csv", ".txt")
+DELIMITER_NAMES = {None: "fixed-width", ",": "comma-delimited", "\t": "tab-delimited"}
+
+REQUIRED_FILES = {
+    WhoDrugFormats.C3.value: (C3WHODrugFiles.ATC.value, C3WHODrugFiles.ThG.value, C3WHODrugFiles.MP.value),
+    WhoDrugFormats.B3.value: (B3WHODrugFiles.INA.value, B3WHODrugFiles.DDA.value, B3WHODrugFiles.DD.value),
+}
+
+B3_FIXED_WIDTH_COLSPECS = {
+    B3WHODrugFiles.INA.value: [(0, 7), (7, 8), (8, 118)],
+    B3WHODrugFiles.DDA.value: [(0, 6), (6, 8), (8, 11), (11, 12), (12, 19)],
+    B3WHODrugFiles.DD.value: [
+        (0, 6),
+        (6, 8),
+        (8, 11),
+        (11, 12),
+        (12, 13),
+        (13, 15),
+        (15, 19),
+        (19, 24),
+        (24, 26),
+        (26, 27),
+        (27, 30),
+        (30, 1530),
+    ],
+}
+
+
 class WhoDrugReader:
     """Reader for the WHO Drug dictionary."""
 
@@ -30,12 +58,60 @@ class WhoDrugReader:
         self.pgi = pgi
         self.dictionary_path = dictionary_path
 
+    def _resolve_file(self, file_name: str) -> tuple[str, str | None] | None:
+        files_by_lower_name = {name.lower(): name for name in os.listdir(self.dictionary_path)}
+        for extension in FILE_EXTENSIONS:
+            actual_name = files_by_lower_name.get(f"{file_name}{extension}".lower())
+            if actual_name is None:
+                continue
+            file_path = f"{self.dictionary_path}/{actual_name}"
+            with open(file_path, mode="r", encoding="utf-8-sig") as f:
+                first_line = f.readline()
+            if "\t" in first_line:
+                return file_path, "\t"
+            if extension == ".txt" and file_name in B3_FIXED_WIDTH_COLSPECS:
+                first_field = (next(csv.reader([first_line])) or [""])[0]
+                if len(first_field) > B3_FIXED_WIDTH_COLSPECS[file_name][0][1]:
+                    return file_path, None
+            return file_path, ","
+        return None
+
+    def _not_found_error(self, *file_names: str) -> FileNotFoundError:
+        extensions = " or ".join(FILE_EXTENSIONS)
+        return FileNotFoundError(
+            f"WHODrug file(s) {', '.join(file_names)} not found in {self.dictionary_path} (looked for {extensions})"
+        )
+
+    def _parse_error(self, file_name: str, problem: str) -> ValueError:
+        file_path, delimiter = self._resolve_file(file_name)
+        return ValueError(f"{problem} in {file_path} (read as {DELIMITER_NAMES[delimiter]}); check the file format.")
+
+    def _read_file(self, file_name: str, col_map: dict[int, str]) -> pd.DataFrame:
+        resolved = self._resolve_file(file_name)
+        if resolved is None:
+            raise self._not_found_error(file_name)
+        file_path, delimiter = resolved
+        read_kwargs = {
+            "header": None,
+            "dtype": str,
+            "usecols": list(col_map.keys()),
+            "names": list(col_map.values()),
+            "encoding": "utf-8-sig",
+        }
+        if delimiter is None:
+            return pd.read_fwf(file_path, colspecs=B3_FIXED_WIDTH_COLSPECS[file_name], **read_kwargs)
+        if delimiter == "\t":
+            read_kwargs["quoting"] = csv.QUOTE_NONE
+        return pd.read_csv(file_path, sep=delimiter, **read_kwargs)
+
     def _extract_version_metadata(self) -> WhoDrugVersionMetadata:
         """Extract metadata from the Version file."""
-        file_path = f"{self.dictionary_path}/{UniversalWhoDrugFiles.VERSION.value}.csv"
-        with open(file_path, mode="r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            version_info = next(reader)[0]
+        resolved = self._resolve_file(UniversalWhoDrugFiles.VERSION.value)
+        if resolved is None:
+            raise self._not_found_error(UniversalWhoDrugFiles.VERSION.value)
+        file_path, _ = resolved
+        with open(file_path, mode="r", encoding="utf-8-sig") as f:
+            version_info = f.readline().strip().strip('"')
 
         version_pattern = (
             r"WHODRUG\s+(?P<product_type>\w+)\s+(?P<format>C3|B3)\s+(?P<version_date>\w+\s\d{1,2},\s\d{4})"
@@ -58,27 +134,14 @@ class WhoDrugReader:
         target_col: str,
     ) -> pd.DataFrame:
 
-        file_path = f"{self.dictionary_path}/{file_name}.csv"
+        df = self._read_file(file_name, col_map)
+        df[join_key] = df[join_key].str.strip()
+        df = df.drop_duplicates()
 
-        if os.path.exists(file_path):
-            indices = list(col_map.keys())
-            col_names = list(col_map.values())
-
-            df = pd.read_csv(
-                file_path,
-                header=None,
-                dtype=str,
-                usecols=indices,
-                names=col_names,
-            )
-
-            df[join_key] = df[join_key].str.strip()
-
-            return pd.merge(input_df, df, on=join_key, how="left")
-
-        final_df = input_df.copy()
-        final_df[target_col] = None
-        return final_df
+        merged_df = pd.merge(input_df, df, on=join_key, how="left")
+        if merged_df[target_col].isna().all():
+            raise self._parse_error(file_name, f"No {target_col} values matched on {join_key}")
+        return merged_df
 
     def process_data(self, metadata: WhoDrugVersionMetadata) -> pd.DataFrame:
         final_df = self._process_atc_data(metadata)
@@ -90,17 +153,22 @@ class WhoDrugReader:
         Processes the ATC hierarchy levels into flattened level 4 codes.
         Merges them to include the format's primary identifier and drug name.
         """
-        atc_file_name = (
-            C3WHODrugFiles.ATC.value if metadata.format == WhoDrugFormats.C3.value else B3WHODrugFiles.INA.value
-        )
-        atc_file_path = f"{self.dictionary_path}/{atc_file_name}.csv"
+        required_files = REQUIRED_FILES.get(metadata.format)
+        if required_files is None:
+            raise ValueError(f"Unsupported format: {metadata.format}")
+        missing_files = [file_name for file_name in required_files if self._resolve_file(file_name) is None]
+        if missing_files:
+            raise self._not_found_error(*missing_files)
 
-        atc_df = pd.read_csv(atc_file_path, header=None, dtype=str, names=["atc_code", "level", "atc_text"])
+        atc_file_name = required_files[0]
+        atc_df = self._read_file(atc_file_name, {0: "atc_code", 1: "level", 2: "atc_text"})
 
         atc_df["atc_code"] = atc_df["atc_code"].str.strip()
         atc_df["atc_text"] = atc_df["atc_text"].str.strip()
         code_to_text_map = dict(zip(atc_df["atc_code"], atc_df["atc_text"]))
         level_4_codes = atc_df[atc_df["level"] == "4"]
+        if level_4_codes.empty:
+            raise self._parse_error(atc_file_name, "No level 4 ATC codes found")
 
         result_df = pd.DataFrame({"atc_code": level_4_codes["atc_code"]})
         level_to_length = {
@@ -131,7 +199,7 @@ class WhoDrugReader:
                 target_col="drug_name",
             )
 
-        elif metadata.format == WhoDrugFormats.B3.value:
+        else:
             drug_rec_df = self._apply_file_mapping(
                 input_df=result_df,
                 file_name=B3WHODrugFiles.DDA.value,
@@ -146,9 +214,6 @@ class WhoDrugReader:
                 join_key="drug_rec_num",
                 target_col="drug_name",
             )
-
-        else:
-            raise ValueError(f"Unsupported format: {metadata.format}")
 
         final_df = final_df.rename(columns={"atc_code": "term_code", "drug_name": "term_name"})
         return final_df
