@@ -992,6 +992,146 @@ def test_not_prefix_matches_regex(
 
 
 @pytest.mark.parametrize(
+    "data,comparator,prefix,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["apTEST", "FAcm", "lbtest"],
+            },
+            "(AP|FA)",
+            2,
+            PandasDataset,
+            [True, True, False],
+        ),
+        (
+            {
+                "target": ["apTEST", "FAcm", "lbtest"],
+            },
+            "(AP|FA)",
+            2,
+            DaskDataset,
+            [True, True, False],
+        ),
+        (
+            {
+                "target": ["APTEST", "facm"],
+            },
+            "(ap|fa)",
+            2,
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": ["APTEST", "facm"],
+            },
+            "(ap|fa)",
+            2,
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, False],
+        ),
+    ],
+)
+def test_prefix_matches_regex_case_insensitive(
+    data, comparator, prefix, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.prefix_matches_regex_case_insensitive(
+        {"target": "target", "comparator": comparator, "prefix": prefix}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,prefix,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["apTEST", "FAcm", "lbtest"],
+            },
+            "(AP|FA)",
+            2,
+            PandasDataset,
+            [False, False, True],
+        ),
+        (
+            {
+                "target": ["apTEST", "FAcm", "lbtest"],
+            },
+            "(AP|FA)",
+            2,
+            DaskDataset,
+            [False, False, True],
+        ),
+        (
+            {
+                "target": ["APTEST", "facm"],
+            },
+            "(ap|fa)",
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": ["APTEST", "facm"],
+            },
+            "(ap|fa)",
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+    ],
+)
+def test_not_prefix_matches_regex_case_insensitive(
+    data, comparator, prefix, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_prefix_matches_regex_case_insensitive(
+        {"target": "target", "comparator": comparator, "prefix": prefix}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
     "data,comparator,dataset_type, expected_result",
     [
         (

@@ -73,6 +73,76 @@ def test_prefix_is_not_contained_by(
 
 
 @pytest.mark.parametrize(
+    "dataset_type, target, prefix_length, expected_result",
+    [
+        (PandasDataset, "var1", 2, [True, True, True]),
+        (DaskDataset, "var1", 2, [True, True, True]),
+        (PandasDataset, "var2", 2, [True, False, False]),
+        (DaskDataset, "var2", 2, [True, False, False]),
+    ],
+)
+def test_prefix_is_contained_by_case_insensitive(
+    dataset_type, target, prefix_length, expected_result
+):
+    data = {
+        "var1": ["aetest", "AeTESTCD", "lbTEST"],
+        "var2": ["AETEST", "afTESTCD", "rrTEST"],
+        "study_domains": [
+            ["DM", "AE", "LB", "TV"],
+            ["DM", "AE", "LB", "TV"],
+            ["DM", "AE", "LB", "TV"],
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    assert (
+        DataframeType({"value": df})
+        .prefix_is_contained_by_case_insensitive(
+            {
+                "target": target,
+                "comparator": "study_domains",
+                "prefix": prefix_length,
+            }
+        )
+        .equals(df.convert_to_series(expected_result))
+    )
+
+
+@pytest.mark.parametrize(
+    "dataset_type, target, prefix_length, expected_result",
+    [
+        (PandasDataset, "var1", 2, [False, False, False]),
+        (DaskDataset, "var1", 2, [False, False, False]),
+        (PandasDataset, "var2", 2, [False, True, True]),
+        (DaskDataset, "var2", 2, [False, True, True]),
+    ],
+)
+def test_prefix_is_not_contained_by_case_insensitive(
+    dataset_type, target, prefix_length, expected_result
+):
+    data = {
+        "var1": ["aetest", "AeTESTCD", "lbTEST"],
+        "var2": ["AETEST", "afTESTCD", "rrTEST"],
+        "study_domains": [
+            ["DM", "AE", "LB", "TV"],
+            ["DM", "AE", "LB", "TV"],
+            ["DM", "AE", "LB", "TV"],
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    assert (
+        DataframeType({"value": df})
+        .prefix_is_not_contained_by_case_insensitive(
+            {
+                "target": target,
+                "comparator": "study_domains",
+                "prefix": prefix_length,
+            }
+        )
+        .equals(df.convert_to_series(expected_result))
+    )
+
+
+@pytest.mark.parametrize(
     "dataset_type, target, suffix_length, expected_result",
     [
         (PandasDataset, "var1", 2, [True, True, True]),
