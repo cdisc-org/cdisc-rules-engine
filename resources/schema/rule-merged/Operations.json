@@ -196,6 +196,16 @@
     {
       "properties": {
         "operator": {
+          "const": "intersect",
+          "markdownDescription": "\nComputes set intersection: elements in `name` that are also in `subtract` (A \u2229 B). The result keeps the order in which elements first appear in `name`, and duplicates are removed. Null values never match. Both `name` and `subtract` must reference other operation results (e.g., `$column_order_from_library`, `$column_order_from_dataset`). If either `name` or `subtract` is empty or missing, the result is an empty list. Optional `case_sensitive` (default `true`): when set to `false`, values are compared case-insensitively and returned in uppercase. Can be used to compare only the variables that the library and the dataset have in common, for example to check their relative order.\n\n```yaml\nOperations:\n  - id: $column_order_from_library\n    operator: get_column_order_from_library\n  - id: $column_order_from_dataset\n    operator: get_column_order_from_dataset\n  - id: $library_with_dataset_only\n    name: $column_order_from_library\n    operator: intersect\n    subtract: $column_order_from_dataset\n```\n\nGiven `$column_order_from_library` = `[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"AESEQ\", \"AETERM\"]` and `$column_order_from_dataset` = `[\"STUDYID\", \"AETERM\", \"DOMAIN\", \"AESEQ\", \"AEXTRA\"]`, `$library_with_dataset_only` will be:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"AESEQ\", \"AETERM\"]\n```\n"
+        }
+      },
+      "required": ["id", "operator", "name", "subtract"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "label_referenced_variable_metadata",
           "markdownDescription": "\nGenerates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.\n\nInput\n\nTarget Dataset: SUPPLB\n\nProduct: sdtmig\n\nVersion: 3-4\n\nDataset:\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"]\n}\n```\n\nRule:\n\n```yaml\n- operator: label_referenced_variable_metadata\n  id: $qlabel_referenced_variable_metadata\n  name: \"QLABEL\"\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"],\n  \"$qlabel_referenced_variable_metadata_name\": [\"LBTOX\", null, \"LBANMETH\"],\n  \"$qlabel_referenced_variable_metadata_role\": [\n    \"Variable Qualifier\",\n    null,\n    \"Record Qualifier\"\n  ],\n  \"$qlabel_referenced_variable_metadata_ordinal\": [44, null, 38],\n  \"$qlabel_referenced_variable_metadata_core\": [\"Req\", \"Req\", \"Req\"],\n  \"$qlabel_referenced_variable_metadata_label\": [\"Toxicity\", null, \"Analysis Method\"]\n}\n```\n"
         }
