@@ -94,3 +94,9 @@ class ColumnNotFoundError(Exception):
 
         self.message = exception_message
         super().__init__(exception_message)
+
+
+class DatabaseConnectionError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)

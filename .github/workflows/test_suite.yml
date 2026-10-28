@@ -46,7 +46,7 @@ jobs:
         id: pandas_run
         continue-on-error: true
         run: |
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l info || true
+          python core.py validate --cdisc -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l info || true
 
           if [ -f "CORE_Test_Suite/pandas-results.json" ]; then
             echo "pandas_success=true" >> $GITHUB_OUTPUT
@@ -86,7 +86,7 @@ jobs:
         env:
           DATASET_SIZE_THRESHOLD: 0
         run: |
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l info || true
+          python core.py validate --cdisc -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l info || true
 
           if [ -f "CORE_Test_Suite/dask-results.json" ]; then
             echo "dask_success=true" >> $GITHUB_OUTPUT
@@ -131,7 +131,7 @@ jobs:
         id: usdm_neg
         continue-on-error: true
         run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
+          python core.py validate --cdisc -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
 
           if [ -f "CORE_Test_Suite/usdm_negative_report.json" ]; then
             echo "usdm_neg_success=true" >> $GITHUB_OUTPUT
@@ -152,7 +152,7 @@ jobs:
         id: usdm_pos
         continue-on-error: true
         run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
+          python core.py validate --cdisc -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
 
           if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
             echo "usdm_pos_success=true" >> $GITHUB_OUTPUT

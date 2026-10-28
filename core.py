@@ -16,6 +16,7 @@ from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.exceptions.custom_exceptions import DatabaseConnectionError
 from cdisc_rules_engine.models.external_dictionaries_container import (
     DictionaryTypes,
     ExternalDictionariesContainer,
@@ -163,14 +164,20 @@ def cli():
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option("--unii", help="Path to directory with UNII dictionary files")
-@click.option("--snomed-version", help="Version of snomed to use.")
+@click.option("--snomed-version", help="Version of snomed to use. Only used with --cdisc.")
 @click.option(
     "--snomed-url",
-    help="The Base URL of snomed to use. Defaults to snowstorm test instance",
+    help="The Base URL of snomed to use. Defaults to snowstorm test instance. Only used with --cdisc.",
     default="https://snowstorm.snomedtools.org/snowstorm/snomed-ct/",
 )
-@click.option("--snomed-edition", help="Edition of snomed to use.")
-@click.option("--snomed", help="Path to directory with SNOMED dictionary files")
+@click.option("--snomed-edition", help="Edition of snomed to use. Only used with --cdisc.")
+@click.option(
+    "--snomed",
+    help=(
+        "Path to directory with SNOMED dictionary files. Only used by the SQL engine, "
+        "which reads the edition and version from the file names."
+    ),
+)
 @click.option(
     "--rules",
     "-r",
@@ -212,11 +219,10 @@ def cli():
     help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
 @click.option(
-    "-sql",
-    "--sql-engine",
+    "--cdisc",
     is_flag=True,
     default=False,
-    help="Flag to run validation using the SQL engine",
+    help="Flag to run validation using the CDISC (pandas) engine instead of the default SQL engine",
 )
 @click.option(
     "-ns",
@@ -229,7 +235,10 @@ def cli():
     "--in-memory-postgres",
     is_flag=True,
     default=False,
-    help="Run validation using an in-memory Postgres instance",
+    help=(
+        "Run validation using an in-memory Postgres instance. "
+        "Used automatically when no DATABASE_* settings are found in the environment or .env file."
+    ),
 )
 @click.option(
     "--collapse-duplicate-issues",
@@ -283,7 +292,7 @@ def validate(  # noqa: C901
     define_xml_path: str,
     stf_file_path: str,
     validate_xml: str,
-    sql_engine: bool,
+    cdisc: bool,
     sql_namespace: str,
     in_memory_postgres: bool,
     collapse_duplicate_issues: bool,
@@ -299,6 +308,33 @@ def validate(  # noqa: C901
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    sql_engine = not cdisc
+
+    if cdisc:
+        if in_memory_postgres:
+            logger.warning("Flag --in-memory-postgres is ignored when --cdisc is used")
+        if snomed:
+            logger.warning("Argument --snomed is only used by the SQL engine and is ignored when --cdisc is used")
+    else:
+        snomed_api_options = [
+            f"--{name.replace('_', '-')}"
+            for name in ("snomed_version", "snomed_edition", "snomed_url")
+            if ctx.get_parameter_source(name) != click.core.ParameterSource.DEFAULT
+        ]
+        if snomed_api_options:
+            logger.warning(
+                f"{', '.join(snomed_api_options)} only apply to the CDISC engine (--cdisc) and are ignored. "
+                "The SQL engine reads SNOMED from the files passed with --snomed."
+            )
+        if not in_memory_postgres and not any(
+            os.getenv(var)
+            for var in ("DATABASE_HOST", "DATABASE_PORT", "DATABASE_NAME", "DATABASE_USER", "DATABASE_PASSWORD")
+        ):
+            logger.warning(
+                "No DATABASE_* settings found in the environment or .env file, "
+                "using an in-memory Postgres instance instead"
+            )
+            in_memory_postgres = True
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -386,7 +422,11 @@ def validate(  # noqa: C901
         max_errors_per_dataset,
     )
     if sql_engine:
-        run_sql_validation(args, in_memory_postgres=in_memory_postgres)
+        try:
+            run_sql_validation(args, in_memory_postgres=in_memory_postgres)
+        except DatabaseConnectionError as e:
+            logger.error(e.message)
+            ctx.exit(1)
     else:
         run_validation(args)
 

@@ -39,7 +39,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-v",
             "3.4",
             "-dp",
@@ -55,7 +54,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -73,7 +71,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-dp",
@@ -89,7 +86,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -108,7 +104,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-s",
@@ -127,7 +122,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
         ]
@@ -141,7 +135,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-ca",
             os.path.join("resources", "cache"),
             "-ps",
@@ -184,7 +177,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -206,7 +198,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -221,7 +212,7 @@ class TestValidate(unittest.TestCase):
         self.assertFalse(self.error_keyword in stdout)
 
     def test_sql_validate_less_than_minimum_options(self):
-        args = ["python", "core.py", "validate", "-sql", "-s", "sdtmig"]
+        args = ["python", "core.py", "validate", "-s", "sdtmig"]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr)
@@ -231,7 +222,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -252,7 +242,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -273,7 +262,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -295,7 +283,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -317,7 +304,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -339,7 +325,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -360,7 +345,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -381,7 +365,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -401,7 +384,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -421,7 +403,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -440,7 +421,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -461,7 +441,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -478,7 +457,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_all_options_one_data_source(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-ca {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join("tests", "resources", "test_dataset.xpt")} "
             f"-lr {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
@@ -499,7 +478,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_all_options(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-ca {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-d {os.path.join('tests', 'resources', 'report_test_data')} "
@@ -531,7 +510,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_without_dataset_path(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-ca {os.path.join('resources', 'cache')} "
             f"-lr {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
             f"-s sdtmig "
@@ -553,7 +532,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_default_cache_path(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dp {os.path.join("tests", "resources", "test_dataset.xpt")} "
@@ -566,7 +545,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_without_whodrug_and_meddra(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-s sdtmig "
             f"-v 3.4 "
             f"-ca {os.path.join('resources', 'cache')} "
@@ -580,7 +559,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_invalid_whodrug_and_meddra(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-ca {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-lr {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
@@ -593,7 +572,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_vx_as_no(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-s sendig "
             f"-v 3.1 "
             f"-dv 2.1 "
@@ -606,7 +585,7 @@ class TestValidate(unittest.TestCase):
 
     def test_sql_validate_dummy_with_vx_as_yes(self):
         args = (
-            f"python core.py validate -sql "
+            f"python core.py validate "
             f"-s sendig "
             f"-v 3.1 "
             f"-dv 2.1 "
@@ -624,7 +603,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
@@ -644,7 +622,6 @@ class TestValidate(unittest.TestCase):
             "python",
             "core.py",
             "validate",
-            "-sql",
             "-s",
             "sdtmig",
             "-v",
