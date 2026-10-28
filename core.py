@@ -61,7 +61,7 @@ def valid_data_file(
     return file_list, found_formats, unsupported
 
 
-@click.group()
+@click.group(context_settings={"token_normalize_func": lambda token: token.replace("_", "-")})
 def cli():
     pass
 
@@ -196,14 +196,20 @@ def cli():
     help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
-    "--local_rules",
+    "--exclude-rules",
+    "-er",
+    multiple=True,
+    help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
+    "--local-rules",
     "-lr",
     required=False,
     type=click.Path(exists=True, readable=True, resolve_path=True),
     help=("path to a local rule file or to a directory of local rules."),
 )
 @click.option(
-    "--custom_standard",
+    "--custom-standard",
     "-cs",
     required=False,
     is_flag=True,
@@ -298,6 +304,7 @@ def validate(  # noqa: C901
     snomed_url: str,
     snomed: str,
     rules: Tuple[str],
+    exclude_rules: Tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
@@ -352,6 +359,10 @@ def validate(  # noqa: C901
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error("Flag --raw-report can be used only when --output-format is JSON")
             ctx.exit()
+
+    if rules and exclude_rules:
+        logger.error("Arguments --rules and --exclude-rules cannot be used together")
+        ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -432,6 +443,7 @@ def validate(  # noqa: C901
         sql_namespace,
         collapse_duplicate_issues,
         max_errors_per_dataset,
+        exclude_rules,
     )
     if sql_engine:
         try:
@@ -446,7 +458,7 @@ def validate(  # noqa: C901
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -458,18 +470,18 @@ def validate(  # noqa: C901
 )
 @click.option(
     "-crd",
-    "--custom_rules_directory",
+    "--custom-rules-directory",
     help=("Relative path to directory containing local rules in yaml or JSON formats" "to be added to the cache. "),
 )
 @click.option(
     "-cr",
-    "--custom_rule",
+    "--custom-rule",
     multiple=True,
     help=("Relative path to rule file in yaml or JSON formats" "to be added to the cache. "),
 )
 @click.option(
     "-rcr",
-    "--remove_custom_rules",
+    "--remove-custom-rules",
     help=(
         "Remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, "
         "or 'ALL' to remove all custom rules."
@@ -477,12 +489,12 @@ def validate(  # noqa: C901
 )
 @click.option(
     "-ucr",
-    "--update_custom_rule",
+    "--update-custom-rule",
     help=("Relative path to rule file in yaml or JSON formats" "Rule will be updated in cache with this file. "),
 )
 @click.option(
     "-cs",
-    "--custom_standard",
+    "--custom-standard",
     help=(
         "Relative path to JSON file containing custom standard details."
         "Will update the standard if it already exists."
@@ -490,7 +502,7 @@ def validate(  # noqa: C901
 )
 @click.option(
     "-rcs",
-    "--remove_custom_standard",
+    "--remove-custom-standard",
     help=("removes a custom standard and version from the cache. "),
     multiple=True,
 )
@@ -542,7 +554,7 @@ def update_cache(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -557,7 +569,7 @@ def update_cache(
 )
 @click.option(
     "-cr",
-    "--custom_rules",
+    "--custom-rules",
     is_flag=True,
     default=False,
     required=False,
@@ -565,7 +577,7 @@ def update_cache(
 )
 @click.option(
     "-r",
-    "--rule_id",
+    "--rule-id",
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
@@ -612,7 +624,7 @@ def list_rules(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -700,7 +712,7 @@ def version():
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )

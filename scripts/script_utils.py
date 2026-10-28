@@ -186,7 +186,18 @@ def get_cache_service(manager):
 
 
 def get_rules(args) -> List[dict]:
-    return load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
+    rules = load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
+    return remove_excluded_rules(rules, args.exclude_rules)
+
+
+def remove_excluded_rules(rules: List[dict], excluded_ids) -> List[dict]:
+    if not excluded_ids:
+        return rules
+    excluded_ids = set(excluded_ids)
+    unknown_ids = excluded_ids - {rule.get("core_id") for rule in rules}
+    if unknown_ids:
+        engine_logger.warning(f"Excluded rules not in the selected rules: {', '.join(sorted(unknown_ids))}")
+    return [rule for rule in rules if rule.get("core_id") not in excluded_ids]
 
 
 def rule_cache_file(args) -> str:

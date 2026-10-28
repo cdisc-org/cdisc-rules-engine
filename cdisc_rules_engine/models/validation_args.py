@@ -29,6 +29,7 @@ Validation_args = namedtuple(
         "sql_namespace",
         "collapse_duplicate_issues",
         "max_errors_per_dataset",
+        "exclude_rules",
     ],
-    defaults=[False, MAX_ERRORS_PER_DATASET],
+    defaults=[False, MAX_ERRORS_PER_DATASET, ()],
 )

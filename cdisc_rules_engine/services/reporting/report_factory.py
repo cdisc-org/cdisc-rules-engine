@@ -7,6 +7,7 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 from .base_report import BaseReport
+from .csv_report import CsvReport
 from .excel_report import ExcelReport
 from .json_report import JsonReport
 
@@ -43,6 +44,7 @@ class ReportFactory:
         self._output_type_service_map: Dict[str, Type[BaseReport]] = {
             ReportTypes.XLSX.value: ExcelReport,
             ReportTypes.JSON.value: JsonReport,
+            ReportTypes.CSV.value: CsvReport,
         }
 
     def get_report_services(self) -> List[BaseReport]:
