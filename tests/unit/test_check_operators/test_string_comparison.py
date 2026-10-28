@@ -764,6 +764,164 @@ def test_not_suffix_matches_regex(
 
 
 @pytest.mark.parametrize(
+    "data,comparator,suffix,dataset_type,expected_result",
+    [
+        (
+            {
+                "target": ["WORD", "test"],
+            },
+            "ES.*",
+            3,
+            DaskDataset,
+            [False, True],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "es.*",
+            3,
+            PandasDataset,
+            [False, True],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            3,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, True],
+        ),
+    ],
+)
+def test_suffix_matches_regex_case_insensitive(
+    data, comparator, suffix, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.suffix_matches_regex_case_insensitive(
+        {"target": "target", "comparator": comparator, "suffix": suffix}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,suffix,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["WORD", "test"],
+            },
+            "ES.*",
+            3,
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "es.*",
+            3,
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            3,
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+    ],
+)
+def test_not_suffix_matches_regex_case_insensitive(
+    data, comparator, suffix, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_suffix_matches_regex_case_insensitive(
+        {"target": "target", "comparator": comparator, "suffix": suffix}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
     "data,comparator,prefix,dataset_type, expected_result",
     [
         (
@@ -1092,6 +1250,150 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.not_matches_regex(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "^[a-z]+$",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "^[A-Z]+$",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [True, False],
+        ),
+    ],
+)
+def test_matches_regex_case_insensitive(
+    data, comparator, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.matches_regex_case_insensitive(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "^[a-z]+$",
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "^[A-Z]+$",
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [False, True],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [False, True],
+        ),
+    ],
+)
+def test_not_matches_regex_case_insensitive(
+    data, comparator, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_matches_regex_case_insensitive(
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
