@@ -274,6 +274,15 @@
     {
       "properties": {
         "operator": {
+          "const": "referenced_domain_variable_names"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "required_variables"
         }
       },

@@ -453,6 +453,26 @@ ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPP
 
 Returns a list of the domains in the study
 
+### referenced_domain_variable_names
+
+Returns, for each record, the list of variable names in the study dataset whose domain matches the value in the column provided in `name` (typically `RDOMAIN`). Variable names come from the submitted data, not from the CDISC Library. If a domain is split across several datasets (for example QS1 and QS2), their variables are combined. Matching on the domain value is case-insensitive. Records with a null value, or a value that does not match any domain in the study, get an empty list.
+
+Input (SUPPLB), with study dataset LB containing STUDYID, DOMAIN, USUBJID, LBSEQ, ...
+
+```yaml
+- id: $rdomain_variables
+  name: RDOMAIN
+  operator: referenced_domain_variable_names
+```
+
+Output
+
+```
+RDOMAIN  $rdomain_variables
+LB       ["DOMAIN", "LBSEQ", "STUDYID", "USUBJID", ...]
+XX       []
+```
+
 ### domain_is_custom
 
 Checks whether the domain is in the set of domains within the provided standard.
