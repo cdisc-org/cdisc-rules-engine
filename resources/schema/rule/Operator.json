@@ -458,12 +458,18 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "target_is_not_sorted_by" } },
+      "properties": {
+        "operator": { "const": "target_is_not_sorted_by" },
+        "strict_incremental_ordering": { "type": "boolean" }
+      },
       "required": ["operator", "value", "within"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "target_is_sorted_by" } },
+      "properties": {
+        "operator": { "const": "target_is_sorted_by" },
+        "strict_incremental_ordering": { "type": "boolean" }
+      },
       "required": ["operator", "value", "within"],
       "type": "object"
     },
@@ -577,7 +583,8 @@
         }
       ]
     },
-    "regex": { "type": "string" }
+    "regex": { "type": "string" },
+    "strict_incremental_ordering": { "type": "boolean" }
   },
   "required": ["operator"],
   "type": "object"

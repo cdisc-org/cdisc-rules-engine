@@ -1039,6 +1039,221 @@ def test_target_is_sorted_by_with_nulls(dataset_class):
     assert result.equals(pd.Series([True, True, True, True, True, False, True]))
 
 
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_strict_incremental(dataset_class):
+    """Strict mode: target must be 1, 2, 3, ... in comparator order within each group."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001", "002", "002", "003", "003"],
+            "SESEQ": [2, 1, 3, 1, 3, 2, 3],
+            "SESTDTC": [
+                "2006-01-02",
+                "2006-01-01",
+                "2006-01-03",
+                "2006-02-01",
+                "2006-02-02",
+                "2006-03-01",
+                "2006-03-02",
+            ],
+        }
+    )
+    other_value = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [{"name": "--STDTC", "sort_order": "ASC"}],
+    }
+    strict_value = {**other_value, "strict_incremental_ordering": True}
+
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(pd.Series([True] * 7))
+
+    # With strict mode, 002 skips 2 and 003 starts at 2
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(strict_value)
+    assert result.equals(pd.Series([True, True, True, True, False, False, False]))
+
+    df_duplicates = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [1, 1, 2],
+            "SESTDTC": ["2006-01-01", "2006-01-02", "2006-01-03"],
+        }
+    )
+    result = DataframeType(
+        {"value": df_duplicates, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(strict_value)
+    assert result.equals(pd.Series([True, False, False]))
+
+    df_zero_padded = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": ["02", "01", "03"],
+            "SESTDTC": ["2006-01-02", "2006-01-01", "2006-01-03"],
+        }
+    )
+    result = DataframeType(
+        {"value": df_zero_padded, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(strict_value)
+    assert result.equals(pd.Series([True, True, True]))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_strict_incremental_desc(dataset_class):
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [1, 2, 3],
+            "SESTDTC": ["2006-01-03", "2006-01-02", "2006-01-01"],
+        }
+    )
+    base = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "strict_incremental_ordering": True,
+    }
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {**base, "comparator": [{"name": "--STDTC", "sort_order": "DESC"}]}
+    )
+    assert result.equals(pd.Series([True, True, True]))
+
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {**base, "comparator": [{"name": "--STDTC", "sort_order": "ASC"}]}
+    )
+    assert result.equals(pd.Series([False, True, False]))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_strict_incremental_with_nulls(dataset_class):
+    """Null comparators are positioned by null_position, not flagged; null targets pass."""
+    df_null_last = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [1, 3, 2],
+            "SESTDTC": ["2006-01-01", "", "2006-01-02"],
+        }
+    )
+    result = DataframeType(
+        {"value": df_null_last, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {
+            "target": "--SEQ",
+            "within": "USUBJID",
+            "comparator": [
+                {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+            ],
+            "strict_incremental_ordering": True,
+        }
+    )
+    assert result.equals(pd.Series([True, True, True]))
+
+    df_null_first = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [2, 1, 3],
+            "SESTDTC": ["2006-01-01", "", "2006-01-02"],
+        }
+    )
+    result = DataframeType(
+        {"value": df_null_first, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {
+            "target": "--SEQ",
+            "within": "USUBJID",
+            "comparator": [
+                {"name": "--STDTC", "sort_order": "ASC", "null_position": "first"}
+            ],
+            "strict_incremental_ordering": True,
+        }
+    )
+    assert result.equals(pd.Series([True, True, True]))
+
+    df_null_target = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [1, None, 3],
+            "SESTDTC": ["2006-01-01", "2006-01-02", "2006-01-03"],
+        }
+    )
+    result = DataframeType(
+        {"value": df_null_target, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {
+            "target": "--SEQ",
+            "within": "USUBJID",
+            "comparator": [{"name": "--STDTC", "sort_order": "ASC"}],
+            "strict_incremental_ordering": True,
+        }
+    )
+    assert result.equals(pd.Series([True, True, True]))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_strict_incremental_multiple_comparators(dataset_class):
+    """Ties on the first comparator are broken by the next one."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001"],
+            "SESEQ": [2, 1, 3],
+            "SESTDTC": ["2006-01-01", "2006-01-01", "2006-01-02"],
+            "SEENDTC": ["2006-01-05", "2006-01-03", "2006-01-06"],
+        }
+    )
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(
+        {
+            "target": "--SEQ",
+            "within": "USUBJID",
+            "comparator": [
+                {"name": "--STDTC", "sort_order": "ASC"},
+                {"name": "--ENDTC", "sort_order": "ASC"},
+            ],
+            "strict_incremental_ordering": True,
+        }
+    )
+    assert result.equals(pd.Series([True, True, True]))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_strict_incremental_with_regex(dataset_class):
+    """Regex extracts the number before the strict sequence check."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": ["001", "001", "001", "001", "001", "002", "002"],
+            "MIDSTYPE": ["A", "A", "A", "B", "B", "A", "A"],
+            "MIDS": ["MIDS2", "MIDS1", "MIDS3", "MIDS01", "MIDS03", "MIDSX", "MIDS2"],
+            "SMSTDTC": [
+                "2006-01-02",
+                "2006-01-01",
+                "2006-01-03",
+                "2006-02-01",
+                "2006-02-02",
+                "2007-01-01",
+                "2007-01-02",
+            ],
+        }
+    )
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "regex": r".*?(\d+)$",
+        "comparator": [{"name": "SMSTDTC", "sort_order": "ASC"}],
+        "strict_incremental_ordering": True,
+    }
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    # 001/A: 1, 2, 3 in date order -> all pass
+    # 001/B: MIDS01 is position 1, MIDS03 is position 2 -> second fails
+    # 002/A: MIDSX has no match so passes as null; MIDS2 is position 2 -> passes
+    assert result.equals(pd.Series([True, True, True, True, False, True, True]))
+
+
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
