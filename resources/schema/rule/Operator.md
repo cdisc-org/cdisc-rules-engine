@@ -1148,6 +1148,16 @@ sorting of sequence numbers (e.g., "MIDS1", "MIDS2", ..., "MIDS10" with regex
 `.*?(\\d+)$`). This is particularly useful for variables that end with sequence
 numbers that may or may not be zero-padded.
 
+Optionally supports a `strict_incremental_ordering` parameter (defaults to false).
+When true, the target must be a strict 1, 2, 3, ... sequence within each group
+when rows are ordered by all value entries in turn, each using its own sort_order
+and null_position. Each row's target must equal its 1-based position in that
+order, so gaps, duplicates, or a sequence that does not start at 1 are flagged.
+Zero padding is ignored ("01" counts as 1), and `regex` can be combined with it to
+extract the number first. Rows with a null target are not flagged. In this mode
+the overlapping partial date check described above is not applied, and rows with
+a null comparator are placed according to null_position rather than flagged.
+
 ```yaml
 Check:
   all:
@@ -1176,6 +1186,21 @@ Check:
       within:
         - USUBJID
         - MIDSTYPE
+```
+
+Example with strict incremental ordering:
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: target_is_sorted_by
+      strict_incremental_ordering: true
+      value:
+        - name: --STDTC
+          sort_order: asc
+          null_position: last
+      within: USUBJID
 ```
 
 ### target_is_not_sorted_by

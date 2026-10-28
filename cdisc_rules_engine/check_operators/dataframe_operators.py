@@ -1873,6 +1873,53 @@ class DataframeType(BaseType):
 
         return series.apply(extract_and_convert)
 
+    def _strict_incremental_check(
+        self, target, within_columns, comparators, target_regex=None
+    ) -> pd.Series:
+        """
+        Checks that the target is a strict 1, 2, 3, ... sequence within each
+        group defined by `within`, when rows are ordered by the comparators.
+        Rows are ordered by every comparator in turn, each using its own
+        sort_order and null_position. Each row's target (after optional regex
+        extraction, with zero padding ignored, so "01" counts as 1) must equal
+        its 1-based position in that order. Gaps, duplicates, or a sequence
+        that doesn't start at 1 fail. A row with a null target passes.
+        """
+        df = self.value
+        if isinstance(df, dd.DataFrame):
+            df = df.compute()
+
+        target_values = df[target]
+        if target_regex:
+            target_values = self._extract_regex_group(target_values, target_regex)
+        target_null = target_values.isna() | (
+            target_values.astype(str).str.strip() == ""
+        )
+        target_num = pd.to_numeric(target_values.where(~target_null), errors="coerce")
+
+        work = pd.DataFrame(index=df.index)
+        sort_keys, ascending = [], []
+        for i, comp in enumerate(comparators):
+            col = df[self.replace_prefix(comp["name"])]
+            is_null = col.isna() | (col.astype(str).str.strip() == "")
+            nulls_first = comp.get("null_position", "last").lower() == "first"
+            work[f"__null_{i}"] = is_null.astype(int)
+            work[f"__val_{i}"] = col.where(~is_null)
+            sort_keys += [f"__null_{i}", f"__val_{i}"]
+            ascending += [not nulls_first, comp["sort_order"].lower() != "desc"]
+
+        within_keys = []
+        for j, w in enumerate(within_columns):
+            work[f"__within_{j}"] = df[w]
+            within_keys.append(f"__within_{j}")
+
+        ordered = work.sort_values(by=sort_keys, ascending=ascending, kind="mergesort")
+        position = (
+            ordered.groupby(within_keys, sort=False, dropna=False).cumcount() + 1
+        ).reindex(df.index)
+
+        return target_null | (target_num == position)
+
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
@@ -1881,6 +1928,10 @@ class DataframeType(BaseType):
         columns = other_value["comparator"]
         target_regex = other_value.get("regex")  # parameter for regex extraction
 
+        if other_value.get("strict_incremental_ordering", False):
+            return self._strict_incremental_check(
+                target, within_columns, columns, target_regex
+            )
         result = pd.Series([True] * len(self.value), index=self.value.index)
 
         for col in columns:
