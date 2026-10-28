@@ -541,6 +541,41 @@ class DataframeType(BaseType):
         series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
 
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_contained_by_case_insensitive(self, other_value: dict):
+        """
+        Checks if target suffix is contained by the comparator, ignoring case.
+        """
+        target: str = other_value.get("target")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = other_value.get("comparator")
+        if isinstance(comparator, list):
+            comparator = [
+                val.lower() if isinstance(val, str) else val for val in comparator
+            ]
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        suffix_length: int = other_value.get("suffix")
+        series_to_validate = self._get_string_part_series(
+            "suffix", suffix_length, target
+        ).str.lower()
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_case_insensitive_is_in(
+                series_to_validate, comparison_data
+            )
+        elif self.value.is_series(comparison_data):
+            results = series_to_validate.isin(comparison_data.str.lower())
+        elif isinstance(comparison_data, str):
+            results = series_to_validate.isin([comparison_data.lower()])
+        else:
+            results = series_to_validate.isin(comparison_data)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_not_contained_by_case_insensitive(self, other_value: dict):
+        return ~self.suffix_is_contained_by_case_insensitive(other_value)
+
     def _value_is_contained_by(self, series, comparison_data):
         if self.is_column_of_iterables(comparison_data):
             results = vectorized_is_in(series, comparison_data)
@@ -848,6 +883,34 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def suffix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        suffix = other_value.get("suffix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_suffix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        suffix = other_value.get("suffix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def matches_regex(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
@@ -870,6 +933,32 @@ class DataframeType(BaseType):
         return converted_strings.notna() & ~self._map_regex(
             converted_strings.astype(str),
             lambda x: re.match(comparator, x) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x, re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x, re.IGNORECASE) is not None,
         )
 
     @log_operator_execution

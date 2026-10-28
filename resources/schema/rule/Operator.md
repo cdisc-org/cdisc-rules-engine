@@ -206,6 +206,30 @@ Complement of `matches_regex`
   value: ^[A-Z_][A-Z0-9_]{0,7}$
 ```
 
+### matches_regex_case_insensitive
+
+Same as `matches_regex`, but the regular expression in `value` is matched without regard to case
+
+> --TESTCD contains only letters (any case)
+
+```yaml
+- name: --TESTCD
+  operator: matches_regex_case_insensitive
+  value: ^[A-Z]+$
+```
+
+### not_matches_regex_case_insensitive
+
+Complement of `matches_regex_case_insensitive`
+
+> --TESTCD <= 8 chars and contains only letters, numbers, and underscores (any case) and can not start with a number
+
+```yaml
+- name: --TESTCD
+  operator: not_matches_regex_case_insensitive
+  value: ^[A-Z_][A-Z0-9_]{0,7}$
+```
+
 ### prefix_matches_regex
 
 True if the `prefix` number of characters beginning a string in `name` match a regular expression in `value`
@@ -269,6 +293,32 @@ Complement of `suffix_matches_regex`
   operator: "not_suffix_matches_regex"
   suffix: 2
   value: "\d\d"
+```
+
+### suffix_matches_regex_case_insensitive
+
+Same as `suffix_matches_regex`, but the regular expression in `value` is matched without regard to case
+
+> QNAM ends with "CD" (any case)
+
+```yaml
+- name: "QNAM"
+  operator: "suffix_matches_regex_case_insensitive"
+  suffix: 2
+  value: "CD"
+```
+
+### not_suffix_matches_regex_case_insensitive
+
+Complement of `suffix_matches_regex_case_insensitive`
+
+> QNAM does not end with "CD" (any case)
+
+```yaml
+- name: "QNAM"
+  operator: "not_suffix_matches_regex_case_insensitive"
+  suffix: 2
+  value: "CD"
 ```
 
 ### starts_with
@@ -821,6 +871,33 @@ Complement of `prefix_is_contained_by_case_insensitive`
 ### suffix_is_not_contained_by
 
 Complement of `suffix_is_contained_by`
+
+
+### suffix_is_contained_by_case_insensitive
+
+Same as `suffix_is_contained_by`, but the comparison ignores case
+
+> Check if a supp's parent domain exists in the study (any case)
+
+```yaml
+- name: dataset_name
+  operator: suffix_is_contained_by_case_insensitive
+  suffix: 2
+  value: $study_domains
+```
+
+### suffix_is_not_contained_by_case_insensitive
+
+Complement of `suffix_is_contained_by_case_insensitive`
+
+> Supp's parent domain (any case) does not exist in the study
+
+```yaml
+- name: dataset_name
+  operator: suffix_is_not_contained_by_case_insensitive
+  suffix: 2
+  value: $study_domains
+```
 
 ## Set Operations
 

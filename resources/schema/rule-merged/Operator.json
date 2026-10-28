@@ -537,6 +537,16 @@
     {
       "properties": {
         "operator": {
+          "const": "matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `matches_regex`, but the regular expression in `value` is matched without regard to case\n\n> --TESTCD contains only letters (any case)\n\n```yaml\n- name: --TESTCD\n  operator: matches_regex_case_insensitive\n  value: ^[A-Z]+$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "non_empty",
           "markdownDescription": "\nComplement of `empty`\n\n> --OCCUR ^= null\n\n```yaml\n- name: --OCCUR\n  operator: non_empty\n```\n"
         }
@@ -617,6 +627,16 @@
         "operator": {
           "const": "not_matches_regex",
           "markdownDescription": "\nComplement of `matches_regex`\n\n> --TESTCD <= 8 chars and contains only letters, numbers, and underscores and can not start with a number\n\n```yaml\n- name: --TESTCD\n  operator: not_matches_regex\n  value: ^[A-Z_][A-Z0-9_]{0,7}$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_matches_regex_case_insensitive",
+          "markdownDescription": "\nComplement of `matches_regex_case_insensitive`\n\n> --TESTCD <= 8 chars and contains only letters, numbers, and underscores (any case) and can not start with a number\n\n```yaml\n- name: --TESTCD\n  operator: not_matches_regex_case_insensitive\n  value: ^[A-Z_][A-Z0-9_]{0,7}$\n```\n"
         }
       },
       "required": ["operator", "value"],
@@ -855,8 +875,28 @@
     {
       "properties": {
         "operator": {
+          "const": "suffix_is_contained_by_case_insensitive",
+          "markdownDescription": "\nSame as `suffix_is_contained_by`, but the comparison ignores case\n\n> Check if a supp's parent domain exists in the study (any case)\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_contained_by_case_insensitive\n  suffix: 2\n  value: $study_domains\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "suffix_is_not_contained_by",
-          "markdownDescription": "\nComplement of `suffix_is_contained_by`\n"
+          "markdownDescription": "\nComplement of `suffix_is_contained_by`\n\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_not_contained_by_case_insensitive",
+          "markdownDescription": "\nComplement of `suffix_is_contained_by_case_insensitive`\n\n> Supp's parent domain (any case) does not exist in the study\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_not_contained_by_case_insensitive\n  suffix: 2\n  value: $study_domains\n```\n"
         }
       },
       "required": ["operator", "suffix", "value"],
@@ -867,6 +907,16 @@
         "operator": {
           "const": "suffix_matches_regex",
           "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match a regular expression in `value`\n\n> QNAM ends with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `suffix_matches_regex`, but the regular expression in `value` is matched without regard to case\n\n> QNAM ends with \"CD\" (any case)\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex_case_insensitive\"\n  suffix: 2\n  value: \"CD\"\n```\n"
         }
       },
       "required": ["operator", "suffix", "value"],
