@@ -126,32 +126,75 @@ def test_min_date_grouping(data, expected):
 @pytest.mark.parametrize(
     "op, dates, expected",
     [
-        ("max_date", ["2010-12-12", "2018-06", "2018"], "2010-12-12"),
-        ("min_date", ["2010-12-12", "2001-12-32", "2001-04-31", "2003-02-29", "2001-13-01"], "2010-12-12"),
-        ("max_date", ["2010-12-12", "2024-02-29"], "2024-02-29"),
-        ("min_date", ["2010-12-12", "0000-01-01", "UNK", "20010101", "2001-1-1", " 2001-01-01"], "2010-12-12"),
-        ("max_date", ["2010-12-12", "2018-04-17T09:30", "2018-04-16T-:30"], "2018-04-17"),
+        # A partial date sorts as the start of its period
+        ("max_date", ["2014-01-05", "2014-02"], "2014-02"),
+        ("min_date", ["2014-01-05", "2013"], "2013"),
+        ("max_date", ["2014-02-10", "2014-02"], "2014-02-10"),
+        ("min_date", ["2014-02-10", "2014-02"], "2014-02"),
+        ("max_date", ["2010-12-12", "2018-06", "2018"], "2018-06"),
+        # Times take part and are returned
+        ("max_date", ["2014-01-20", "2014-01-20T08:30"], "2014-01-20T08:30"),
+        ("min_date", ["2014-01-20T08:30", "2014-01-20T08:30:15.5"], "2014-01-20T08:30"),
+        ("max_date", ["2014-01-20T23:00", "2014-01-20 08:30"], "2014-01-20T23:00"),
+        ("max_date", ["2014-01-20T08:30", "2014-01-20 23:00"], "2014-01-20T23:00"),
+        ("max_date", ["2014-01-20T08:30+01:00", "2014-01-20T08"], "2014-01-20T08:30+01:00"),
+        # A missing component ends the value
+        ("max_date", ["2010-12-12", "2018-04-17T09:30", "2018-04-16T-:30"], "2018-04-17T09:30"),
         ("min_date", ["2018-04-17T09:30:00+01:00", "2018-04-16T-:30"], "2018-04-16"),
-        ("max_date", ["2018-06", "2012-12-32"], ""),
+        ("min_date", ["2010-12-12", "2003---15"], "2003"),
+        ("min_date", ["2010-12-12", "--12-15", "-----T07:15"], "2010-12-12"),
+        # Invalid values are left out
+        ("min_date", ["2010-12-12", "2001-12-32", "2001-04-31", "2003-02-29", "2001-13-01", "2001-00"], "2010-12-12"),
+        ("max_date", ["2010-12-12", "2024-02-29"], "2024-02-29"),
+        (
+            "min_date",
+            ["2010-12-12", "0000-01-01", "UNK", "20010101", "2001-1-1", " 2001-01-01", "2001-01-01x"],
+            "2010-12-12",
+        ),
+        (
+            "min_date",
+            ["2010-12-12", "2001-01-01T24:00", "2001-01-01T10:60", "2001-01-01T", "2001-01-01T10:00+25:00"],
+            "2010-12-12",
+        ),
+        ("max_date", ["2010-12-12", "UNK", "9999-99"], "2010-12-12"),
+        ("max_date", ["2012-12-32", "2025-13-24"], ""),
+        # Trailing spaces are ignored
+        ("max_date", ["2010-12-12", "2018-06 "], "2018-06"),
     ],
 )
-def test_date_skips_values_that_are_not_full_dates(op, dates, expected):
+def test_date_partial_and_invalid_values(op, dates, expected):
     operation = setup_sql_operations(op, "dates", {"dates": dates})
     assert_operation_constant(operation, operation.execute(), expected)
 
 
-@pytest.mark.parametrize("op", ["max_date", "min_date"])
-def test_date_grouping_skips_values_that_are_not_full_dates(op):
-    data = {"grp": [1, 1, 2, 2], "dates": ["2018-06", "2012-12-32", "2010-12-12", "2010-12"]}
+@pytest.mark.parametrize(
+    "op, expected",
+    [
+        ("max_date", [{"params": {"$1": 1}, "value": ["2018-06"]}, {"params": {"$1": 2}, "value": ["2010-12-12"]}]),
+        ("min_date", [{"params": {"$1": 1}, "value": ["2018-06"]}, {"params": {"$1": 2}, "value": ["2010-12"]}]),
+    ],
+)
+def test_date_grouping_partial_and_invalid_values(op, expected):
+    data = {"grp": [1, 1, 2, 2, 3], "dates": ["2018-06", "2012-12-32", "2010-12-12", "2010-12", "UNK"]}
     operation = setup_sql_operations(op, "dates", data, extra_config={"grouping": ["grp"]})
     assert_operation_parameterized_constant(
-        operation,
-        operation.execute(),
-        [
-            {"params": {"$1": 1}, "value": [""]},
-            {"params": {"$1": 2}, "value": ["2010-12-12"]},
-        ],
+        operation, operation.execute(), [*expected, {"params": {"$1": 3}, "value": [""]}]
     )
+
+
+@pytest.mark.parametrize(
+    "inner_op, outer_op, expected",
+    [
+        ("max_date", "min_date", "2014-02"),
+        ("max_date", "max_date", "2014-03-01T10:00"),
+        ("min_date", "min_date", "2013"),
+    ],
+)
+def test_date_over_grouped_partial_dates(inner_op, outer_op, expected):
+    data = {"grp": [1, 1, 2, 2], "dates": ["2013", "2014-02", "2014-03-01T10:00", "2014-02-20 08:00"]}
+    grouped = setup_sql_operations(inner_op, "dates", data, extra_config={"grouping": ["grp"]})
+    operation = setup_over_previous_operation(grouped, outer_op)
+    assert_operation_constant(operation, operation.execute(), expected)
 
 
 @pytest.mark.parametrize(
