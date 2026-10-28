@@ -21,6 +21,7 @@ from cdisc_rules_engine.utilities.utils import (
     dates_overlap,
     parse_date,
     custom_str_conversion,
+    safe_numeric_conversion,
 )
 import numpy as np
 import dask.dataframe as dd
@@ -158,6 +159,10 @@ class DataframeType(BaseType):
         else:
             return self.value.get(comparator, comparator)
 
+    @staticmethod
+    def _lower_if_str(value):
+        return value.lower() if isinstance(value, str) else value
+
     @log_operator_execution
     def is_column_of_iterables(self, column):
         if not self.value.is_series(column):
@@ -187,6 +192,18 @@ class DataframeType(BaseType):
     def not_exists(self, other_value):
         return ~self.exists(other_value)
 
+    def _resolve_comparison_data(
+        self, row, comparator, value_is_literal: bool, value_is_reference: bool
+    ):
+        if value_is_reference:
+            dynamic_column_name = row[comparator]
+            if dynamic_column_name not in row.index:
+                return None
+            return row[dynamic_column_name]
+        return (
+            comparator if comparator not in row or value_is_literal else row[comparator]
+        )
+
     def _check_equality(
         self,
         row,
@@ -195,8 +212,9 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
-        type_insensitive: bool = False,
+        type_insensitive=False,
         round_values: bool = False,
+        invert: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -206,44 +224,52 @@ class DataframeType(BaseType):
         equal_to       "" or null  Populated   False
         equal_to       Populated   "" or null  False
         equal_to       Populated   Populated   A == B
+        not_equal_to   "" or null  "" or null  False
+        not_equal_to   "" or null  Populated   True
+        not_equal_to   Populated   "" or null  True
+        not_equal_to   Populated   Populated   A != B
+
+        type_insensitive:
+            False      -> values compared as-is
+            True       -> both values converted to strings (custom_str_conversion)
+            "numeric"  -> compared numerically when both values can be cast to
+                          numbers; otherwise compared as-is (string comparison)
         """
-        if value_is_reference:
-            dynamic_column_name = row[comparator]
-            if dynamic_column_name not in row.index:
-                comparison_data = None
-            else:
-                comparison_data = row[dynamic_column_name]
-        else:
-            comparison_data = (
-                comparator
-                if comparator not in row or value_is_literal
-                else row[comparator]
-            )
-        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
-            row[target]
-        )
-        if both_null:
-            return False
         target_val = row[target]
-        comparison_val = comparison_data
+        comparison_val = self._resolve_comparison_data(
+            row, comparator, value_is_literal, value_is_reference
+        )
+
+        target_empty = self._is_null_or_empty(target_val)
+        comparison_empty = self._is_null_or_empty(comparison_val)
+        if target_empty and comparison_empty:
+            return False
+        if target_empty or comparison_empty:
+            return invert
+
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
-        if type_insensitive:
+
+        if type_insensitive == "numeric":
+            target_num = safe_numeric_conversion(target_val)
+            comparison_num = safe_numeric_conversion(comparison_val)
+            if target_num is not None and comparison_num is not None:
+                target_val, comparison_val = target_num, comparison_num
+            elif case_insensitive:
+                target_val = self._lower_if_str(target_val)
+                comparison_val = self._lower_if_str(comparison_val)
+        elif type_insensitive:
             target_val = custom_str_conversion(target_val)
             comparison_val = custom_str_conversion(comparison_val)
-        if case_insensitive:
-            target_val = (
-                target_val.lower()
-                if isinstance(target_val, str) and target_val
-                else None
-            )
-            comparison_val = (
-                comparison_val.lower()
-                if isinstance(comparison_val, str) and comparison_val
-                else None
-            )
-            return target_val == comparison_val
-        return target_val == comparison_val
+            if case_insensitive:
+                target_val = self._lower_if_str(target_val)
+                comparison_val = self._lower_if_str(comparison_val)
+        elif case_insensitive:
+            target_val = self._lower_if_str(target_val)
+            comparison_val = self._lower_if_str(comparison_val)
+
+        result = target_val == comparison_val
+        return not result if invert else result
 
     def _check_inequality(
         self,
@@ -253,55 +279,20 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
-        type_insensitive: bool = False,
+        type_insensitive=False,
         round_values: bool = False,
     ) -> bool:
-        """
-        Equality checks work slightly differently for clinical datasets.
-        See truth table below:
-        Operator       --A         --B         Outcome
-        not_equal_to   "" or null  "" or null  False
-        not_equal_to   "" or null  Populated   True
-        not_equal_to   Populated   "" or null  True
-        not_equal_to   Populated   Populated   A != B
-        """
-        if value_is_reference:
-            dynamic_column_name = row[comparator]
-            if dynamic_column_name not in row.index:
-                comparison_data = None
-            else:
-                comparison_data = row[dynamic_column_name]
-        else:
-            comparison_data = (
-                comparator
-                if comparator not in row or value_is_literal
-                else row[comparator]
-            )
-        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
-            row[target]
+        return self._check_equality(
+            row,
+            target,
+            comparator,
+            value_is_literal=value_is_literal,
+            value_is_reference=value_is_reference,
+            case_insensitive=case_insensitive,
+            type_insensitive=type_insensitive,
+            round_values=round_values,
+            invert=True,
         )
-        if both_null:
-            return False
-        target_val = row[target]
-        comparison_val = comparison_data
-        if round_values:
-            target_val, comparison_val = apply_rounding(target_val, comparison_val)
-        if type_insensitive:
-            target_val = custom_str_conversion(target_val)
-            comparison_val = custom_str_conversion(comparison_val)
-        if case_insensitive:
-            target_val = (
-                target_val.lower()
-                if isinstance(target_val, str) and target_val
-                else None
-            )
-            comparison_val = (
-                comparison_val.lower()
-                if isinstance(comparison_val, str) and comparison_val
-                else None
-            )
-            return target_val != comparison_val
-        return target_val != comparison_val
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

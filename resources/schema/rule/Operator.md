@@ -12,7 +12,9 @@ Value comparison. Works for both string and number.
 Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
-- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
+- 'type_insensitive' controls how values of different types are compared:
+  - `true`: both values are converted to strings before comparison. NOTE: all trailing zeroes will be removed in both strings and floats.
+  - `numeric`: when both values can be converted to numbers they are compared numerically, so `"5.0"`, `"5"` and `5` are equal. If either value can't be converted, the values are compared as strings.
 - 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
@@ -33,15 +35,13 @@ Has optional parameter:
   type_insensitive: true
 ```
 
-> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
-> between the two columns
+> --STRESC = --STRESN, compared numerically
 
 ```yaml
 - name: --STRESC
   operator: equal_to
-  type_insensitive: true
+  type_insensitive: numeric
   value: --STRESN
-  round_values: true
 ```
 
 > EXDOSE EQ 0
