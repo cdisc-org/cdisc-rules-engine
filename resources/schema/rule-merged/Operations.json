@@ -306,6 +306,16 @@
     {
       "properties": {
         "operator": {
+          "const": "referenced_domain_variable_names",
+          "markdownDescription": "\nReturns, for each record, the list of variable names in the study dataset whose domain matches the value in the column provided in `name` (typically `RDOMAIN`). Variable names come from the submitted data, not from the CDISC Library. If a domain is split across several datasets (for example QS1 and QS2), their variables are combined. Matching on the domain value is case-insensitive. Records with a null value, or a value that does not match any domain in the study, get an empty list.\n\nInput (SUPPLB), with study dataset LB containing STUDYID, DOMAIN, USUBJID, LBSEQ, ...\n\n```yaml\n- id: $rdomain_variables\n  name: RDOMAIN\n  operator: referenced_domain_variable_names\n```\n\nOutput\n\n```\nRDOMAIN  $rdomain_variables\nLB       [\"DOMAIN\", \"LBSEQ\", \"STUDYID\", \"USUBJID\", ...]\nXX       []\n```\n"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "required_variables",
           "markdownDescription": "\nReturns the required variables ( \"Core\" = Req ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_variables\n  id: $required_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\"]\n```\n"
         }
