@@ -7,7 +7,7 @@ import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import click
 
@@ -36,25 +36,29 @@ from scripts.run_sql_validation import run_sql_validation
 from scripts.run_validation import run_validation
 from version import __version__
 
+SQL_DATA_FORMATS = {DataFormatTypes.XPT.value, DataFormatTypes.SAS7BDAT.value}
 
-def valid_data_file(data_path: list, allow_sql_mixed_formats: bool = False) -> Tuple[list, set]:
-    allowed_formats = [format.value for format in DataFormatTypes]
+
+def valid_data_file(
+    data_path: list, sql_engine: bool = False, filetype: Optional[str] = None
+) -> Tuple[list, set, list]:
+    known_formats = {format.value for format in DataFormatTypes}
+    allowed_formats = SQL_DATA_FORMATS if sql_engine else known_formats
+    if filetype:
+        data_path = [file for file in data_path if os.path.splitext(file)[1][1:].upper() == filetype.upper()]
     found_formats = set()
     file_list = []
+    unsupported = []
     for file in data_path:
         file_extension = os.path.splitext(file)[1][1:].upper()
         if file_extension in allowed_formats:
             found_formats.add(file_extension)
             file_list.append(file)
-    if len(found_formats) > 1:
-        allowed_sql_mix = {DataFormatTypes.XPT.value, DataFormatTypes.SAS7BDAT.value}
-        if allow_sql_mixed_formats and found_formats.issubset(allowed_sql_mix):
-            return file_list, found_formats
-        return [], found_formats
-    if len(found_formats) == 1:
-        return file_list, found_formats
-
-    return [], set()
+        elif file_extension in known_formats:
+            unsupported.append(file)
+    if len(found_formats) > 1 and not sql_engine:
+        return [], found_formats, unsupported
+    return file_list, found_formats, unsupported
 
 
 @click.group()
@@ -81,6 +85,13 @@ def cli():
     "--data",
     required=False,
     help="Path to directory containing data files",
+)
+@click.option(
+    "-ft",
+    "--filetype",
+    default=None,
+    type=click.Choice([data_format.lower() for data_format in sorted(SQL_DATA_FORMATS)], case_sensitive=False),
+    help="Only validate dataset files with this extension, e.g. when the data directory holds both XPT and SAS7BDAT",
 )
 @click.option(
     "-dp",
@@ -265,6 +276,7 @@ def validate(  # noqa: C901
     cache: str,
     pool_size: int,
     data: str,
+    filetype: str,
     dataset_path: Tuple[str],
     log_level: str,
     report_template: str,
@@ -342,7 +354,6 @@ def validate(  # noqa: C901
             ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
-    allowed_sql_mix = {DataFormatTypes.XPT.value, DataFormatTypes.SAS7BDAT.value}
 
     dict_container = SqlExternalDictionariesContainer if sql_engine else ExternalDictionariesContainer
     external_dictionaries = dict_container(
@@ -367,32 +378,33 @@ def validate(  # noqa: C901
         if dataset_path:
             logger.error("Argument --dataset-path cannot be used together with argument --data")
             ctx.exit()
-        dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)],
-            allow_sql_mixed_formats=sql_engine,
-        )
-        if len(found_formats) > 1:
-            if not (sql_engine and found_formats.issubset(allowed_sql_mix)):
-                logger.error(
-                    f"Argument --data contains more than one allowed file format ({', '.join(found_formats)}). "
-                    "Mixed formats are supported only for SQL engine runs and only for XPT + SAS7BDAT files."
-                )
-                ctx.exit()
+        candidate_paths = [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
     elif dataset_path:
-        dataset_paths, found_formats = valid_data_file(
-            [dp for dp in dataset_path],
-            allow_sql_mixed_formats=sql_engine,
-        )
-        if len(found_formats) > 1:
-            if not (sql_engine and found_formats.issubset(allowed_sql_mix)):
-                logger.error(
-                    f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)}). "
-                    "Mixed formats are supported only for SQL engine runs and only for XPT + SAS7BDAT files."
-                )
-                ctx.exit()
+        candidate_paths = list(dataset_path)
     else:
         logger.error("You must pass one of the following arguments: --dataset-path, --data")
         # no need to define dataset_paths here, the program execution will stop
+        ctx.exit()
+    dataset_paths, found_formats, unsupported_paths = valid_data_file(
+        candidate_paths, sql_engine=sql_engine, filetype=filetype
+    )
+    if unsupported_paths:
+        logger.warning(
+            "Skipping files the SQL engine can't read (it reads XPT and SAS7BDAT): "
+            + ", ".join(sorted(Path(path).name for path in unsupported_paths))
+        )
+    if len(found_formats) > 1 and not sql_engine:
+        logger.error(
+            f"The dataset files are in more than one format ({', '.join(sorted(found_formats))}). "
+            "Mixed formats are supported only for SQL engine runs and only for XPT + SAS7BDAT files."
+        )
+        ctx.exit()
+    if not dataset_paths:
+        logger.error(
+            "No dataset files to validate"
+            + (f" with the extension .{filetype.lower()}" if filetype else "")
+            + (". The SQL engine reads XPT and SAS7BDAT files." if sql_engine else ".")
+        )
         ctx.exit()
     validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     args = Validation_args(

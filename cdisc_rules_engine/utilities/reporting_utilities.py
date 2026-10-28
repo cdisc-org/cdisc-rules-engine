@@ -34,7 +34,7 @@ def get_define_ct(dataset_paths: List[str], define_version) -> Optional[str]:
     if not dataset_paths:
         return None
     ct = None
-    if dataset_paths[0].endswith(".xml") and define_version == "2.1.0":
+    if dataset_paths[0].endswith(".xml") and define_version.startswith("2.1"):
         define_xml_reader = DefineXMLReaderFactory.from_filename(dataset_paths[0])
         return define_xml_reader.get_ct_version()
     path_to_data = os.path.dirname(dataset_paths[0])
@@ -42,6 +42,6 @@ def get_define_ct(dataset_paths: List[str], define_version) -> Optional[str]:
         return None
     path_to_define = os.path.join(path_to_data, DEFINE_XML_FILE_NAME)
     define_xml_reader = DefineXMLReaderFactory.from_filename(path_to_define)
-    if define_version == "2.1.0":
+    if define_version.startswith("2.1"):
         ct = define_xml_reader.get_ct_version()
     return ct

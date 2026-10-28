@@ -73,6 +73,7 @@ class BaseDefineXMLReader(ABC):
             )
         )
         self.cache_service = cache_service_obj
+        self._original_define_version: Optional[str] = None
         self.study_id = study_id
         self.data_bundle_id = data_bundle_id
 
@@ -385,6 +386,8 @@ class BaseDefineXMLReader(ABC):
     @cache
     def get_define_version(self) -> Optional[str]:
         """Use to extract DefineVersion from file"""
+        if self._original_define_version:
+            return self._original_define_version
         self.read()
         mdv_attrib: dict = self._odm_loader.loader.parser.mdv[0].attrib
         for key, val in mdv_attrib.items():

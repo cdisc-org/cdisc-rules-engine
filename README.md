@@ -150,8 +150,12 @@ Run `python core.py validate --help` to see the list of validation options.
                                   loaded metadata and rules
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
+  -ft, --filetype [sas7bdat|xpt]  Only validate dataset files with this extension,
+                                  e.g. when the data directory holds both XPT and SAS7BDAT.
+                                  With the SQL engine (the default), files in other formats
+                                  (e.g. Dataset-JSON) are skipped with a warning.
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
-  -dxp, --define_xml_path TEXT    Path to Define-XML
+  -dxp, --define-xml-path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
