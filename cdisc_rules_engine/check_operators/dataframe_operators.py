@@ -1324,20 +1324,38 @@ class DataframeType(BaseType):
     def is_inconsistent_across_dataset(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
-        regex = other_value.get("regex")
-        if isinstance(regex, list) and regex:
-            regex = regex[0]
-
-        grouping_cols = []
         if isinstance(comparator, str):
-            if comparator in self.value.columns:
-                grouping_cols.append(comparator)
-        else:
-            for col in comparator:
-                if col in self.value.columns:
-                    grouping_cols.append(col)
-        df_check = self.value[grouping_cols + [target]].copy()
-        df_check = df_check.fillna("_NaN_")
+            comparator = [comparator]
+        grouping_cols = [col for col in comparator if col in self.value.columns]
+        if target not in self.value.columns or not grouping_cols:
+            return self.value.convert_to_series([False] * len(self.value))
+
+        regex = other_value.get("regex")
+        if isinstance(regex, list):
+            regex = regex[0] if regex else None
+
+        where_populated = other_value.get("where_populated", False)
+        where_populated_columns = other_value.get("where_populated_columns") or []
+        named_cols = [
+            col for col in where_populated_columns if col in self.value.columns
+        ]
+        if where_populated_columns and not named_cols and not where_populated:
+            raise ValueError(
+                "None of the where_populated_columns exist in the dataset for "
+                f"is_inconsistent_across_dataset operation: {where_populated_columns}"
+            )
+        populated_cols = list(
+            dict.fromkeys(
+                ([target, *grouping_cols] if where_populated else []) + named_cols
+            )
+        )
+
+        check_cols = grouping_cols + [target]
+        df = self.value[list(dict.fromkeys(check_cols + populated_cols))]
+        populated = df[populated_cols]
+        mask = (populated.notna() & (populated.astype(str) != "")).all(axis=1)
+        df_check = df.loc[mask, check_cols].fillna("_NaN_")
+
         if regex:
             try:
                 pattern = re.compile(regex)
@@ -1349,25 +1367,12 @@ class DataframeType(BaseType):
                 regex = f"({regex})"
             extracted = df_check[target].astype(str).str.extract(regex, expand=True)[0]
             df_check[target] = extracted.fillna(df_check[target])
-        results = self._check_inconsistency(df_check, grouping_cols, target)
-        return results
 
-    @staticmethod
-    def _check_inconsistency(df_check, grouping_cols: list[Any], target):
-        results = pd.Series(False, index=df_check.index)
-        for name, group in df_check.groupby(grouping_cols, dropna=False):
-            if group[target].nunique() > 1:
-                value_counts = group[target].value_counts()
-                max_count = value_counts.max()
-                # if same amount of inconsistency values, flag all
-                most_common_values = value_counts[value_counts == max_count]
-                if len(most_common_values) > 1:
-                    results[group.index] = True
-                else:
-                    most_common_value = most_common_values.index[0]
-                    minority_rows = group[group[target] != most_common_value]
-                    results[minority_rows.index] = True
-        return results
+        inconsistent = (
+            df_check.groupby(grouping_cols, dropna=False)[target].transform("nunique")
+            > 1
+        )
+        return inconsistent.reindex(df.index, fill_value=False)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

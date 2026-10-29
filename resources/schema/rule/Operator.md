@@ -1121,16 +1121,9 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. When inconsistency is detected within a group, the operator attempts to identify a majority value. If one value appears more frequently than all others, only the minority records (those not matching the majority value) are flagged. If no single majority exists — i.e., two or more values are tied for the highest frequency — all records in that group are flagged.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by the specified value(s) and validates that the target variable has the same value within each unique combination of grouping variables. If the target has more than one distinct value within a group, all records in that group are flagged. Null values in the target count as a distinct value.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
-
-If a regex parameter is provided, it is applied to the values of the target variable before the consistency check. The first capture group of the regex is used as the normalized value for comparison. This can be useful when only part of the value should be considered during comparison (for example, comparing only the date portion of a datetime value).
-
-- regex is optional.
-- The pattern must include at least one capture group(or whole regex will be wrapped to capture group).
-- Only the first capture group is used for comparison.
-- If the pattern does not match a value, the original value is used.
 
 ```yaml
 - name: "BGSTRESU"
@@ -1150,6 +1143,40 @@ Multiple grouping variables - true if the values of --STRESU differ within each 
     - "--SPEC"
     - "--METHOD"
 ```
+
+#### where_populated / where_populated_columns
+
+By default, every record takes part in the check, so a null target or grouping value can make an otherwise consistent group look inconsistent. These optional parameters restrict the check to records where certain variables are populated (not null and not empty). Records that are filtered out are never flagged and do not count towards a group's values.
+
+- `where_populated` (boolean): when `true`, only records where the target and all grouping variables are populated are evaluated.
+- `where_populated_columns` (list of variable names): only records where every listed variable is populated are evaluated. Use this to filter on variables that are not part of the check itself, or to filter on a specific subset instead of everything `where_populated: true` includes.
+- Both can be used together; the record must satisfy both.
+- Listed variables that do not exist in the dataset are ignored. If none of the `where_populated_columns` exist and `where_populated` is not `true`, the check raises an error.
+
+True if --ELTM differs within DOMAIN, VISITNUM, --TPTREF, and --TPTNUM, considering only records where --TPT, --TPTNUM, and --ELTM are populated:
+
+```yaml
+- name: --ELTM
+  operator: is_inconsistent_across_dataset
+  value:
+    - DOMAIN
+    - VISITNUM
+    - --TPTREF
+    - --TPTNUM
+  where_populated_columns:
+    - --TPT
+    - --TPTNUM
+    - --ELTM
+```
+
+#### regex
+
+If a regex parameter is provided, it is applied to the values of the target variable before the consistency check. The first capture group of the regex is used as the normalized value for comparison. This can be useful when only part of the value should be considered during comparison (for example, comparing only the date portion of a datetime value).
+
+- regex is optional.
+- The pattern must include at least one capture group (or the whole regex will be wrapped in a capture group).
+- Only the first capture group is used for comparison.
+- If the pattern does not match a value, the original value is used.
 
 ### has_same_values
 
