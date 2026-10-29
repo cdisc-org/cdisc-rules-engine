@@ -1066,6 +1066,8 @@ Operations:
 
 If no group is provided, returns the max date value in name. If group is provided, returns the max date value in name, within each unique set of the grouping variables.
 
+An optional `filter` limits which records are considered when finding the max date. Filter values are matched exactly, and a value ending in `&` matches any value starting with the text before it (e.g. `"PLACEBO&"` matches `PLACEBO1`, `PLACEBO2`, etc.). When more than one variable is given, a record must match all of them. The result is still returned for every record, including records excluded by the filter. If no records match the filter (overall, or within a group), the result is an empty string.
+
 ```yaml
 Check:
   all:
@@ -1097,9 +1099,25 @@ Operations:
       - USUBJID
 ```
 
+Example with filter: max EX.EXENDTC per subject, considering only placebo records
+
+```yaml
+Operations:
+  - operator: max_date
+    domain: EX
+    name: EXENDTC
+    id: $max_ex_exendtc_placebo
+    filter:
+      EXTRT: "PLACEBO"
+    group:
+      - USUBJID
+```
+
 ### min_date
 
 If no group is provided, returns the min date value in name. If group is provided, returns the min date value in name, within each unique set of the grouping variables.
+
+An optional `filter` limits which records are considered when finding the min date as described above in max_date.
 
 Example: RFSTDTC is greater than min AE.AESTDTC for the current USUBJID
 
@@ -1114,6 +1132,20 @@ Operations:
     domain: "AE"
     name: "AESTDTC"
     id: "$ae_aestdtc"
+    group:
+      - USUBJID
+```
+
+Example with filter: min AE.AESTDTC per subject, considering only serious adverse events
+
+```yaml
+Operations:
+  - operator: "min_date"
+    domain: "AE"
+    name: "AESTDTC"
+    id: "$ae_serious_aestdtc"
+    filter:
+      AESER: "Y"
     group:
       - USUBJID
 ```

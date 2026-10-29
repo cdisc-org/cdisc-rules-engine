@@ -5,7 +5,11 @@ from cdisc_rules_engine.check_operators.helpers import format_date_preserving_pr
 
 class MaxDate(BaseOperation):
     def _execute_operation(self):
-        original = self.params.dataframe[self.params.target]
+        dataframe = self.params.dataframe
+        if self.params.filter:
+            dataframe = self._filter_data(dataframe)
+
+        original = dataframe[self.params.target]
         data = pd.to_datetime(original, format="ISO8601")
 
         if not self.params.grouping:
@@ -20,7 +24,7 @@ class MaxDate(BaseOperation):
         if isinstance(grouping_cols, str):
             grouping_cols = [grouping_cols]
 
-        group_keys = [self.params.dataframe[col] for col in grouping_cols]
+        group_keys = [dataframe[col] for col in grouping_cols]
         idx_of_max = data.groupby(group_keys).apply(
             lambda s: s.idxmax() if s.notna().any() else pd.NA
         )
