@@ -175,6 +175,15 @@
     {
       "properties": {
         "operator": {
+          "const": "intersect"
+        }
+      },
+      "required": ["id", "operator", "name", "subtract"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "label_referenced_variable_metadata"
         }
       },
