@@ -289,6 +289,13 @@ def case_insensitive_is_in(value, values):
     return str(value).lower() in str(values).lower()
 
 
+def case_insensitive_contains(value, values):
+    needle = str(value).lower()
+    if isinstance(values, (list, set, tuple)):
+        return any(needle in str(v).lower() for v in values)
+    return needle in str(values).lower()
+
+
 def truncate_datetime_to_precision(date_string: str, precision: DatePrecision):
     dt = get_date(date_string)
     if precision is None:
@@ -454,3 +461,4 @@ vectorized_is_valid_duration = np.vectorize(is_valid_duration)
 vectorized_get_dict_key = np.vectorize(get_dict_key_val)
 vectorized_is_in = np.vectorize(is_in)
 vectorized_case_insensitive_is_in = np.vectorize(case_insensitive_is_in)
+vectorized_case_insensitive_contains = np.vectorize(case_insensitive_contains)

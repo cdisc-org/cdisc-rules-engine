@@ -10,6 +10,7 @@ from cdisc_rules_engine.check_operators.helpers import (
     vectorized_get_dict_key,
     vectorized_is_in,
     vectorized_case_insensitive_is_in,
+    vectorized_case_insensitive_contains,
     apply_regex,
     vectorized_compare_dates,
     apply_rounding,
@@ -693,7 +694,7 @@ class DataframeType(BaseType):
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         comparison_data = self.convert_string_data_to_lower(comparison_data)
         if self.is_column_of_iterables(self.value[target]):
-            results = vectorized_case_insensitive_is_in(
+            results = vectorized_case_insensitive_contains(
                 comparison_data, self.value[target]
             )
         elif self.value.is_series(comparison_data):
