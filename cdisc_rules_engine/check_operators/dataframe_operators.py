@@ -587,7 +587,9 @@ class DataframeType(BaseType):
         series_to_validate = self._get_string_part_series(
             part_to_validate, length, target
         )
-        return series_to_validate.eq(comparison_data).astype(bool)
+        if self.value.is_series(comparison_data):
+            comparison_data = comparison_data.astype(object)
+        return series_to_validate.astype(object).eq(comparison_data).astype(bool)
 
     def _where_less_than(self, target, comparison):
         return np.where(target < comparison, True, False)
@@ -1420,19 +1422,29 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def is_not_unique_relationship(self, other_value):
+    def is_not_unique_relationship(self, other_value):  # noqa
         """
         Validates one-to-one relationship between two columns (target and comparator)
         within a dataset. One-to-one means that a columns values can be duplicated
         but it must always corresponds to one value of comparator and vice versa.
         A violation occurs when a NON-NULL value in either column maps to multiple
-        different values in the other column.
+        different values in the other column. For a list of comparator columns,
+        a combination counts as non-null if at least one of its values is present;
+        a null within a combination is treated as a value in its own right.
         """
         target = other_value.get("target")
         comparator = other_value.get("comparator")
+        no_violations = self.value.convert_to_series([False] * len(self.value))
+        if target not in self.value.columns:
+            return no_violations
         if isinstance(comparator, list):
+            comparator = [col for col in comparator if col in self.value.columns]
+            if not comparator:
+                return no_violations
             columns = [target] + comparator
         else:
+            if comparator not in self.value.columns:
+                return no_violations
             columns = [target, comparator]
 
         df_subset = self.value[columns].dropna(how="all")
@@ -1461,7 +1473,9 @@ class DataframeType(BaseType):
                     for comp_tuple in clean_comparators:
                         mask = self.value.convert_to_series([True] * len(self.value))
                         for i, col in enumerate(comparator):
-                            mask = mask & (self.value[col] == comp_tuple[i])
+                            mask = mask & self._null_safe_equals(
+                                self.value[col], comp_tuple[i]
+                            )
                         result = result | mask
                 else:
                     result = result | self.value[comparator].isin(clean_comparators)
@@ -1492,14 +1506,17 @@ class DataframeType(BaseType):
             unique_keys = df_without_duplicates[key_column].dropna().unique()
         for key_val in unique_keys:
             if isinstance(key_column, list):
-                if any(v == "" or pd.isna(v) or v is None for v in key_val):
+                # only skip combinations where every value is null
+                if all(self._is_null_value(v) for v in key_val):
                     continue
                 mask = pd.Series(
                     [True] * len(df_without_duplicates),
                     index=df_without_duplicates.index,
                 )
                 for i, col in enumerate(key_column):
-                    mask = mask & (df_without_duplicates[col] == key_val[i])
+                    mask = mask & self._null_safe_equals(
+                        df_without_duplicates[col], key_val[i]
+                    )
                 key_rows = df_without_duplicates[mask]
             else:
                 if key_val == "":
@@ -1517,19 +1534,37 @@ class DataframeType(BaseType):
                     violated_keys.add(key_val)
         return violated_keys
 
+    @staticmethod
+    def _is_null_value(value) -> bool:
+        return (
+            value is None
+            or value == ""
+            or (not isinstance(value, (list, tuple, set)) and pd.isna(value))
+        )
+
+    def _null_safe_equals(self, series, value):
+        """Element-wise equality that treats NaN, None and "" as equal nulls."""
+        if self._is_null_value(value):
+            return series.isna() | (series == "")
+        return series == value
+
     def _has_multiple_mappings_for_tuples(self, value_tuples):
         """
         Check if a list of tuples contains multiple different non-null tuples.
+        A tuple is null only when every value in it is null; partial nulls are
+        normalised so "", NaN and None compare equal.
         Returns True if there are multiple non-null tuples, or at least one
         non-null tuple plus a null tuple.
         """
         unique_tuples = set()
         has_null = False
         for val_tuple in value_tuples:
-            if any(pd.isna(v) or v == "" or v is None for v in val_tuple):
+            if all(self._is_null_value(v) for v in val_tuple):
                 has_null = True
             else:
-                unique_tuples.add(val_tuple)
+                unique_tuples.add(
+                    tuple(None if self._is_null_value(v) else v for v in val_tuple)
+                )
         return len(unique_tuples) > 1 or (len(unique_tuples) >= 1 and has_null)
 
     def _has_multiple_mappings(self, values):
@@ -1582,7 +1617,9 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         group_by_column: str = other_value.get("within")
         order_by_column: str = other_value.get("ordering")
-        target_columns = [target, comparator, group_by_column, order_by_column]
+        target_columns = list(
+            dict.fromkeys([target, comparator, group_by_column, order_by_column])
+        )
         ordered_df = self.value[target_columns].sort_values(by=[order_by_column])
         grouped_df = ordered_df.groupby(group_by_column)
         results = grouped_df.apply(

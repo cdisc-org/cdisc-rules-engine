@@ -284,6 +284,8 @@ def is_in(value, values):
 
 
 def case_insensitive_is_in(value, values):
+    if isinstance(values, (list, set, tuple)):
+        return str(value).lower() in {str(v).lower() for v in values}
     return str(value).lower() in str(values).lower()
 
 
