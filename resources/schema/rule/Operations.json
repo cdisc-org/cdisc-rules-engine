@@ -175,6 +175,15 @@
     {
       "properties": {
         "operator": {
+          "const": "intersect"
+        }
+      },
+      "required": ["id", "operator", "name", "subtract"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "label_referenced_variable_metadata"
         }
       },
@@ -269,6 +278,15 @@
         }
       },
       "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "referenced_domain_variable_names"
+        }
+      },
+      "required": ["id", "operator", "name"],
       "type": "object"
     },
     {

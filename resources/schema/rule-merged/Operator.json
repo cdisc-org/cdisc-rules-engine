@@ -188,7 +188,7 @@
       "properties": {
         "operator": {
           "const": "equal_to",
-          "markdownDescription": "\nValue comparison. Works for both string and number.\nHas optional parameter:\n\n- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.\n- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.\n- 'round_values' when true, both the target and value will be rounded to the nearest integer\n\n> --OCCUR = N\n\n```yaml\n- name: --OCCUR\n  operator: equal_to\n  value: \"N\"\n```\n\n> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).\n\n```yaml\n- name: IDVARVAL\n  operator: equal_to\n  value: \"IDVAR\"\n  value_is_reference: true\n  type_insensitive: true\n```\n\n> --STRESC = --STRESN with rounded values and ignoring the char/num type differences\n> between the two columns\n\n```yaml\n- name: --STRESC\n  operator: equal_to\n  type_insensitive: true\n  value: --STRESN\n  round_values: true\n```\n\n> EXDOSE EQ 0\n\n```yaml\n- name: EXDOSE\n  operator: equal_to\n  value: 0\n```\n"
+          "markdownDescription": "\nValue comparison. Works for both string and number.\nHas optional parameter:\n\n- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.\n- 'type_insensitive' controls how values of different types are compared:\n  - `true`: both values are converted to strings before comparison. NOTE: all trailing zeroes will be removed in both strings and floats.\n  - `numeric`: when both values can be converted to numbers they are compared numerically, so `\"5.0\"`, `\"5\"` and `5` are equal. If either value can't be converted, the values are compared as strings.\n- 'round_values' when true, both the target and value will be rounded to the nearest integer\n\n> --OCCUR = N\n\n```yaml\n- name: --OCCUR\n  operator: equal_to\n  value: \"N\"\n```\n\n> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).\n\n```yaml\n- name: IDVARVAL\n  operator: equal_to\n  value: \"IDVAR\"\n  value_is_reference: true\n  type_insensitive: true\n```\n\n> --STRESC = --STRESN, compared numerically\n\n```yaml\n- name: --STRESC\n  operator: equal_to\n  type_insensitive: numeric\n  value: --STRESN\n```\n\n> EXDOSE EQ 0\n\n```yaml\n- name: EXDOSE\n  operator: equal_to\n  value: 0\n```\n"
         },
         "round_values": {
           "type": "boolean"
@@ -197,7 +197,7 @@
           "type": "boolean"
         },
         "type_insensitive": {
-          "type": "boolean"
+          "$ref": "Operator.json#/properties/type_insensitive"
         }
       },
       "required": ["operator", "value"],
@@ -216,7 +216,7 @@
           "type": "boolean"
         },
         "type_insensitive": {
-          "type": "boolean"
+          "$ref": "Operator.json#/properties/type_insensitive"
         }
       },
       "required": ["operator", "value"],
@@ -550,6 +550,16 @@
     {
       "properties": {
         "operator": {
+          "const": "matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `matches_regex`, but the regular expression in `value` is matched without regard to case\n\n> --TESTCD contains only letters (any case)\n\n```yaml\n- name: --TESTCD\n  operator: matches_regex_case_insensitive\n  value: ^[A-Z]+$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "non_empty",
           "markdownDescription": "\nComplement of `empty`\n\n> --OCCUR ^= null\n\n```yaml\n- name: --OCCUR\n  operator: non_empty\n```\n"
         }
@@ -590,7 +600,7 @@
           "type": "boolean"
         },
         "type_insensitive": {
-          "type": "boolean"
+          "$ref": "Operator.json#/properties/type_insensitive"
         }
       },
       "required": ["operator", "value"],
@@ -609,7 +619,7 @@
           "type": "boolean"
         },
         "type_insensitive": {
-          "type": "boolean"
+          "$ref": "Operator.json#/properties/type_insensitive"
         }
       },
       "required": ["operator", "value"],
@@ -638,8 +648,38 @@
     {
       "properties": {
         "operator": {
+          "const": "not_matches_regex_case_insensitive",
+          "markdownDescription": "\nComplement of `matches_regex_case_insensitive`\n\n> --TESTCD <= 8 chars and contains only letters, numbers, and underscores (any case) and can not start with a number\n\n```yaml\n- name: --TESTCD\n  operator: not_matches_regex_case_insensitive\n  value: ^[A-Z_][A-Z0-9_]{0,7}$\n```\n"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "not_prefix_matches_regex",
           "markdownDescription": "\nComplement of `prefix_matches_regex`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `prefix_matches_regex`, but the regular expression in `value` is matched without regard to case\n\n```yaml\n- name: dataset_name\n  operator: prefix_matches_regex_case_insensitive\n  prefix: 2\n  value: (AP|FA)\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_prefix_matches_regex_case_insensitive",
+          "markdownDescription": "\nComplement of `prefix_matches_regex_case_insensitive`\n\n> Dataset name does not begin with 'AP' or 'FA' (any case)\n\n```yaml\n- name: dataset_name\n  operator: not_prefix_matches_regex_case_insensitive\n  prefix: 2\n  value: (AP|FA)\n```\n"
         }
       },
       "required": ["operator", "prefix", "value"],
@@ -690,6 +730,26 @@
         "operator": {
           "const": "prefix_is_not_contained_by",
           "markdownDescription": "\nComplement of `prefix_is_contained_by`\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_contained_by_case_insensitive",
+          "markdownDescription": "\nSame as `prefix_is_contained_by`, but the comparison ignores case\n\n```yaml\n- name: dataset_name\n  operator: prefix_is_contained_by_case_insensitive\n  prefix: 2\n  value: $list_dataset_names\n```\n"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_not_contained_by_case_insensitive",
+          "markdownDescription": "\nComplement of `prefix_is_contained_by_case_insensitive`\n\n> First 2 characters of a split dataset name are not a domain present in the study\n\n```yaml\n- name: dataset_name\n  operator: prefix_is_not_contained_by_case_insensitive\n  prefix: 2\n  value: $list_dataset_names\n```\n"
         }
       },
       "required": ["operator", "prefix", "value"],
@@ -828,8 +888,28 @@
     {
       "properties": {
         "operator": {
+          "const": "suffix_is_contained_by_case_insensitive",
+          "markdownDescription": "\nSame as `suffix_is_contained_by`, but the comparison ignores case\n\n> Check if a supp's parent domain exists in the study (any case)\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_contained_by_case_insensitive\n  suffix: 2\n  value: $study_domains\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "suffix_is_not_contained_by",
-          "markdownDescription": "\nComplement of `suffix_is_contained_by`\n"
+          "markdownDescription": "\nComplement of `suffix_is_contained_by`\n\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_not_contained_by_case_insensitive",
+          "markdownDescription": "\nComplement of `suffix_is_contained_by_case_insensitive`\n\n> Supp's parent domain (any case) does not exist in the study\n\n```yaml\n- name: dataset_name\n  operator: suffix_is_not_contained_by_case_insensitive\n  suffix: 2\n  value: $study_domains\n```\n"
         }
       },
       "required": ["operator", "suffix", "value"],
@@ -840,6 +920,16 @@
         "operator": {
           "const": "suffix_matches_regex",
           "markdownDescription": "\nTrue if the `suffix` number of characters ending a string in `name` match a regular expression in `value`\n\n> QNAM ends with numbers\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex\"\n  suffix: 2\n  value: \"\\d\\d\"\n```\n"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_matches_regex_case_insensitive",
+          "markdownDescription": "\nSame as `suffix_matches_regex`, but the regular expression in `value` is matched without regard to case\n\n> QNAM ends with \"CD\" (any case)\n\n```yaml\n- name: \"QNAM\"\n  operator: \"suffix_matches_regex_case_insensitive\"\n  suffix: 2\n  value: \"CD\"\n```\n"
         }
       },
       "required": ["operator", "suffix", "value"],
@@ -860,6 +950,9 @@
         "operator": {
           "const": "target_is_not_sorted_by",
           "markdownDescription": "\nComplement of `target_is_sorted_by`\n"
+        },
+        "strict_incremental_ordering": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value", "within"],
@@ -869,7 +962,10 @@
       "properties": {
         "operator": {
           "const": "target_is_sorted_by",
-          "markdownDescription": "\nTrue if the values in name are ordered according to the values specified by value\nin ascending/descending order, grouped by the values in within. Each value entry\nrequires a variable name, a sort_order of asc or desc, and an optional\nnull_position of first or last (defaults to last) which controls where null/empty\ncomparator values are placed in the expected ordering. Within accepts either a\nsingle column or an ordered list of columns. Columns can be either number or Char\nDates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that\noverlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as\ntheir order cannot be inferred.\n\nOptionally supports a `regex` parameter that extracts a portion of the target\nvalue for sorting. The regex must contain at least one capturing group. The first\ncaptured group is extracted and converted to numeric if possible, allowing proper\nsorting of sequence numbers (e.g., \"MIDS1\", \"MIDS2\", ..., \"MIDS10\" with regex\n`.*?(\\\\d+)$`). This is particularly useful for variables that end with sequence\nnumbers that may or may not be zero-padded.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n\nExample with regex for extracting sequence numbers:\n\n```yaml\nCheck:\n  all:\n    - name: MIDS\n      operator: target_is_sorted_by\n      regex: \".*?(\\\\d+)$\" # Extract trailing digits, convert to numeric\n      value:\n        - name: SMSTDTC\n          sort_order: asc\n      within:\n        - USUBJID\n        - MIDSTYPE\n```\n"
+          "markdownDescription": "\nTrue if the values in name are ordered according to the values specified by value\nin ascending/descending order, grouped by the values in within. Each value entry\nrequires a variable name, a sort_order of asc or desc, and an optional\nnull_position of first or last (defaults to last) which controls where null/empty\ncomparator values are placed in the expected ordering. Within accepts either a\nsingle column or an ordered list of columns. Columns can be either number or Char\nDates in ISO8601 YYYY-MM-DD format. Date value(s) with different precisions that\noverlap (e.g. 2005-10, 2005-10-3 and 2005-10-08) are all flagged as not sorted as\ntheir order cannot be inferred.\n\nOptionally supports a `regex` parameter that extracts a portion of the target\nvalue for sorting. The regex must contain at least one capturing group. The first\ncaptured group is extracted and converted to numeric if possible, allowing proper\nsorting of sequence numbers (e.g., \"MIDS1\", \"MIDS2\", ..., \"MIDS10\" with regex\n`.*?(\\\\d+)$`). This is particularly useful for variables that end with sequence\nnumbers that may or may not be zero-padded.\n\nOptionally supports a `strict_incremental_ordering` parameter (defaults to false).\nWhen true, the target must be a strict 1, 2, 3, ... sequence within each group\nwhen rows are ordered by all value entries in turn, each using its own sort_order\nand null_position. Each row's target must equal its 1-based position in that\norder, so gaps, duplicates, or a sequence that does not start at 1 are flagged.\nZero padding is ignored (\"01\" counts as 1), and `regex` can be combined with it to\nextract the number first. Rows with a null target are not flagged. In this mode\nthe overlapping partial date check described above is not applied, and rows with\na null comparator are placed according to null_position rather than flagged.\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      within:\n        - USUBJID\n        - MIDSTYPE\n      operator: target_is_sorted_by\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n```\n\nExample with regex for extracting sequence numbers:\n\n```yaml\nCheck:\n  all:\n    - name: MIDS\n      operator: target_is_sorted_by\n      regex: \".*?(\\\\d+)$\" # Extract trailing digits, convert to numeric\n      value:\n        - name: SMSTDTC\n          sort_order: asc\n      within:\n        - USUBJID\n        - MIDSTYPE\n```\n\nExample with strict incremental ordering:\n\n```yaml\nCheck:\n  all:\n    - name: --SEQ\n      operator: target_is_sorted_by\n      strict_incremental_ordering: true\n      value:\n        - name: --STDTC\n          sort_order: asc\n          null_position: last\n      within: USUBJID\n```\n"
+        },
+        "strict_incremental_ordering": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value", "within"],
@@ -1056,7 +1152,14 @@
       "type": "boolean"
     },
     "type_insensitive": {
-      "type": "boolean"
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "const": "numeric"
+        }
+      ]
     },
     "round_values": {
       "type": "boolean"
@@ -1087,6 +1190,9 @@
       },
       "minItems": 1,
       "type": "array"
+    },
+    "strict_incremental_ordering": {
+      "type": "boolean"
     }
   },
   "required": ["operator"],

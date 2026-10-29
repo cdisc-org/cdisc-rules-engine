@@ -33,8 +33,12 @@ from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.operations.domain_label import DomainLabel
+from cdisc_rules_engine.operations.intersect import Intersect
 from cdisc_rules_engine.operations.related_domain_is_custom import RelatedDomainIsCustom
 from cdisc_rules_engine.operations.standard_domains import StandardDomains
+from cdisc_rules_engine.operations.referenced_domain_variable_names import (
+    ReferencedDomainVariableNames,
+)
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
 )
@@ -109,6 +113,7 @@ class OperationsFactory(FactoryInterface):
         "get_model_column_order": LibraryModelColumnOrder,
         "get_model_filtered_variables": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
+        "intersect": Intersect,
         "map": Map,
         "max": Maximum,
         "max_date": MaxDate,
@@ -131,6 +136,7 @@ class OperationsFactory(FactoryInterface):
         "related_domain_is_custom": RelatedDomainIsCustom,
         "domain_label": DomainLabel,
         "standard_domains": StandardDomains,
+        "referenced_domain_variable_names": ReferencedDomainVariableNames,
         "required_variables": RequiredVariables,
         "split_by": SplitBy,
         "expected_variables": ExpectedVariables,

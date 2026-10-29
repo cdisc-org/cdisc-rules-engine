@@ -453,6 +453,26 @@ ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPP
 
 Returns a list of the domains in the study
 
+### referenced_domain_variable_names
+
+Returns, for each record, the list of variable names in the study dataset whose domain matches the value in the column provided in `name` (typically `RDOMAIN`). Variable names come from the submitted data, not from the CDISC Library. If a domain is split across several datasets (for example QS1 and QS2), their variables are combined. Matching on the domain value is case-insensitive. Records with a null value, or a value that does not match any domain in the study, get an empty list.
+
+Input (SUPPLB), with study dataset LB containing STUDYID, DOMAIN, USUBJID, LBSEQ, ...
+
+```yaml
+- id: $rdomain_variables
+  name: RDOMAIN
+  operator: referenced_domain_variable_names
+```
+
+Output
+
+```
+RDOMAIN  $rdomain_variables
+LB       ["DOMAIN", "LBSEQ", "STUDYID", "USUBJID", ...]
+XX       []
+```
+
 ### domain_is_custom
 
 Checks whether the domain is in the set of domains within the provided standard.
@@ -811,6 +831,28 @@ Operations:
     operator: minus
     subtract: $dataset_variables
     order_insensitive: false
+```
+
+### intersect
+
+Computes set intersection: elements in `name` that are also in `subtract` (A ∩ B). The result keeps the order in which elements first appear in `name`, and duplicates are removed. Null values never match. Both `name` and `subtract` must reference other operation results (e.g., `$column_order_from_library`, `$column_order_from_dataset`). If either `name` or `subtract` is empty or missing, the result is an empty list. Optional `case_sensitive` (default `true`): when set to `false`, values are compared case-insensitively and returned in uppercase. Can be used to compare only the variables that the library and the dataset have in common, for example to check their relative order.
+
+```yaml
+Operations:
+  - id: $column_order_from_library
+    operator: get_column_order_from_library
+  - id: $column_order_from_dataset
+    operator: get_column_order_from_dataset
+  - id: $library_with_dataset_only
+    name: $column_order_from_library
+    operator: intersect
+    subtract: $column_order_from_dataset
+```
+
+Given `$column_order_from_library` = `["STUDYID", "DOMAIN", "USUBJID", "AESEQ", "AETERM"]` and `$column_order_from_dataset` = `["STUDYID", "AETERM", "DOMAIN", "AESEQ", "AEXTRA"]`, `$library_with_dataset_only` will be:
+
+```
+["STUDYID", "DOMAIN", "AESEQ", "AETERM"]
 ```
 
 ### label_referenced_variable_metadata

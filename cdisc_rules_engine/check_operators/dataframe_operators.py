@@ -21,6 +21,7 @@ from cdisc_rules_engine.utilities.utils import (
     dates_overlap,
     parse_date,
     custom_str_conversion,
+    safe_numeric_conversion,
 )
 import numpy as np
 import dask.dataframe as dd
@@ -158,6 +159,10 @@ class DataframeType(BaseType):
         else:
             return self.value.get(comparator, comparator)
 
+    @staticmethod
+    def _lower_if_str(value):
+        return value.lower() if isinstance(value, str) else value
+
     @log_operator_execution
     def is_column_of_iterables(self, column):
         if not self.value.is_series(column):
@@ -187,6 +192,18 @@ class DataframeType(BaseType):
     def not_exists(self, other_value):
         return ~self.exists(other_value)
 
+    def _resolve_comparison_data(
+        self, row, comparator, value_is_literal: bool, value_is_reference: bool
+    ):
+        if value_is_reference:
+            dynamic_column_name = row[comparator]
+            if dynamic_column_name not in row.index:
+                return None
+            return row[dynamic_column_name]
+        return (
+            comparator if comparator not in row or value_is_literal else row[comparator]
+        )
+
     def _check_equality(
         self,
         row,
@@ -195,8 +212,9 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
-        type_insensitive: bool = False,
+        type_insensitive=False,
         round_values: bool = False,
+        invert: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -206,44 +224,52 @@ class DataframeType(BaseType):
         equal_to       "" or null  Populated   False
         equal_to       Populated   "" or null  False
         equal_to       Populated   Populated   A == B
+        not_equal_to   "" or null  "" or null  False
+        not_equal_to   "" or null  Populated   True
+        not_equal_to   Populated   "" or null  True
+        not_equal_to   Populated   Populated   A != B
+
+        type_insensitive:
+            False      -> values compared as-is
+            True       -> both values converted to strings (custom_str_conversion)
+            "numeric"  -> compared numerically when both values can be cast to
+                          numbers; otherwise compared as-is (string comparison)
         """
-        if value_is_reference:
-            dynamic_column_name = row[comparator]
-            if dynamic_column_name not in row.index:
-                comparison_data = None
-            else:
-                comparison_data = row[dynamic_column_name]
-        else:
-            comparison_data = (
-                comparator
-                if comparator not in row or value_is_literal
-                else row[comparator]
-            )
-        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
-            row[target]
-        )
-        if both_null:
-            return False
         target_val = row[target]
-        comparison_val = comparison_data
+        comparison_val = self._resolve_comparison_data(
+            row, comparator, value_is_literal, value_is_reference
+        )
+
+        target_empty = self._is_null_or_empty(target_val)
+        comparison_empty = self._is_null_or_empty(comparison_val)
+        if target_empty and comparison_empty:
+            return False
+        if target_empty or comparison_empty:
+            return invert
+
         if round_values:
             target_val, comparison_val = apply_rounding(target_val, comparison_val)
-        if type_insensitive:
+
+        if type_insensitive == "numeric":
+            target_num = safe_numeric_conversion(target_val)
+            comparison_num = safe_numeric_conversion(comparison_val)
+            if target_num is not None and comparison_num is not None:
+                target_val, comparison_val = target_num, comparison_num
+            elif case_insensitive:
+                target_val = self._lower_if_str(target_val)
+                comparison_val = self._lower_if_str(comparison_val)
+        elif type_insensitive:
             target_val = custom_str_conversion(target_val)
             comparison_val = custom_str_conversion(comparison_val)
-        if case_insensitive:
-            target_val = (
-                target_val.lower()
-                if isinstance(target_val, str) and target_val
-                else None
-            )
-            comparison_val = (
-                comparison_val.lower()
-                if isinstance(comparison_val, str) and comparison_val
-                else None
-            )
-            return target_val == comparison_val
-        return target_val == comparison_val
+            if case_insensitive:
+                target_val = self._lower_if_str(target_val)
+                comparison_val = self._lower_if_str(comparison_val)
+        elif case_insensitive:
+            target_val = self._lower_if_str(target_val)
+            comparison_val = self._lower_if_str(comparison_val)
+
+        result = target_val == comparison_val
+        return not result if invert else result
 
     def _check_inequality(
         self,
@@ -253,55 +279,20 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
-        type_insensitive: bool = False,
+        type_insensitive=False,
         round_values: bool = False,
     ) -> bool:
-        """
-        Equality checks work slightly differently for clinical datasets.
-        See truth table below:
-        Operator       --A         --B         Outcome
-        not_equal_to   "" or null  "" or null  False
-        not_equal_to   "" or null  Populated   True
-        not_equal_to   Populated   "" or null  True
-        not_equal_to   Populated   Populated   A != B
-        """
-        if value_is_reference:
-            dynamic_column_name = row[comparator]
-            if dynamic_column_name not in row.index:
-                comparison_data = None
-            else:
-                comparison_data = row[dynamic_column_name]
-        else:
-            comparison_data = (
-                comparator
-                if comparator not in row or value_is_literal
-                else row[comparator]
-            )
-        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
-            row[target]
+        return self._check_equality(
+            row,
+            target,
+            comparator,
+            value_is_literal=value_is_literal,
+            value_is_reference=value_is_reference,
+            case_insensitive=case_insensitive,
+            type_insensitive=type_insensitive,
+            round_values=round_values,
+            invert=True,
         )
-        if both_null:
-            return False
-        target_val = row[target]
-        comparison_val = comparison_data
-        if round_values:
-            target_val, comparison_val = apply_rounding(target_val, comparison_val)
-        if type_insensitive:
-            target_val = custom_str_conversion(target_val)
-            comparison_val = custom_str_conversion(comparison_val)
-        if case_insensitive:
-            target_val = (
-                target_val.lower()
-                if isinstance(target_val, str) and target_val
-                else None
-            )
-            comparison_val = (
-                comparison_val.lower()
-                if isinstance(comparison_val, str) and comparison_val
-                else None
-            )
-            return target_val != comparison_val
-        return target_val != comparison_val
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -471,6 +462,41 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def prefix_is_contained_by_case_insensitive(self, other_value: dict):
+        """
+        Checks if target prefix is contained by the comparator, ignoring case.
+        """
+        target: str = other_value.get("target")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = other_value.get("comparator")
+        if isinstance(comparator, list):
+            comparator = [
+                val.lower() if isinstance(val, str) else val for val in comparator
+            ]
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        prefix_length: int = other_value.get("prefix")
+        series_to_validate = self._get_string_part_series(
+            "prefix", prefix_length, target
+        ).str.lower()
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_case_insensitive_is_in(
+                series_to_validate, comparison_data
+            )
+        elif self.value.is_series(comparison_data):
+            results = series_to_validate.isin(comparison_data.str.lower())
+        elif isinstance(comparison_data, str):
+            results = series_to_validate.isin([comparison_data.lower()])
+        else:
+            results = series_to_validate.isin(comparison_data)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_not_contained_by_case_insensitive(self, other_value: dict):
+        return ~self.prefix_is_contained_by_case_insensitive(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def suffix_is_contained_by(self, other_value: dict):
         """
         Checks if target prefix is equal to comparator.
@@ -505,6 +531,41 @@ class DataframeType(BaseType):
                     Valid values are: suffix, prefix")
         series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_contained_by_case_insensitive(self, other_value: dict):
+        """
+        Checks if target suffix is contained by the comparator, ignoring case.
+        """
+        target: str = other_value.get("target")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = other_value.get("comparator")
+        if isinstance(comparator, list):
+            comparator = [
+                val.lower() if isinstance(val, str) else val for val in comparator
+            ]
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        suffix_length: int = other_value.get("suffix")
+        series_to_validate = self._get_string_part_series(
+            "suffix", suffix_length, target
+        ).str.lower()
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_case_insensitive_is_in(
+                series_to_validate, comparison_data
+            )
+        elif self.value.is_series(comparison_data):
+            results = series_to_validate.isin(comparison_data.str.lower())
+        elif isinstance(comparison_data, str):
+            results = series_to_validate.isin([comparison_data.lower()])
+        else:
+            results = series_to_validate.isin(comparison_data)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_not_contained_by_case_insensitive(self, other_value: dict):
+        return ~self.suffix_is_contained_by_case_insensitive(other_value)
 
     def _value_is_contained_by(self, series, comparison_data):
         if self.is_column_of_iterables(comparison_data):
@@ -757,6 +818,34 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def prefix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        prefix = other_value.get("prefix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_prefix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        prefix = other_value.get("prefix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[:prefix], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def suffix_matches_regex(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
@@ -785,6 +874,34 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def suffix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        suffix = other_value.get("suffix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_suffix_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        suffix = other_value.get("suffix")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.search(comparator, x[-suffix:], re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def matches_regex(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
@@ -807,6 +924,32 @@ class DataframeType(BaseType):
         return converted_strings.notna() & ~self._map_regex(
             converted_strings.astype(str),
             lambda x: re.match(comparator, x) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x, re.IGNORECASE) is not None,
+        )
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def not_matches_regex_case_insensitive(self, other_value):
+        target = other_value.get("target")
+        comparator = other_value.get("comparator")
+        converted_strings = self.value[target].map(
+            lambda x: self._regex_str_conversion(x)
+        )
+        return converted_strings.notna() & ~self._map_regex(
+            converted_strings.astype(str),
+            lambda x: re.match(comparator, x, re.IGNORECASE) is not None,
         )
 
     @log_operator_execution
@@ -1878,6 +2021,53 @@ class DataframeType(BaseType):
 
         return series.apply(extract_and_convert)
 
+    def _strict_incremental_check(
+        self, target, within_columns, comparators, target_regex=None
+    ) -> pd.Series:
+        """
+        Checks that the target is a strict 1, 2, 3, ... sequence within each
+        group defined by `within`, when rows are ordered by the comparators.
+        Rows are ordered by every comparator in turn, each using its own
+        sort_order and null_position. Each row's target (after optional regex
+        extraction, with zero padding ignored, so "01" counts as 1) must equal
+        its 1-based position in that order. Gaps, duplicates, or a sequence
+        that doesn't start at 1 fail. A row with a null target passes.
+        """
+        df = self.value
+        if isinstance(df, dd.DataFrame):
+            df = df.compute()
+
+        target_values = df[target]
+        if target_regex:
+            target_values = self._extract_regex_group(target_values, target_regex)
+        target_null = target_values.isna() | (
+            target_values.astype(str).str.strip() == ""
+        )
+        target_num = pd.to_numeric(target_values.where(~target_null), errors="coerce")
+
+        work = pd.DataFrame(index=df.index)
+        sort_keys, ascending = [], []
+        for i, comp in enumerate(comparators):
+            col = df[self.replace_prefix(comp["name"])]
+            is_null = col.isna() | (col.astype(str).str.strip() == "")
+            nulls_first = comp.get("null_position", "last").lower() == "first"
+            work[f"__null_{i}"] = is_null.astype(int)
+            work[f"__val_{i}"] = col.where(~is_null)
+            sort_keys += [f"__null_{i}", f"__val_{i}"]
+            ascending += [not nulls_first, comp["sort_order"].lower() != "desc"]
+
+        within_keys = []
+        for j, w in enumerate(within_columns):
+            work[f"__within_{j}"] = df[w]
+            within_keys.append(f"__within_{j}")
+
+        ordered = work.sort_values(by=sort_keys, ascending=ascending, kind="mergesort")
+        position = (
+            ordered.groupby(within_keys, sort=False, dropna=False).cumcount() + 1
+        ).reindex(df.index)
+
+        return target_null | (target_num == position)
+
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
@@ -1886,6 +2076,10 @@ class DataframeType(BaseType):
         columns = other_value["comparator"]
         target_regex = other_value.get("regex")  # parameter for regex extraction
 
+        if other_value.get("strict_incremental_ordering", False):
+            return self._strict_incremental_check(
+                target, within_columns, columns, target_regex
+            )
         result = pd.Series([True] * len(self.value), index=self.value.index)
 
         for col in columns:

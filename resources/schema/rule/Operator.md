@@ -12,7 +12,9 @@ Value comparison. Works for both string and number.
 Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
-- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
+- 'type_insensitive' controls how values of different types are compared:
+  - `true`: both values are converted to strings before comparison. NOTE: all trailing zeroes will be removed in both strings and floats.
+  - `numeric`: when both values can be converted to numbers they are compared numerically, so `"5.0"`, `"5"` and `5` are equal. If either value can't be converted, the values are compared as strings.
 - 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
@@ -33,15 +35,13 @@ Has optional parameter:
   type_insensitive: true
 ```
 
-> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
-> between the two columns
+> --STRESC = --STRESN, compared numerically
 
 ```yaml
 - name: --STRESC
   operator: equal_to
-  type_insensitive: true
+  type_insensitive: numeric
   value: --STRESN
-  round_values: true
 ```
 
 > EXDOSE EQ 0
@@ -206,6 +206,30 @@ Complement of `matches_regex`
   value: ^[A-Z_][A-Z0-9_]{0,7}$
 ```
 
+### matches_regex_case_insensitive
+
+Same as `matches_regex`, but the regular expression in `value` is matched without regard to case
+
+> --TESTCD contains only letters (any case)
+
+```yaml
+- name: --TESTCD
+  operator: matches_regex_case_insensitive
+  value: ^[A-Z]+$
+```
+
+### not_matches_regex_case_insensitive
+
+Complement of `matches_regex_case_insensitive`
+
+> --TESTCD <= 8 chars and contains only letters, numbers, and underscores (any case) and can not start with a number
+
+```yaml
+- name: --TESTCD
+  operator: not_matches_regex_case_insensitive
+  value: ^[A-Z_][A-Z0-9_]{0,7}$
+```
+
 ### prefix_matches_regex
 
 True if the `prefix` number of characters beginning a string in `name` match a regular expression in `value`
@@ -220,6 +244,30 @@ True if the `prefix` number of characters beginning a string in `name` match a r
 ### not_prefix_matches_regex
 
 Complement of `prefix_matches_regex`
+
+### prefix_matches_regex_case_insensitive
+
+Same as `prefix_matches_regex`, but the regular expression in `value` is matched without regard to case
+
+```yaml
+- name: dataset_name
+  operator: prefix_matches_regex_case_insensitive
+  prefix: 2
+  value: (AP|FA)
+```
+
+### not_prefix_matches_regex_case_insensitive
+
+Complement of `prefix_matches_regex_case_insensitive`
+
+> Dataset name does not begin with 'AP' or 'FA' (any case)
+
+```yaml
+- name: dataset_name
+  operator: not_prefix_matches_regex_case_insensitive
+  prefix: 2
+  value: (AP|FA)
+```
 
 ### suffix_matches_regex
 
@@ -245,6 +293,32 @@ Complement of `suffix_matches_regex`
   operator: "not_suffix_matches_regex"
   suffix: 2
   value: "\d\d"
+```
+
+### suffix_matches_regex_case_insensitive
+
+Same as `suffix_matches_regex`, but the regular expression in `value` is matched without regard to case
+
+> QNAM ends with "CD" (any case)
+
+```yaml
+- name: "QNAM"
+  operator: "suffix_matches_regex_case_insensitive"
+  suffix: 2
+  value: "CD"
+```
+
+### not_suffix_matches_regex_case_insensitive
+
+Complement of `suffix_matches_regex_case_insensitive`
+
+> QNAM does not end with "CD" (any case)
+
+```yaml
+- name: "QNAM"
+  operator: "not_suffix_matches_regex_case_insensitive"
+  suffix: 2
+  value: "CD"
 ```
 
 ### starts_with
@@ -770,9 +844,60 @@ True if the `suffix` number of characters ending a string in `name` match one of
   value: $study_domains
 ```
 
+### prefix_is_contained_by_case_insensitive
+
+Same as `prefix_is_contained_by`, but the comparison ignores case
+
+```yaml
+- name: dataset_name
+  operator: prefix_is_contained_by_case_insensitive
+  prefix: 2
+  value: $list_dataset_names
+```
+
+### prefix_is_not_contained_by_case_insensitive
+
+Complement of `prefix_is_contained_by_case_insensitive`
+
+> First 2 characters of a split dataset name are not a domain present in the study
+
+```yaml
+- name: dataset_name
+  operator: prefix_is_not_contained_by_case_insensitive
+  prefix: 2
+  value: $list_dataset_names
+```
+
 ### suffix_is_not_contained_by
 
 Complement of `suffix_is_contained_by`
+
+
+### suffix_is_contained_by_case_insensitive
+
+Same as `suffix_is_contained_by`, but the comparison ignores case
+
+> Check if a supp's parent domain exists in the study (any case)
+
+```yaml
+- name: dataset_name
+  operator: suffix_is_contained_by_case_insensitive
+  suffix: 2
+  value: $study_domains
+```
+
+### suffix_is_not_contained_by_case_insensitive
+
+Complement of `suffix_is_contained_by_case_insensitive`
+
+> Supp's parent domain (any case) does not exist in the study
+
+```yaml
+- name: dataset_name
+  operator: suffix_is_not_contained_by_case_insensitive
+  suffix: 2
+  value: $study_domains
+```
 
 ## Set Operations
 
@@ -1175,6 +1300,16 @@ sorting of sequence numbers (e.g., "MIDS1", "MIDS2", ..., "MIDS10" with regex
 `.*?(\\d+)$`). This is particularly useful for variables that end with sequence
 numbers that may or may not be zero-padded.
 
+Optionally supports a `strict_incremental_ordering` parameter (defaults to false).
+When true, the target must be a strict 1, 2, 3, ... sequence within each group
+when rows are ordered by all value entries in turn, each using its own sort_order
+and null_position. Each row's target must equal its 1-based position in that
+order, so gaps, duplicates, or a sequence that does not start at 1 are flagged.
+Zero padding is ignored ("01" counts as 1), and `regex` can be combined with it to
+extract the number first. Rows with a null target are not flagged. In this mode
+the overlapping partial date check described above is not applied, and rows with
+a null comparator are placed according to null_position rather than flagged.
+
 ```yaml
 Check:
   all:
@@ -1203,6 +1338,21 @@ Check:
       within:
         - USUBJID
         - MIDSTYPE
+```
+
+Example with strict incremental ordering:
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: target_is_sorted_by
+      strict_incremental_ordering: true
+      value:
+        - name: --STDTC
+          sort_order: asc
+          null_position: last
+      within: USUBJID
 ```
 
 ### target_is_not_sorted_by
