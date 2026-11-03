@@ -104,10 +104,12 @@ jobs:
           pip install --upgrade pip
           pip install twine
           pip install build
+          pip install wheel
           pip install .
       - name: Build package
         run: |
           python -m build
+          wheel tags --build ${{ github.run_number }} --remove dist/*.whl
       - name: Check package size
         run: |
           echo "Package size:"
