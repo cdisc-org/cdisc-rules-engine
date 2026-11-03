@@ -179,6 +179,14 @@ def test_build_combined_metadata(
         "define_variable_mandatory",
         "define_variable_has_comment",
         "define_variable_has_method",
+        "define_vlm_present",
+        "define_vlm_item_count",
+        "define_vlm_ccodes",
+        "define_vlm_has_codelist_any",
+        "define_vlm_has_codelist_all",
+        "define_vlm_ccode_missing_any",
+        "define_vlm_ccode_matches_library_any",
+        "define_vlm_ccode_matches_library_all",
         "library_variable_name",
         "library_variable_label",
         "library_variable_data_type",
@@ -218,6 +226,14 @@ def test_build_combined_metadata(
     assert not usubjid_row["variable_is_empty"]
 
     aeterm_row = result[result["variable_name"] == "AETERM"].iloc[0]
+    assert aeterm_row["define_vlm_present"]
+    assert aeterm_row["define_vlm_item_count"] == 2
+    assert aeterm_row["define_vlm_ccodes"] == []  # no codelists on either VLM item
+    assert not aeterm_row["define_vlm_has_codelist_any"]
+    assert not aeterm_row["define_vlm_has_codelist_all"]
+    assert aeterm_row["define_vlm_ccode_missing_any"]  # both ccodes are empty
+    assert not aeterm_row["define_vlm_ccode_matches_library_any"]
+    assert not aeterm_row["define_vlm_ccode_matches_library_all"]
     assert aeterm_row["variable_size"] == 200.0
     assert aeterm_row["variable_order_number"] == 9.0
     assert aeterm_row["variable_data_type"] == "Char"
@@ -227,6 +243,17 @@ def test_build_combined_metadata(
     assert not aeterm_row["variable_is_empty"]
 
     assert len(result) == 3
+
+    for var in ["STUDYID", "USUBJID"]:
+        row = result[result["variable_name"] == var].iloc[0]
+        assert not row["define_vlm_present"]
+        assert row["define_vlm_item_count"] == 0
+        assert row["define_vlm_ccodes"] == []
+        assert not row["define_vlm_has_codelist_any"]
+        assert not row["define_vlm_has_codelist_all"]
+        assert not row["define_vlm_ccode_missing_any"]
+        assert not row["define_vlm_ccode_matches_library_any"]
+        assert not row["define_vlm_ccode_matches_library_all"]
 
     for _, row in result.iterrows():
         assert row["library_variable_name"] != ""

@@ -135,6 +135,38 @@
       "markdownDescription": "\nValueListDef.ItemDef.CodeList.Alias.Name\n"
     },
     {
+      "const": "define_vlm_ccode_matches_library_all",
+      "markdownDescription": "\nBoolean indicating whether all VLM items' codelist codes match the library standard codelist code for this variable (all non-empty define_vlm_ccodes equal library_variable_ccode)\n"
+    },
+    {
+      "const": "define_vlm_ccode_matches_library_any",
+      "markdownDescription": "\nBoolean indicating whether at least one VLM item's codelist code matches the library standard codelist code for this variable (any define_vlm_ccode equals library_variable_ccode)\n"
+    },
+    {
+      "const": "define_vlm_ccode_missing_any",
+      "markdownDescription": "\nBoolean indicating whether at least one VLM item has an empty or missing codelist code (ValueListDef.ItemDef.CodeList.Alias.Name is empty)\n"
+    },
+    {
+      "const": "define_vlm_ccodes",
+      "markdownDescription": "\nList of distinct non-empty codelist codes from all VLM items for this variable. Derived from ValueListDef.ItemDef.CodeList.Alias.Name entries\n"
+    },
+    {
+      "const": "define_vlm_has_codelist_all",
+      "markdownDescription": "\nBoolean indicating whether all VLM items have a CodeListRef (all ValueListDef.ItemDef.CodeListRef exist)\n"
+    },
+    {
+      "const": "define_vlm_has_codelist_any",
+      "markdownDescription": "\nBoolean indicating whether at least one VLM item has a CodeListRef (ValueListDef.ItemDef.CodeListRef exists)\n"
+    },
+    {
+      "const": "define_vlm_item_count",
+      "markdownDescription": "\nCount of VLM items (ValueListDef.ItemDef entries) for this variable\n"
+    },
+    {
+      "const": "define_vlm_present",
+      "markdownDescription": "\nBoolean indicating whether this variable has one or more VLM (Value Level Metadata) items defined in Define-XML ValueListDef.ItemDef\n"
+    },
+    {
       "const": "define_vlm_codelist_coded_values",
       "markdownDescription": "\nValueListDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue\n"
     },
