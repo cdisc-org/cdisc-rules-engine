@@ -27,6 +27,17 @@ Full documentation lives in the [`docs/`](docs/index.md) directory and is hosted
 | [Contributing](docs/contributing.md)   | Code style, tests, rule contributions      |
 | [FAQ & Troubleshooting](docs/faq.md)   | Common issues and questions                |
 
+## Which Engine Should I Use?
+
+> **At present**, rule validation is split across two engines while work is underway to merge
+> the SQL fork back into this repository. Until that merge is complete, please select the
+> engine based on the rules you’re running:
+
+| If you’re running…                 | Use…                                                                                                              | Rules                                                                       |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| **SDTM** or **FDA Business Rules** | The **refactored SQL Engine** — [verisianHQ/cdisc-rules-engine](https://github.com/verisianHQ/cdisc-rules-engine) | [cdisc-org/core-contributor](https://github.com/cdisc-org/core-contributor) |
+| **TIG**, **USDM**, or **SEND**     | The **CDISC Engine** (this repository), as described below                                                        | [cdisc-org/cdisc-open-rules](https://github.com/cdisc-org/cdisc-open-rules) |
+
 ## Troubleshooting & Support
 
 ### Questions or Need Help?
