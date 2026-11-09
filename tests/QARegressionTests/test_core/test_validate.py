@@ -425,6 +425,8 @@ class TestValidate(unittest.TestCase):
             "3.4",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
+            "-ct",
+            "sdtmct-2026-03-27",
             "-l",
             "warn",
         ]
