@@ -321,6 +321,35 @@ class SDTMReportData(BaseReportData):
             errors.append(error_item)
         return errors
 
+    def _skipped_details(
+        self, validation_result: RuleValidationResult, result: dict
+    ) -> list[dict]:
+        """
+        Rows explaining why a rule was skipped. Only emitted when the rule as a
+        whole is SKIPPED, so per-dataset scope skips of rules that ran elsewhere
+        don't flood Issue Details.
+        """
+        if (
+            validation_result.execution_status != ExecutionStatus.SKIPPED.value
+            or result.get("executionStatus") != ExecutionStatus.SKIPPED.value
+        ):
+            return []
+        items = []
+        for error in result.get("errors") or []:
+            item = {
+                "core_id": validation_result.id,
+                "message": f"{result.get('message')} - {error.get('error')}",
+                "executability": validation_result.executability,
+                "dataset": error.get("dataset") or result.get("dataset"),
+                "USUBJID": "",
+                "row": "",
+                "SEQ": "",
+                "variables": "",
+                "values": error.get("message"),
+            }
+            items.append(item)
+        return items
+
     def _generate_error_details(
         self, validation_result: RuleValidationResult
     ) -> list[dict]:
@@ -344,6 +373,7 @@ class SDTMReportData(BaseReportData):
         for result in validation_result.results or []:
             issue_items = self._issue_details(validation_result, result)
             error_items = self._error_details(validation_result, result)
+            skipped_items = self._skipped_details(validation_result, result)
             for error_item in error_items:
                 self._issue_execution_status[id(error_item)] = (
                     ExecutionStatus.EXECUTION_ERROR.value
@@ -351,23 +381,33 @@ class SDTMReportData(BaseReportData):
                 self._issue_csv_fallback_dataset[id(error_item)] = (
                     result.get("dataset") or ""
                 )
-            errors = errors + issue_items + error_items
+            for skipped_item in skipped_items:
+                self._issue_execution_status[id(skipped_item)] = (
+                    ExecutionStatus.SKIPPED.value
+                )
+            errors = errors + issue_items + error_items + skipped_items
         return errors
 
     def _get_csv_rows(self) -> tuple[list[str], list[list[str]]]:
         header = ["Dataset", "Record", "Variable", "Value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
-            if (
-                self._issue_execution_status.get(id(issue))
-                == ExecutionStatus.EXECUTION_ERROR.value
+            status = self._issue_execution_status.get(id(issue))
+            if status in (
+                ExecutionStatus.EXECUTION_ERROR.value,
+                ExecutionStatus.SKIPPED.value,
             ):
+                marker = (
+                    "SKIPPED"
+                    if status == ExecutionStatus.SKIPPED.value
+                    else "EXECUTION_ERROR"
+                )
                 dataset_val = issue.get(
                     "dataset"
                 ) or self._issue_csv_fallback_dataset.get(id(issue), "")
                 dataset = dataset_val.removesuffix(".csv")
                 csv_value = issue.get("values") or issue.get("message") or ""
-                rows.append([dataset, "", "EXECUTION_ERROR", csv_value])
+                rows.append([dataset, "", marker, csv_value])
                 continue
             dataset = (issue.get("dataset") or "").removesuffix(".csv")
             record = str(issue.get("row", ""))
