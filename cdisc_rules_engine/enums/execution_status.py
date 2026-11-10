@@ -14,6 +14,7 @@ class SkippedReason(BaseEnum):
     DOMAIN_NOT_FOUND = "Domain not found"
     EMPTY_DATASET = "Empty dataset"
     OUTSIDE_SCOPE = "Outside scope"
+    RULE_NOT_AVAILABLE = "Rule not available for standard"
     SCHEMA_VALIDATION_IS_OFF = "Schema validation is off"
 
 
