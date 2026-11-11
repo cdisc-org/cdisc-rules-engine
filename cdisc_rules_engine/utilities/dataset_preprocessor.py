@@ -216,7 +216,9 @@ class DatasetPreprocessor:
             left_dataset, self._dataset_metadata
         )
         has_idvar_keys = "IDVAR" in match_keys or "IDVARVAL" in match_keys
-        if (is_supplemental or rdomain_dataset) and has_idvar_keys:
+        if (is_supplemental or rdomain_dataset) and (
+            has_idvar_keys or self._is_relational_child(left_dataset)
+        ):
             return self._merge_rdomain_dataset(
                 left_dataset,
                 left_dataset_domain_name,
@@ -251,6 +253,15 @@ class DatasetPreprocessor:
                     f"Right dataset: {right_dataset_domain_name}, "
                     f"Error: {str(e)}"
                 )
+
+    @staticmethod
+    def _is_relational_child(dataset: DatasetInterface) -> bool:
+        """
+        SUPP--/SQ--/CO/RELREC-style datasets identify their parent record through
+        IDVAR/IDVARVAL. For these, the IDVAR/IDVARVAL link is always applied,
+        whether or not the rule lists IDVAR/IDVARVAL in match_key.
+        """
+        return "IDVAR" in dataset.columns and "IDVARVAL" in dataset.columns
 
     def _classify_dataset(
         self, dataset: DatasetInterface, metadata: SDTMDatasetMetadata
@@ -310,8 +321,7 @@ class DatasetPreprocessor:
         match_keys: List[str],
     ) -> pd.DataFrame:
         standard_keys = [key for key in match_keys if key not in ["IDVAR", "IDVARVAL"]]
-        has_idvar_keys = "IDVAR" in match_keys or "IDVARVAL" in match_keys
-        if standard_keys and has_idvar_keys:
+        if standard_keys:
             return self._merge_standard_then_filter_idvar(
                 child_records, parent_dataset, left_domain, right_domain, standard_keys
             )
