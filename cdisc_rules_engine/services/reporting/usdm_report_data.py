@@ -256,21 +256,15 @@ class USDMReportData(BaseReportData):
         header = ["path", "attribute", "value"]
         rows = []
         for issue in self.data_sheets.get("Issue Details", []):
-            status = self._issue_execution_status.get(id(issue))
-            if status in (
-                ExecutionStatus.EXECUTION_ERROR.value,
-                ExecutionStatus.SKIPPED.value,
+            if (
+                self._issue_execution_status.get(id(issue))
+                == ExecutionStatus.EXECUTION_ERROR.value
             ):
-                marker = (
-                    "SKIPPED"
-                    if status == ExecutionStatus.SKIPPED.value
-                    else "EXECUTION_ERROR"
-                )
                 path = issue.get("entity") or self._issue_csv_fallback_path.get(
                     id(issue), ""
                 )
                 csv_value = issue.get("values") or issue.get("message") or ""
-                rows.append([path, marker, csv_value])
+                rows.append([path, "EXECUTION_ERROR", csv_value])
                 continue
             path = issue.get("path") or ""
             attributes = issue.get("attributes") or []
