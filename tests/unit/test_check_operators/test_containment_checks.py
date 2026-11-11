@@ -642,3 +642,11 @@ def test_contains_case_insensitive_column_vs_column(
         {"target": target_col, "comparator": comparator_col}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+def test_contains_with_nulls():
+    df = PandasDataset.from_dict({"TEDUR": ["P28D", None, float("nan"), "-P1D"]})
+    result = DataframeType({"value": df}).contains(
+        {"target": "TEDUR", "comparator": "-"}
+    )
+    assert result.tolist() == [False, False, False, True]
