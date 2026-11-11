@@ -273,16 +273,10 @@ def get_dict_key_val(dict_to_get: dict, key):
 
 
 def is_in(value, values):
-    if values is None or value is None:
-        return False
-    if isinstance(value, float) and np.isnan(value):
-        return False
-    if isinstance(values, float) and np.isnan(values):
-        return False
-    try:
-        return value in values
-    except TypeError:
-        return False
+    for v in (value, values):
+        if v is None or (isinstance(v, float) and np.isnan(v)):
+            return False
+    return value in values
 
 
 def case_insensitive_is_in(value, values):
