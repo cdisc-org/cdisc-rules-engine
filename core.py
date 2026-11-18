@@ -696,30 +696,22 @@ def validate(  # noqa
         if not rules:
             rules = tuple()
 
-        validation_packages_directory = os.path.join(
-            os.path.dirname(__file__), "resources", "validation_packages"
+        validation_packages_directory = str(
+            Path(__file__).parent / "resources" / "validation_packages"
         )
-
         found_validation_packages: list[dict[str, list]] = []
 
         for entry in os.scandir(validation_packages_directory):
             if entry.is_file():
                 file_path = Path(entry.path)
-                file_suffix = file_path.suffix
 
-                if file_suffix != ".json":
+                if file_path.suffix != ".pkl":
                     continue
 
-                with open(file_path) as f:
-                    try:
-                        found_json = json.load(f)
-                        if type(found_json) is dict:
-                            found_validation_packages.append(found_json)
-                    except json.JSONDecodeError:
-                        logger.error(
-                            f"Validation package at resources/validation_packages/{entry.name} contains invalid JSON"
-                        )
-                        ctx.exit(2)
+                with open(file_path, "rb") as f:
+                    found_json = pickle.load(f)
+                    if type(found_json) is dict:
+                        found_validation_packages.append(found_json)
 
         if not found_validation_packages:
             logger.error(
