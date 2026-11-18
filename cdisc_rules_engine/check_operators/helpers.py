@@ -8,6 +8,7 @@ import traceback
 from functools import lru_cache
 from enum import IntEnum
 import operator
+import pandas as pd
 
 # Date regex pattern for validation
 date_regex = re.compile(
@@ -273,12 +274,8 @@ def get_dict_key_val(dict_to_get: dict, key):
 
 
 def is_in(value, values):
-    if values is None:
-        return False
-    if value is None:
-        return False
-    if isinstance(value, (float)):
-        if np.isnan(value):
+    for v in (value, values):
+        if pd.api.types.is_scalar(v) and pd.isna(v):
             return False
     return value in values
 
