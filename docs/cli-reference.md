@@ -106,6 +106,9 @@ python core.py validate --help
 | `-jcf, --jsonata-custom-functions` | Variable name + path to directory of custom JSONata functions. Repeatable.        |
 | `--help`                           | Show the help message and exit.                                                   |
 
+**Note**: Windows 10 doesn’t process ANSI codes so you will need to enable them for the progress bar to function properly.
+Users will need to run ```reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1``` from the console
+
 ### Understanding Rule Run Statuses
 
 The **Rules Report** tab in the output summarizes the outcome for each rule:
