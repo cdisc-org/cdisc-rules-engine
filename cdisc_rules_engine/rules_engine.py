@@ -476,7 +476,7 @@ class RulesEngine:
                 error=SkippedReason.COLUMN_NOT_FOUND_IN_DATA.value,
                 message=exception.args[0],
             )
-            message = "rule execution error"
+            message = "rule evaluation skipped - column not found"
             errors = [error_obj]
             return ValidationErrorContainer(
                 dataset=filename,
@@ -621,7 +621,7 @@ class RulesEngine:
                 error="Missing field during execution",
                 message="Missing field during execution, rule may not be applicable- unable to process dataset",
             )
-            message = "rule evaluation skipped - missing metadata"
+            message = "rule execution error - missing metadata"
             errors = [error_obj]
             return ValidationErrorContainer(
                 dataset=filename,

@@ -155,10 +155,14 @@ class DataframeType(BaseType):
         return list(dict.fromkeys(columns))
 
     def get_comparator_data(self, comparator, value_is_literal: bool = False):
-        if value_is_literal:
+        if value_is_literal or isinstance(comparator, list):
             return comparator
-        else:
-            return self.value.get(comparator, comparator)
+        if comparator not in self.value.columns:
+            raise ValueError(
+                f"Column '{comparator}' not found in dataset. If you intended to "
+                "compare against a literal value, set value_is_literal: true."
+            )
+        return self.value.get(comparator)
 
     @staticmethod
     def _lower_if_str(value):
