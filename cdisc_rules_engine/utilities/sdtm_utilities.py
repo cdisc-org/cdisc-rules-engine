@@ -29,6 +29,26 @@ import copy
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from typing import Iterable, Tuple, List, Optional
 
+CLASS_EXCLUSION_RESTRICTIONS = {
+    "not in findings class domains": {FINDINGS},
+}
+
+
+def is_variable_excluded_for_class(variable: dict, class_name: str) -> bool:
+    restriction = variable.get("usageRestrictions")
+    if not restriction:
+        return False
+
+    restrictions = restriction if isinstance(restriction, list) else [restriction]
+    return any(
+        class_name
+        in CLASS_EXCLUSION_RESTRICTIONS.get(
+            " ".join(str(value).split()).casefold(),
+            set(),
+        )
+        for value in restrictions
+    )
+
 
 def is_custom_domain(
     library_metadata: LibraryMetadataContainer, dataset_name: str
@@ -253,7 +273,11 @@ def get_allowed_class_variables(
         gen_obs_class_metadata: dict = get_class_metadata(
             model_details, GENERAL_OBSERVATIONS_CLASS
         )
-        gen_obs_class_variables = gen_obs_class_metadata["classVariables"]
+        gen_obs_class_variables = [
+            variable
+            for variable in gen_obs_class_metadata["classVariables"]
+            if not is_variable_excluded_for_class(variable, class_name)
+        ]
         identifiers_metadata, timing_metadata = group_class_variables_by_role(
             gen_obs_class_variables
         )
