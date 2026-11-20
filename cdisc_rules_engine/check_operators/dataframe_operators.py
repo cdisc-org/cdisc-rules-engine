@@ -1006,6 +1006,11 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def does_not_start_with(self, other_value):
+        return ~self.starts_with(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def ends_with(self, other_value):
         target = other_value.get("target")
         comparator = other_value.get("comparator")
@@ -1016,6 +1021,11 @@ class DataframeType(BaseType):
             comparison_data: Tuple[str] = tuple(comparison_data)
         results = self.value[target].str.endswith(comparison_data)
         return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_end_with(self, other_value):
+        return ~self.ends_with(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
