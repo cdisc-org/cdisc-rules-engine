@@ -218,6 +218,7 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
             None,
             None,
             None,
+            None,
         )
     )
     data_service = LocalDataService(
@@ -302,6 +303,7 @@ def test_get_dataset_class_associated_domains():
                 "",
                 None,
                 False,
+                None,
                 None,
                 None,
                 None,
@@ -490,6 +492,7 @@ def test_get_associated_persons_inherit_class_fallback_to_library():
             None,
             None,
             None,
+            None,
         )
     )
     data_service = LocalDataService(
@@ -537,6 +540,7 @@ def test_get_associated_persons_inherit_class_custom_base_domain_resolves_via_to
             "",
             None,
             False,
+            None,
             None,
             None,
             None,
