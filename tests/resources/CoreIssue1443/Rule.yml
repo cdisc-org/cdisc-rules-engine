@@ -1,0 +1,139 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.0
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '3.0'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.1
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '3.1'
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.1.1
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '3.1'
+      - Name: SENDIG-GENETOX
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.1.1
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '1.0'
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.1.0
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '1.1'
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance: If a controlled terminology codelist exists for a variable in a
+                  SEND domain, the name of the codelist will be populated in the
+                  Controlled Terms, Codelist, or Format column of the domain
+                  model to indicate that a distinct set of controlled values
+                  exist and is expected to be used.
+                Document: IG v3.1.1
+                Item: Specification
+                Section: 4.3.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: SEND49
+              Version: '1'
+            Version: '5.0'
+        Version: '1.2'
+Check:
+  all:
+    - name: define_variable_ccode
+      operator: empty
+    - name: define_vlm_has_codelist_any
+      operator: equal_to
+      value: true
+Core:
+  Id: CDISC.SENDIG.49
+  Status: Draft
+  Version: '1'
+Description: 'For a variable identified in the SENDIG as being subject to CDISC
+  published Controlled Terminology, the Codelist listed in the Define-XML
+  document must properly reference the Controlled Terminology Codelist used.'
+Executability: Fully Executable
+Outcome:
+  Message: 'As a controlled terminology codelist exists for the variable in the SEND
+   domain, the codelist must be referenced for the variable in the define.xml'
+  Output Variables:
+    - variable_name
+    - define_variable_ccode
+    - library_variable_ccode
+    - define_vlm_ccodes
+    - define_vlm_ccode_matches_library_any
+
+Rule Type: Variable Metadata Check against Define XML and Library Metadata
+Scope:
+  Domains:
+    Include:
+      - ALL
+  Classes:
+    Include:
+      - ALL
+Sensitivity: Record
