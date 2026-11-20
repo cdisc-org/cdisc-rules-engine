@@ -1394,3 +1394,172 @@ def test_relrec_processed_correctly_with_others(rule_with_specific_supp):
     # relrec preprocessing did not change data
     assert result.data.shape[0] == 2
     assert all(result.data == relrec_ds.data)
+
+
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset")
+def test_supp_child_merge_links_on_idvar_without_idvar_match_keys(
+    mock_get_dataset: MagicMock,
+):
+    """
+    A SUPP-- child dataset is linked to its parent through IDVAR/IDVARVAL even
+    when match_key only lists USUBJID, so each SUPP record joins to exactly
+    one parent record rather than every parent record for the subject.
+    """
+    supp_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "USUBJID": ["S001", "S001"],
+                "RDOMAIN": ["LB", "LB"],
+                "IDVAR": ["LBSEQ", "LBSEQ"],
+                "IDVARVAL": ["321", "999"],
+                "QNAM": ["LBCLSIG", "LBCLSIG"],
+                "QVAL": ["Y", "N"],
+            }
+        )
+    )
+    lb_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "USUBJID": ["S001", "S001", "S001", "S002"],
+                "LBSEQ": [320, 321, 322, 321],
+                "LBTEST": ["Glucose", "Sodium", "Potassium", "Calcium"],
+            }
+        )
+    )
+    mock_get_dataset.return_value = lb_dataset
+    rule = {
+        "core_id": "TestSuppChildUsubjidOnly",
+        "datasets": [
+            {"domain_name": "SUPP--", "child": True, "match_key": ["USUBJID"]}
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "non_empty",
+                        "value": {"target": "IDVARVAL"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = DummyDataService(
+        MagicMock(),
+        MagicMock(),
+        MagicMock(),
+        data=[
+            SDTMDatasetMetadata(
+                name="LB", first_record={"DOMAIN": "LB"}, filename="lb.xpt"
+            )
+        ],
+    )
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPLB",
+            first_record={"RDOMAIN": "LB"},
+            full_path=os.path.join("path", "supplb.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    result = preprocessor.preprocess(rule).data
+    assert len(result) == 2
+    matched = result[result["IDVARVAL"] == "321"].iloc[0]
+    assert matched["LBTEST"] == "Sodium"
+    assert int(matched["LBSEQ"]) == 321
+    unmatched = result[result["IDVARVAL"] == "999"].iloc[0]
+    assert pd.isna(unmatched["LBSEQ"])
+    assert pd.isna(unmatched["LBTEST"])
+
+
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset")
+def test_co_child_merge_links_each_rdomain_on_idvar_without_idvar_match_keys(
+    mock_get_dataset: MagicMock,
+):
+    """
+    A CO dataset pointing at several parent domains is linked per RDOMAIN and per
+    IDVAR/IDVARVAL even when match_key only lists USUBJID.
+    """
+    co_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "USUBJID": ["S001", "S001", "S001"],
+                "DOMAIN": ["CO", "CO", "CO"],
+                "COSEQ": [1, 2, 3],
+                "RDOMAIN": ["AE", "LB", "LB"],
+                "IDVAR": ["AESEQ", "LBGRPID", "LBSEQ"],
+                "IDVARVAL": ["2", "22", "323"],
+            }
+        )
+    )
+    ae_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "USUBJID": ["S001", "S001"],
+                "DOMAIN": ["AE", "AE"],
+                "AESEQ": [1, 2],
+                "AETERM": ["Headache", "Nausea"],
+            }
+        )
+    )
+    lb_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "USUBJID": ["S001", "S001", "S001"],
+                "DOMAIN": ["LB", "LB", "LB"],
+                "LBSEQ": [320, 321, 322],
+                "LBGRPID": ["20", "21", "22"],
+            }
+        )
+    )
+    mock_get_dataset.side_effect = lambda dataset_name, **kwargs: {
+        "AE": ae_dataset,
+        "LB": lb_dataset,
+    }[dataset_name]
+    rule = {
+        "core_id": "TestCoChildUsubjidOnly",
+        "datasets": [{"domain_name": "CO", "child": True, "match_key": ["USUBJID"]}],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "non_empty",
+                        "value": {"target": "IDVARVAL"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = DummyDataService(
+        MagicMock(),
+        MagicMock(),
+        MagicMock(),
+        data=[
+            SDTMDatasetMetadata(
+                name="AE", first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+            ),
+            SDTMDatasetMetadata(
+                name="LB", first_record={"DOMAIN": "LB"}, filename="lb.xpt"
+            ),
+        ],
+    )
+    preprocessor = DatasetPreprocessor(
+        co_dataset,
+        SDTMDatasetMetadata(
+            name="CO",
+            first_record={"DOMAIN": "CO"},
+            full_path=os.path.join("path", "co.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    result = preprocessor.preprocess(rule).data
+    assert len(result) == 3
+    by_coseq = result.set_index("COSEQ")
+    assert by_coseq.loc[1, "AETERM"] == "Nausea"
+    assert str(by_coseq.loc[2, "LBGRPID"]) == "22"
+    assert int(by_coseq.loc[2, "LBSEQ"]) == 322
+    assert pd.isna(by_coseq.loc[3, "LBSEQ"])
