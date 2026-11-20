@@ -95,6 +95,7 @@ from cdisc_rules_engine.operations.define_xml_extensible_codelists import (
 from cdisc_rules_engine.operations.get_dataset_filtered_variables import (
     GetDatasetFilteredVariables,
 )
+from cdisc_rules_engine.operations.regex_find_replace import RegexFindReplace
 
 
 class OperationsFactory(FactoryInterface):
@@ -152,6 +153,7 @@ class OperationsFactory(FactoryInterface):
         "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
         "get_dataset_filtered_variables": GetDatasetFilteredVariables,
         "get_xhtml_errors": GetXhtmlErrors,
+        "regex_find_replace": RegexFindReplace,
     }
 
     @classmethod

@@ -1,0 +1,50 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: ADaMIG
+        References:
+          - Citations:
+              - Cited Guidance: ""
+                Document: ""
+            Origin: ADaM Conformance Rules
+            Rule Identifier:
+              Id: '41'
+              Version: "1"
+            Version: "5.0"
+        Version: "1.0"
+Check:
+  all:
+    - name: variable_name
+      operator: matches_regex
+      value: ^TRT[0-9]{2}AN$
+    - name: $generated_variable_name
+      operator: is_not_contained_by
+      value: variable_name
+Core:
+  Id: CORE-000587
+  Status: Draft
+  Version: "1"
+Description: If TRTxxAN exists in ADSL, TRTxxA must also exist.
+Executability: Fully Executable
+Operations:
+  - id: $generated_variable_name
+    operator: regex_find_replace
+    name: variable_name
+    find: ^TRT([0-9]{2})AN$
+    replace: TRT\1A
+    on_no_match: keep_original
+    flags: ""
+Outcome:
+  Message: TRTxxAN is present but matching TRTxxA is missing.
+  Output Variables:
+    - variable_name
+    - $generated_variable_name
+Rule Type: Variable Metadata Check
+Scope:
+  Classes:
+    Include:
+      - "ALL"
+  Domains:
+    Include:
+      - "ADSL"
+Sensitivity: Record
