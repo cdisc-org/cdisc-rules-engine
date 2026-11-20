@@ -650,6 +650,97 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertNotIn("error", stdout)
 
+    def test_validate_validation_packages_exclude(self):
+        """Test that passing both -vp and -er together is rejected with exit
+        code 2, regardless of whether the referenced rules exist locally."""
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.json"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-vp",
+            "Handbook 1",
+            "-er",
+            "CORE-000473",
+            "-l",
+            "error",
+        ]
+
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 2)
+        self.assertIn(
+            "cannot use both --validation-package and --exclude-rules flags together.",
+            stderr,
+        )
+
+    def test_validate_no_validation_packages_found(self):
+        """Test when no validation packages found program will exit with code 2."""
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-vp",
+            "test_validate_no_validation_packges_found",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.json"),
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 2)
+        self.assertIn(
+            "no rules found with packages: test_validate_no_validation_packges_found",
+            stderr,
+        )
+
+    def test_validate_warn_validation_package_not_found(self):
+        """Test when multiple validation packages are specified, packages that are not found will be logged."""
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-vp",
+            "Handbook 1",
+            "-vp",
+            "package_should_not_exist",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.json"),
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertIn("no package found with name: package_should_not_exist", stderr)
+
+    def test_validate_validation_packages(self):
+        """Test validation packages run without error"""
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-vp",
+            "Handbook 1",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.json"),
+        ]
+        exit_code, stdout, stderr = run_command(args, True)
+        self.assertNotIn("error", stdout)
+        self.assertNotIn("warning", stdout)
+
     def tearDown(self):
         tearDown()
 
