@@ -713,12 +713,6 @@ def validate(  # noqa
                     if type(found_json) is dict:
                         found_validation_packages.append(found_json)
 
-        if not found_validation_packages:
-            logger.error(
-                "Validation packages specified, but no sources found in resources/validation_packages/"
-            )
-            ctx.exit(2)
-
         filtered_core_ids: set[str] = set()
         found_package_names: set[str] = set()
 
@@ -739,6 +733,10 @@ def validate(  # noqa
                 f"No rules found with packages: {', '.join(validation_packages)}"
             )
             ctx.exit(2)
+
+        for package in validation_packages:
+            if package not in found_package_names:
+                logger.warning(f"No package found with name: {package}")
 
         for rule in rules:
             filtered_core_ids.add(rule)
