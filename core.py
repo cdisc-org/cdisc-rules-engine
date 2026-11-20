@@ -592,6 +592,13 @@ def load_custom_dotenv_from_data_options(_ctx, _param, value):
     required=False,
     help="Path to _datasets.csv",
 )
+@click.option(
+    "-vp",
+    "--validation-packages",
+    required=False,
+    help="Filter rules by one or more validation packages from resources/cache/handbook_packages.json. Can be specified multiple times",
+    multiple=True,
+)
 @click.pass_context
 def validate(  # noqa
     ctx,
@@ -632,6 +639,7 @@ def validate(  # noqa
     encoding: str,
     variables_csv_path: str,
     datasets_csv_path: str,
+    validation_packages: tuple[str],
 ):
     """
     Validate data using CDISC Rules Engine
@@ -672,9 +680,71 @@ def validate(  # noqa
             )
             ctx.exit(2)
 
-    if exclude_rules and rules:
-        logger.error("Cannot use both --rules and --exclude-rules flags together.")
-        ctx.exit(2)
+    if exclude_rules:
+        if rules:
+            logger.error("Cannot use both --rules and --exclude-rules flags together.")
+            ctx.exit(2)
+
+        if validation_packages:
+            logger.error(
+                "Cannot use both --validation-package and --exclude-rules flags together."
+            )
+            ctx.exit(2)
+
+    used_packages: list[str] | None = None
+    if validation_packages:
+        if not rules:
+            rules = tuple()
+
+        validation_packages_directory = str(
+            Path(__file__).parent / "resources" / "validation_packages"
+        )
+        found_validation_packages: list[dict[str, list]] = []
+
+        for entry in os.scandir(validation_packages_directory):
+            if entry.is_file():
+                file_path = Path(entry.path)
+
+                if file_path.suffix != ".pkl":
+                    continue
+
+                with open(file_path, "rb") as f:
+                    found_json = pickle.load(f)
+                    if type(found_json) is dict:
+                        found_validation_packages.append(found_json)
+
+        filtered_core_ids: set[str] = set()
+        found_package_names: set[str] = set()
+
+        for package_data in found_validation_packages:
+            for wanted_package in validation_packages:
+                found_core_ids = package_data.get(wanted_package, None)
+
+                if not found_core_ids:
+                    continue
+
+                for core_id in found_core_ids:
+                    filtered_core_ids.add(core_id)
+
+                found_package_names.add(wanted_package)
+
+        if not filtered_core_ids:
+            logger.error(
+                f"No rules found with packages: {', '.join(validation_packages)}"
+            )
+            ctx.exit(2)
+
+        for package in validation_packages:
+            if package not in found_package_names:
+                logger.warning(f"No package found with name: {package}")
+
+        for rule in rules:
+            filtered_core_ids.add(rule)
+
+        package_intersection = found_package_names.intersection(validation_packages)
+
+        used_packages = list(package_intersection)
+        rules = tuple(filtered_core_ids)
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -748,6 +818,7 @@ def validate(  # noqa
             encoding,
             variables_csv_path,
             datasets_csv_path,
+            used_packages,
         )
     )
 
