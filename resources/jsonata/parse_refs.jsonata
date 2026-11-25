@@ -1,30 +1,43 @@
 {
+    /*
+        References are followed depth first, carrying the ids of the reference holders and the
+        resolved elements on the way down. A reference to an id already on that path becomes a
+        circularReference marker, so every reference loop ends at its first repeat, whatever its
+        length. On input without a loop the output is the same as resolving every reference fully.
+
+        This comment sits inside the outer braces and contains no braces, because the processor
+        strips the first opening and the last closing brace of each file to merge the functions.
+    */
     "parse_refs":   function($from,$to,$within)
                         {
                             (
-                                $iter := function($dict)
+                                /* Index within by id once, instead of a scan per reference. Grouping
+                                   gives the same value as within[id=v]: the element, or an array of
+                                   every element when ids repeat. Ids that are not strings cannot be
+                                   keys, so a reference that is not a string still scans. */
+                                $byId := $within[$type(id) = "string"]{id: $};
+                                $target := function($v)
                                             {
-                                                $count($dict.**[$from in $keys($)]) > 0
-                                                ?   (
-                                                        $d := $dict ~> |**[$from in $keys($)]|
-                                                                {
-                                                                    $to: 
-                                                                        (
-                                                                            $refs:=$lookup($,$from);
-                                                                            $map($refs,function($v)
-                                                                                {
-                                                                                    $v in $dict[id=$v].**.$lookup($,$from)
-                                                                                    ? {"circularReference": $v}
-                                                                                    : $dict[id=$v]
-                                                                                }
-                                                                            )
-                                                                        )
-                                                                },[$from]|;
-                                                        $iter($d)
-                                                    )
-                                                : $dict
+                                                $type($v) = "string" ? $lookup($byId,$v) : $within[id=$v]
                                             };
-                                $iter($within)
+                                $resolve := function($node,$path)
+                                            {
+                                                $node ~> |**[$from in $keys($)]|
+                                                            {
+                                                                $to:
+                                                                    (
+                                                                        $here := $append($path,$.id);
+                                                                        $map($lookup($,$from),function($v)
+                                                                            {
+                                                                                $v in $here
+                                                                                ? {"circularReference": $v}
+                                                                                : $resolve($target($v),$append($here,$v))
+                                                                            }
+                                                                        )
+                                                                    )
+                                                            },[$from]|
+                                            };
+                                $resolve($within,[])
                             )
                         }
 }
